@@ -13,7 +13,7 @@ xcschememanagement.plist
 ._*
 
 # Build artifacts
-CharacterViewer.app/
+*.app
 
 # Swift Package Manager
 .build/
