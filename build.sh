@@ -15,6 +15,19 @@ if [ -d "$PROJECT_DIR/$APP_NAME.app" ]; then
     echo "🗑️  既存の $APP_NAME.app を削除しました"
 fi
 
+# SwiftLint チェック
+if command -v swiftlint >/dev/null 2>&1; then
+    echo "🔍 SwiftLint チェック中..."
+    if swiftlint --strict; then
+        echo "✅ SwiftLint: 問題なし"
+    else
+        echo "❌ SwiftLint: 問題が見つかりました"
+        exit 1
+    fi
+else
+    echo "⚠️  SwiftLint が未インストールです（brew install swiftlint）"
+fi
+
 echo "🔨 ビルド中..."
 
 xcodebuild \

@@ -95,6 +95,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA000040 /* Build configuration list for PBXNativeTarget "Sobani" */;
 			buildPhases = (
+				CC000001 /* SwiftLint */,
 				AA000031 /* Sources */,
 				AA000010 /* Frameworks */,
 				AA000032 /* Resources */,
@@ -174,6 +175,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		CC000001 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if command -v swiftlint >/dev/null 2>&1; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint is not installed. Run 'brew install swiftlint' to enable linting.\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AA000031 /* Sources */ = {
