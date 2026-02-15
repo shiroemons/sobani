@@ -181,6 +181,63 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertFalse(imageManager.hasCustomDefault)
     }
 
+    // MARK: - registerImage Extension Guard Tests
+
+    func testRegisterImage_FromExternalPath_CopiesAndReturnsName() {
+        let sourceDir = createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
+
+        let sourceURL = createTestImageFile(named: "external.png", in: sourceDir)
+
+        let savedName = imageManager.registerImage(from: sourceURL)
+        XCTAssertEqual(savedName, "external.png")
+
+        let names = imageManager.registeredImageNames()
+        XCTAssertTrue(names.contains("external.png"))
+    }
+
+    func testRegisterImage_DuplicateFromDifferentSource_GetsUniqueName() {
+        let sourceDir1 = createSourceDirectory()
+        let sourceDir2 = createSourceDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: sourceDir1)
+            try? FileManager.default.removeItem(at: sourceDir2)
+        }
+
+        let sourceURL1 = createTestImageFile(named: "photo.png", in: sourceDir1)
+        let sourceURL2 = createTestImageFile(named: "photo.png", in: sourceDir2)
+
+        let name1 = imageManager.registerImage(from: sourceURL1)
+        XCTAssertEqual(name1, "photo.png")
+
+        let name2 = imageManager.registerImage(from: sourceURL2)
+        XCTAssertEqual(name2, "photo_1.png")
+    }
+
+    func testRegisterImage_UnsupportedExtension_ReturnsNil() {
+        let sourceDir = createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
+
+        // Create files with unsupported extensions
+        let txtURL = sourceDir.appendingPathComponent("document.txt")
+        try! "not an image".write(to: txtURL, atomically: true, encoding: .utf8)
+
+        let pdfURL = sourceDir.appendingPathComponent("document.pdf")
+        try! "not an image".write(to: pdfURL, atomically: true, encoding: .utf8)
+
+        let svgURL = sourceDir.appendingPathComponent("image.svg")
+        try! "<svg></svg>".write(to: svgURL, atomically: true, encoding: .utf8)
+
+        XCTAssertNil(imageManager.registerImage(from: txtURL))
+        XCTAssertNil(imageManager.registerImage(from: pdfURL))
+        XCTAssertNil(imageManager.registerImage(from: svgURL))
+
+        // Verify nothing was registered
+        XCTAssertEqual(imageManager.registeredImageNames(), [])
+    }
+
+    // MARK: - Custom Default Tests
+
     func testHasCustomDefault_Correctness() {
         XCTAssertFalse(imageManager.hasCustomDefault)
 

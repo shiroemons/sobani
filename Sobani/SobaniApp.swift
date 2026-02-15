@@ -62,6 +62,9 @@ class ImageManager {
     @discardableResult
     func registerImage(from url: URL) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
+        let ext = url.pathExtension.lowercased()
+        let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
+        guard supportedExtensions.contains(ext) else { return nil }
         let name = url.lastPathComponent
         let destURL = imagesDir.appendingPathComponent(name)
         let fm = FileManager.default
@@ -384,6 +387,11 @@ class CharacterWindow: NSObject, NSMenuDelegate {
                 newWindowSubmenu.addItem(item)
             }
         }
+
+        newWindowSubmenu.addItem(NSMenuItem.separator())
+        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
+        selectImageItem.target = self
+        newWindowSubmenu.addItem(selectImageItem)
     }
 
     // MARK: Actions
@@ -453,6 +461,21 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         delegate?.characterWindowRequestedNewWindow(self, imageName: name)
     }
 
+    @objc func addNewWindowWithNewImage(_ sender: NSMenuItem) {
+        let panel = NSOpenPanel()
+        panel.title = "画像を選択"
+        panel.message = "新しいウィンドウに表示する画像ファイルを選択してください"
+        panel.prompt = "選択"
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.level = .floating
+
+        if panel.runModal() == .OK, let url = panel.url {
+            delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
+        }
+    }
+
     @objc func closeThisWindow() {
         window.orderOut(nil)
         delegate?.characterWindowDidClose(self)
@@ -468,6 +491,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
 protocol CharacterWindowDelegate: AnyObject {
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
+    func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
     func characterWindowDidClose(_ sender: CharacterWindow)
 }
 
@@ -681,14 +705,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             }
         }
 
+        submenu.addItem(NSMenuItem.separator())
+        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
+        selectImageItem.target = self
+        submenu.addItem(selectImageItem)
+
         newWindowItem.submenu = submenu
         return newWindowItem
+    }
+
+    @objc func addNewWindowWithNewImageFromMenu() {
+        let panel = NSOpenPanel()
+        panel.title = "画像を選択"
+        panel.message = "新しいウィンドウに表示する画像ファイルを選択してください"
+        panel.prompt = "選択"
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+
+        if panel.runModal() == .OK, let url = panel.url {
+            if let savedName = ImageManager.shared.registerImage(from: url) {
+                createNewWindow(imageName: savedName)
+            }
+        }
     }
 
     // MARK: CharacterWindowDelegate
 
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?) {
         createNewWindow(imageName: imageName)
+    }
+
+    func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL) {
+        if let savedName = ImageManager.shared.registerImage(from: fileURL) {
+            createNewWindow(imageName: savedName)
+        }
     }
 
     func characterWindowDidClose(_ sender: CharacterWindow) {
