@@ -31,7 +31,7 @@ class ImageManager {
         guard let imagesDir = imagesDirectoryURL else { return [] }
         let fm = FileManager.default
         let files = (try? fm.contentsOfDirectory(atPath: imagesDir.path)) ?? []
-        let imageExtensions = ["png", "gif", "tiff", "heic"]
+        let imageExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
         return files
             .filter { name in
                 let ext = (name as NSString).pathExtension.lowercased()
@@ -382,7 +382,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         panel.title = "画像を選択"
         panel.message = "表示する画像ファイルを選択してください"
         panel.prompt = "選択"
-        panel.allowedContentTypes = [.png, .gif, .tiff, .heic]
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.level = .floating
@@ -412,7 +412,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         panel.title = "デフォルト画像を選択"
         panel.message = "デフォルトに設定する画像ファイルを選択してください"
         panel.prompt = "選択"
-        panel.allowedContentTypes = [.png, .gif, .tiff, .heic]
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.level = .floating
@@ -621,7 +621,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         panel.title = "デフォルト画像を選択"
         panel.message = "デフォルトに設定する画像ファイルを選択してください"
         panel.prompt = "選択"
-        panel.allowedContentTypes = [.png, .gif, .tiff, .heic]
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
 
