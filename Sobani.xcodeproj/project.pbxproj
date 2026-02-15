@@ -7,12 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA000001 /* SobaniApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002 /* SobaniApp.swift */; };
 		AA000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000004 /* Assets.xcassets */; };
 		AA000007 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000008 /* main.swift */; };
 		BB000001 /* ImageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000002 /* ImageManagerTests.swift */; };
 		CC000010 /* UpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000011 /* UpdateManager.swift */; };
 		CC000012 /* UpdateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000013 /* UpdateManagerTests.swift */; };
+		DD000001 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002 /* ImageManager.swift */; };
+		DD000003 /* DraggableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000004 /* DraggableImageView.swift */; };
+		DD000005 /* CharacterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000006 /* CharacterWindow.swift */; };
+		DD000007 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000008 /* AppDelegate.swift */; };
+		DD000009 /* WindowStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000010 /* WindowStateManager.swift */; };
+		DD000011 /* WindowStateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000012 /* WindowStateManagerTests.swift */; };
+		DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000014 /* AppDelegate+StatusBarMenu.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,7 +32,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		AA000002 /* SobaniApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SobaniApp.swift; sourceTree = "<group>"; };
 		AA000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA000005 /* Sobani.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sobani.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000006 /* Sobani.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sobani.entitlements; sourceTree = "<group>"; };
@@ -35,6 +40,13 @@
 		BB000003 /* SobaniTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SobaniTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC000011 /* UpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManager.swift; sourceTree = "<group>"; };
 		CC000013 /* UpdateManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerTests.swift; sourceTree = "<group>"; };
+		DD000002 /* ImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
+		DD000004 /* DraggableImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraggableImageView.swift; sourceTree = "<group>"; };
+		DD000006 /* CharacterWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterWindow.swift; sourceTree = "<group>"; };
+		DD000008 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DD000010 /* WindowStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateManager.swift; sourceTree = "<group>"; };
+		DD000012 /* WindowStateManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateManagerTests.swift; sourceTree = "<group>"; };
+		DD000014 /* AppDelegate+StatusBarMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenu.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,8 +80,13 @@
 			isa = PBXGroup;
 			children = (
 				AA000008 /* main.swift */,
-				AA000002 /* SobaniApp.swift */,
+				DD000008 /* AppDelegate.swift */,
+				DD000014 /* AppDelegate+StatusBarMenu.swift */,
+				DD000006 /* CharacterWindow.swift */,
+				DD000004 /* DraggableImageView.swift */,
+				DD000002 /* ImageManager.swift */,
 				CC000011 /* UpdateManager.swift */,
+				DD000010 /* WindowStateManager.swift */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
 			);
@@ -90,6 +107,7 @@
 			children = (
 				BB000002 /* ImageManagerTests.swift */,
 				CC000013 /* UpdateManagerTests.swift */,
+				DD000012 /* WindowStateManagerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -209,8 +227,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA000001 /* SobaniApp.swift in Sources */,
+				DD000007 /* AppDelegate.swift in Sources */,
+				DD000005 /* CharacterWindow.swift in Sources */,
+				DD000003 /* DraggableImageView.swift in Sources */,
+				DD000001 /* ImageManager.swift in Sources */,
 				CC000010 /* UpdateManager.swift in Sources */,
+				DD000009 /* WindowStateManager.swift in Sources */,
+				DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -221,6 +244,7 @@
 			files = (
 				BB000001 /* ImageManagerTests.swift in Sources */,
 				CC000012 /* UpdateManagerTests.swift in Sources */,
+				DD000011 /* WindowStateManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
