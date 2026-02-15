@@ -501,7 +501,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     var characterWindows: [CharacterWindow] = []
     var statusItem: NSStatusItem!
     var shouldTerminate = false
-
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Setup menu bar icon
         setupStatusBar()
@@ -518,6 +517,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         characterWindows.append(charWindow)
 
         NSApp.activate(ignoringOtherApps: true)
+
+        // Setup update manager
+        UpdateManager.shared.delegate = self
+        UpdateManager.shared.startPeriodicChecks()
     }
 
     // MARK: - Status Bar
@@ -541,6 +544,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         let aboutItem = NSMenuItem(title: "Sobani について...", action: #selector(showAbout), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
+
+        // Update menu item
+        switch UpdateManager.shared.state {
+        case .available(let version, _):
+            let updateItem = NSMenuItem(
+                title: "更新する（v\(version)）",
+                action: #selector(performUpdate),
+                keyEquivalent: ""
+            )
+            updateItem.target = self
+            menu.addItem(updateItem)
+        case .checking:
+            let checkingItem = NSMenuItem(title: "確認中...", action: nil, keyEquivalent: "")
+            checkingItem.isEnabled = false
+            menu.addItem(checkingItem)
+        case .downloading:
+            let downloadingItem = NSMenuItem(title: "ダウンロード中...", action: nil, keyEquivalent: "")
+            downloadingItem.isEnabled = false
+            menu.addItem(downloadingItem)
+        default:
+            let checkItem = NSMenuItem(
+                title: "更新を確認...",
+                action: #selector(checkForUpdateManually),
+                keyEquivalent: ""
+            )
+            checkItem.target = self
+            menu.addItem(checkItem)
+        }
+
         menu.addItem(NSMenuItem.separator())
 
         // Window count

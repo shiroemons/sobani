@@ -11,6 +11,8 @@
 		AA000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000004 /* Assets.xcassets */; };
 		AA000007 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000008 /* main.swift */; };
 		BB000001 /* ImageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000002 /* ImageManagerTests.swift */; };
+		CC000010 /* UpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000011 /* UpdateManager.swift */; };
+		CC000012 /* UpdateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000013 /* UpdateManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +33,8 @@
 		AA000008 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		BB000002 /* ImageManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManagerTests.swift; sourceTree = "<group>"; };
 		BB000003 /* SobaniTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SobaniTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC000011 /* UpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManager.swift; sourceTree = "<group>"; };
+		CC000013 /* UpdateManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +69,7 @@
 			children = (
 				AA000008 /* main.swift */,
 				AA000002 /* SobaniApp.swift */,
+				CC000011 /* UpdateManager.swift */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
 			);
@@ -84,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				BB000002 /* ImageManagerTests.swift */,
+				CC000013 /* UpdateManagerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -204,6 +210,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000001 /* SobaniApp.swift in Sources */,
+				CC000010 /* UpdateManager.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -213,6 +220,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB000001 /* ImageManagerTests.swift in Sources */,
+				CC000012 /* UpdateManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
