@@ -6,10 +6,21 @@ import UniformTypeIdentifiers
 class ImageManager {
     static let shared = ImageManager()
 
+    private let baseDirectory: URL?
+
+    init(baseDirectory: URL? = nil) {
+        self.baseDirectory = baseDirectory
+    }
+
     private var appSupportURL: URL? {
         let fm = FileManager.default
-        guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-        let appDir = appSupport.appendingPathComponent("Sobani")
+        let appDir: URL
+        if let base = baseDirectory {
+            appDir = base
+        } else {
+            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
+            appDir = appSupport.appendingPathComponent("Sobani")
+        }
         if !fm.fileExists(atPath: appDir.path) {
             try? fm.createDirectory(at: appDir, withIntermediateDirectories: true)
         }

@@ -10,7 +10,18 @@
 		AA000001 /* SobaniApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002 /* SobaniApp.swift */; };
 		AA000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000004 /* Assets.xcassets */; };
 		AA000007 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000008 /* main.swift */; };
+		BB000001 /* ImageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000002 /* ImageManagerTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BB000006 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA000050 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA000030;
+			remoteInfo = Sobani;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		AA000002 /* SobaniApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SobaniApp.swift; sourceTree = "<group>"; };
@@ -18,10 +29,19 @@
 		AA000005 /* Sobani.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sobani.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000006 /* Sobani.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sobani.entitlements; sourceTree = "<group>"; };
 		AA000008 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		BB000002 /* ImageManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManagerTests.swift; sourceTree = "<group>"; };
+		BB000003 /* SobaniTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SobaniTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AA000010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB000009 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -35,6 +55,7 @@
 			isa = PBXGroup;
 			children = (
 				AA000021 /* Sobani */,
+				BB000004 /* SobaniTests */,
 				AA000022 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,8 +75,17 @@
 			isa = PBXGroup;
 			children = (
 				AA000005 /* Sobani.app */,
+				BB000003 /* SobaniTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		BB000004 /* SobaniTests */ = {
+			isa = PBXGroup;
+			children = (
+				BB000002 /* ImageManagerTests.swift */,
+			);
+			path = SobaniTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -78,6 +108,23 @@
 			productReference = AA000005 /* Sobani.app */;
 			productType = "com.apple.product-type.application";
 		};
+		BB000005 /* SobaniTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB000012 /* Build configuration list for PBXNativeTarget "SobaniTests" */;
+			buildPhases = (
+				BB000008 /* Sources */,
+				BB000009 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB000007 /* PBXTargetDependency */,
+			);
+			name = SobaniTests;
+			productName = SobaniTests;
+			productReference = BB000003 /* SobaniTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -90,6 +137,10 @@
 				TargetAttributes = {
 					AA000030 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					BB000005 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = AA000030;
 					};
 				};
 			};
@@ -108,6 +159,7 @@
 			projectRoot = "";
 			targets = (
 				AA000030 /* Sobani */,
+				BB000005 /* SobaniTests */,
 			);
 		};
 /* End PBXProject section */
@@ -133,7 +185,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB000001 /* ImageManagerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BB000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA000030 /* Sobani */;
+			targetProxy = BB000006 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		AA000060 /* Debug */ = {
@@ -232,6 +300,40 @@
 			};
 			name = Release;
 		};
+		BB000010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.SobaniTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sobani.app/Contents/MacOS/Sobani";
+			};
+			name = Debug;
+		};
+		BB000011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.SobaniTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sobani.app/Contents/MacOS/Sobani";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -249,6 +351,15 @@
 			buildConfigurations = (
 				AA000060 /* Debug */,
 				AA000061 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB000012 /* Build configuration list for PBXNativeTarget "SobaniTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB000010 /* Debug */,
+				BB000011 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
