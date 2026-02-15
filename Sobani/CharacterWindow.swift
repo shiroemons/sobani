@@ -49,17 +49,16 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     func applyImage(_ image: NSImage) {
-        let maxHeight: CGFloat = 600
-        let scale = maxHeight / image.size.height
+        let currentHeight = window.frame.height
+        let scale = currentHeight / image.size.height
         let windowWidth = image.size.width * scale
-        let windowHeight = maxHeight
         let centerX = window.frame.midX
         let centerY = window.frame.midY
         let newOriginX = centerX - windowWidth / 2
-        let newOriginY = centerY - windowHeight / 2
+        let newOriginY = centerY - currentHeight / 2
         imageView.image = image
-        imageView.aspectRatio = windowWidth / windowHeight
-        window.setFrame(NSRect(x: newOriginX, y: newOriginY, width: windowWidth, height: windowHeight), display: true)
+        imageView.aspectRatio = windowWidth / currentHeight
+        window.setFrame(NSRect(x: newOriginX, y: newOriginY, width: windowWidth, height: currentHeight), display: true)
     }
 
     // MARK: Menu
