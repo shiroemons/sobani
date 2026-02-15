@@ -513,6 +513,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
 
+        // About
+        let aboutItem = NSMenuItem(title: "Sobani について...", action: #selector(showAbout), keyEquivalent: "")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+        menu.addItem(NSMenuItem.separator())
+
         // Window count
         let countItem = NSMenuItem(title: "表示中: \(characterWindows.count)体", action: nil, keyEquivalent: "")
         countItem.isEnabled = false
@@ -527,26 +533,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         menu.addItem(NSMenuItem.separator())
 
         // New window submenu
-        let newWindowItem = NSMenuItem(title: "新しいウィンドウ", action: nil, keyEquivalent: "")
-        let newWindowSubmenu = NSMenu()
-
-        let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindowFromMenu), keyEquivalent: "")
-        defaultWindowItem.target = self
-        newWindowSubmenu.addItem(defaultWindowItem)
-
-        let names = ImageManager.shared.registeredImageNames()
-        if !names.isEmpty {
-            newWindowSubmenu.addItem(NSMenuItem.separator())
-            for name in names {
-                let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImageFromMenu(_:)), keyEquivalent: "")
-                item.target = self
-                item.representedObject = name
-                newWindowSubmenu.addItem(item)
-            }
-        }
-
-        newWindowItem.submenu = newWindowSubmenu
-        menu.addItem(newWindowItem)
+        menu.addItem(buildNewWindowMenuItem())
 
         // Close individual window submenu
         if !characterWindows.isEmpty {
@@ -675,6 +662,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         characterWindows.append(charWindow)
     }
 
+    private func buildNewWindowMenuItem() -> NSMenuItem {
+        let newWindowItem = NSMenuItem(title: "新しいウィンドウ", action: nil, keyEquivalent: "")
+        let submenu = NSMenu()
+
+        let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindowFromMenu), keyEquivalent: "")
+        defaultWindowItem.target = self
+        submenu.addItem(defaultWindowItem)
+
+        let names = ImageManager.shared.registeredImageNames()
+        if !names.isEmpty {
+            submenu.addItem(NSMenuItem.separator())
+            for name in names {
+                let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImageFromMenu(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = name
+                submenu.addItem(item)
+            }
+        }
+
+        newWindowItem.submenu = submenu
+        return newWindowItem
+    }
+
     // MARK: CharacterWindowDelegate
 
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?) {
@@ -695,5 +705,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             return .terminateNow
         }
         return .terminateCancel
+    }
+
+    @objc func showAbout() {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+        NSApp.orderFrontStandardAboutPanel(options: [
+            .version: "v\(version)"
+        ])
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
