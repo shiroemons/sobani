@@ -1,6 +1,14 @@
 #!/bin/bash
 # Sobani ビルドスクリプト
 # 使い方: ターミナルで ./build.sh を実行
+# 環境変数:
+#   SOBANI_ARCHS      - ビルドアーキテクチャ (例: "arm64 x86_64")
+#   SKIP_CODESIGN=1   - コード署名をスキップ
+#   NOTARIZE=1        - Apple 公証を有効化
+#   NOTARIZE_PROFILE   - notarytool キーチェーンプロファイル名
+#   APPLE_ID          - Apple ID (公証用)
+#   APPLE_ID_PASSWORD  - App 用パスワード (公証用)
+#   APPLE_TEAM_ID     - Apple Developer Team ID (公証用)
 
 set -e
 
@@ -78,6 +86,49 @@ PLIST="$PROJECT_DIR/$APP_NAME.app/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:0 string ja" "$PLIST"
 echo "🌐 日本語ローカライゼーションを設定しました"
 
+# コード署名
+if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
+    echo "🔏 コード署名中..."
+    xattr -cr "$PROJECT_DIR/$APP_NAME.app"
+    codesign --deep --force --verify --verbose \
+        --sign "Developer ID Application" \
+        --options runtime \
+        --entitlements "$PROJECT_DIR/$APP_NAME/Sobani.entitlements" \
+        "$PROJECT_DIR/$APP_NAME.app"
+    echo "✅ コード署名完了"
+
+    # 公証 (Notarization)
+    if [ "${NOTARIZE:-0}" = "1" ]; then
+        echo "📤 公証のため Apple に送信中..."
+        ZIP_FOR_NOTARIZE="/tmp/${APP_NAME}-notarize.zip"
+        ditto -c -k --keepParent "$PROJECT_DIR/$APP_NAME.app" "$ZIP_FOR_NOTARIZE"
+
+        if [ -n "${NOTARIZE_PROFILE:-}" ]; then
+            xcrun notarytool submit "$ZIP_FOR_NOTARIZE" \
+                --keychain-profile "$NOTARIZE_PROFILE" \
+                --wait
+        elif [ -n "${APPLE_ID:-}" ] && [ -n "${APPLE_ID_PASSWORD:-}" ] && [ -n "${APPLE_TEAM_ID:-}" ]; then
+            xcrun notarytool submit "$ZIP_FOR_NOTARIZE" \
+                --apple-id "$APPLE_ID" \
+                --password "$APPLE_ID_PASSWORD" \
+                --team-id "$APPLE_TEAM_ID" \
+                --wait
+        else
+            echo "❌ 公証の認証情報が未設定です"
+            echo "  NOTARIZE_PROFILE（キーチェーンプロファイル名）または"
+            echo "  APPLE_ID, APPLE_ID_PASSWORD, APPLE_TEAM_ID を設定してください"
+            rm -f "$ZIP_FOR_NOTARIZE"
+            exit 1
+        fi
+
+        rm -f "$ZIP_FOR_NOTARIZE"
+
+        echo "📎 公証チケットをステープル中..."
+        xcrun stapler staple "$PROJECT_DIR/$APP_NAME.app"
+        echo "✅ 公証完了"
+    fi
+fi
+
 rm -rf "$BUILD_DIR"
 
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST")
@@ -85,5 +136,14 @@ VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST
 echo ""
 echo "✅ ビルド完了！ (v${VERSION})"
 echo "📍 $PROJECT_DIR/$APP_NAME.app"
+if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
+    if [ "${NOTARIZE:-0}" = "1" ]; then
+        echo "🔏 署名済み・公証済み"
+    else
+        echo "🔏 署名済み（公証なし：NOTARIZE=1 で公証を有効化）"
+    fi
+else
+    echo "⚠️  未署名（SKIP_CODESIGN=1 が設定されています）"
+fi
 echo ""
 echo "ダブルクリックで起動できます"

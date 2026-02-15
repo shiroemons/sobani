@@ -14,6 +14,26 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: 証明書インポート
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          echo "$CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+          echo "✅ Developer ID 証明書をインポートしました"
+
       - name: バージョン抽出
         id: version
         run: |
@@ -27,8 +47,12 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "📌 Tag: $TAG, Version: $VERSION"
 
-      - name: ユニバーサルビルド
-        run: SOBANI_ARCHS="arm64 x86_64" ./build.sh
+      - name: ユニバーサルビルド・署名・公証
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: SOBANI_ARCHS="arm64 x86_64" NOTARIZE=1 ./build.sh
 
       - name: バイナリ検証
         run: |
@@ -38,6 +62,14 @@ jobs:
           echo "$ARCHS" | grep -q "arm64" || { echo "❌ arm64 が見つかりません"; exit 1; }
           echo "$ARCHS" | grep -q "x86_64" || { echo "❌ x86_64 が見つかりません"; exit 1; }
           echo "✅ ユニバーサルバイナリ確認完了"
+
+      - name: 署名検証
+        run: |
+          echo "🔍 コード署名を検証中..."
+          codesign --verify --deep --strict --verbose=2 Sobani.app
+          echo "🔍 公証を検証中..."
+          spctl --assess --type execute --verbose=2 Sobani.app
+          echo "✅ 署名・公証検証完了"
 
       - name: ZIP 作成
         id: zip
@@ -101,3 +133,11 @@ jobs:
           git add Casks/sobani.rb
           git commit -m "sobani v${VERSION} に更新"
           git push
+
+      - name: クリーンアップ
+        if: always()
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          if [ -f "$KEYCHAIN_PATH" ]; then
+            security delete-keychain "$KEYCHAIN_PATH"
+          fi
