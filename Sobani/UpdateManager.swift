@@ -77,16 +77,27 @@ class UpdateManager {
     // MARK: - Periodic Checks
 
     func startPeriodicChecks() {
-        let lastCheck = UserDefaults.standard.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
-        let elapsed = Date().timeIntervalSince(lastCheck)
+        // 起動時に常にアップデートを確認
+        checkForUpdate(manual: false)
 
-        if elapsed >= Self.checkInterval {
-            checkForUpdate(manual: false)
-        }
-
+        // 定期チェック（24時間ごと）
         checkTimer?.invalidate()
         checkTimer = Timer.scheduledTimer(withTimeInterval: Self.checkInterval, repeats: true) { [weak self] _ in
             self?.checkForUpdate(manual: false)
+        }
+        checkTimer?.tolerance = 600 // 10分の許容で省電力
+
+        // スリープ復帰時にチェック
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self, selector: #selector(handleWake),
+            name: NSWorkspace.didWakeNotification, object: nil
+        )
+    }
+
+    @objc private func handleWake() {
+        let lastCheck = UserDefaults.standard.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
+        if Date().timeIntervalSince(lastCheck) >= Self.checkInterval {
+            checkForUpdate(manual: false)
         }
     }
 
