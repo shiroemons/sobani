@@ -136,6 +136,9 @@ class DraggableImageView: NSImageView {
     let maxHeight: CGFloat = 6000
     private var dragStartLocation: NSPoint = .zero
     private var isDraggingAll = false
+    var isFlippedHorizontally: Bool = false {
+        didSet { needsLayout = true }
+    }
 
     override func mouseDown(with event: NSEvent) {
         if event.modifierFlags.contains(.option) {
@@ -190,6 +193,18 @@ class DraggableImageView: NSImageView {
         let newFrame = NSRect(x: newOriginX, y: newOriginY, width: newWidth, height: newHeight)
         window.setFrame(newFrame, display: true)
     }
+
+    override func layout() {
+        super.layout()
+        if isFlippedHorizontally {
+            layer?.setAffineTransform(
+                CGAffineTransform(translationX: bounds.width, y: 0)
+                    .scaledBy(x: -1, y: 1)
+            )
+        } else {
+            layer?.setAffineTransform(.identity)
+        }
+    }
 }
 
 // MARK: - Character Window
@@ -224,6 +239,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.imageScaling = .scaleProportionallyUpOrDown
         imageView.imageAlignment = .alignCenter
         imageView.aspectRatio = windowWidth / windowHeight
+        imageView.wantsLayer = true
         window.contentView = imageView
 
         super.init()
@@ -269,6 +285,12 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         let newWindowSubmenu = NSMenu()
         newWindowItem.submenu = newWindowSubmenu
         menu.addItem(newWindowItem)
+        menu.addItem(NSMenuItem.separator())
+
+        let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlip), keyEquivalent: "")
+        flipItem.target = self
+        menu.addItem(flipItem)
+        menu.addItem(NSMenuItem.separator())
 
         let closeItem = NSMenuItem(title: "このウィンドウを閉じる", action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.target = self
@@ -344,9 +366,17 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
         selectImageItem.target = self
         newWindowSubmenu.addItem(selectImageItem)
+
+        if let flipItem = menu.items.first(where: { $0.title == "左右反転" }) {
+            flipItem.state = imageView.isFlippedHorizontally ? .on : .off
+        }
     }
 
     // MARK: Actions
+
+    @objc func toggleFlip() {
+        imageView.isFlippedHorizontally.toggle()
+    }
 
     @objc func changeImage() {
         let panel = NSOpenPanel()
