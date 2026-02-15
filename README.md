@@ -23,6 +23,24 @@
 - **画像の登録・管理** - 好きな画像を登録して切り替え
 - **デフォルト画像のカスタマイズ** - 起動時のデフォルト画像を変更可能
 
+## インストール
+
+### Homebrew（推奨）
+
+```sh
+brew install --cask shiroemons/tap/sobani
+```
+
+### 更新
+
+```sh
+brew upgrade --cask sobani
+```
+
+### 手動インストール
+
+[Releases](https://github.com/shiroemons/sobani/releases) ページから最新の ZIP をダウンロードし、展開した `Sobani.app` を `/Applications` に移動してください。
+
 ## 必要環境
 
 - macOS 13.0（Ventura）以降
