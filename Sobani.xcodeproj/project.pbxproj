@@ -179,6 +179,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		CC000001 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -193,7 +194,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if command -v swiftlint >/dev/null 2>&1; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint is not installed. Run 'brew install swiftlint' to enable linting.\"\nfi\n";
+			shellScript = "if command -v swiftlint >/dev/null 2>&1; then\n  swiftlint\nelse\n  echo \"SwiftLint is not installed. Run 'brew install swiftlint' to enable linting.\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
