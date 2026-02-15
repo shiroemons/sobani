@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  swiftlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cirruslabs/swiftlint-action@v1
+        with:
+          args: --strict
+
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: テスト実行
+        run: |
+          xcodebuild test \
+            -project Sobani.xcodeproj \
+            -scheme Sobani \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | xcbeautify
