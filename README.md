@@ -5,8 +5,8 @@
 ## スクリーンショット
 
 <p align="center">
-  <img src="docs/screenshots/sobani-desktop.png" alt="デスクトップ表示" width="300">
-  <img src="docs/screenshots/sobani-context-menu.png" alt="コンテキストメニュー" width="300">
+  <img src="docs/screenshots/sobani-desktop.png" alt="デスクトップ表示" height="300">
+  <img src="docs/screenshots/sobani-context-menu.png" alt="コンテキストメニュー" height="300">
 </p>
 
 ## 機能
