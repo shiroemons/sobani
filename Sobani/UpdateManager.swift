@@ -31,6 +31,14 @@ enum UpdateState {
     case error(String)
 }
 
+// MARK: - Check Trigger
+
+enum CheckTrigger: Equatable {
+    case manual    // メニューバーからの手動チェック → 全結果でダイアログ
+    case startup   // 起動時チェック → 更新ありのみダイアログ
+    case automatic // 周期/スリープ復帰 → ダイアログなし
+}
+
 // MARK: - Update Manager Delegate
 
 protocol UpdateManagerDelegate: AnyObject {
@@ -43,6 +51,8 @@ class UpdateManager {
     static let shared = UpdateManager()
 
     weak var delegate: UpdateManagerDelegate?
+
+    private(set) var lastCheckTrigger: CheckTrigger = .automatic
 
     private(set) var state: UpdateState = .idle {
         didSet {
@@ -78,12 +88,12 @@ class UpdateManager {
 
     func startPeriodicChecks() {
         // 起動時に常にアップデートを確認
-        checkForUpdate(manual: false)
+        checkForUpdate(trigger: .startup)
 
         // 定期チェック（24時間ごと）
         checkTimer?.invalidate()
         checkTimer = Timer.scheduledTimer(withTimeInterval: Self.checkInterval, repeats: true) { [weak self] _ in
-            self?.checkForUpdate(manual: false)
+            self?.checkForUpdate(trigger: .automatic)
         }
         checkTimer?.tolerance = 600 // 10分の許容で省電力
 
@@ -97,14 +107,15 @@ class UpdateManager {
     @objc private func handleWake() {
         let lastCheck = UserDefaults.standard.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
         if Date().timeIntervalSince(lastCheck) >= Self.checkInterval {
-            checkForUpdate(manual: false)
+            checkForUpdate(trigger: .automatic)
         }
     }
 
     // MARK: - Check for Update
 
-    func checkForUpdate(manual: Bool) {
+    func checkForUpdate(trigger: CheckTrigger) {
         if case .downloading = state { return }
+        lastCheckTrigger = trigger
 
         state = .checking
 
@@ -118,7 +129,7 @@ class UpdateManager {
 
             if let error = error {
                 DispatchQueue.main.async {
-                    if manual {
+                    if trigger == .manual {
                         self.state = .error(error.localizedDescription)
                     } else {
                         self.state = .idle
@@ -129,7 +140,7 @@ class UpdateManager {
 
             guard let data = data else {
                 DispatchQueue.main.async {
-                    if manual {
+                    if trigger == .manual {
                         self.state = .error("データを取得できませんでした")
                     } else {
                         self.state = .idle
@@ -152,7 +163,7 @@ class UpdateManager {
                        let downloadURL = URL(string: asset.browserDownloadURL) {
                         self.state = .available(version: latestVersion, downloadURL: downloadURL)
                     } else {
-                        if manual {
+                        if trigger == .manual {
                             self.state = .upToDate
                         } else {
                             self.state = .idle
@@ -161,7 +172,7 @@ class UpdateManager {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    if manual {
+                    if trigger == .manual {
                         self.state = .error("レスポンスの解析に失敗しました")
                     } else {
                         self.state = .idle
@@ -318,7 +329,7 @@ class UpdateManager {
 
 extension AppDelegate: UpdateManagerDelegate {
     @objc func checkForUpdateManually() {
-        UpdateManager.shared.checkForUpdate(manual: true)
+        UpdateManager.shared.checkForUpdate(trigger: .manual)
     }
 
     @objc func performUpdate() {
@@ -338,6 +349,18 @@ extension AppDelegate: UpdateManagerDelegate {
 
     func updateManager(_ manager: UpdateManager, didChangeState state: UpdateState) {
         switch state {
+        case .available(let version, let url):
+            if manager.lastCheckTrigger != .automatic {
+                let alert = NSAlert()
+                alert.messageText = "新しいバージョンがあります"
+                alert.informativeText = "Sobani v\(version) が利用可能です。"
+                alert.addButton(withTitle: "更新")
+                alert.addButton(withTitle: "後で")
+                alert.alertStyle = .informational
+                if alert.runModal() == .alertFirstButtonReturn {
+                    UpdateManager.shared.downloadAndInstall(url: url)
+                }
+            }
         case .upToDate:
             let alert = NSAlert()
             alert.messageText = "最新バージョンです"

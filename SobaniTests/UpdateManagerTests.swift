@@ -105,4 +105,29 @@ final class UpdateManagerTests: XCTestCase {
         XCTAssertEqual(release.assets[0].name, "Sobani-202602.3-universal.zip")
         XCTAssertEqual(release.assets[1].name, "checksums.txt")
     }
+
+    // MARK: - CheckTrigger Tests
+
+    func testCheckTrigger_DefaultIsAutomatic() {
+        let manager = UpdateManager(currentVersion: "202602.4")
+        XCTAssertEqual(manager.lastCheckTrigger, .automatic)
+    }
+
+    func testCheckTrigger_ManualTriggerIsSet() {
+        let manager = UpdateManager(currentVersion: "202602.4")
+        manager.checkForUpdate(trigger: .manual)
+        XCTAssertEqual(manager.lastCheckTrigger, .manual)
+    }
+
+    func testCheckTrigger_StartupTriggerIsSet() {
+        let manager = UpdateManager(currentVersion: "202602.4")
+        manager.checkForUpdate(trigger: .startup)
+        XCTAssertEqual(manager.lastCheckTrigger, .startup)
+    }
+
+    func testCheckTrigger_AutomaticTriggerIsSet() {
+        let manager = UpdateManager(currentVersion: "202602.4")
+        manager.checkForUpdate(trigger: .automatic)
+        XCTAssertEqual(manager.lastCheckTrigger, .automatic)
+    }
 }
