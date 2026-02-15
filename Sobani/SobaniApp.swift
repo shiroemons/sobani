@@ -5,7 +5,6 @@ import UniformTypeIdentifiers
 
 class ImageManager {
     static let shared = ImageManager()
-
     private let baseDirectory: URL?
 
     init(baseDirectory: URL? = nil) {
@@ -37,7 +36,6 @@ class ImageManager {
         return imagesDir
     }
 
-    // Get all registered image names (sorted)
     func registeredImageNames() -> [String] {
         guard let imagesDir = imagesDirectoryURL else { return [] }
         let fm = FileManager.default
@@ -51,14 +49,12 @@ class ImageManager {
             .sorted()
     }
 
-    // Load a registered image by name
     func loadRegisteredImage(named name: String) -> NSImage? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
         let url = imagesDir.appendingPathComponent(name)
         return NSImage(contentsOf: url)
     }
 
-    // Register an image (copy to images directory), returns saved name
     @discardableResult
     func registerImage(from url: URL) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
@@ -68,8 +64,6 @@ class ImageManager {
         let name = url.lastPathComponent
         let destURL = imagesDir.appendingPathComponent(name)
         let fm = FileManager.default
-
-        // If same name exists, make unique
         var finalURL = destURL
         var finalName = name
         var counter = 1
@@ -80,33 +74,27 @@ class ImageManager {
             finalURL = imagesDir.appendingPathComponent(finalName)
             counter += 1
         }
-
         try? fm.copyItem(at: url, to: finalURL)
         return finalName
     }
 
-    // Register an NSImage with a given name
     @discardableResult
     func registerImage(_ image: NSImage, name: String) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
         guard let tiffData = image.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData),
               let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
-
         let destURL = imagesDir.appendingPathComponent(name)
         try? pngData.write(to: destURL)
         return name
     }
 
-    // Remove a registered image
     func removeRegisteredImage(named name: String) {
         guard let imagesDir = imagesDirectoryURL else { return }
         let url = imagesDir.appendingPathComponent(name)
         try? FileManager.default.removeItem(at: url)
     }
 
-    // Load default bundled image
-    // Custom default image path
     var customDefaultURL: URL? {
         appSupportURL?.appendingPathComponent("default.png")
     }
@@ -116,7 +104,6 @@ class ImageManager {
         return FileManager.default.fileExists(atPath: url.path)
     }
 
-    // Load default: custom default > bundled asset
     func defaultImage() -> NSImage? {
         if let url = customDefaultURL, let image = NSImage(contentsOf: url) {
             return image
@@ -124,12 +111,10 @@ class ImageManager {
         return NSImage(named: "character")
     }
 
-    // Bundled asset only
     func originalDefaultImage() -> NSImage? {
         return NSImage(named: "character")
     }
 
-    // Save a custom default image
     func setCustomDefault(from url: URL) {
         guard let destURL = customDefaultURL else { return }
         let fm = FileManager.default
@@ -137,7 +122,6 @@ class ImageManager {
         try? fm.copyItem(at: url, to: destURL)
     }
 
-    // Reset to bundled default
     func resetCustomDefault() {
         guard let url = customDefaultURL else { return }
         try? FileManager.default.removeItem(at: url)
@@ -154,7 +138,6 @@ class DraggableImageView: NSImageView {
     private var isDraggingAll = false
 
     override func mouseDown(with event: NSEvent) {
-        // Option key held: drag all windows together
         if event.modifierFlags.contains(.option) {
             isDraggingAll = true
             dragStartLocation = NSEvent.mouseLocation
@@ -166,13 +149,10 @@ class DraggableImageView: NSImageView {
 
     override func mouseDragged(with event: NSEvent) {
         guard isDraggingAll else { return }
-
         let currentLocation = NSEvent.mouseLocation
         let deltaX = currentLocation.x - dragStartLocation.x
         let deltaY = currentLocation.y - dragStartLocation.y
         dragStartLocation = currentLocation
-
-        // Move all character windows
         let allWindows = NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
         for w in allWindows {
             var origin = w.frame.origin
@@ -186,8 +166,6 @@ class DraggableImageView: NSImageView {
         let delta = event.scrollingDeltaY
         if delta == 0 { return }
         let scaleFactor: CGFloat = 1.0 + (delta * 0.01)
-
-        // Option key held: resize all windows together
         if event.modifierFlags.contains(.option) {
             let allWindows = NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
             for w in allWindows {
@@ -205,13 +183,11 @@ class DraggableImageView: NSImageView {
         var newHeight = currentHeight * scaleFactor
         newHeight = max(minHeight, min(maxHeight, newHeight))
         let newWidth = newHeight * imageView.aspectRatio
-
         let centerX = window.frame.midX
         let centerY = window.frame.midY
         let newOriginX = centerX - newWidth / 2
         let newOriginY = centerY - newHeight / 2
         let newFrame = NSRect(x: newOriginX, y: newOriginY, width: newWidth, height: newHeight)
-
         window.setFrame(newFrame, display: true)
     }
 }
@@ -236,7 +212,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             backing: .buffered,
             defer: false
         )
-
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
@@ -249,21 +224,17 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.imageScaling = .scaleProportionallyUpOrDown
         imageView.imageAlignment = .alignCenter
         imageView.aspectRatio = windowWidth / windowHeight
-
         window.contentView = imageView
 
         super.init()
-
         setupMenu()
 
-        // Offset from center to avoid stacking
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
         let offsetX = CGFloat.random(in: -100...100)
         let offsetY = CGFloat.random(in: -100...100)
         let originX = (screenCenter.width - windowWidth) / 2 + offsetX
         let originY = (screenCenter.height - windowHeight) / 2 + offsetY
         window.setFrameOrigin(NSPoint(x: originX, y: originY))
-
         window.makeKeyAndOrderFront(nil)
     }
 
@@ -272,12 +243,10 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         let scale = maxHeight / image.size.height
         let windowWidth = image.size.width * scale
         let windowHeight = maxHeight
-
         let centerX = window.frame.midX
         let centerY = window.frame.midY
         let newOriginX = centerX - windowWidth / 2
         let newOriginY = centerY - windowHeight / 2
-
         imageView.image = image
         imageView.aspectRatio = windowWidth / windowHeight
         window.setFrame(NSRect(x: newOriginX, y: newOriginY, width: windowWidth, height: windowHeight), display: true)
@@ -290,15 +259,12 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
 
-        // Image switch submenu (built dynamically)
         let registeredItem = NSMenuItem(title: "画像を切り替え", action: nil, keyEquivalent: "")
         let registeredSubmenu = NSMenu()
         registeredItem.submenu = registeredSubmenu
         menu.addItem(registeredItem)
-
         menu.addItem(NSMenuItem.separator())
 
-        // New window submenu (built dynamically)
         let newWindowItem = NSMenuItem(title: "新しいウィンドウ", action: nil, keyEquivalent: "")
         let newWindowSubmenu = NSMenu()
         newWindowItem.submenu = newWindowSubmenu
@@ -307,46 +273,36 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         let closeItem = NSMenuItem(title: "このウィンドウを閉じる", action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.target = self
         menu.addItem(closeItem)
-
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(title: "終了", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
-
         imageView.menu = menu
     }
 
-    // Rebuild submenu when menu opens
     func menuNeedsUpdate(_ menu: NSMenu) {
-        // Find registered images submenu
         guard let registeredItem = menu.items.first(where: { $0.title == "画像を切り替え" }),
               let submenu = registeredItem.submenu else { return }
 
         submenu.removeAllItems()
         submenu.autoenablesItems = false
 
-        // "デフォルト画像に戻す"
         let defaultItem = NSMenuItem(title: "デフォルト画像に戻す", action: #selector(resetToDefault), keyEquivalent: "d")
         defaultItem.target = self
         defaultItem.isEnabled = displayName != "デフォルト"
         submenu.addItem(defaultItem)
 
-        // "画像を変更..."
         let changeItem = NSMenuItem(title: "画像を変更...", action: #selector(changeImage), keyEquivalent: "o")
         changeItem.target = self
         submenu.addItem(changeItem)
 
         let names = ImageManager.shared.registeredImageNames()
-
         if !names.isEmpty {
             submenu.addItem(NSMenuItem.separator())
-
-            // "登録画像" label
             let registeredLabel = NSMenuItem(title: "登録画像", action: nil, keyEquivalent: "")
             registeredLabel.isEnabled = false
             submenu.addItem(registeredLabel)
-
             for name in names {
                 let item = NSMenuItem(title: name, action: #selector(selectRegisteredImage(_:)), keyEquivalent: "")
                 item.target = self
@@ -354,8 +310,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
                 submenu.addItem(item)
             }
             submenu.addItem(NSMenuItem.separator())
-
-            // Delete submenu
             let deleteItem = NSMenuItem(title: "登録画像から削除", action: nil, keyEquivalent: "")
             let deleteSubmenu = NSMenu()
             for name in names {
@@ -368,12 +322,10 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             submenu.addItem(deleteItem)
         }
 
-        // Build new window submenu
         guard let newWindowItem = menu.items.first(where: { $0.title == "新しいウィンドウ" }),
               let newWindowSubmenu = newWindowItem.submenu else { return }
 
         newWindowSubmenu.removeAllItems()
-
         let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindow), keyEquivalent: "n")
         defaultWindowItem.target = self
         newWindowSubmenu.addItem(defaultWindowItem)
@@ -405,9 +357,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.level = .floating
-
         if panel.runModal() == .OK, let url = panel.url, let newImage = NSImage(contentsOf: url) {
-            // Register the image from source file
             let savedName = ImageManager.shared.registerImage(from: url)
             displayName = savedName ?? url.deletingPathExtension().lastPathComponent
             applyImage(newImage)
@@ -435,10 +385,8 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.level = .floating
-
         if panel.runModal() == .OK, let url = panel.url {
             ImageManager.shared.setCustomDefault(from: url)
-            // Update this window if currently showing default
             if displayName == "デフォルト", let newDefault = ImageManager.shared.defaultImage() {
                 applyImage(newDefault)
             }
@@ -470,7 +418,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.level = .floating
-
         if panel.runModal() == .OK, let url = panel.url {
             delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
         }
@@ -501,9 +448,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     var characterWindows: [CharacterWindow] = []
     var statusItem: NSStatusItem!
     var shouldTerminate = false
+    var areWindowsHidden = false
+    var globalMonitor: Any?
+    var localMonitor: Any?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Setup menu bar icon
         setupStatusBar()
+        setupHotkeyMonitors()
 
         guard let image = ImageManager.shared.defaultImage() else {
             print("Failed to load character image")
@@ -512,13 +463,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
         let charWindow = CharacterWindow(image: image)
         charWindow.delegate = self
-        // Center the first window properly
         charWindow.window.center()
         characterWindows.append(charWindow)
-
         NSApp.activate(ignoringOtherApps: true)
 
-        // Setup update manager
         UpdateManager.shared.delegate = self
         UpdateManager.shared.startPeriodicChecks()
     }
@@ -531,7 +479,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             button.image = NSImage(systemSymbolName: "person.fill", accessibilityDescription: "Sobani")
             button.image?.size = NSSize(width: 18, height: 18)
         }
-
         let menu = NSMenu()
         menu.delegate = self
         statusItem.menu = menu
@@ -540,12 +487,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
 
-        // About
         let aboutItem = NSMenuItem(title: "Sobani について...", action: #selector(showAbout), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
 
-        // Update menu item
         switch UpdateManager.shared.state {
         case .available(let version, _):
             let updateItem = NSMenuItem(
@@ -575,23 +520,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
         menu.addItem(NSMenuItem.separator())
 
-        // Window count
-        let countItem = NSMenuItem(title: "表示中: \(characterWindows.count)体", action: nil, keyEquivalent: "")
+        let countLabel = areWindowsHidden ? "非表示中" : "表示中"
+        let countItem = NSMenuItem(title: "\(countLabel): \(characterWindows.count)体", action: nil, keyEquivalent: "")
         countItem.isEnabled = false
         menu.addItem(countItem)
-
         menu.addItem(NSMenuItem.separator())
 
         let bringFrontItem = NSMenuItem(title: "すべて手前に表示", action: #selector(bringAllToFront), keyEquivalent: "f")
         bringFrontItem.target = self
         menu.addItem(bringFrontItem)
 
+        let toggleTitle = areWindowsHidden ? "すべて表示" : "すべて非表示"
+        let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleAllWindowsVisibility), keyEquivalent: "h")
+        toggleItem.keyEquivalentModifierMask = [.option]
+        toggleItem.target = self
+        toggleItem.isEnabled = !characterWindows.isEmpty
+        menu.addItem(toggleItem)
         menu.addItem(NSMenuItem.separator())
 
-        // New window submenu
         menu.addItem(buildNewWindowMenuItem())
 
-        // Close individual window submenu
         if !characterWindows.isEmpty {
             let closeOneItem = NSMenuItem(title: "ウィンドウを閉じる", action: nil, keyEquivalent: "")
             let closeOneSubmenu = NSMenu()
@@ -609,10 +557,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         let closeAllItem = NSMenuItem(title: "すべて閉じる", action: #selector(closeAllWindows), keyEquivalent: "")
         closeAllItem.target = self
         menu.addItem(closeAllItem)
-
         menu.addItem(NSMenuItem.separator())
 
-        // Default image management
         let changeDefaultItem = NSMenuItem(title: "デフォルト画像を変更...", action: #selector(changeDefaultImageFromMenu), keyEquivalent: "")
         changeDefaultItem.target = self
         menu.addItem(changeDefaultItem)
@@ -624,22 +570,53 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         }
 
         menu.addItem(NSMenuItem.separator())
-
         let quitItem = NSMenuItem(title: "終了", action: #selector(quitFromMenu), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
     }
 
     @objc func bringAllToFront() {
+        areWindowsHidden = false
         NSApp.activate(ignoringOtherApps: true)
         for charWindow in characterWindows {
             charWindow.window.orderFront(nil)
         }
     }
 
-    @objc func addNewWindowFromMenu() {
-        createNewWindow()
+    @objc func toggleAllWindowsVisibility() {
+        guard !characterWindows.isEmpty else { return }
+        if areWindowsHidden {
+            for charWindow in characterWindows {
+                charWindow.window.orderFront(nil)
+            }
+        } else {
+            for charWindow in characterWindows {
+                charWindow.window.orderOut(nil)
+            }
+        }
+        areWindowsHidden.toggle()
     }
+
+    func setupHotkeyMonitors() {
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.keyCode == 4 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
+                DispatchQueue.main.async {
+                    self?.toggleAllWindowsVisibility()
+                }
+            }
+        }
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.keyCode == 4 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
+                DispatchQueue.main.async {
+                    self?.toggleAllWindowsVisibility()
+                }
+                return nil
+            }
+            return event
+        }
+    }
+
+    @objc func addNewWindowFromMenu() { createNewWindow() }
 
     @objc func addNewWindowWithImageFromMenu(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
@@ -652,10 +629,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         let charWindow = characterWindows[index]
         charWindow.window.orderOut(nil)
         characterWindows.remove(at: index)
+        if characterWindows.isEmpty {
+            areWindowsHidden = false
+        }
         quitIfNoWindows()
     }
 
     @objc func closeAllWindows() {
+        areWindowsHidden = false
         for charWindow in characterWindows {
             charWindow.window.orderOut(nil)
         }
@@ -678,10 +659,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-
         if panel.runModal() == .OK, let url = panel.url {
             ImageManager.shared.setCustomDefault(from: url)
-            // Update all windows currently showing default
             if let newDefault = ImageManager.shared.defaultImage() {
                 for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
                     charWindow.applyImage(newDefault)
@@ -692,7 +671,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
     @objc func resetDefaultImage() {
         ImageManager.shared.resetCustomDefault()
-        // Update all windows currently showing default
         if let newDefault = ImageManager.shared.defaultImage() {
             for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
                 charWindow.applyImage(newDefault)
@@ -706,6 +684,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     }
 
     func createNewWindow(imageName: String? = nil) {
+        if areWindowsHidden {
+            areWindowsHidden = false
+            for charWindow in characterWindows {
+                charWindow.window.orderFront(nil)
+            }
+        }
         let image: NSImage
         if let name = imageName, let registered = ImageManager.shared.loadRegisteredImage(named: name) {
             image = registered
@@ -721,11 +705,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     private func buildNewWindowMenuItem() -> NSMenuItem {
         let newWindowItem = NSMenuItem(title: "新しいウィンドウ", action: nil, keyEquivalent: "")
         let submenu = NSMenu()
-
         let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindowFromMenu), keyEquivalent: "")
         defaultWindowItem.target = self
         submenu.addItem(defaultWindowItem)
-
         let names = ImageManager.shared.registeredImageNames()
         if !names.isEmpty {
             submenu.addItem(NSMenuItem.separator())
@@ -736,12 +718,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                 submenu.addItem(item)
             }
         }
-
         submenu.addItem(NSMenuItem.separator())
         let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
         selectImageItem.target = self
         submenu.addItem(selectImageItem)
-
         newWindowItem.submenu = submenu
         return newWindowItem
     }
@@ -754,7 +734,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-
         if panel.runModal() == .OK, let url = panel.url {
             if let savedName = ImageManager.shared.registerImage(from: url) {
                 createNewWindow(imageName: savedName)
@@ -776,18 +755,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
     func characterWindowDidClose(_ sender: CharacterWindow) {
         characterWindows.removeAll { $0 === sender }
+        if characterWindows.isEmpty {
+            areWindowsHidden = false
+        }
         quitIfNoWindows()
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        return false
-    }
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         if shouldTerminate {
             return .terminateNow
         }
         return .terminateCancel
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        if let monitor = globalMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
+        if let monitor = localMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
     }
 
     @objc func showAbout() {
