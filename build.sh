@@ -10,9 +10,9 @@ BUILD_DIR="$SCRIPT_DIR/build"
 APP_NAME="Sobani"
 
 # ユニバーサルバイナリ対応
-ARCH_FLAGS=""
+ARCH_ARGS=()
 if [ -n "$SOBANI_ARCHS" ]; then
-    ARCH_FLAGS="ARCHS=$SOBANI_ARCHS ONLY_ACTIVE_ARCH=NO"
+    ARCH_ARGS+=(ARCHS="$SOBANI_ARCHS" ONLY_ACTIVE_ARCH=NO)
     echo "🏗️  アーキテクチャ: $SOBANI_ARCHS"
 fi
 
@@ -45,7 +45,7 @@ xcodebuild \
     CODE_SIGN_IDENTITY="-" \
     CODE_SIGNING_REQUIRED=NO \
     CODE_SIGNING_ALLOWED=NO \
-    $ARCH_FLAGS \
+    "${ARCH_ARGS[@]}" \
     build \
     2>&1 | tail -5
 
