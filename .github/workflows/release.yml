@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: バージョン抽出
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          if [[ ! "$TAG" =~ ^v[0-9]{6}\.[0-9]+$ ]]; then
+            echo "❌ 不正なタグ形式: $TAG (期待: vYYYYMM.N)"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📌 Tag: $TAG, Version: $VERSION"
+
+      - name: ユニバーサルビルド
+        run: SOBANI_ARCHS="arm64 x86_64" ./build.sh
+
+      - name: バイナリ検証
+        run: |
+          echo "🔍 バイナリアーキテクチャを確認中..."
+          ARCHS=$(lipo -info Sobani.app/Contents/MacOS/Sobani)
+          echo "$ARCHS"
+          echo "$ARCHS" | grep -q "arm64" || { echo "❌ arm64 が見つかりません"; exit 1; }
+          echo "$ARCHS" | grep -q "x86_64" || { echo "❌ x86_64 が見つかりません"; exit 1; }
+          echo "✅ ユニバーサルバイナリ確認完了"
+
+      - name: ZIP 作成
+        id: zip
+        run: |
+          ZIP_NAME="Sobani-${{ steps.version.outputs.version }}-universal.zip"
+          ditto -c -k --keepParent Sobani.app "$ZIP_NAME"
+          echo "name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+          echo "📦 $ZIP_NAME を作成しました"
+
+      - name: SHA256 計算
+        id: sha
+        run: |
+          SHA256=$(shasum -a 256 "${{ steps.zip.outputs.name }}" | awk '{print $1}')
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+          echo "🔐 SHA256: $SHA256"
+
+      - name: GitHub Release 作成
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            "${{ steps.zip.outputs.name }}" \
+            --generate-notes
+
+      - name: Homebrew Tap 更新
+        env:
+          TAP_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          SHA256="${{ steps.sha.outputs.sha256 }}"
+
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/shiroemons/homebrew-tap.git" /tmp/homebrew-tap
+          mkdir -p /tmp/homebrew-tap/Casks
+
+          cat > /tmp/homebrew-tap/Casks/sobani.rb <<EOF
+          cask "sobani" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/shiroemons/sobani/releases/download/v#{version}/Sobani-#{version}-universal.zip"
+            name "Sobani"
+            desc "Desktop mascot app that displays character images"
+            homepage "https://github.com/shiroemons/sobani"
+
+            livecheck do
+              url :url
+              strategy :github_latest
+            end
+
+            app "Sobani.app"
+
+            zap trash: [
+              "~/Library/Application Support/Sobani",
+            ]
+          end
+          EOF
+
+          cd /tmp/homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/sobani.rb
+          git commit -m "sobani v${VERSION} に更新"
+          git push
