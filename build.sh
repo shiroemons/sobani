@@ -72,8 +72,10 @@ echo "🌐 日本語ローカライゼーションを設定しました"
 
 rm -rf "$BUILD_DIR"
 
+VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST")
+
 echo ""
-echo "✅ ビルド完了！"
+echo "✅ ビルド完了！ (v${VERSION})"
 echo "📍 $PROJECT_DIR/$APP_NAME.app"
 echo ""
 echo "ダブルクリックで起動できます"
