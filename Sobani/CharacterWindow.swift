@@ -253,9 +253,8 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func quitApp() {
         if let appDelegate = NSApp.delegate as? AppDelegate {
-            appDelegate.shouldTerminate = true
+            appDelegate.quitApp()
         }
-        NSApplication.shared.terminate(nil)
     }
 }
 

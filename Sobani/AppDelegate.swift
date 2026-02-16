@@ -159,9 +159,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         }
     }
 
+    func confirmQuit() -> Bool {
+        let alert = NSAlert()
+        alert.messageText = "アプリケーションを終了しますか？"
+        alert.informativeText = "すべてのウィンドウが閉じられ、アプリが終了します。"
+        alert.addButton(withTitle: "終了")
+        alert.addButton(withTitle: "キャンセル")
+        alert.alertStyle = .warning
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
     @objc func quitFromMenu() {
-        shouldTerminate = true
-        NSApplication.shared.terminate(nil)
+        if confirmQuit() {
+            shouldTerminate = true
+            NSApplication.shared.terminate(nil)
+        }
+    }
+
+    @objc func quitApp() {
+        quitFromMenu()
     }
 
     func createNewWindow(imageName: String? = nil) {
