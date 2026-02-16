@@ -9,6 +9,7 @@
 <p align="center">
   <img src="docs/screenshots/sobani-desktop.png" alt="デスクトップ表示" height="300">
   <img src="docs/screenshots/sobani-context-menu.png" alt="コンテキストメニュー" height="300">
+  <img src="docs/screenshots/sobani-menubar.png" alt="メニューバー" height="300">
 </p>
 
 ## 機能
@@ -68,7 +69,7 @@ brew upgrade --cask sobani
 ### はじめて起動する
 
 1. `Sobani.app` をダブルクリックで起動します
-2. デフォルトのずんだもん画像が画面中央に表示されます（前回終了時のウィンドウ状態が保存されている場合は、その位置・サイズ・画像で復元されます）
+2. デフォルトのプレースホルダー画像が画面中央に表示されます（前回終了時のウィンドウ状態が保存されている場合は、その位置・サイズ・画像で復元されます）
 3. メニューバーにアイコン（👤）が表示されます
 4. ウィンドウは常に最前面に表示され、すべての仮想デスクトップで表示されます
 
@@ -290,17 +291,6 @@ brew install swiftlint
 
 ビルドスクリプト（`./build.sh`）実行時に自動でリントチェックが行われます。Xcode でのビルド時にも Build Phase として実行されます。SwiftLint が未インストールの場合は警告を表示し、ビルドは続行します。
 
-## ずんだもんについて
-
-本アプリケーションのデフォルト画像には、**ずんだもん**の公式素材を使用しています。
-
-ずんだもんは**東北ずん子プロジェクト（SSS合同会社）**のキャラクターです。
-
-- [ずんだもんプロジェクト公式サイト](https://zunko.jp/)
-- [キャラクター利用ガイドライン](https://zunko.jp/guideline.html)
-
 ## ライセンス
 
 本プロジェクトのソースコードは [MIT License](LICENSE) のもとで公開されています。
-
-ただし、ずんだもんの画像素材はキャラクター利用ガイドラインに従います。詳しくは[ガイドライン](https://zunko.jp/guideline.html)をご確認ください。
