@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sobani — 推しを、そばに。</title>
+  <meta name="description" content="推しを、そばに。お気に入りの画像をアクリルスタンドのようにデスクトップに飾れるmacOSアプリ">
+  <meta property="og:title" content="Sobani — 推しを、そばに。">
+  <meta property="og:description" content="推しを、そばに。お気に入りの画像をアクリルスタンドのようにデスクトップに飾れるmacOSアプリ">
+  <meta property="og:image" content="https://shiroemons.github.io/sobani/images/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <script>
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches) || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- ヘッダー -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="#" class="text-xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">Sobani</a>
+        <!-- デスクトップナビ -->
+        <nav class="hidden md:flex items-center space-x-8">
+          <a href="#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
+          <a href="#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
+          <a href="#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">ダウンロード</a>
+          <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
+          <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替">
+            <!-- 太陽: ライトモード -->
+            <svg class="w-5 h-5 theme-icon-light hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <!-- 月: ダークモード -->
+            <svg class="w-5 h-5 theme-icon-dark hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <!-- モニター: システム -->
+            <svg class="w-5 h-5 theme-icon-system hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </button>
+        </nav>
+        <!-- モバイルメニューボタン -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="メニューを開く" aria-expanded="false">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
+      <nav class="px-4 py-4 space-y-3">
+        <a href="#features" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
+        <a href="#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
+        <a href="#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">ダウンロード</a>
+        <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
+        <button id="theme-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替">
+          <!-- 太陽: ライトモード -->
+          <svg class="w-5 h-5 theme-icon-light hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <!-- 月: ダークモード -->
+          <svg class="w-5 h-5 theme-icon-dark hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <!-- モニター: システム -->
+          <svg class="w-5 h-5 theme-icon-system hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span class="ml-2 text-sm font-medium">テーマ切替</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ヒーローセクション -->
+  <section class="relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
+      <div>
+        <div class="text-center">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
+            <span class="text-amber-600 dark:text-amber-400">推しを、</span><br>
+            <span class="text-slate-900 dark:text-slate-100">そばに。</span>
+          </h1>
+          <p class="mt-4 text-lg sm:text-xl font-medium text-slate-500 dark:text-slate-400">デスクトップアクスタアプリ for macOS</p>
+          <p class="mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto">
+            好きな画像を、アクリルスタンドのようにデスクトップに飾れるアプリ。推しのキャラクター、アイドル、ペット、家族——いつでも目に入る場所に、お気に入りを。
+          </p>
+          <div class="mt-10 space-y-4">
+            <div class="relative max-w-lg mx-auto">
+              <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
+                <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
+                <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー">
+                  <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-lg mx-auto">
+              <a href="https://github.com/shiroemons/sobani/releases" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub Releases
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 特長 -->
+  <section id="features" class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">特長</h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">「飾る」に特化した、軽くてシンプルなアプリ</p>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-6 lg:gap-8">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div class="text-3xl mb-4" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
+          <h3 class="text-lg font-semibold mb-2">いつでも最前面に</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">透明な背景で画像だけをデスクトップに表示。常に最前面、すべての仮想デスクトップに対応しています。</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div class="text-3xl mb-4" aria-hidden="true">&#x1F5C2;&#xFE0F;</div>
+          <h3 class="text-lg font-semibold mb-2">好きな画像を自由に</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">PNG・JPEG・GIF・TIFF・HEICに対応。好きな画像を何枚でも登録して、気分に合わせて切り替えられます。</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div class="text-3xl mb-4" aria-hidden="true">&#x1F5B1;&#xFE0F;</div>
+          <h3 class="text-lg font-semibold mb-2">直感的な操作</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">ドラッグで移動、スクロールでサイズ変更。右クリックメニューですべての操作にすぐアクセスできます。</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div class="text-3xl mb-4" aria-hidden="true">&#x1FA9F;</div>
+          <h3 class="text-lg font-semibold mb-2">好きなだけ並べて飾れる</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">同時に複数の画像を表示できます。Optionキーを押しながらの操作で、まとめて移動やリサイズも。</p>
+        </div>
+      </div>
+      <p class="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">ウィンドウの位置・サイズ・画像は自動保存。アップデートもアプリ内から確認できます。</p>
+    </div>
+  </section>
+
+  <!-- 使い方ガイド -->
+  <section id="howto" class="scroll-mt-20">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">使い方</h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">かんたん3ステップで、すぐに飾れます</p>
+      </div>
+      <div class="space-y-16 lg:space-y-24">
+
+        <!-- Step 1: インストールして起動 -->
+        <div>
+          <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-sm mb-4">1</div>
+          <h3 class="text-2xl font-bold mb-4">インストールして起動</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">Homebrewでワンコマンド。起動するとメニューバーにアイコンが現れ、デスクトップに画像が表示されます。</p>
+          <div class="relative max-w-lg">
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
+              <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
+              <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー">
+                <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="mt-4 text-sm text-slate-500 dark:text-slate-500">または <a href="https://github.com/shiroemons/sobani/releases" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">GitHub Releases</a> から直接ダウンロードできます。</p>
+        </div>
+
+        <!-- Step 2: お気に入りの画像に差し替える -->
+        <div>
+          <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-sm mb-4">2</div>
+          <h3 class="text-2xl font-bold mb-4">お気に入りの画像に差し替える</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">メニューバーから「デフォルト画像を変更...」を選んで、好きな画像を設定するだけ。<br>右クリック →「画像を切り替え」で、画像の追加登録や切り替えもできます。</p>
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+            <p class="text-sm text-amber-800 dark:text-amber-300">&#x1F4A1; ヒント: 透過処理されたPNG画像を使うと、背景なしで画像だけが表示されます。</p>
+          </div>
+        </div>
+
+        <!-- Step 3: 好きなように配置する -->
+        <div>
+          <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-sm mb-4">3</div>
+          <h3 class="text-2xl font-bold mb-4">好きなように配置する</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">ドラッグで移動、スクロールでサイズ変更。<br>右クリックから「新しいウィンドウ」で画像を増やしたり、「左右反転」で向きを変えたり。自由にデスクトップを飾りましょう。</p>
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+            <p class="text-sm text-amber-800 dark:text-amber-300">&#x1F4A1; ヒント: Optionキーを押しながら操作すると、すべてのウィンドウをまとめて動かせます。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 他アプリとの比較 -->
+  <section class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">他のデスクトップマスコットとの違い</h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">Sobaniは「画像を飾る」ことに特化した、アクリルスタンド型のアプリです</p>
+      </div>
+      <div class="max-w-4xl mx-auto overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead>
+            <tr class="border-b-2 border-slate-200 dark:border-slate-700">
+              <th class="py-4 px-4 font-semibold text-slate-500 dark:text-slate-400"></th>
+              <th class="py-4 px-4 font-bold text-amber-600 dark:text-amber-400 text-center">Sobani</th>
+              <th class="py-4 px-4 font-semibold text-slate-500 dark:text-slate-400 text-center">一般的なデスクトップマスコット</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr>
+              <td class="py-3 px-4 font-medium">コンセプト</td>
+              <td class="py-3 px-4 text-center">デスクトップアクスタ（静的表示）</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">動くキャラクター・対話型</td>
+            </tr>
+            <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+              <td class="py-3 px-4 font-medium">画像</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">自分の好きな画像を自由に設定</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">アプリ固有のキャラクター</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-medium">表示方式</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">静止画特化 — 軽量で安定</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">アニメーション（歩く・踊る等）</td>
+            </tr>
+            <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+              <td class="py-3 px-4 font-medium">設計思想</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">画像を飾ることに集中</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">AI・対話・会話機能</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-medium">リソース消費</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">極めて軽量</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">中〜高</td>
+            </tr>
+            <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+              <td class="py-3 px-4 font-medium">外部依存</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">ゼロ</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">ランタイム・ライブラリ等</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-medium">複数画像の同時表示</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">対応</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">アプリによる</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ダウンロード CTA -->
+  <section id="download" class="scroll-mt-20">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <div class="max-w-2xl mx-auto text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">
+          <span class="text-amber-600 dark:text-amber-400">推しを、</span>そばに置こう。
+        </h2>
+        <p class="mt-4 text-slate-600 dark:text-slate-400">ネイティブSwift製。ゼロ依存で驚くほど軽い。</p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">macOS 13.0（Ventura）以降で動作します。</p>
+        <div class="mt-8 space-y-4">
+          <div class="relative max-w-lg mx-auto">
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
+              <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
+              <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー">
+                <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-center">
+            <a href="https://github.com/shiroemons/sobani/releases" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              GitHub Releases からダウンロード
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- フッター -->
+  <footer class="border-t border-slate-200 dark:border-slate-700">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="text-center space-y-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">&copy; 2026 Sobani. MIT License.</p>
+        <div>
+          <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-sm text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
+            <svg class="w-5 h-5 mr-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // モバイルメニュー
+    var menuBtn = document.getElementById('mobile-menu-btn');
+    var mobileMenu = document.getElementById('mobile-menu');
+    var iconOpen = document.getElementById('menu-icon-open');
+    var iconClose = document.getElementById('menu-icon-close');
+
+    menuBtn.addEventListener('click', function() {
+      var isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+      menuBtn.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    // モバイルメニュー内のリンクをクリックしたら閉じる
+    var mobileLinks = mobileMenu.querySelectorAll('a');
+    for (var i = 0; i < mobileLinks.length; i++) {
+      mobileLinks[i].addEventListener('click', function() {
+        mobileMenu.classList.add('hidden');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    // テーマ切替（ライト → ダーク → システム → ライト...）
+    function getEffectiveTheme() {
+      var theme = localStorage.getItem('theme');
+      if (!theme || theme === 'system') return 'system';
+      return theme;
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        // system
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+      updateThemeIcons(theme);
+    }
+
+    function updateThemeIcons(theme) {
+      var icons = document.querySelectorAll('.theme-icon-light, .theme-icon-dark, .theme-icon-system');
+      for (var i = 0; i < icons.length; i++) {
+        icons[i].classList.add('hidden');
+      }
+      var showClass = 'theme-icon-' + theme;
+      var targets = document.querySelectorAll('.' + showClass);
+      for (var i = 0; i < targets.length; i++) {
+        targets[i].classList.remove('hidden');
+      }
+    }
+
+    function cycleTheme() {
+      var current = getEffectiveTheme();
+      var next;
+      if (current === 'light') next = 'dark';
+      else if (current === 'dark') next = 'system';
+      else next = 'light';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+    }
+
+    // 初期化
+    applyTheme(getEffectiveTheme());
+
+    // システムテーマ変更を監視
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+      if (getEffectiveTheme() === 'system') {
+        applyTheme('system');
+      }
+    });
+
+    document.getElementById('theme-toggle').addEventListener('click', cycleTheme);
+    document.getElementById('theme-toggle-mobile').addEventListener('click', cycleTheme);
+
+    // コピーボタン
+    function copyCommand(text, button) {
+      navigator.clipboard.writeText(text).then(function() {
+        var copyIcon = button.querySelector('.copy-icon');
+        var checkIcon = button.querySelector('.check-icon');
+        copyIcon.classList.add('hidden');
+        checkIcon.classList.remove('hidden');
+        setTimeout(function() {
+          copyIcon.classList.remove('hidden');
+          checkIcon.classList.add('hidden');
+        }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>
