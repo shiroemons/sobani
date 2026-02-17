@@ -60,6 +60,10 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             self?.adjustmentPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
         }
 
+        imageView.onOpacityChanged = { [weak self] in
+            self?.adjustmentPanelController?.updateOpacity(self?.imageView.opacityLevel ?? 1.0)
+        }
+
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
         let offsetX = CGFloat.random(in: -100...100)
         let offsetY = CGFloat.random(in: -100...100)
@@ -209,6 +213,11 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             resetRotationItem.target = self
             resetRotationItem.isEnabled = imageView.rotationAngle != 0
             adjustSubmenu.addItem(resetRotationItem)
+
+            let resetOpacityItem = NSMenuItem(title: "透明度をリセット", action: #selector(resetOpacity), keyEquivalent: "")
+            resetOpacityItem.target = self
+            resetOpacityItem.isEnabled = imageView.opacityLevel != 1.0
+            adjustSubmenu.addItem(resetOpacityItem)
         }
     }
 
@@ -229,7 +238,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             self?.imageView.scrollRotationHandler = nil
             self?.adjustmentPanelController = nil
         }
-        controller.show(near: window, currentAngle: imageView.rotationAngle)
+        controller.show(near: window, currentAngle: imageView.rotationAngle, currentOpacity: imageView.opacityLevel)
         adjustmentPanelController = controller
 
         let scrollRotationSensitivity: CGFloat = 0.5
@@ -251,6 +260,16 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func resetRotation() {
         applyRotation(0)
+    }
+
+    @objc func resetOpacity() {
+        applyOpacity(1.0)
+    }
+
+    func applyOpacity(_ opacity: CGFloat) {
+        let clamped = min(max(opacity, 0.1), 1.0)
+        imageView.opacityLevel = clamped
+        adjustmentPanelController?.updateOpacity(clamped)
     }
 
     func applyRotation(_ angle: CGFloat) {
@@ -362,6 +381,14 @@ extension CharacterWindow: AdjustmentPanelDelegate {
 
     func rotationPanelDidReset(_ panel: AdjustmentPanelController) {
         applyRotation(0)
+    }
+
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeOpacity opacity: CGFloat) {
+        applyOpacity(opacity)
+    }
+
+    func adjustmentPanelDidResetOpacity(_ panel: AdjustmentPanelController) {
+        applyOpacity(1.0)
     }
 }
 

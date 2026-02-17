@@ -69,6 +69,7 @@ extension AppDelegate {
         menu.addItem(toggleItem)
 
         menu.addItem(buildResetRotationMenuItem())
+        menu.addItem(buildResetOpacityMenuItem())
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(buildNewWindowMenuItem())
@@ -117,6 +118,18 @@ extension AppDelegate {
         )
         item.target = self
         item.isEnabled = hasRotation
+        return item
+    }
+
+    func buildResetOpacityMenuItem() -> NSMenuItem {
+        let hasOpacity = characterWindows.contains { $0.imageView.opacityLevel != 1.0 }
+        let item = NSMenuItem(
+            title: "すべての画像の透明度をリセット",
+            action: #selector(resetAllOpacity),
+            keyEquivalent: ""
+        )
+        item.target = self
+        item.isEnabled = hasOpacity
         return item
     }
 

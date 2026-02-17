@@ -165,6 +165,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         }
     }
 
+    @objc func resetAllOpacity() {
+        for charWindow in characterWindows {
+            charWindow.applyOpacity(1.0)
+        }
+    }
+
     func confirmQuit() -> Bool {
         let alert = NSAlert()
         alert.messageText = "アプリケーションを終了しますか？"
