@@ -10,9 +10,10 @@ struct WindowState: Codable, Equatable {
     let height: CGFloat
     let isFlippedHorizontally: Bool
     let rotationAngle: CGFloat
+    var opacityLevel: CGFloat
 
     enum CodingKeys: String, CodingKey {
-        case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle
+        case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle, opacityLevel
     }
 
     init(
@@ -22,7 +23,8 @@ struct WindowState: Codable, Equatable {
         width: CGFloat,
         height: CGFloat,
         isFlippedHorizontally: Bool,
-        rotationAngle: CGFloat = 0
+        rotationAngle: CGFloat = 0,
+        opacityLevel: CGFloat = 1.0
     ) {
         self.imageName = imageName
         self.originX = originX
@@ -31,6 +33,7 @@ struct WindowState: Codable, Equatable {
         self.height = height
         self.isFlippedHorizontally = isFlippedHorizontally
         self.rotationAngle = rotationAngle
+        self.opacityLevel = opacityLevel
     }
 
     init(from decoder: Decoder) throws {
@@ -42,6 +45,7 @@ struct WindowState: Codable, Equatable {
         height = try container.decode(CGFloat.self, forKey: .height)
         isFlippedHorizontally = try container.decode(Bool.self, forKey: .isFlippedHorizontally)
         rotationAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
+        opacityLevel = try container.decodeIfPresent(CGFloat.self, forKey: .opacityLevel) ?? 1.0
     }
 }
 
@@ -99,7 +103,8 @@ class WindowStateManager {
             width: baseWidth,
             height: baseHeight,
             isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally,
-            rotationAngle: charWindow.imageView.rotationAngle
+            rotationAngle: charWindow.imageView.rotationAngle,
+            opacityLevel: charWindow.imageView.opacityLevel
         )
     }
 
@@ -128,7 +133,8 @@ class WindowStateManager {
             width: state.width,
             height: state.height,
             isFlippedHorizontally: state.isFlippedHorizontally,
-            rotationAngle: state.rotationAngle
+            rotationAngle: state.rotationAngle,
+            opacityLevel: state.opacityLevel
         )
     }
 }
@@ -152,6 +158,7 @@ extension CharacterWindow {
 
         imageView.isFlippedHorizontally = adjusted.isFlippedHorizontally
         imageView.rotationAngle = adjusted.rotationAngle
+        imageView.opacityLevel = adjusted.opacityLevel
 
         // AppKit resets the backing layer's affineTransform during
         // the initial window display cycle. Defer re-application
