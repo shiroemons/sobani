@@ -10,6 +10,7 @@ protocol RotationPanelDelegate: AnyObject {
 // MARK: - Rotation Dial View
 
 class RotationDialView: NSView {
+    private let scrollSensitivity: CGFloat = 0.5
     var angle: CGFloat = 0 {
         didSet { needsDisplay = true }
     }
@@ -91,7 +92,7 @@ class RotationDialView: NSView {
     override func scrollWheel(with event: NSEvent) {
         let delta = event.scrollingDeltaY
         if delta == 0 { return }
-        var newAngle = angle + delta * 0.5
+        var newAngle = angle + delta * scrollSensitivity
         newAngle = newAngle.truncatingRemainder(dividingBy: 360)
         if newAngle < 0 { newAngle += 360 }
         angle = newAngle
@@ -202,15 +203,16 @@ class RotationPanelController: NSObject, NSWindowDelegate {
     }
 
     func close() {
-        onClose?()
         panel?.orderOut(nil)
-        panel = nil
-        dialView = nil
-        textField = nil
+        cleanup()
     }
 
     func windowWillClose(_ notification: Notification) {
         onClose?()
+        cleanup()
+    }
+
+    private func cleanup() {
         panel = nil
         dialView = nil
         textField = nil

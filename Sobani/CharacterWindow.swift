@@ -3,6 +3,8 @@ import UniformTypeIdentifiers
 
 // MARK: - Rotatable Container
 
+// Rotation expands the window beyond the image bounds.
+// Always delegate hit testing to imageView so the entire window area remains interactive.
 private class RotatableContainer: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? {
         return subviews.first ?? super.hitTest(point)
@@ -228,9 +230,10 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         controller.show(near: window, currentAngle: imageView.rotationAngle)
         rotationPanelController = controller
 
+        let scrollRotationSensitivity: CGFloat = 0.5
         imageView.scrollRotationHandler = { [weak self] delta in
             guard let self = self else { return }
-            let angleDelta = delta * 0.5
+            let angleDelta = delta * scrollRotationSensitivity
             var newAngle = self.imageView.rotationAngle + angleDelta
             newAngle = newAngle.truncatingRemainder(dividingBy: 360)
             if newAngle < 0 { newAngle += 360 }
@@ -239,7 +242,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     private func closeRotationPanel() {
-        rotationPanelController?.onClose = nil
         rotationPanelController?.close()
         rotationPanelController = nil
         imageView.scrollRotationHandler = nil
@@ -307,23 +309,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     @objc func deleteRegisteredImage(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
         ImageManager.shared.removeRegisteredImage(named: name)
-    }
-
-    @objc func changeDefaultImage() {
-        let panel = NSOpenPanel()
-        panel.title = "デフォルト画像を選択"
-        panel.message = "デフォルトに設定する画像ファイルを選択してください"
-        panel.prompt = "選択"
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.level = .floating
-        if panel.runModal() == .OK, let url = panel.url {
-            ImageManager.shared.setCustomDefault(from: url)
-            if displayName == "デフォルト", let newDefault = ImageManager.shared.defaultImage() {
-                applyImage(newDefault)
-            }
-        }
     }
 
     @objc func resetToDefault() {
