@@ -5,6 +5,8 @@ import Cocoa
 protocol AdjustmentPanelDelegate: AnyObject {
     func rotationPanel(_ panel: AdjustmentPanelController, didChangeAngle angle: CGFloat)
     func rotationPanelDidReset(_ panel: AdjustmentPanelController)
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeOpacity opacity: CGFloat)
+    func adjustmentPanelDidResetOpacity(_ panel: AdjustmentPanelController)
 }
 
 // MARK: - Rotation Dial View
@@ -125,13 +127,17 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
     private var dialView: RotationDialView?
     private var textField: NSTextField?
     private var currentAngle: CGFloat = 0
+    private var currentOpacity: CGFloat = 1.0
+    private var opacitySlider: NSSlider?
+    private var opacityLabel: NSTextField?
 
-    func show(near window: NSWindow, currentAngle angle: CGFloat) {
+    func show(near window: NSWindow, currentAngle angle: CGFloat, currentOpacity opacity: CGFloat) {
         currentAngle = angle
+        currentOpacity = opacity
         close()
 
         let panelWidth: CGFloat = 220
-        let panelHeight: CGFloat = 160
+        let panelHeight: CGFloat = 280
         let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
 
         let newPanel = NSPanel(
@@ -140,7 +146,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        newPanel.title = "回転"
+        newPanel.title = "表示の調整"
         newPanel.level = .modalPanel
         newPanel.isFloatingPanel = true
         newPanel.delegate = self
@@ -159,8 +165,24 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
         let contentView = NSView(frame: panelRect)
 
+        let rotationOffsetY: CGFloat = 120
+        setupRotationSection(in: contentView, angle: angle, offsetY: rotationOffsetY)
+
+        // Separator
+        let separator = NSBox(frame: NSRect(x: 10, y: 120, width: 200, height: 1))
+        separator.boxType = .separator
+        contentView.addSubview(separator)
+
+        setupOpacitySection(in: contentView, opacity: opacity)
+
+        newPanel.contentView = contentView
+        newPanel.makeKeyAndOrderFront(nil)
+        panel = newPanel
+    }
+
+    private func setupRotationSection(in contentView: NSView, angle: CGFloat, offsetY: CGFloat) {
         // Dial view (left side)
-        let dial = RotationDialView(frame: NSRect(x: 10, y: 40, width: 90, height: 90))
+        let dial = RotationDialView(frame: NSRect(x: 10, y: 40 + offsetY, width: 90, height: 90))
         dial.angle = angle
         dial.onAngleChanged = { [weak self] newAngle in
             self?.angleChanged(newAngle)
@@ -170,12 +192,12 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
         // "角度:" label
         let label = NSTextField(labelWithString: "角度:")
-        label.frame = NSRect(x: 110, y: 100, width: 40, height: 20)
+        label.frame = NSRect(x: 110, y: 100 + offsetY, width: 40, height: 20)
         label.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(label)
 
         // Text field
-        let field = NSTextField(frame: NSRect(x: 150, y: 98, width: 50, height: 22))
+        let field = NSTextField(frame: NSRect(x: 150, y: 98 + offsetY, width: 50, height: 22))
         field.stringValue = formatAngle(angle)
         field.alignment = .right
         field.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
@@ -186,20 +208,48 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
         // "°" label
         let degreeLabel = NSTextField(labelWithString: "°")
-        degreeLabel.frame = NSRect(x: 202, y: 100, width: 15, height: 20)
+        degreeLabel.frame = NSRect(x: 202, y: 100 + offsetY, width: 15, height: 20)
         degreeLabel.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(degreeLabel)
 
         // Reset button
         let resetButton = NSButton(title: "リセット", target: self, action: #selector(resetAngle))
-        resetButton.frame = NSRect(x: 110, y: 60, width: 90, height: 28)
+        resetButton.frame = NSRect(x: 110, y: 60 + offsetY, width: 90, height: 28)
         resetButton.bezelStyle = .rounded
         resetButton.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(resetButton)
+    }
 
-        newPanel.contentView = contentView
-        newPanel.makeKeyAndOrderFront(nil)
-        panel = newPanel
+    private func setupOpacitySection(in contentView: NSView, opacity: CGFloat) {
+        let opacitySectionLabel = NSTextField(labelWithString: "透明度:")
+        opacitySectionLabel.frame = NSRect(x: 10, y: 85, width: 50, height: 20)
+        opacitySectionLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(opacitySectionLabel)
+
+        let percentLabel = NSTextField(labelWithString: formatOpacity(opacity))
+        percentLabel.frame = NSRect(x: 160, y: 85, width: 50, height: 20)
+        percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        percentLabel.alignment = .right
+        contentView.addSubview(percentLabel)
+        opacityLabel = percentLabel
+
+        let slider = NSSlider(
+            value: Double(opacity),
+            minValue: 0.1,
+            maxValue: 1.0,
+            target: self,
+            action: #selector(opacitySliderChanged(_:))
+        )
+        slider.frame = NSRect(x: 10, y: 58, width: 200, height: 20)
+        slider.numberOfTickMarks = 0
+        contentView.addSubview(slider)
+        opacitySlider = slider
+
+        let opacityResetButton = NSButton(title: "リセット", target: self, action: #selector(resetOpacity))
+        opacityResetButton.frame = NSRect(x: 10, y: 20, width: 90, height: 28)
+        opacityResetButton.bezelStyle = .rounded
+        opacityResetButton.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(opacityResetButton)
     }
 
     func close() {
@@ -216,6 +266,8 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         panel = nil
         dialView = nil
         textField = nil
+        opacitySlider = nil
+        opacityLabel = nil
     }
 
     var isVisible: Bool {
@@ -226,6 +278,12 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         currentAngle = angle
         dialView?.angle = angle
         textField?.stringValue = formatAngle(angle)
+    }
+
+    func updateOpacity(_ opacity: CGFloat) {
+        currentOpacity = opacity
+        opacitySlider?.doubleValue = Double(opacity)
+        opacityLabel?.stringValue = formatOpacity(opacity)
     }
 
     private func angleChanged(_ newAngle: CGFloat) {
@@ -256,10 +314,28 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         delegate?.rotationPanelDidReset(self)
     }
 
+    @objc private func opacitySliderChanged(_ sender: NSSlider) {
+        let opacity = CGFloat(sender.doubleValue)
+        currentOpacity = opacity
+        opacityLabel?.stringValue = formatOpacity(opacity)
+        delegate?.adjustmentPanel(self, didChangeOpacity: opacity)
+    }
+
+    @objc private func resetOpacity() {
+        currentOpacity = 1.0
+        opacitySlider?.doubleValue = 1.0
+        opacityLabel?.stringValue = formatOpacity(1.0)
+        delegate?.adjustmentPanelDidResetOpacity(self)
+    }
+
     private func formatAngle(_ angle: CGFloat) -> String {
         if angle == angle.rounded() {
             return String(format: "%.0f", angle)
         }
         return String(format: "%.1f", angle)
+    }
+
+    private func formatOpacity(_ opacity: CGFloat) -> String {
+        return "\(Int(round(opacity * 100)))%"
     }
 }
