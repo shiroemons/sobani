@@ -29,7 +29,8 @@ final class WindowStateManagerTests: XCTestCase {
         width: CGFloat = 300,
         height: CGFloat = 400,
         isFlippedHorizontally: Bool = false,
-        rotationAngle: CGFloat = 0
+        rotationAngle: CGFloat = 0,
+        opacityLevel: CGFloat = 1.0
     ) -> WindowState {
         WindowState(
             imageName: imageName,
@@ -38,7 +39,8 @@ final class WindowStateManagerTests: XCTestCase {
             width: width,
             height: height,
             isFlippedHorizontally: isFlippedHorizontally,
-            rotationAngle: rotationAngle
+            rotationAngle: rotationAngle,
+            opacityLevel: opacityLevel
         )
     }
 
@@ -243,5 +245,50 @@ final class WindowStateManagerTests: XCTestCase {
     func testDefaultRotationAngleIsZero() {
         let state = makeState()
         XCTAssertEqual(state.rotationAngle, 0)
+    }
+
+    // MARK: - Opacity Tests
+
+    func testOpacityLevelEncodeDecode() throws {
+        let state = makeState(opacityLevel: 0.5)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
+        let decodedOpacity = try XCTUnwrap(decoded.first?.opacityLevel)
+        XCTAssertEqual(decodedOpacity, 0.5, accuracy: 0.001)
+    }
+
+    func testOpacityLevelBackwardCompatibility() throws {
+        let json = """
+        [{"imageName":"test.png","originX":100,"originY":200,"width":300,"height":400,"isFlippedHorizontally":false,"rotationAngle":0}]
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
+        XCTAssertEqual(decoded.first?.opacityLevel, 1.0, "Missing opacityLevel should default to 1.0")
+    }
+
+    func testOpacityLevelDefaultValue() {
+        let state = makeState()
+        XCTAssertEqual(state.opacityLevel, 1.0)
+    }
+
+    func testAdjustToVisibleAreaPreservesOpacity() {
+        let state = makeState(
+            originX: -99999,
+            originY: -99999,
+            width: 300,
+            height: 400,
+            opacityLevel: 0.3
+        )
+        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        XCTAssertEqual(adjusted.opacityLevel, 0.3, accuracy: 0.001)
+    }
+
+    func testFlipRotationAndOpacityCombination() throws {
+        let state = makeState(isFlippedHorizontally: true, rotationAngle: 90, opacityLevel: 0.7)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data).first!
+        XCTAssertTrue(decoded.isFlippedHorizontally)
+        XCTAssertEqual(decoded.rotationAngle, 90, accuracy: 0.001)
+        XCTAssertEqual(decoded.opacityLevel, 0.7, accuracy: 0.001)
     }
 }
