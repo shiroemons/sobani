@@ -1,10 +1,10 @@
 import Cocoa
 
-// MARK: - Rotation Panel Delegate
+// MARK: - Adjustment Panel Delegate
 
-protocol RotationPanelDelegate: AnyObject {
-    func rotationPanel(_ panel: RotationPanelController, didChangeAngle angle: CGFloat)
-    func rotationPanelDidReset(_ panel: RotationPanelController)
+protocol AdjustmentPanelDelegate: AnyObject {
+    func rotationPanel(_ panel: AdjustmentPanelController, didChangeAngle angle: CGFloat)
+    func rotationPanelDidReset(_ panel: AdjustmentPanelController)
 }
 
 // MARK: - Rotation Dial View
@@ -116,10 +116,10 @@ class RotationDialView: NSView {
     }
 }
 
-// MARK: - Rotation Panel Controller
+// MARK: - Adjustment Panel Controller
 
-class RotationPanelController: NSObject, NSWindowDelegate {
-    weak var delegate: RotationPanelDelegate?
+class AdjustmentPanelController: NSObject, NSWindowDelegate {
+    weak var delegate: AdjustmentPanelDelegate?
     var onClose: (() -> Void)?
     private var panel: NSPanel?
     private var dialView: RotationDialView?

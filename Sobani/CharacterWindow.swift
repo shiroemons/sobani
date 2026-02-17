@@ -18,7 +18,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     let imageView: DraggableImageView
     weak var delegate: CharacterWindowDelegate?
     var displayName: String = "デフォルト"
-    private var rotationPanelController: RotationPanelController?
+    private var adjustmentPanelController: AdjustmentPanelController?
 
     init(image: NSImage) {
         let maxHeight: CGFloat = 600
@@ -57,7 +57,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         setupMenu()
 
         imageView.onRotationChanged = { [weak self] in
-            self?.rotationPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
+            self?.adjustmentPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
         }
 
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
@@ -199,14 +199,16 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
             adjustSubmenu.addItem(NSMenuItem.separator())
 
-            let rotateItem = NSMenuItem(title: "回転...", action: #selector(showRotationPanel), keyEquivalent: "")
-            rotateItem.target = self
-            adjustSubmenu.addItem(rotateItem)
+            let adjustPanelItem = NSMenuItem(title: "表示の調整...", action: #selector(showAdjustmentPanel), keyEquivalent: "")
+            adjustPanelItem.target = self
+            adjustSubmenu.addItem(adjustPanelItem)
 
-            let resetItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotation), keyEquivalent: "")
-            resetItem.target = self
-            resetItem.isEnabled = imageView.rotationAngle != 0
-            adjustSubmenu.addItem(resetItem)
+            adjustSubmenu.addItem(NSMenuItem.separator())
+
+            let resetRotationItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotation), keyEquivalent: "")
+            resetRotationItem.target = self
+            resetRotationItem.isEnabled = imageView.rotationAngle != 0
+            adjustSubmenu.addItem(resetRotationItem)
         }
     }
 
@@ -216,19 +218,19 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.isFlippedHorizontally.toggle()
     }
 
-    @objc func showRotationPanel() {
-        if rotationPanelController?.isVisible == true {
-            closeRotationPanel()
+    @objc func showAdjustmentPanel() {
+        if adjustmentPanelController?.isVisible == true {
+            closeAdjustmentPanel()
             return
         }
-        let controller = RotationPanelController()
+        let controller = AdjustmentPanelController()
         controller.delegate = self
         controller.onClose = { [weak self] in
             self?.imageView.scrollRotationHandler = nil
-            self?.rotationPanelController = nil
+            self?.adjustmentPanelController = nil
         }
         controller.show(near: window, currentAngle: imageView.rotationAngle)
-        rotationPanelController = controller
+        adjustmentPanelController = controller
 
         let scrollRotationSensitivity: CGFloat = 0.5
         imageView.scrollRotationHandler = { [weak self] delta in
@@ -241,9 +243,9 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         }
     }
 
-    private func closeRotationPanel() {
-        rotationPanelController?.close()
-        rotationPanelController = nil
+    private func closeAdjustmentPanel() {
+        adjustmentPanelController?.close()
+        adjustmentPanelController = nil
         imageView.scrollRotationHandler = nil
     }
 
@@ -254,7 +256,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     func applyRotation(_ angle: CGFloat) {
         imageView.rotationAngle = angle
         adjustWindowForRotation()
-        rotationPanelController?.updateAngle(angle)
+        adjustmentPanelController?.updateAngle(angle)
     }
 
     func adjustWindowForRotation() {
@@ -351,14 +353,14 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 }
 
-// MARK: - Rotation Panel Delegate
+// MARK: - Adjustment Panel Delegate
 
-extension CharacterWindow: RotationPanelDelegate {
-    func rotationPanel(_ panel: RotationPanelController, didChangeAngle angle: CGFloat) {
+extension CharacterWindow: AdjustmentPanelDelegate {
+    func rotationPanel(_ panel: AdjustmentPanelController, didChangeAngle angle: CGFloat) {
         applyRotation(angle)
     }
 
-    func rotationPanelDidReset(_ panel: RotationPanelController) {
+    func rotationPanelDidReset(_ panel: AdjustmentPanelController) {
         applyRotation(0)
     }
 }

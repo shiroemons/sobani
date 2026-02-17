@@ -19,7 +19,7 @@
 		DD000009 /* WindowStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000010 /* WindowStateManager.swift */; };
 		DD000011 /* WindowStateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000012 /* WindowStateManagerTests.swift */; };
 		DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000014 /* AppDelegate+StatusBarMenu.swift */; };
-		DD000015 /* RotationPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000016 /* RotationPanelController.swift */; };
+		DD000015 /* AdjustmentPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000016 /* AdjustmentPanelController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +48,7 @@
 		DD000010 /* WindowStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateManager.swift; sourceTree = "<group>"; };
 		DD000012 /* WindowStateManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateManagerTests.swift; sourceTree = "<group>"; };
 		DD000014 /* AppDelegate+StatusBarMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenu.swift"; sourceTree = "<group>"; };
-		DD000016 /* RotationPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationPanelController.swift; sourceTree = "<group>"; };
+		DD000016 /* AdjustmentPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustmentPanelController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,7 +88,7 @@
 				DD000004 /* DraggableImageView.swift */,
 				DD000002 /* ImageManager.swift */,
 				CC000011 /* UpdateManager.swift */,
-				DD000016 /* RotationPanelController.swift */,
+				DD000016 /* AdjustmentPanelController.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
@@ -236,7 +236,7 @@
 				DD000001 /* ImageManager.swift in Sources */,
 				CC000010 /* UpdateManager.swift in Sources */,
 				DD000009 /* WindowStateManager.swift in Sources */,
-				DD000015 /* RotationPanelController.swift in Sources */,
+				DD000015 /* AdjustmentPanelController.swift in Sources */,
 				DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
