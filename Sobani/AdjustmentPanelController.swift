@@ -246,7 +246,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         opacitySlider = slider
 
         let opacityResetButton = NSButton(title: "リセット", target: self, action: #selector(resetOpacity))
-        opacityResetButton.frame = NSRect(x: 10, y: 20, width: 90, height: 28)
+        opacityResetButton.frame = NSRect(x: 110, y: 20, width: 90, height: 28)
         opacityResetButton.bezelStyle = .rounded
         opacityResetButton.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(opacityResetButton)
