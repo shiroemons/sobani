@@ -18,6 +18,13 @@ class DraggableImageView: NSImageView {
         }
     }
     var onRotationChanged: (() -> Void)?
+    var opacityLevel: CGFloat = 1.0 {
+        didSet {
+            alphaValue = opacityLevel
+            onOpacityChanged?()
+        }
+    }
+    var onOpacityChanged: (() -> Void)?
     var scrollRotationHandler: ((CGFloat) -> Void)?
 
     override func mouseDown(with event: NSEvent) {
