@@ -68,7 +68,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
 
-        let registeredItem = NSMenuItem(title: "画像を切り替え", action: nil, keyEquivalent: "")
+        let registeredItem = NSMenuItem(title: "表示画像の変更", action: nil, keyEquivalent: "")
         let registeredSubmenu = NSMenu()
         registeredItem.submenu = registeredSubmenu
         menu.addItem(registeredItem)
@@ -78,6 +78,12 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         let newWindowSubmenu = NSMenu()
         newWindowItem.submenu = newWindowSubmenu
         menu.addItem(newWindowItem)
+        menu.addItem(NSMenuItem.separator())
+
+        let deleteRegisteredItem = NSMenuItem(title: "登録画像を削除", action: nil, keyEquivalent: "")
+        let deleteRegisteredSubmenu = NSMenu()
+        deleteRegisteredItem.submenu = deleteRegisteredSubmenu
+        menu.addItem(deleteRegisteredItem)
         menu.addItem(NSMenuItem.separator())
 
         let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlip), keyEquivalent: "")
@@ -97,20 +103,20 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        guard let registeredItem = menu.items.first(where: { $0.title == "画像を切り替え" }),
+        guard let registeredItem = menu.items.first(where: { $0.title == "表示画像の変更" }),
               let submenu = registeredItem.submenu else { return }
 
         submenu.removeAllItems()
         submenu.autoenablesItems = false
 
+        let changeItem = NSMenuItem(title: "画像を変更...", action: #selector(changeImage), keyEquivalent: "o")
+        changeItem.target = self
+        submenu.addItem(changeItem)
+
         let defaultItem = NSMenuItem(title: "デフォルト画像に戻す", action: #selector(resetToDefault), keyEquivalent: "d")
         defaultItem.target = self
         defaultItem.isEnabled = displayName != "デフォルト"
         submenu.addItem(defaultItem)
-
-        let changeItem = NSMenuItem(title: "画像を変更...", action: #selector(changeImage), keyEquivalent: "o")
-        changeItem.target = self
-        submenu.addItem(changeItem)
 
         let names = ImageManager.shared.registeredImageNames()
         if !names.isEmpty {
@@ -124,29 +130,25 @@ class CharacterWindow: NSObject, NSMenuDelegate {
                 item.representedObject = name
                 submenu.addItem(item)
             }
-            submenu.addItem(NSMenuItem.separator())
-            let deleteItem = NSMenuItem(title: "登録画像から削除", action: nil, keyEquivalent: "")
-            let deleteSubmenu = NSMenu()
-            for name in names {
-                let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
-                item.target = self
-                item.representedObject = name
-                deleteSubmenu.addItem(item)
-            }
-            deleteItem.submenu = deleteSubmenu
-            submenu.addItem(deleteItem)
         }
 
         guard let newWindowItem = menu.items.first(where: { $0.title == "新しいウィンドウ" }),
               let newWindowSubmenu = newWindowItem.submenu else { return }
 
         newWindowSubmenu.removeAllItems()
+        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
+        selectImageItem.target = self
+        newWindowSubmenu.addItem(selectImageItem)
+
         let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindow), keyEquivalent: "n")
         defaultWindowItem.target = self
         newWindowSubmenu.addItem(defaultWindowItem)
 
         if !names.isEmpty {
             newWindowSubmenu.addItem(NSMenuItem.separator())
+            let registeredWindowLabel = NSMenuItem(title: "登録画像", action: nil, keyEquivalent: "")
+            registeredWindowLabel.isEnabled = false
+            newWindowSubmenu.addItem(registeredWindowLabel)
             for name in names {
                 let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImage(_:)), keyEquivalent: "")
                 item.target = self
@@ -155,10 +157,19 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             }
         }
 
-        newWindowSubmenu.addItem(NSMenuItem.separator())
-        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
-        selectImageItem.target = self
-        newWindowSubmenu.addItem(selectImageItem)
+        if let deleteRegisteredItem = menu.items.first(where: { $0.title == "登録画像を削除" }),
+           let deleteRegisteredSubmenu = deleteRegisteredItem.submenu {
+            deleteRegisteredSubmenu.removeAllItems()
+            if !names.isEmpty {
+                for name in names {
+                    let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
+                    item.target = self
+                    item.representedObject = name
+                    deleteRegisteredSubmenu.addItem(item)
+                }
+            }
+            deleteRegisteredItem.isEnabled = !names.isEmpty
+        }
 
         if let flipItem = menu.items.first(where: { $0.title == "左右反転" }) {
             flipItem.state = imageView.isFlippedHorizontally ? .on : .off
