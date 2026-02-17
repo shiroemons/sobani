@@ -11,6 +11,14 @@ class DraggableImageView: NSImageView {
     var isFlippedHorizontally: Bool = false {
         didSet { needsLayout = true }
     }
+    var rotationAngle: CGFloat = 0 {
+        didSet {
+            needsLayout = true
+            onRotationChanged?()
+        }
+    }
+    var onRotationChanged: (() -> Void)?
+    var scrollRotationHandler: ((CGFloat) -> Void)?
 
     override func mouseDown(with event: NSEvent) {
         if event.modifierFlags.contains(.option) {
@@ -40,11 +48,15 @@ class DraggableImageView: NSImageView {
     override func scrollWheel(with event: NSEvent) {
         let delta = event.scrollingDeltaY
         if delta == 0 { return }
+        if let handler = scrollRotationHandler {
+            handler(delta)
+            return
+        }
         let scaleFactor: CGFloat = 1.0 + (delta * 0.01)
         if event.modifierFlags.contains(.option) {
             let allWindows = NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
             for w in allWindows {
-                guard let iv = w.contentView as? DraggableImageView else { continue }
+                guard let iv = w.contentView?.subviews.first as? DraggableImageView else { continue }
                 resizeWindow(w, imageView: iv, scaleFactor: scaleFactor)
             }
         } else {
@@ -54,27 +66,54 @@ class DraggableImageView: NSImageView {
     }
 
     private func resizeWindow(_ window: NSWindow, imageView: DraggableImageView, scaleFactor: CGFloat) {
-        let currentHeight = window.frame.height
+        let currentHeight = imageView.frame.height
         var newHeight = currentHeight * scaleFactor
         newHeight = max(minHeight, min(maxHeight, newHeight))
         let newWidth = newHeight * imageView.aspectRatio
+
+        let radians = imageView.rotationAngle * .pi / 180
+        let bbWidth = abs(newWidth * cos(radians)) + abs(newHeight * sin(radians))
+        let bbHeight = abs(newWidth * sin(radians)) + abs(newHeight * cos(radians))
+
         let centerX = window.frame.midX
         let centerY = window.frame.midY
-        let newOriginX = centerX - newWidth / 2
-        let newOriginY = centerY - newHeight / 2
-        let newFrame = NSRect(x: newOriginX, y: newOriginY, width: newWidth, height: newHeight)
-        window.setFrame(newFrame, display: true)
+        window.setFrame(NSRect(
+            x: round(centerX - bbWidth / 2),
+            y: round(centerY - bbHeight / 2),
+            width: round(bbWidth),
+            height: round(bbHeight)
+        ), display: true)
+
+        imageView.frame = NSRect(
+            x: (bbWidth - newWidth) / 2,
+            y: (bbHeight - newHeight) / 2,
+            width: newWidth,
+            height: newHeight
+        )
     }
 
     override func layout() {
         super.layout()
-        if isFlippedHorizontally {
-            layer?.setAffineTransform(
-                CGAffineTransform(translationX: bounds.width, y: 0)
-                    .scaledBy(x: -1, y: 1)
-            )
-        } else {
-            layer?.setAffineTransform(.identity)
+        var transform = CGAffineTransform.identity
+        let centerX = bounds.width / 2
+        let centerY = bounds.height / 2
+
+        if rotationAngle != 0 {
+            let radians = -rotationAngle * .pi / 180
+            transform = transform
+                .translatedBy(x: centerX, y: centerY)
+                .rotated(by: radians)
+                .translatedBy(x: -centerX, y: -centerY)
         }
+
+        if isFlippedHorizontally {
+            let flip = CGAffineTransform.identity
+                .translatedBy(x: centerX, y: centerY)
+                .scaledBy(x: -1, y: 1)
+                .translatedBy(x: -centerX, y: -centerY)
+            transform = transform.concatenating(flip)
+        }
+
+        layer?.setAffineTransform(transform)
     }
 }

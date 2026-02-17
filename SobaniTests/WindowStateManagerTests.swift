@@ -28,7 +28,8 @@ final class WindowStateManagerTests: XCTestCase {
         originY: CGFloat = 200,
         width: CGFloat = 300,
         height: CGFloat = 400,
-        isFlippedHorizontally: Bool = false
+        isFlippedHorizontally: Bool = false,
+        rotationAngle: CGFloat = 0
     ) -> WindowState {
         WindowState(
             imageName: imageName,
@@ -36,7 +37,8 @@ final class WindowStateManagerTests: XCTestCase {
             originY: originY,
             width: width,
             height: height,
-            isFlippedHorizontally: isFlippedHorizontally
+            isFlippedHorizontally: isFlippedHorizontally,
+            rotationAngle: rotationAngle
         )
     }
 
@@ -190,5 +192,56 @@ final class WindowStateManagerTests: XCTestCase {
         stateManager.saveStates([state])
         let loaded = stateManager.loadStates()
         XCTAssertEqual(loaded.first?.imageName, "かわいい画像.png")
+    }
+
+    // MARK: - Rotation Angle Tests
+
+    func testEncodeDecodeWithRotation() {
+        let state = makeState(rotationAngle: 45)
+        let data = try! JSONEncoder().encode([state])
+        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        XCTAssertEqual(decoded.first?.rotationAngle, 45)
+    }
+
+    func testBackwardCompatibilityWithoutRotation() {
+        // Simulate old JSON without rotationAngle field
+        let json = """
+        [{
+            "imageName": "デフォルト",
+            "originX": 100,
+            "originY": 200,
+            "width": 300,
+            "height": 400,
+            "isFlippedHorizontally": false
+        }]
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        XCTAssertEqual(decoded.first?.rotationAngle, 0)
+    }
+
+    func testEncodeDecodeWithFlipAndRotation() {
+        let state = makeState(isFlippedHorizontally: true, rotationAngle: 90)
+        let data = try! JSONEncoder().encode([state])
+        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        XCTAssertEqual(decoded.first?.isFlippedHorizontally, true)
+        XCTAssertEqual(decoded.first?.rotationAngle, 90)
+    }
+
+    func testAdjustToVisibleAreaPreservesRotation() {
+        let state = makeState(
+            originX: -99999,
+            originY: -99999,
+            width: 300,
+            height: 400,
+            rotationAngle: 180
+        )
+        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        XCTAssertEqual(adjusted.rotationAngle, 180)
+    }
+
+    func testDefaultRotationAngleIsZero() {
+        let state = makeState()
+        XCTAssertEqual(state.rotationAngle, 0)
     }
 }

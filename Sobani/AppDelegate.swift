@@ -159,6 +159,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         }
     }
 
+    @objc func resetAllRotations() {
+        for charWindow in characterWindows {
+            charWindow.applyRotation(0)
+        }
+    }
+
     func confirmQuit() -> Bool {
         let alert = NSAlert()
         alert.messageText = "アプリケーションを終了しますか？"

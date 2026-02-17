@@ -9,6 +9,40 @@ struct WindowState: Codable, Equatable {
     let width: CGFloat
     let height: CGFloat
     let isFlippedHorizontally: Bool
+    let rotationAngle: CGFloat
+
+    enum CodingKeys: String, CodingKey {
+        case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle
+    }
+
+    init(
+        imageName: String,
+        originX: CGFloat,
+        originY: CGFloat,
+        width: CGFloat,
+        height: CGFloat,
+        isFlippedHorizontally: Bool,
+        rotationAngle: CGFloat = 0
+    ) {
+        self.imageName = imageName
+        self.originX = originX
+        self.originY = originY
+        self.width = width
+        self.height = height
+        self.isFlippedHorizontally = isFlippedHorizontally
+        self.rotationAngle = rotationAngle
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        imageName = try container.decode(String.self, forKey: .imageName)
+        originX = try container.decode(CGFloat.self, forKey: .originX)
+        originY = try container.decode(CGFloat.self, forKey: .originY)
+        width = try container.decode(CGFloat.self, forKey: .width)
+        height = try container.decode(CGFloat.self, forKey: .height)
+        isFlippedHorizontally = try container.decode(Bool.self, forKey: .isFlippedHorizontally)
+        rotationAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
+    }
 }
 
 // MARK: - Window State Manager
@@ -55,14 +89,17 @@ class WindowStateManager {
     }
 
     static func captureState(from charWindow: CharacterWindow) -> WindowState {
-        let frame = charWindow.window.frame
+        let windowCenter = NSPoint(x: charWindow.window.frame.midX, y: charWindow.window.frame.midY)
+        let baseWidth = charWindow.imageView.frame.width
+        let baseHeight = charWindow.imageView.frame.height
         return WindowState(
             imageName: charWindow.displayName,
-            originX: frame.origin.x,
-            originY: frame.origin.y,
-            width: frame.size.width,
-            height: frame.size.height,
-            isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally
+            originX: windowCenter.x - baseWidth / 2,
+            originY: windowCenter.y - baseHeight / 2,
+            width: baseWidth,
+            height: baseHeight,
+            isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally,
+            rotationAngle: charWindow.imageView.rotationAngle
         )
     }
 
@@ -90,7 +127,8 @@ class WindowStateManager {
             originY: newOriginY,
             width: state.width,
             height: state.height,
-            isFlippedHorizontally: state.isFlippedHorizontally
+            isFlippedHorizontally: state.isFlippedHorizontally,
+            rotationAngle: state.rotationAngle
         )
     }
 }
@@ -101,6 +139,8 @@ extension CharacterWindow {
     func restore(from state: WindowState) {
         let adjusted = WindowStateManager.adjustToVisibleArea(state)
         imageView.aspectRatio = adjusted.width / adjusted.height
+        imageView.frame = NSRect(x: 0, y: 0, width: adjusted.width, height: adjusted.height)
+
         let frame = NSRect(
             x: adjusted.originX,
             y: adjusted.originY,
@@ -109,12 +149,18 @@ extension CharacterWindow {
         )
         window.setFrame(frame, display: true)
         window.makeKeyAndOrderFront(nil)
+
         imageView.isFlippedHorizontally = adjusted.isFlippedHorizontally
+        imageView.rotationAngle = adjusted.rotationAngle
+
         // AppKit resets the backing layer's affineTransform during
         // the initial window display cycle. Defer re-application
         // to the next run loop so the transform sticks.
-        if adjusted.isFlippedHorizontally {
+        if adjusted.isFlippedHorizontally || adjusted.rotationAngle != 0 {
             DispatchQueue.main.async { [weak self] in
+                if adjusted.rotationAngle != 0 {
+                    self?.adjustWindowForRotation()
+                }
                 self?.imageView.needsLayout = true
                 self?.imageView.layoutSubtreeIfNeeded()
             }

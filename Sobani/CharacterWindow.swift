@@ -1,6 +1,14 @@
 import Cocoa
 import UniformTypeIdentifiers
 
+// MARK: - Rotatable Container
+
+private class RotatableContainer: NSView {
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        return subviews.first ?? super.hitTest(point)
+    }
+}
+
 // MARK: - Character Window
 
 class CharacterWindow: NSObject, NSMenuDelegate {
@@ -8,6 +16,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     let imageView: DraggableImageView
     weak var delegate: CharacterWindowDelegate?
     var displayName: String = "デフォルト"
+    private var rotationPanelController: RotationPanelController?
 
     init(image: NSImage) {
         let maxHeight: CGFloat = 600
@@ -34,10 +43,20 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.imageAlignment = .alignCenter
         imageView.aspectRatio = windowWidth / windowHeight
         imageView.wantsLayer = true
-        window.contentView = imageView
+        imageView.autoresizingMask = []
+
+        let container = RotatableContainer(frame: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight))
+        container.wantsLayer = true
+        container.autoresizesSubviews = false
+        container.addSubview(imageView)
+        window.contentView = container
 
         super.init()
         setupMenu()
+
+        imageView.onRotationChanged = { [weak self] in
+            self?.rotationPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
+        }
 
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
         let offsetX = CGFloat.random(in: -100...100)
@@ -49,16 +68,13 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     func applyImage(_ image: NSImage) {
-        let currentHeight = window.frame.height
-        let scale = currentHeight / image.size.height
-        let windowWidth = image.size.width * scale
-        let centerX = window.frame.midX
-        let centerY = window.frame.midY
-        let newOriginX = centerX - windowWidth / 2
-        let newOriginY = centerY - currentHeight / 2
+        let baseHeight = imageView.frame.height
+        let scale = baseHeight / image.size.height
+        let baseWidth = image.size.width * scale
         imageView.image = image
-        imageView.aspectRatio = windowWidth / currentHeight
-        window.setFrame(NSRect(x: newOriginX, y: newOriginY, width: windowWidth, height: currentHeight), display: true)
+        imageView.aspectRatio = baseWidth / baseHeight
+        imageView.frame.size = NSSize(width: baseWidth, height: baseHeight)
+        adjustWindowForRotation()
     }
 
     // MARK: Menu
@@ -73,22 +89,21 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         registeredItem.submenu = registeredSubmenu
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
-
         let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
         let newWindowSubmenu = NSMenu()
         newWindowItem.submenu = newWindowSubmenu
         menu.addItem(newWindowItem)
         menu.addItem(NSMenuItem.separator())
-
         let deleteRegisteredItem = NSMenuItem(title: "登録画像を削除", action: nil, keyEquivalent: "")
         let deleteRegisteredSubmenu = NSMenu()
         deleteRegisteredItem.submenu = deleteRegisteredSubmenu
         menu.addItem(deleteRegisteredItem)
         menu.addItem(NSMenuItem.separator())
 
-        let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlip), keyEquivalent: "")
-        flipItem.target = self
-        menu.addItem(flipItem)
+        let adjustItem = NSMenuItem(title: "表示の調整", action: nil, keyEquivalent: "")
+        let adjustSubmenu = NSMenu()
+        adjustItem.submenu = adjustSubmenu
+        menu.addItem(adjustItem)
         menu.addItem(NSMenuItem.separator())
 
         let closeItem = NSMenuItem(title: "このウィンドウを閉じる", action: #selector(closeThisWindow), keyEquivalent: "w")
@@ -171,8 +186,25 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             deleteRegisteredItem.isEnabled = !names.isEmpty
         }
 
-        if let flipItem = menu.items.first(where: { $0.title == "左右反転" }) {
+        if let adjustItem = menu.items.first(where: { $0.title == "表示の調整" }),
+           let adjustSubmenu = adjustItem.submenu {
+            adjustSubmenu.removeAllItems()
+
+            let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlip), keyEquivalent: "")
+            flipItem.target = self
             flipItem.state = imageView.isFlippedHorizontally ? .on : .off
+            adjustSubmenu.addItem(flipItem)
+
+            adjustSubmenu.addItem(NSMenuItem.separator())
+
+            let rotateItem = NSMenuItem(title: "回転...", action: #selector(showRotationPanel), keyEquivalent: "")
+            rotateItem.target = self
+            adjustSubmenu.addItem(rotateItem)
+
+            let resetItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotation), keyEquivalent: "")
+            resetItem.target = self
+            resetItem.isEnabled = imageView.rotationAngle != 0
+            adjustSubmenu.addItem(resetItem)
         }
     }
 
@@ -180,6 +212,73 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func toggleFlip() {
         imageView.isFlippedHorizontally.toggle()
+    }
+
+    @objc func showRotationPanel() {
+        if rotationPanelController?.isVisible == true {
+            closeRotationPanel()
+            return
+        }
+        let controller = RotationPanelController()
+        controller.delegate = self
+        controller.onClose = { [weak self] in
+            self?.imageView.scrollRotationHandler = nil
+            self?.rotationPanelController = nil
+        }
+        controller.show(near: window, currentAngle: imageView.rotationAngle)
+        rotationPanelController = controller
+
+        imageView.scrollRotationHandler = { [weak self] delta in
+            guard let self = self else { return }
+            let angleDelta = delta * 0.5
+            var newAngle = self.imageView.rotationAngle + angleDelta
+            newAngle = newAngle.truncatingRemainder(dividingBy: 360)
+            if newAngle < 0 { newAngle += 360 }
+            self.applyRotation(newAngle)
+        }
+    }
+
+    private func closeRotationPanel() {
+        rotationPanelController?.onClose = nil
+        rotationPanelController?.close()
+        rotationPanelController = nil
+        imageView.scrollRotationHandler = nil
+    }
+
+    @objc func resetRotation() {
+        applyRotation(0)
+    }
+
+    func applyRotation(_ angle: CGFloat) {
+        imageView.rotationAngle = angle
+        adjustWindowForRotation()
+        rotationPanelController?.updateAngle(angle)
+    }
+
+    func adjustWindowForRotation() {
+        let baseWidth = imageView.frame.width
+        let baseHeight = imageView.frame.height
+        let radians = imageView.rotationAngle * .pi / 180
+
+        let bbWidth = abs(baseWidth * cos(radians)) + abs(baseHeight * sin(radians))
+        let bbHeight = abs(baseWidth * sin(radians)) + abs(baseHeight * cos(radians))
+
+        let centerX = window.frame.midX
+        let centerY = window.frame.midY
+        window.setFrame(NSRect(
+            x: round(centerX - bbWidth / 2),
+            y: round(centerY - bbHeight / 2),
+            width: round(bbWidth),
+            height: round(bbHeight)
+        ), display: false)
+
+        imageView.frame = NSRect(
+            x: (bbWidth - baseWidth) / 2,
+            y: (bbHeight - baseHeight) / 2,
+            width: baseWidth,
+            height: baseHeight
+        )
+        imageView.needsLayout = true
     }
 
     @objc func changeImage() {
@@ -263,9 +362,19 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     @objc func quitApp() {
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            appDelegate.quitApp()
-        }
+        (NSApp.delegate as? AppDelegate)?.quitApp()
+    }
+}
+
+// MARK: - Rotation Panel Delegate
+
+extension CharacterWindow: RotationPanelDelegate {
+    func rotationPanel(_ panel: RotationPanelController, didChangeAngle angle: CGFloat) {
+        applyRotation(angle)
+    }
+
+    func rotationPanelDidReset(_ panel: RotationPanelController) {
+        applyRotation(0)
     }
 }
 

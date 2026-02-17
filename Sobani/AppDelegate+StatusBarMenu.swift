@@ -67,6 +67,8 @@ extension AppDelegate {
         toggleItem.target = self
         toggleItem.isEnabled = !characterWindows.isEmpty
         menu.addItem(toggleItem)
+
+        menu.addItem(buildResetRotationMenuItem())
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(buildNewWindowMenuItem())
@@ -104,6 +106,18 @@ extension AppDelegate {
         let quitItem = NSMenuItem(title: "終了", action: #selector(quitFromMenu), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
+    }
+
+    func buildResetRotationMenuItem() -> NSMenuItem {
+        let hasRotation = characterWindows.contains { $0.imageView.rotationAngle != 0 }
+        let item = NSMenuItem(
+            title: "すべての画像の回転をリセット",
+            action: #selector(resetAllRotations),
+            keyEquivalent: ""
+        )
+        item.target = self
+        item.isEnabled = hasRotation
+        return item
     }
 
     func buildNewWindowMenuItem() -> NSMenuItem {
