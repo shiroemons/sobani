@@ -107,7 +107,7 @@ extension AppDelegate {
     }
 
     func buildNewWindowMenuItem() -> NSMenuItem {
-        let newWindowItem = NSMenuItem(title: "新しいウィンドウ", action: nil, keyEquivalent: "")
+        let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
         let submenu = NSMenu()
         let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindowFromMenu), keyEquivalent: "")
         defaultWindowItem.target = self

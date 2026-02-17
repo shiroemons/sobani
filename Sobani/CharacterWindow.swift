@@ -74,7 +74,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
 
-        let newWindowItem = NSMenuItem(title: "新しいウィンドウ", action: nil, keyEquivalent: "")
+        let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
         let newWindowSubmenu = NSMenu()
         newWindowItem.submenu = newWindowSubmenu
         menu.addItem(newWindowItem)
@@ -132,7 +132,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             }
         }
 
-        guard let newWindowItem = menu.items.first(where: { $0.title == "新しいウィンドウ" }),
+        guard let newWindowItem = menu.items.first(where: { $0.title == "画像を追加表示" }),
               let newWindowSubmenu = newWindowItem.submenu else { return }
 
         newWindowSubmenu.removeAllItems()
@@ -246,7 +246,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     @objc func addNewWindowWithNewImage(_ sender: NSMenuItem) {
         let panel = NSOpenPanel()
         panel.title = "画像を選択"
-        panel.message = "新しいウィンドウに表示する画像ファイルを選択してください"
+        panel.message = "追加表示する画像ファイルを選択してください"
         panel.prompt = "選択"
         panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
