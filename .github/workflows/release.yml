@@ -81,17 +81,30 @@ jobs:
 
       - name: SHA256 計算
         id: sha
+        env:
+          ZIP_NAME: ${{ steps.zip.outputs.name }}
         run: |
-          SHA256=$(shasum -a 256 "${{ steps.zip.outputs.name }}" | awk '{print $1}')
+          SHA256=$(shasum -a 256 "$ZIP_NAME" | awk '{print $1}')
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           echo "🔐 SHA256: $SHA256"
+
+      - name: checksums.txt 作成
+        env:
+          SHA256: ${{ steps.sha.outputs.sha256 }}
+          ZIP_NAME: ${{ steps.zip.outputs.name }}
+        run: |
+          echo "$SHA256  $ZIP_NAME" > checksums.txt
+          echo "📝 checksums.txt を作成しました"
 
       - name: GitHub Release 作成
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          ZIP_NAME: ${{ steps.zip.outputs.name }}
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            "${{ steps.zip.outputs.name }}" \
+          gh release create "$TAG" \
+            "$ZIP_NAME" \
+            checksums.txt \
             --generate-notes
 
       - name: Homebrew Tap 更新
