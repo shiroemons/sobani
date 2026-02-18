@@ -16,6 +16,7 @@ extension AppDelegate {
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
+        guard menu === statusItem.menu else { return }
         menu.removeAllItems()
 
         let aboutItem = NSMenuItem(title: "Sobani について...", action: #selector(showAbout), keyEquivalent: "")
@@ -150,9 +151,11 @@ extension AppDelegate {
     func buildCharacterWindowsSubmenu() -> NSMenu {
         let submenu = NSMenu()
         submenu.autoenablesItems = false
+        submenu.delegate = self
         let orderedWindows = getZOrderedCharacterWindows()
         for charWindow in orderedWindows {
             let item = NSMenuItem(title: charWindow.displayName, action: nil, keyEquivalent: "")
+            item.representedObject = charWindow
             item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows)
             submenu.addItem(item)
         }
@@ -285,5 +288,24 @@ extension AppDelegate {
             .version: "v\(version)"
         ])
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    // MARK: - Menu Highlight
+
+    func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
+        guard menu !== statusItem.menu else { return }
+        for charWindow in characterWindows {
+            charWindow.hideHighlightBorder()
+        }
+        if let charWindow = item?.representedObject as? CharacterWindow {
+            charWindow.showHighlightBorder()
+        }
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        guard menu === statusItem.menu else { return }
+        for charWindow in characterWindows {
+            charWindow.hideHighlightBorder()
+        }
     }
 }

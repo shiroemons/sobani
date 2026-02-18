@@ -399,3 +399,19 @@ protocol CharacterWindowDelegate: AnyObject {
     func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
     func characterWindowDidClose(_ sender: CharacterWindow)
 }
+
+// MARK: - CharacterWindow + Highlight Border
+
+extension CharacterWindow {
+    func showHighlightBorder() {
+        guard let contentView = window.contentView else { return }
+        contentView.wantsLayer = true
+        contentView.layer?.borderWidth = 3.0
+        contentView.layer?.borderColor = NSColor.systemBlue.cgColor
+    }
+
+    func hideHighlightBorder() {
+        window.contentView?.layer?.borderWidth = 0
+        window.contentView?.layer?.borderColor = nil
+    }
+}
