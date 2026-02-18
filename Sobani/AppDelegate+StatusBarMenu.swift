@@ -159,8 +159,9 @@ extension AppDelegate {
         submenu.autoenablesItems = false
         submenu.delegate = self
         let orderedWindows = getZOrderedCharacterWindows()
-        for charWindow in orderedWindows {
-            let item = NSMenuItem(title: charWindow.displayName, action: nil, keyEquivalent: "")
+        for (index, charWindow) in orderedWindows.enumerated() {
+            let title = "\(index + 1): \(charWindow.displayName)"
+            let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
             item.representedObject = charWindow
             item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows)
             submenu.addItem(item)
@@ -266,21 +267,25 @@ extension AppDelegate {
     @objc func moveWindowToFrontByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowToFront(charWindow)
+        statusItem.menu?.cancelTracking()
     }
 
     @objc func moveWindowForwardByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowForward(charWindow)
+        statusItem.menu?.cancelTracking()
     }
 
     @objc func moveWindowBackwardByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowBackward(charWindow)
+        statusItem.menu?.cancelTracking()
     }
 
     @objc func moveWindowToBackByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowToBack(charWindow)
+        statusItem.menu?.cancelTracking()
     }
 
     @objc func closeWindowByWindowNumber(_ sender: NSMenuItem) {
