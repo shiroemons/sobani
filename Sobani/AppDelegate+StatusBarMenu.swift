@@ -53,7 +53,11 @@ extension AppDelegate {
 
         let countLabel = areWindowsHidden ? "非表示中" : "表示中"
         let countItem = NSMenuItem(title: "\(countLabel): \(characterWindows.count)体", action: nil, keyEquivalent: "")
-        countItem.isEnabled = false
+        if !characterWindows.isEmpty {
+            countItem.submenu = buildCharacterWindowsSubmenu()
+        } else {
+            countItem.isEnabled = false
+        }
         menu.addItem(countItem)
         menu.addItem(NSMenuItem.separator())
 
@@ -141,6 +145,138 @@ extension AppDelegate {
         submenu.addItem(selectImageItem)
         newWindowItem.submenu = submenu
         return newWindowItem
+    }
+
+    func buildCharacterWindowsSubmenu() -> NSMenu {
+        let submenu = NSMenu()
+        submenu.autoenablesItems = false
+        let orderedWindows = getZOrderedCharacterWindows()
+        for charWindow in orderedWindows {
+            let item = NSMenuItem(title: charWindow.displayName, action: nil, keyEquivalent: "")
+            item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows)
+            submenu.addItem(item)
+        }
+        return submenu
+    }
+
+    func buildWindowActionsSubmenu(for charWindow: CharacterWindow, orderedWindows: [CharacterWindow]) -> NSMenu {
+        let submenu = NSMenu()
+        submenu.autoenablesItems = false
+        let windowNumber = charWindow.window.windowNumber
+        let index = orderedWindows.firstIndex(where: { $0 === charWindow }) ?? 0
+        let count = orderedWindows.count
+        let canReorder = !areWindowsHidden && count > 1
+
+        let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlipByWindowNumber(_:)), keyEquivalent: "")
+        flipItem.target = self
+        flipItem.state = charWindow.imageView.isFlippedHorizontally ? .on : .off
+        flipItem.tag = windowNumber
+        submenu.addItem(flipItem)
+
+        submenu.addItem(NSMenuItem.separator())
+
+        let adjustItem = NSMenuItem(title: "表示の調整...", action: #selector(showAdjustmentPanelByWindowNumber(_:)), keyEquivalent: "")
+        adjustItem.target = self
+        adjustItem.tag = windowNumber
+        submenu.addItem(adjustItem)
+
+        submenu.addItem(NSMenuItem.separator())
+
+        let resetRotationItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotationByWindowNumber(_:)), keyEquivalent: "")
+        resetRotationItem.target = self
+        resetRotationItem.tag = windowNumber
+        resetRotationItem.isEnabled = charWindow.imageView.rotationAngle != 0
+        submenu.addItem(resetRotationItem)
+
+        let resetOpacityItem = NSMenuItem(title: "透明度をリセット", action: #selector(resetOpacityByWindowNumber(_:)), keyEquivalent: "")
+        resetOpacityItem.target = self
+        resetOpacityItem.tag = windowNumber
+        resetOpacityItem.isEnabled = charWindow.imageView.opacityLevel != 1.0
+        submenu.addItem(resetOpacityItem)
+
+        submenu.addItem(NSMenuItem.separator())
+
+        buildLayerOrderItems(into: submenu, windowNumber: windowNumber, index: index, count: count, canReorder: canReorder)
+
+        submenu.addItem(NSMenuItem.separator())
+
+        let closeItem = NSMenuItem(title: "この画像を閉じる", action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
+        closeItem.target = self
+        closeItem.tag = windowNumber
+        submenu.addItem(closeItem)
+
+        return submenu
+    }
+
+    func buildLayerOrderItems(into menu: NSMenu, windowNumber: Int, index: Int, count: Int, canReorder: Bool) {
+        let toFrontItem = NSMenuItem(title: "最前面へ移動", action: #selector(moveWindowToFrontByWindowNumber(_:)), keyEquivalent: "")
+        toFrontItem.target = self
+        toFrontItem.tag = windowNumber
+        toFrontItem.isEnabled = canReorder && index > 0
+        menu.addItem(toFrontItem)
+
+        let forwardItem = NSMenuItem(title: "前面へ移動", action: #selector(moveWindowForwardByWindowNumber(_:)), keyEquivalent: "")
+        forwardItem.target = self
+        forwardItem.tag = windowNumber
+        forwardItem.isEnabled = canReorder && index > 0
+        menu.addItem(forwardItem)
+
+        let backwardItem = NSMenuItem(title: "背面へ移動", action: #selector(moveWindowBackwardByWindowNumber(_:)), keyEquivalent: "")
+        backwardItem.target = self
+        backwardItem.tag = windowNumber
+        backwardItem.isEnabled = canReorder && index < count - 1
+        menu.addItem(backwardItem)
+
+        let toBackItem = NSMenuItem(title: "最背面へ移動", action: #selector(moveWindowToBackByWindowNumber(_:)), keyEquivalent: "")
+        toBackItem.target = self
+        toBackItem.tag = windowNumber
+        toBackItem.isEnabled = canReorder && index < count - 1
+        menu.addItem(toBackItem)
+    }
+
+    @objc func toggleFlipByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.imageView.isFlippedHorizontally.toggle()
+    }
+
+    @objc func showAdjustmentPanelByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.showAdjustmentPanel()
+    }
+
+    @objc func resetRotationByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.applyRotation(0)
+    }
+
+    @objc func resetOpacityByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.applyOpacity(1.0)
+    }
+
+    @objc func moveWindowToFrontByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        moveWindowToFront(charWindow)
+    }
+
+    @objc func moveWindowForwardByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        moveWindowForward(charWindow)
+    }
+
+    @objc func moveWindowBackwardByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        moveWindowBackward(charWindow)
+    }
+
+    @objc func moveWindowToBackByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        moveWindowToBack(charWindow)
+    }
+
+    @objc func closeWindowByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.closeThisWindow()
     }
 
     @objc func showAbout() {
