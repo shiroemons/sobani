@@ -1,4 +1,5 @@
 import Cocoa
+import CryptoKit
 
 // MARK: - GitHub API Models
 
@@ -25,7 +26,7 @@ struct GitHubAsset: Decodable {
 enum UpdateState {
     case idle
     case checking
-    case available(version: String, downloadURL: URL)
+    case available(version: String, downloadURL: URL, checksumURL: URL?)
     case downloading
     case upToDate
     case error(String)
@@ -63,7 +64,13 @@ class UpdateManager {
         }
     }
 
-    private let session: URLSession
+    private lazy var session: URLSession = {
+        let config = URLSessionConfiguration.default
+        // TLS 1.3 を最低バージョンとして強制
+        config.tlsMinimumSupportedProtocolVersion = .TLSv13
+        return URLSession(configuration: config)
+    }()
+
     private let currentVersion: String
     private let apiURL: URL
     private var checkTimer: Timer?
@@ -72,11 +79,9 @@ class UpdateManager {
     private static let checkInterval: TimeInterval = 24 * 60 * 60 // 24 hours
 
     init(
-        session: URLSession = .shared,
         currentVersion: String? = nil,
         apiURL: URL? = nil
     ) {
-        self.session = session
         self.currentVersion = currentVersion
             ?? Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
             ?? "0"
@@ -128,9 +133,11 @@ class UpdateManager {
             guard let self = self else { return }
 
             if let error = error {
+                // 内部エラー詳細はログのみ、ユーザーには汎用メッセージを表示
+                NSLog("[UpdateManager] Check error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
                     if trigger == .manual {
-                        self.state = .error(error.localizedDescription)
+                        self.state = .error("更新の確認に失敗しました。ネットワーク接続を確認してください。")
                     } else {
                         self.state = .idle
                     }
@@ -141,7 +148,7 @@ class UpdateManager {
             guard let data = data else {
                 DispatchQueue.main.async {
                     if trigger == .manual {
-                        self.state = .error("データを取得できませんでした")
+                        self.state = .error("更新情報を取得できませんでした。しばらく後に再試行してください。")
                     } else {
                         self.state = .idle
                     }
@@ -161,7 +168,10 @@ class UpdateManager {
                     if Self.isNewer(latestVersion, than: self.currentVersion),
                        let asset = release.assets.first(where: { $0.name.hasSuffix(".zip") }),
                        let downloadURL = URL(string: asset.browserDownloadURL) {
-                        self.state = .available(version: latestVersion, downloadURL: downloadURL)
+                        // チェックサムファイルの URL を探す
+                        let checksumAsset = release.assets.first(where: { $0.name == "checksums.txt" })
+                        let checksumURL = checksumAsset.flatMap { URL(string: $0.browserDownloadURL) }
+                        self.state = .available(version: latestVersion, downloadURL: downloadURL, checksumURL: checksumURL)
                     } else {
                         if trigger == .manual {
                             self.state = .upToDate
@@ -171,9 +181,11 @@ class UpdateManager {
                     }
                 }
             } catch {
+                // パース失敗の詳細はログのみ
+                NSLog("[UpdateManager] Parse error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
                     if trigger == .manual {
-                        self.state = .error("レスポンスの解析に失敗しました")
+                        self.state = .error("更新情報の解析に失敗しました。しばらく後に再試行してください。")
                     } else {
                         self.state = .idle
                     }
@@ -189,7 +201,7 @@ class UpdateManager {
         let candidateParts = candidate.split(separator: ".").compactMap { Int($0) }
         let currentParts = current.split(separator: ".").compactMap { Int($0) }
 
-        guard candidateParts.count == 2, currentParts.count == 2 else {
+        guard candidateParts.count >= 2, currentParts.count >= 2 else {
             return false
         }
 
@@ -201,24 +213,91 @@ class UpdateManager {
 
     // MARK: - Download and Install
 
-    func downloadAndInstall(url: URL) {
+    func downloadAndInstall(url: URL, checksumURL: URL?) {
         state = .downloading
 
+        // チェックサムファイルを先に取得してから ZIP をダウンロード
+        if let checksumURL = checksumURL {
+            fetchChecksum(from: checksumURL) { [weak self] expectedChecksum in
+                guard let self = self else { return }
+                self.downloadZip(from: url, expectedChecksum: expectedChecksum)
+            }
+        } else {
+            // チェックサムなし: 警告ダイアログを表示してユーザーに確認
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                let alert = NSAlert()
+                alert.messageText = "チェックサムファイルが見つかりません"
+                alert.informativeText = "ダウンロードファイルの整合性を検証できません。続行しますか？"
+                alert.addButton(withTitle: "続行")
+                alert.addButton(withTitle: "キャンセル")
+                alert.alertStyle = .warning
+                if alert.runModal() == .alertFirstButtonReturn {
+                    self.downloadZip(from: url, expectedChecksum: nil)
+                } else {
+                    self.state = .idle
+                }
+            }
+        }
+    }
+
+    // チェックサムファイルを取得
+    private func fetchChecksum(from url: URL, completion: @escaping (String?) -> Void) {
+        let task = session.dataTask(with: url) { data, _, error in
+            if let error = error {
+                NSLog("[UpdateManager] Checksum fetch error: %@", error.localizedDescription)
+                completion(nil)
+                return
+            }
+            guard let data = data,
+                  let text = String(data: data, encoding: .utf8) else {
+                completion(nil)
+                return
+            }
+            // 形式: "<sha256hex>  Sobani-YYYYMM.N-universal.zip"
+            let checksum = text.components(separatedBy: .newlines)
+                .compactMap { line -> String? in
+                    let parts = line.split(separator: " ", omittingEmptySubsequences: true)
+                    guard parts.count >= 1 else { return nil }
+                    return String(parts[0])
+                }
+                .first
+            completion(checksum)
+        }
+        task.resume()
+    }
+
+    // ZIP をダウンロードしてインストール
+    private func downloadZip(from url: URL, expectedChecksum: String?) {
         let downloadTask = session.downloadTask(with: url) { [weak self] tempURL, _, error in
             guard let self = self else { return }
 
             if let error = error {
+                // 内部エラーはログのみ
+                NSLog("[UpdateManager] Download error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
-                    self.state = .error("ダウンロードに失敗しました: \(error.localizedDescription)")
+                    self.state = .error("ダウンロードに失敗しました。ネットワーク接続を確認してください。")
                 }
                 return
             }
 
             guard let tempURL = tempURL else {
                 DispatchQueue.main.async {
-                    self.state = .error("ダウンロードファイルが見つかりません")
+                    self.state = .error("ダウンロードファイルが見つかりません。")
                 }
                 return
+            }
+
+            // チェックサム検証
+            if let expected = expectedChecksum {
+                guard Self.verifySHA256(of: tempURL, expectedHex: expected) else {
+                    NSLog("[UpdateManager] Checksum mismatch for downloaded file")
+                    DispatchQueue.main.async {
+                        self.state = .error("ダウンロードファイルの整合性検証に失敗しました。再試行してください。")
+                    }
+                    return
+                }
+                NSLog("[UpdateManager] Checksum verified OK")
             }
 
             self.installUpdate(from: tempURL)
@@ -226,12 +305,28 @@ class UpdateManager {
         downloadTask.resume()
     }
 
+    // MARK: - Checksum Verification
+
+    static func verifySHA256(of fileURL: URL, expectedHex: String) -> Bool {
+        guard let data = try? Data(contentsOf: fileURL) else { return false }
+        let digest = SHA256.hash(data: data)
+        let hexString = digest.map { String(format: "%02x", $0) }.joined()
+        return hexString == expectedHex.lowercased()
+    }
+
+    // MARK: - Install Update
+
     private func installUpdate(from zipURL: URL) {
         let fm = FileManager.default
         let tempDir = fm.temporaryDirectory.appendingPathComponent("SobaniUpdate-\(UUID().uuidString)")
 
         do {
             try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+            // defer で確実にクリーンアップ
+            defer {
+                try? fm.removeItem(at: tempDir)
+            }
 
             // Extract ZIP using ditto
             let extractProcess = Process()
@@ -242,7 +337,7 @@ class UpdateManager {
 
             guard extractProcess.terminationStatus == 0 else {
                 DispatchQueue.main.async {
-                    self.state = .error("ZIPの展開に失敗しました")
+                    self.state = .error("ZIPの展開に失敗しました。")
                 }
                 return
             }
@@ -251,7 +346,7 @@ class UpdateManager {
             let contents = try fm.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
             guard let newAppURL = contents.first(where: { $0.pathExtension == "app" }) else {
                 DispatchQueue.main.async {
-                    self.state = .error("アプリが見つかりません")
+                    self.state = .error("アップデートのアプリが見つかりません。")
                 }
                 return
             }
@@ -259,7 +354,7 @@ class UpdateManager {
             // Current app location
             guard let currentAppURL = Bundle.main.bundleURL as URL? else {
                 DispatchQueue.main.async {
-                    self.state = .error("現在のアプリの場所を取得できません")
+                    self.state = .error("現在のアプリの場所を取得できません。")
                 }
                 return
             }
@@ -280,44 +375,45 @@ class UpdateManager {
                 // Remove backup on success
                 try? fm.removeItem(at: backupURL)
 
-                // Clean up temp directory
-                try? fm.removeItem(at: tempDir)
-
                 // Restart
                 DispatchQueue.main.async {
-                    self.restartApp(at: currentAppURL.path)
+                    self.restartApp(at: currentAppURL)
                 }
             } catch {
                 // Restore from backup
+                NSLog("[UpdateManager] Install error: %@", error.localizedDescription)
                 try? fm.removeItem(at: currentAppURL)
                 try? fm.moveItem(at: backupURL, to: currentAppURL)
-                try? fm.removeItem(at: tempDir)
 
                 DispatchQueue.main.async {
-                    self.state = .error("アプリの更新に失敗しました: \(error.localizedDescription)")
+                    self.state = .error("アプリの更新に失敗しました。再試行してください。")
                 }
             }
         } catch {
-            try? fm.removeItem(at: tempDir)
+            NSLog("[UpdateManager] Install preparation error: %@", error.localizedDescription)
             DispatchQueue.main.async {
-                self.state = .error("更新の準備に失敗しました: \(error.localizedDescription)")
+                self.state = .error("更新の準備に失敗しました。再試行してください。")
             }
         }
     }
 
-    private func restartApp(at appPath: String) {
+    // MARK: - Restart App
+
+    // NSWorkspace で安全に再起動（/bin/sh を使わない）
+    private func restartApp(at appURL: URL) {
         let pid = ProcessInfo.processInfo.processIdentifier
-        let script = """
-            while kill -0 \(pid) 2>/dev/null; do sleep 0.1; done
-            open "\(appPath)"
-            """
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/sh")
-        process.arguments = ["-c", script]
-        try? process.run()
+        DispatchQueue.global(qos: .utility).async {
+            // 現在のプロセスが終了するまで待機（シェルを使わない）
+            while kill(pid, 0) == 0 {
+                Thread.sleep(forTimeInterval: 0.1)
+            }
+            DispatchQueue.main.async {
+                NSWorkspace.shared.open(appURL)
+            }
+        }
 
-        // Terminate current app
+        // 現在のアプリを終了
         if let appDelegate = NSApp.delegate as? AppDelegate {
             appDelegate.shouldTerminate = true
         }
@@ -333,7 +429,7 @@ extension AppDelegate: UpdateManagerDelegate {
     }
 
     @objc func performUpdate() {
-        guard case .available(let version, let url) = UpdateManager.shared.state else { return }
+        guard case .available(let version, let url, let checksumURL) = UpdateManager.shared.state else { return }
 
         let alert = NSAlert()
         alert.messageText = "Sobani を v\(version) に更新しますか？"
@@ -343,13 +439,13 @@ extension AppDelegate: UpdateManagerDelegate {
         alert.alertStyle = .informational
 
         if alert.runModal() == .alertFirstButtonReturn {
-            UpdateManager.shared.downloadAndInstall(url: url)
+            UpdateManager.shared.downloadAndInstall(url: url, checksumURL: checksumURL)
         }
     }
 
     func updateManager(_ manager: UpdateManager, didChangeState state: UpdateState) {
         switch state {
-        case .available(let version, let url):
+        case .available(let version, let url, let checksumURL):
             if manager.lastCheckTrigger != .automatic {
                 let alert = NSAlert()
                 alert.messageText = "新しいバージョンがあります"
@@ -358,7 +454,7 @@ extension AppDelegate: UpdateManagerDelegate {
                 alert.addButton(withTitle: "後で")
                 alert.alertStyle = .informational
                 if alert.runModal() == .alertFirstButtonReturn {
-                    UpdateManager.shared.downloadAndInstall(url: url)
+                    UpdateManager.shared.downloadAndInstall(url: url, checksumURL: checksumURL)
                 }
             }
         case .upToDate:

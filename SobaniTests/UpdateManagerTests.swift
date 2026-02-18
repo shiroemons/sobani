@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import Sobani
 
 final class UpdateManagerTests: XCTestCase {
@@ -129,5 +130,49 @@ final class UpdateManagerTests: XCTestCase {
         let manager = UpdateManager(currentVersion: "202602.4")
         manager.checkForUpdate(trigger: .automatic)
         XCTAssertEqual(manager.lastCheckTrigger, .automatic)
+    }
+
+    // MARK: - [M-2] Version Comparison with count >= 2
+
+    func testIsNewer_ThreeComponentVersion_WorksCorrectly() {
+        // count >= 2 に緩和されたことで、将来的な X.Y.Z 形式にも対応できることを確認
+        // 先頭 2 コンポーネントで比較する
+        XCTAssertTrue(UpdateManager.isNewer("202603.0.1", than: "202602.9.9"))
+        XCTAssertFalse(UpdateManager.isNewer("202602.0.1", than: "202602.9.9"))
+    }
+
+    func testIsNewer_SingleComponentVersion_ReturnsFalse() {
+        // 1 コンポーネントは引き続き false
+        XCTAssertFalse(UpdateManager.isNewer("202603", than: "202602"))
+    }
+
+    // MARK: - [C-2] SHA-256 Checksum Verification
+
+    func testVerifySHA256_ValidHash_ReturnsTrue() throws {
+        let data = Data("hello world".utf8)
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("sobani_test_\(UUID().uuidString).bin")
+        try data.write(to: tempURL)
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        // 正確なハッシュを計算して検証
+        let digest = SHA256.hash(data: data)
+        let actualHex = digest.map { String(format: "%02x", $0) }.joined()
+        XCTAssertTrue(UpdateManager.verifySHA256(of: tempURL, expectedHex: actualHex))
+    }
+
+    func testVerifySHA256_InvalidHash_ReturnsFalse() throws {
+        let data = Data("hello world".utf8)
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("sobani_test_\(UUID().uuidString).bin")
+        try data.write(to: tempURL)
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        XCTAssertFalse(UpdateManager.verifySHA256(of: tempURL, expectedHex: "0000000000000000000000000000000000000000000000000000000000000000"))
+    }
+
+    func testVerifySHA256_NonexistentFile_ReturnsFalse() {
+        let nonexistentURL = URL(fileURLWithPath: "/tmp/nonexistent_sobani_test.bin")
+        XCTAssertFalse(UpdateManager.verifySHA256(of: nonexistentURL, expectedHex: "abc123"))
     }
 }
