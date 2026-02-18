@@ -112,7 +112,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.addItem(adjustItem)
         menu.addItem(NSMenuItem.separator())
 
-        let closeItem = NSMenuItem(title: "このウィンドウを閉じる", action: #selector(closeThisWindow), keyEquivalent: "w")
+        let closeItem = NSMenuItem(title: "この画像を閉じる", action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.target = self
         menu.addItem(closeItem)
         menu.addItem(NSMenuItem.separator())

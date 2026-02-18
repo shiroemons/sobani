@@ -127,12 +127,21 @@ extension AppDelegate {
     func buildNewWindowMenuItem() -> NSMenuItem {
         let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
         let submenu = NSMenu()
+
+        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
+        selectImageItem.target = self
+        submenu.addItem(selectImageItem)
+
         let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindowFromMenu), keyEquivalent: "")
         defaultWindowItem.target = self
         submenu.addItem(defaultWindowItem)
+
         let names = ImageManager.shared.registeredImageNames()
         if !names.isEmpty {
             submenu.addItem(NSMenuItem.separator())
+            let registeredLabel = NSMenuItem(title: "登録画像", action: nil, keyEquivalent: "")
+            registeredLabel.isEnabled = false
+            submenu.addItem(registeredLabel)
             for name in names {
                 let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImageFromMenu(_:)), keyEquivalent: "")
                 item.target = self
@@ -140,10 +149,7 @@ extension AppDelegate {
                 submenu.addItem(item)
             }
         }
-        submenu.addItem(NSMenuItem.separator())
-        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
-        selectImageItem.target = self
-        submenu.addItem(selectImageItem)
+
         newWindowItem.submenu = submenu
         return newWindowItem
     }

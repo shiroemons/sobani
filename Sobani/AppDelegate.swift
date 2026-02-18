@@ -205,7 +205,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     func confirmQuit() -> Bool {
         let alert = NSAlert()
         alert.messageText = "アプリケーションを終了しますか？"
-        alert.informativeText = "すべてのウィンドウが閉じられ、アプリが終了します。"
+        alert.informativeText = "すべての画像が閉じられ、アプリが終了します。"
         alert.addButton(withTitle: "終了")
         alert.addButton(withTitle: "キャンセル")
         alert.alertStyle = .warning
@@ -245,7 +245,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     @objc func addNewWindowWithNewImageFromMenu() {
         let panel = NSOpenPanel()
         panel.title = "画像を選択"
-        panel.message = "新しいウィンドウに表示する画像ファイルを選択してください"
+        panel.message = "新しい画像として表示する画像ファイルを選択してください"
         panel.prompt = "選択"
         panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
