@@ -181,6 +181,7 @@ extension AppDelegate {
         flipItem.target = self
         flipItem.state = charWindow.imageView.isFlippedHorizontally ? .on : .off
         flipItem.tag = windowNumber
+        flipItem.isEnabled = !areWindowsHidden
         submenu.addItem(flipItem)
 
         submenu.addItem(NSMenuItem.separator())
@@ -188,6 +189,7 @@ extension AppDelegate {
         let adjustItem = NSMenuItem(title: "表示の調整...", action: #selector(showAdjustmentPanelByWindowNumber(_:)), keyEquivalent: "")
         adjustItem.target = self
         adjustItem.tag = windowNumber
+        adjustItem.isEnabled = !areWindowsHidden
         submenu.addItem(adjustItem)
 
         submenu.addItem(NSMenuItem.separator())
