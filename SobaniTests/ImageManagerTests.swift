@@ -251,4 +251,44 @@ final class ImageManagerTests: XCTestCase {
         imageManager.resetCustomDefault()
         XCTAssertFalse(imageManager.hasCustomDefault)
     }
+
+    // MARK: - [H-3] Path Traversal Prevention Tests
+
+    func testLoadRegisteredImage_PathTraversal_ReturnsNil() {
+        // "../" を含む名前では nil を返すことを確認
+        XCTAssertNil(imageManager.loadRegisteredImage(named: "../secret.png"))
+        XCTAssertNil(imageManager.loadRegisteredImage(named: "../../etc/passwd"))
+        XCTAssertNil(imageManager.loadRegisteredImage(named: "/etc/passwd"))
+        XCTAssertNil(imageManager.loadRegisteredImage(named: ""))
+        XCTAssertNil(imageManager.loadRegisteredImage(named: "."))
+    }
+
+    func testRemoveRegisteredImage_PathTraversal_DoesNotDeleteOutsideDir() {
+        // imagesDir の外にファイルを作成し、パストラバーサルで削除されないことを確認
+        let outsideDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SobaniTestsOutside-\(UUID().uuidString)")
+        try! FileManager.default.createDirectory(at: outsideDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: outsideDir) }
+
+        let targetFile = outsideDir.appendingPathComponent("should_not_be_deleted.png")
+        try? createTestPNGData().write(to: targetFile)
+
+        // パストラバーサルを試みる
+        imageManager.removeRegisteredImage(named: "../SobaniTestsOutside-\(outsideDir.lastPathComponent)/should_not_be_deleted.png")
+
+        // ファイルは削除されていないことを確認
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetFile.path))
+    }
+
+    func testLoadRegisteredImage_ValidName_ReturnsImage() {
+        // 正常なファイル名は引き続き動作することを確認
+        let sourceDir = createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
+
+        let sourceURL = createTestImageFile(named: "valid.png", in: sourceDir)
+        imageManager.registerImage(from: sourceURL)
+
+        let image = imageManager.loadRegisteredImage(named: "valid.png")
+        XCTAssertNotNil(image)
+    }
 }
