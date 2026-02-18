@@ -24,7 +24,7 @@ extension AppDelegate {
         menu.addItem(aboutItem)
 
         switch UpdateManager.shared.state {
-        case .available(let version, _):
+        case .available(let version, _, _):
             let updateItem = NSMenuItem(
                 title: "更新する（v\(version)）",
                 action: #selector(performUpdate),
