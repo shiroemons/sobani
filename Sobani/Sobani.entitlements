@@ -2,7 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- App Sandbox を有効化 -->
 	<key>com.apple.security.app-sandbox</key>
-	<false/>
+	<true/>
+	<!-- アップデート確認・ダウンロードに必要なネットワーク接続 -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<!-- ユーザーが選択した画像ファイルの読み書き（NSOpenPanel 経由） -->
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
 </dict>
 </plist>
