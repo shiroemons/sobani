@@ -11,6 +11,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     var zOrderedWindows: [CharacterWindow] = []
     var globalMonitor: Any?
     var localMonitor: Any?
+    private var nextWindowId: Int = 1
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
@@ -25,6 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             }
             let charWindow = CharacterWindow(image: image)
             charWindow.delegate = self
+            charWindow.windowId = nextWindowId
+            nextWindowId += 1
             charWindow.window.center()
             characterWindows.append(charWindow)
         } else {
@@ -46,9 +49,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                 let charWindow = CharacterWindow(image: image)
                 charWindow.delegate = self
                 charWindow.displayName = resolvedDisplayName
+                charWindow.windowId = state.windowId
                 charWindow.restore(from: state)
                 characterWindows.append(charWindow)
             }
+
+            // Legacy states (windowId == 0) get new IDs assigned
+            let maxExistingId = characterWindows.map(\.windowId).max() ?? 0
+            nextWindowId = maxExistingId + 1
+            for charWindow in characterWindows where charWindow.windowId == 0 {
+                charWindow.windowId = nextWindowId
+                nextWindowId += 1
+            }
+            // Ensure nextWindowId is always beyond the max assigned ID
+            let finalMaxId = characterWindows.map(\.windowId).max() ?? 0
+            nextWindowId = finalMaxId + 1
         }
 
         zOrderedWindows = characterWindows.reversed()
@@ -252,6 +267,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         let charWindow = CharacterWindow(image: image)
         charWindow.delegate = self
         charWindow.displayName = imageName ?? "デフォルト"
+        charWindow.windowId = nextWindowId
+        nextWindowId += 1
         characterWindows.append(charWindow)
         zOrderedWindows.insert(charWindow, at: 0)
     }

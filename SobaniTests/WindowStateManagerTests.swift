@@ -30,7 +30,8 @@ final class WindowStateManagerTests: XCTestCase {
         height: CGFloat = 400,
         isFlippedHorizontally: Bool = false,
         rotationAngle: CGFloat = 0,
-        opacityLevel: CGFloat = 1.0
+        opacityLevel: CGFloat = 1.0,
+        windowId: Int = 0
     ) -> WindowState {
         WindowState(
             imageName: imageName,
@@ -40,7 +41,8 @@ final class WindowStateManagerTests: XCTestCase {
             height: height,
             isFlippedHorizontally: isFlippedHorizontally,
             rotationAngle: rotationAngle,
-            opacityLevel: opacityLevel
+            opacityLevel: opacityLevel,
+            windowId: windowId
         )
     }
 
@@ -290,5 +292,47 @@ final class WindowStateManagerTests: XCTestCase {
         XCTAssertTrue(decoded.isFlippedHorizontally)
         XCTAssertEqual(decoded.rotationAngle, 90, accuracy: 0.001)
         XCTAssertEqual(decoded.opacityLevel, 0.7, accuracy: 0.001)
+    }
+
+    // MARK: - WindowId Tests
+
+    func testEncodeDecodeWithWindowId() throws {
+        let state = makeState(windowId: 42)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
+        XCTAssertEqual(decoded.first?.windowId, 42)
+    }
+
+    func testBackwardCompatibilityWithoutWindowId() throws {
+        let json = """
+        [{"imageName":"デフォルト","originX":100,"originY":200,"width":300,"height":400,"isFlippedHorizontally":false,"rotationAngle":0,"opacityLevel":1.0}]
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
+        XCTAssertEqual(decoded.first?.windowId, 0, "Missing windowId should default to 0")
+    }
+
+    func testWindowIdPreservedAfterAdjustToVisibleArea() {
+        let state = makeState(
+            originX: -99999,
+            originY: -99999,
+            width: 300,
+            height: 400,
+            windowId: 7
+        )
+        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        XCTAssertEqual(adjusted.windowId, 7)
+    }
+
+    func testWindowIdInSaveAndLoad() {
+        let states = [
+            makeState(imageName: "image1.png", windowId: 1),
+            makeState(imageName: "image2.png", windowId: 5)
+        ]
+        stateManager.saveStates(states)
+        let loaded = stateManager.loadStates()
+        XCTAssertEqual(loaded.count, 2)
+        XCTAssertEqual(loaded[0].windowId, 1)
+        XCTAssertEqual(loaded[1].windowId, 5)
     }
 }

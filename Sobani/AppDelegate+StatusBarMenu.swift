@@ -160,7 +160,7 @@ extension AppDelegate {
         submenu.delegate = self
         let orderedWindows = getZOrderedCharacterWindows()
         for (index, charWindow) in orderedWindows.enumerated() {
-            let title = "\(index + 1): \(charWindow.displayName)"
+            let title = "\(index + 1): \(charWindow.displayName) (#\(charWindow.windowId))"
             let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
             item.representedObject = charWindow
             item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows)

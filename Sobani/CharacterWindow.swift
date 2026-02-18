@@ -18,6 +18,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     let imageView: DraggableImageView
     weak var delegate: CharacterWindowDelegate?
     var displayName: String = "デフォルト"
+    var windowId: Int = 0
     private var adjustmentPanelController: AdjustmentPanelController?
 
     init(image: NSImage) {
@@ -91,13 +92,11 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.autoenablesItems = false
 
         let registeredItem = NSMenuItem(title: "表示画像の変更", action: nil, keyEquivalent: "")
-        let registeredSubmenu = NSMenu()
-        registeredItem.submenu = registeredSubmenu
+        registeredItem.submenu = NSMenu()
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
         let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
-        let newWindowSubmenu = NSMenu()
-        newWindowItem.submenu = newWindowSubmenu
+        newWindowItem.submenu = NSMenu()
         menu.addItem(newWindowItem)
         menu.addItem(NSMenuItem.separator())
         let deleteRegisteredItem = NSMenuItem(title: "登録画像を削除", action: nil, keyEquivalent: "")
@@ -240,7 +239,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         }
         controller.show(near: window, currentAngle: imageView.rotationAngle, currentOpacity: imageView.opacityLevel)
         adjustmentPanelController = controller
-
         let scrollRotationSensitivity: CGFloat = 0.5
         imageView.scrollRotationHandler = { [weak self] delta in
             guard let self = self else { return }
@@ -294,7 +292,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             width: round(bbWidth),
             height: round(bbHeight)
         ), display: false)
-
         imageView.frame = NSRect(
             x: (bbWidth - baseWidth) / 2,
             y: (bbHeight - baseHeight) / 2,

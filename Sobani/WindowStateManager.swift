@@ -11,9 +11,10 @@ struct WindowState: Codable, Equatable {
     let isFlippedHorizontally: Bool
     let rotationAngle: CGFloat
     var opacityLevel: CGFloat
+    var windowId: Int
 
     enum CodingKeys: String, CodingKey {
-        case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle, opacityLevel
+        case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle, opacityLevel, windowId
     }
 
     init(
@@ -24,7 +25,8 @@ struct WindowState: Codable, Equatable {
         height: CGFloat,
         isFlippedHorizontally: Bool,
         rotationAngle: CGFloat = 0,
-        opacityLevel: CGFloat = 1.0
+        opacityLevel: CGFloat = 1.0,
+        windowId: Int = 0
     ) {
         self.imageName = imageName
         self.originX = originX
@@ -34,6 +36,7 @@ struct WindowState: Codable, Equatable {
         self.isFlippedHorizontally = isFlippedHorizontally
         self.rotationAngle = rotationAngle
         self.opacityLevel = opacityLevel
+        self.windowId = windowId
     }
 
     init(from decoder: Decoder) throws {
@@ -46,6 +49,7 @@ struct WindowState: Codable, Equatable {
         isFlippedHorizontally = try container.decode(Bool.self, forKey: .isFlippedHorizontally)
         rotationAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
         opacityLevel = try container.decodeIfPresent(CGFloat.self, forKey: .opacityLevel) ?? 1.0
+        windowId = try container.decodeIfPresent(Int.self, forKey: .windowId) ?? 0
     }
 }
 
@@ -104,7 +108,8 @@ class WindowStateManager {
             height: baseHeight,
             isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally,
             rotationAngle: charWindow.imageView.rotationAngle,
-            opacityLevel: charWindow.imageView.opacityLevel
+            opacityLevel: charWindow.imageView.opacityLevel,
+            windowId: charWindow.windowId
         )
     }
 
@@ -134,7 +139,8 @@ class WindowStateManager {
             height: state.height,
             isFlippedHorizontally: state.isFlippedHorizontally,
             rotationAngle: state.rotationAngle,
-            opacityLevel: state.opacityLevel
+            opacityLevel: state.opacityLevel,
+            windowId: state.windowId
         )
     }
 }
