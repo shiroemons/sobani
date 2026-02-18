@@ -50,6 +50,15 @@ extension AppDelegate {
             menu.addItem(checkItem)
         }
 
+        let loginItem = NSMenuItem(
+            title: "ログイン時に起動",
+            action: #selector(toggleLaunchAtLogin),
+            keyEquivalent: ""
+        )
+        loginItem.target = self
+        loginItem.state = LaunchAtLoginManager.shared.isEnabled ? .on : .off
+        menu.addItem(loginItem)
+
         menu.addItem(NSMenuItem.separator())
 
         let countLabel = areWindowsHidden ? "非表示中" : "表示中"

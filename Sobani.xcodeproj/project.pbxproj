@@ -20,6 +20,8 @@
 		DD000011 /* WindowStateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000012 /* WindowStateManagerTests.swift */; };
 		DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000014 /* AppDelegate+StatusBarMenu.swift */; };
 		DD000015 /* AdjustmentPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000016 /* AdjustmentPanelController.swift */; };
+		EE000001 /* LaunchAtLoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE000002 /* LaunchAtLoginManager.swift */; };
+		EE000003 /* LaunchAtLoginManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE000004 /* LaunchAtLoginManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		DD000012 /* WindowStateManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateManagerTests.swift; sourceTree = "<group>"; };
 		DD000014 /* AppDelegate+StatusBarMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenu.swift"; sourceTree = "<group>"; };
 		DD000016 /* AdjustmentPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustmentPanelController.swift; sourceTree = "<group>"; };
+		EE000002 /* LaunchAtLoginManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginManager.swift; sourceTree = "<group>"; };
+		EE000004 /* LaunchAtLoginManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +93,7 @@
 				DD000002 /* ImageManager.swift */,
 				CC000011 /* UpdateManager.swift */,
 				DD000016 /* AdjustmentPanelController.swift */,
+				EE000002 /* LaunchAtLoginManager.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
@@ -111,6 +116,7 @@
 				BB000002 /* ImageManagerTests.swift */,
 				CC000013 /* UpdateManagerTests.swift */,
 				DD000012 /* WindowStateManagerTests.swift */,
+				EE000004 /* LaunchAtLoginManagerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -238,6 +244,7 @@
 				DD000009 /* WindowStateManager.swift in Sources */,
 				DD000015 /* AdjustmentPanelController.swift in Sources */,
 				DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */,
+				EE000001 /* LaunchAtLoginManager.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -249,6 +256,7 @@
 				BB000001 /* ImageManagerTests.swift in Sources */,
 				CC000012 /* UpdateManagerTests.swift in Sources */,
 				DD000011 /* WindowStateManagerTests.swift in Sources */,
+				EE000003 /* LaunchAtLoginManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

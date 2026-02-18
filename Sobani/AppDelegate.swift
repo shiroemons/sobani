@@ -1,4 +1,5 @@
 import Cocoa
+import ServiceManagement
 import UniformTypeIdentifiers
 
 // MARK: - App Delegate
@@ -249,6 +250,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
     @objc func quitApp() {
         quitFromMenu()
+    }
+
+    @objc func toggleLaunchAtLogin() {
+        do {
+            try LaunchAtLoginManager.shared.toggle()
+        } catch {
+            if LaunchAtLoginManager.shared.status == .requiresApproval {
+                SMAppService.openSystemSettingsLoginItems()
+            }
+        }
     }
 
     func createNewWindow(imageName: String? = nil) {
