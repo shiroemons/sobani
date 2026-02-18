@@ -74,20 +74,6 @@ extension AppDelegate {
 
         menu.addItem(buildNewWindowMenuItem())
 
-        if !characterWindows.isEmpty {
-            let closeOneItem = NSMenuItem(title: "ウィンドウを閉じる", action: nil, keyEquivalent: "")
-            let closeOneSubmenu = NSMenu()
-            for (index, charWindow) in characterWindows.enumerated() {
-                let title = "\(index + 1). \(charWindow.displayName)"
-                let item = NSMenuItem(title: title, action: #selector(closeWindowByIndex(_:)), keyEquivalent: "")
-                item.target = self
-                item.tag = index
-                closeOneSubmenu.addItem(item)
-            }
-            closeOneItem.submenu = closeOneSubmenu
-            menu.addItem(closeOneItem)
-        }
-
         let closeAllItem = NSMenuItem(title: "すべて閉じる", action: #selector(closeAllWindows), keyEquivalent: "")
         closeAllItem.target = self
         menu.addItem(closeAllItem)

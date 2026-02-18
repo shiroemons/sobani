@@ -104,16 +104,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         createNewWindow(imageName: name)
     }
 
-    @objc func closeWindowByIndex(_ sender: NSMenuItem) {
-        let index = sender.tag
-        guard index >= 0 && index < characterWindows.count else { return }
-        let charWindow = characterWindows[index]
-        charWindow.window.orderOut(nil)
-        characterWindows.remove(at: index)
-        if characterWindows.isEmpty {
-            areWindowsHidden = false
+    /// Z-order順（前面が先頭）でCharacterWindow配列を返す
+    func getZOrderedCharacterWindows() -> [CharacterWindow] {
+        let orderedWindows = NSApplication.shared.orderedWindows
+        let orderedCharWindows = orderedWindows.compactMap { nsWindow in
+            characterWindows.first { $0.window === nsWindow }
         }
-        quitIfNoWindows()
+        let remainingWindows = characterWindows.filter { charWindow in
+            !orderedCharWindows.contains { $0 === charWindow }
+        }
+        return orderedCharWindows + remainingWindows
+    }
+
+    /// windowNumber から CharacterWindow を検索
+    func characterWindow(forWindowNumber number: Int) -> CharacterWindow? {
+        return characterWindows.first { $0.window.windowNumber == number }
+    }
+
+    func moveWindowToFront(_ charWindow: CharacterWindow) {
+        charWindow.window.orderFront(nil)
+    }
+
+    func moveWindowForward(_ charWindow: CharacterWindow) {
+        let ordered = getZOrderedCharacterWindows()
+        guard let currentIndex = ordered.firstIndex(where: { $0 === charWindow }),
+              currentIndex > 0 else { return }
+        let windowAbove = ordered[currentIndex - 1]
+        charWindow.window.order(.above, relativeTo: windowAbove.window.windowNumber)
+    }
+
+    func moveWindowBackward(_ charWindow: CharacterWindow) {
+        let ordered = getZOrderedCharacterWindows()
+        guard let currentIndex = ordered.firstIndex(where: { $0 === charWindow }),
+              currentIndex < ordered.count - 1 else { return }
+        let windowBelow = ordered[currentIndex + 1]
+        charWindow.window.order(.below, relativeTo: windowBelow.window.windowNumber)
+    }
+
+    func moveWindowToBack(_ charWindow: CharacterWindow) {
+        let ordered = getZOrderedCharacterWindows()
+        guard let last = ordered.last, last !== charWindow else { return }
+        charWindow.window.order(.below, relativeTo: last.window.windowNumber)
     }
 
     @objc func closeAllWindows() {
@@ -256,19 +287,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        // Save window states in z-order
-        let orderedWindows = NSApplication.shared.orderedWindows
-        let orderedCharWindows = orderedWindows.compactMap { nsWindow in
-            characterWindows.first { $0.window === nsWindow }
-        }
-
-        // Add any windows not found in orderedWindows (e.g. hidden windows)
-        let remainingWindows = characterWindows.filter { charWindow in
-            !orderedCharWindows.contains { $0 === charWindow }
-        }
-
-        // Reverse so first element = backmost, last element = frontmost
-        let sortedWindows = orderedCharWindows.reversed() + remainingWindows
+        let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
         let states = sortedWindows.map { WindowStateManager.captureState(from: $0) }
         WindowStateManager.shared.saveStates(states)
 
