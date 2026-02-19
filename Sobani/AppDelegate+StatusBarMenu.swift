@@ -168,9 +168,37 @@ extension AppDelegate {
         submenu.autoenablesItems = false
         submenu.delegate = self
         let orderedWindows = getZOrderedCharacterWindows()
+
+        let font = NSFont.menuFont(ofSize: 0)
+
+        var maxLeftWidth: CGFloat = 0
         for (index, charWindow) in orderedWindows.enumerated() {
-            let title = "\(index + 1): \(charWindow.displayName) (#\(charWindow.windowId))"
-            let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+            let leftText = "\(index + 1): \(charWindow.displayName) (#\(charWindow.windowId))"
+            let width = (leftText as NSString).size(withAttributes: [.font: font]).width
+            if width > maxLeftWidth {
+                maxLeftWidth = width
+            }
+        }
+        let tabPosition = maxLeftWidth + 16
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.tabStops = [NSTextTab(textAlignment: .left, location: tabPosition)]
+
+        for (index, charWindow) in orderedWindows.enumerated() {
+            let imageWidth = Int(charWindow.imageView.frame.width)
+            let imageHeight = Int(charWindow.imageView.frame.height)
+            let screenName = charWindow.window.screen?.localizedName ?? "不明"
+            let leftText = "\(index + 1): \(charWindow.displayName) (#\(charWindow.windowId))"
+            let rightText = "[\(imageWidth)×\(imageHeight)] \(screenName)"
+            let fullText = "\(leftText)\t\(rightText)"
+
+            let attributedTitle = NSAttributedString(
+                string: fullText,
+                attributes: [.font: font, .paragraphStyle: paragraphStyle]
+            )
+
+            let item = NSMenuItem(title: leftText, action: nil, keyEquivalent: "")
+            item.attributedTitle = attributedTitle
             item.representedObject = charWindow
             item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows)
             submenu.addItem(item)
