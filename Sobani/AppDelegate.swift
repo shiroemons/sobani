@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
         setupHotkeyMonitors()
+        screenRestorationManager.loadPending()
 
         let savedStates = WindowStateManager.shared.loadStates()
 
@@ -88,6 +89,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         UpdateManager.shared.startPeriodicChecks()
 
         setupScreenRestorationObservers()
+
+        // ペンディングキューが存在する場合、起動直後に画面変化チェックをトリガー
+        if screenRestorationManager.hasPending {
+            handleScreenChange()
+        }
     }
 
     @objc func bringAllToFront() {
@@ -309,6 +315,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
         let states = sortedWindows.map { WindowStateManager.captureState(from: $0) }
         WindowStateManager.shared.saveStates(states)
+        screenRestorationManager.savePending()
 
         if let monitor = globalMonitor {
             NSEvent.removeMonitor(monitor)

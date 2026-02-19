@@ -2,7 +2,7 @@ import AppKit
 
 // MARK: - Pending Restoration
 
-struct PendingRestoration {
+struct PendingRestoration: Codable {
     let windowId: Int
     let originalState: WindowState
     let displayID: CGDirectDisplayID
@@ -16,10 +16,27 @@ struct PendingRestoration {
 class ScreenRestorationManager {
     private(set) var pendingRestorations: [PendingRestoration] = []
     private let timeout: TimeInterval
+    private let baseDirectory: URL?
     var currentDate: () -> Date = { Date() }
 
-    init(timeout: TimeInterval = 300) {
+    init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
         self.timeout = timeout
+        self.baseDirectory = baseDirectory
+    }
+
+    var pendingFileURL: URL? {
+        let fm = FileManager.default
+        let appDir: URL
+        if let base = baseDirectory {
+            appDir = base
+        } else {
+            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
+            appDir = appSupport.appendingPathComponent("Sobani")
+        }
+        if !fm.fileExists(atPath: appDir.path) {
+            try? fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+        }
+        return appDir.appendingPathComponent("pending_restorations.json")
     }
 
     var hasPending: Bool {
@@ -67,5 +84,21 @@ class ScreenRestorationManager {
 
     func clearAll() {
         pendingRestorations.removeAll()
+    }
+
+    func savePending() {
+        guard let url = pendingFileURL else { return }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        guard let data = try? encoder.encode(pendingRestorations) else { return }
+        try? data.write(to: url, options: .atomic)
+    }
+
+    func loadPending() {
+        guard let url = pendingFileURL else { return }
+        guard let data = try? Data(contentsOf: url) else { return }
+        let loaded = (try? JSONDecoder().decode([PendingRestoration].self, from: data)) ?? []
+        pendingRestorations = loaded
+        purgeExpired()
     }
 }
