@@ -305,6 +305,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     @objc func deleteRegisteredImage(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
         ImageManager.shared.removeRegisteredImage(named: name)
+        delegate?.characterWindowDidDeleteImage(named: name)
     }
 
     @objc func resetToDefault() {
@@ -373,6 +374,7 @@ protocol CharacterWindowDelegate: AnyObject {
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
     func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
     func characterWindowDidClose(_ sender: CharacterWindow)
+    func characterWindowDidDeleteImage(named name: String)
 }
 
 // MARK: - CharacterWindow + Adjust Submenu

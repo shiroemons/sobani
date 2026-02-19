@@ -302,6 +302,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         quitIfNoWindows()
     }
 
+    func characterWindowDidDeleteImage(named name: String) {
+        guard let defaultImage = ImageManager.shared.defaultImage() else { return }
+        for charWindow in characterWindows where charWindow.displayName == name {
+            charWindow.displayName = "デフォルト"
+            charWindow.applyImage(defaultImage)
+        }
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
