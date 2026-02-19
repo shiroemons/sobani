@@ -399,19 +399,19 @@ class UpdateManager {
 
     // MARK: - Restart App
 
-    // NSWorkspace で安全に再起動（/bin/sh を使わない）
+    // 独立した子プロセスで終了を待ってから再起動
     private func restartApp(at appURL: URL) {
         let pid = ProcessInfo.processInfo.processIdentifier
+        let appPath = appURL.path
 
-        DispatchQueue.global(qos: .utility).async {
-            // 現在のプロセスが終了するまで待機（シェルを使わない）
-            while kill(pid, 0) == 0 {
-                Thread.sleep(forTimeInterval: 0.1)
-            }
-            DispatchQueue.main.async {
-                NSWorkspace.shared.open(appURL)
-            }
-        }
+        // terminate 前に子プロセスを起動（親終了後も launchd 配下で生存）
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        process.arguments = [
+            "-c",
+            "while kill -0 \(pid) 2>/dev/null; do sleep 0.1; done; open \"\(appPath)\""
+        ]
+        try? process.run()
 
         // 現在のアプリを終了
         if let appDelegate = NSApp.delegate as? AppDelegate {
