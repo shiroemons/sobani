@@ -193,30 +193,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
         if let adjustItem = menu.items.first(where: { $0.title == "表示の調整" }),
            let adjustSubmenu = adjustItem.submenu {
-            adjustSubmenu.removeAllItems()
-
-            let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlip), keyEquivalent: "")
-            flipItem.target = self
-            flipItem.state = imageView.isFlippedHorizontally ? .on : .off
-            adjustSubmenu.addItem(flipItem)
-
-            adjustSubmenu.addItem(NSMenuItem.separator())
-
-            let adjustPanelItem = NSMenuItem(title: "表示の調整...", action: #selector(showAdjustmentPanel), keyEquivalent: "")
-            adjustPanelItem.target = self
-            adjustSubmenu.addItem(adjustPanelItem)
-
-            adjustSubmenu.addItem(NSMenuItem.separator())
-
-            let resetRotationItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotation), keyEquivalent: "")
-            resetRotationItem.target = self
-            resetRotationItem.isEnabled = imageView.rotationAngle != 0
-            adjustSubmenu.addItem(resetRotationItem)
-
-            let resetOpacityItem = NSMenuItem(title: "透明度をリセット", action: #selector(resetOpacity), keyEquivalent: "")
-            resetOpacityItem.target = self
-            resetOpacityItem.isEnabled = imageView.opacityLevel != 1.0
-            adjustSubmenu.addItem(resetOpacityItem)
+            populateAdjustSubmenu(adjustSubmenu)
         }
     }
 
@@ -395,6 +372,62 @@ protocol CharacterWindowDelegate: AnyObject {
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
     func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
     func characterWindowDidClose(_ sender: CharacterWindow)
+}
+
+// MARK: - CharacterWindow + Adjust Submenu
+
+extension CharacterWindow {
+    func populateAdjustSubmenu(_ adjustSubmenu: NSMenu) {
+        adjustSubmenu.removeAllItems()
+
+        let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlip), keyEquivalent: "")
+        flipItem.target = self
+        flipItem.state = imageView.isFlippedHorizontally ? .on : .off
+        adjustSubmenu.addItem(flipItem)
+
+        adjustSubmenu.addItem(NSMenuItem.separator())
+
+        let adjustPanelItem = NSMenuItem(title: "表示の調整...", action: #selector(showAdjustmentPanel), keyEquivalent: "")
+        adjustPanelItem.target = self
+        adjustSubmenu.addItem(adjustPanelItem)
+
+        adjustSubmenu.addItem(NSMenuItem.separator())
+
+        let resetRotationItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotation), keyEquivalent: "")
+        resetRotationItem.target = self
+        resetRotationItem.isEnabled = imageView.rotationAngle != 0
+        adjustSubmenu.addItem(resetRotationItem)
+
+        let resetOpacityItem = NSMenuItem(title: "透明度をリセット", action: #selector(resetOpacity), keyEquivalent: "")
+        resetOpacityItem.target = self
+        resetOpacityItem.isEnabled = imageView.opacityLevel != 1.0
+        adjustSubmenu.addItem(resetOpacityItem)
+
+        adjustSubmenu.addItem(NSMenuItem.separator())
+
+        let resetDisplayItem = NSMenuItem(title: "表示をリセット", action: #selector(resetDisplay), keyEquivalent: "")
+        resetDisplayItem.target = self
+        adjustSubmenu.addItem(resetDisplayItem)
+    }
+
+    @objc func resetDisplay() {
+        imageView.isFlippedHorizontally = false
+        imageView.rotationAngle = 0
+        imageView.opacityLevel = 1.0
+        adjustmentPanelController?.updateAngle(0)
+        adjustmentPanelController?.updateOpacity(1.0)
+
+        let defaultHeight: CGFloat = 600
+        let defaultWidth = defaultHeight * imageView.aspectRatio
+
+        let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
+        let originX = screenFrame.minX + (screenFrame.width - defaultWidth) / 2
+        let originY = screenFrame.minY + (screenFrame.height - defaultHeight) / 2
+
+        window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
+        imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
+        imageView.needsLayout = true
+    }
 }
 
 // MARK: - CharacterWindow + Highlight Border

@@ -186,6 +186,10 @@ extension AppDelegate {
         let count = orderedWindows.count
         let canReorder = !areWindowsHidden && count > 1
 
+        buildLayerOrderItems(into: submenu, windowNumber: windowNumber, index: index, count: count, canReorder: canReorder)
+
+        submenu.addItem(NSMenuItem.separator())
+
         let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlipByWindowNumber(_:)), keyEquivalent: "")
         flipItem.target = self
         flipItem.state = charWindow.imageView.isFlippedHorizontally ? .on : .off
@@ -201,8 +205,6 @@ extension AppDelegate {
         adjustItem.isEnabled = !areWindowsHidden
         submenu.addItem(adjustItem)
 
-        submenu.addItem(NSMenuItem.separator())
-
         let resetRotationItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotationByWindowNumber(_:)), keyEquivalent: "")
         resetRotationItem.target = self
         resetRotationItem.tag = windowNumber
@@ -217,7 +219,10 @@ extension AppDelegate {
 
         submenu.addItem(NSMenuItem.separator())
 
-        buildLayerOrderItems(into: submenu, windowNumber: windowNumber, index: index, count: count, canReorder: canReorder)
+        let resetDisplayItem = NSMenuItem(title: "表示をリセット", action: #selector(resetDisplayByWindowNumber(_:)), keyEquivalent: "")
+        resetDisplayItem.target = self
+        resetDisplayItem.tag = windowNumber
+        submenu.addItem(resetDisplayItem)
 
         submenu.addItem(NSMenuItem.separator())
 
@@ -273,6 +278,11 @@ extension AppDelegate {
     @objc func resetOpacityByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         charWindow.applyOpacity(1.0)
+    }
+
+    @objc func resetDisplayByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.resetDisplay()
     }
 
     @objc func moveWindowToFrontByWindowNumber(_ sender: NSMenuItem) {
