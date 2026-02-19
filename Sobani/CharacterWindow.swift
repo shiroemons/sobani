@@ -107,6 +107,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
         let adjustItem = NSMenuItem(title: "表示の調整", action: nil, keyEquivalent: "")
         let adjustSubmenu = NSMenu()
+        adjustSubmenu.autoenablesItems = false
         adjustItem.submenu = adjustSubmenu
         menu.addItem(adjustItem)
         menu.addItem(NSMenuItem.separator())
