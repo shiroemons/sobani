@@ -330,4 +330,43 @@ extension AppDelegate {
             charWindow.hideHighlightBorder()
         }
     }
+
+    @objc func changeDefaultImageFromMenu() {
+        let panel = NSOpenPanel()
+        panel.title = "デフォルト画像を選択"
+        panel.message = "デフォルトに設定する画像ファイルを選択してください"
+        panel.prompt = "選択"
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        if panel.runModal() == .OK, let url = panel.url {
+            ImageManager.shared.setCustomDefault(from: url)
+            if let newDefault = ImageManager.shared.defaultImage() {
+                for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
+                    charWindow.applyImage(newDefault)
+                }
+            }
+        }
+    }
+
+    @objc func resetDefaultImage() {
+        ImageManager.shared.resetCustomDefault()
+        if let newDefault = ImageManager.shared.defaultImage() {
+            for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
+                charWindow.applyImage(newDefault)
+            }
+        }
+    }
+
+    @objc func resetAllRotations() {
+        for charWindow in characterWindows {
+            charWindow.applyRotation(0)
+        }
+    }
+
+    @objc func resetAllOpacity() {
+        for charWindow in characterWindows {
+            charWindow.applyOpacity(1.0)
+        }
+    }
 }

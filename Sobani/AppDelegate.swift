@@ -1,6 +1,5 @@
 import Cocoa
 import ServiceManagement
-import UniformTypeIdentifiers
 
 // MARK: - App Delegate
 
@@ -13,6 +12,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     var globalMonitor: Any?
     var localMonitor: Any?
     private var nextWindowId: Int = 1
+    let screenRestorationManager = ScreenRestorationManager()
+    var screenChangeDebounceTimer: Timer?
+    var preSleepStates: [Int: WindowState] = [:]
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
@@ -51,7 +53,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                 charWindow.delegate = self
                 charWindow.displayName = resolvedDisplayName
                 charWindow.windowId = state.windowId
-                charWindow.restore(from: state)
+                let wasAdjusted = charWindow.restore(from: state)
+                if wasAdjusted {
+                    let adjusted = WindowStateManager.adjustToVisibleArea(state)
+                    screenRestorationManager.addPending(
+                        windowId: state.windowId,
+                        originalState: state,
+                        adjustedOriginX: adjusted.originX,
+                        adjustedOriginY: adjusted.originY
+                    )
+                }
                 characterWindows.append(charWindow)
             }
 
@@ -73,6 +84,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
         UpdateManager.shared.delegate = self
         UpdateManager.shared.startPeriodicChecks()
+
+        setupScreenRestorationObservers()
     }
 
     @objc func bringAllToFront() {
@@ -192,45 +205,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         }
     }
 
-    @objc func changeDefaultImageFromMenu() {
-        let panel = NSOpenPanel()
-        panel.title = "デフォルト画像を選択"
-        panel.message = "デフォルトに設定する画像ファイルを選択してください"
-        panel.prompt = "選択"
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        if panel.runModal() == .OK, let url = panel.url {
-            ImageManager.shared.setCustomDefault(from: url)
-            if let newDefault = ImageManager.shared.defaultImage() {
-                for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
-                    charWindow.applyImage(newDefault)
-                }
-            }
-        }
-    }
-
-    @objc func resetDefaultImage() {
-        ImageManager.shared.resetCustomDefault()
-        if let newDefault = ImageManager.shared.defaultImage() {
-            for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
-                charWindow.applyImage(newDefault)
-            }
-        }
-    }
-
-    @objc func resetAllRotations() {
-        for charWindow in characterWindows {
-            charWindow.applyRotation(0)
-        }
-    }
-
-    @objc func resetAllOpacity() {
-        for charWindow in characterWindows {
-            charWindow.applyOpacity(1.0)
-        }
-    }
-
     func confirmQuit() -> Bool {
         let alert = NSAlert()
         alert.messageText = "アプリケーションを終了しますか？"
@@ -340,6 +314,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         if let monitor = localMonitor {
             NSEvent.removeMonitor(monitor)
         }
+
+        teardownScreenRestorationObservers()
     }
 
 }

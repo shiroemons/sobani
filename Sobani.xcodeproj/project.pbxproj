@@ -22,6 +22,9 @@
 		DD000015 /* AdjustmentPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000016 /* AdjustmentPanelController.swift */; };
 		EE000001 /* LaunchAtLoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE000002 /* LaunchAtLoginManager.swift */; };
 		EE000003 /* LaunchAtLoginManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE000004 /* LaunchAtLoginManagerTests.swift */; };
+		FF000001 /* ScreenRestorationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000002 /* ScreenRestorationManager.swift */; };
+		FF000003 /* ScreenRestorationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000004 /* ScreenRestorationManagerTests.swift */; };
+		FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000006 /* AppDelegate+ScreenRestoration.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +56,9 @@
 		DD000016 /* AdjustmentPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustmentPanelController.swift; sourceTree = "<group>"; };
 		EE000002 /* LaunchAtLoginManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginManager.swift; sourceTree = "<group>"; };
 		EE000004 /* LaunchAtLoginManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginManagerTests.swift; sourceTree = "<group>"; };
+		FF000002 /* ScreenRestorationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManager.swift; sourceTree = "<group>"; };
+		FF000004 /* ScreenRestorationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManagerTests.swift; sourceTree = "<group>"; };
+		FF000006 /* AppDelegate+ScreenRestoration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+ScreenRestoration.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +100,8 @@
 				CC000011 /* UpdateManager.swift */,
 				DD000016 /* AdjustmentPanelController.swift */,
 				EE000002 /* LaunchAtLoginManager.swift */,
+				FF000002 /* ScreenRestorationManager.swift */,
+				FF000006 /* AppDelegate+ScreenRestoration.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
@@ -117,6 +125,7 @@
 				CC000013 /* UpdateManagerTests.swift */,
 				DD000012 /* WindowStateManagerTests.swift */,
 				EE000004 /* LaunchAtLoginManagerTests.swift */,
+				FF000004 /* ScreenRestorationManagerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -245,6 +254,8 @@
 				DD000015 /* AdjustmentPanelController.swift in Sources */,
 				DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */,
 				EE000001 /* LaunchAtLoginManager.swift in Sources */,
+				FF000001 /* ScreenRestorationManager.swift in Sources */,
+				FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -257,6 +268,7 @@
 				CC000012 /* UpdateManagerTests.swift in Sources */,
 				DD000011 /* WindowStateManagerTests.swift in Sources */,
 				EE000003 /* LaunchAtLoginManagerTests.swift in Sources */,
+				FF000003 /* ScreenRestorationManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

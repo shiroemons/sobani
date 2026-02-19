@@ -148,8 +148,10 @@ class WindowStateManager {
 // MARK: - CharacterWindow Restore Extension
 
 extension CharacterWindow {
-    func restore(from state: WindowState) {
+    @discardableResult
+    func restore(from state: WindowState) -> Bool {
         let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let wasAdjusted = (adjusted.originX != state.originX || adjusted.originY != state.originY)
         imageView.aspectRatio = adjusted.width / adjusted.height
         imageView.frame = NSRect(x: 0, y: 0, width: adjusted.width, height: adjusted.height)
 
@@ -178,5 +180,7 @@ extension CharacterWindow {
                 self?.imageView.layoutSubtreeIfNeeded()
             }
         }
+
+        return wasAdjusted
     }
 }
