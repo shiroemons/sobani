@@ -187,7 +187,8 @@ extension AppDelegate {
         for (index, charWindow) in orderedWindows.enumerated() {
             let imageWidth = Int(charWindow.imageView.frame.width)
             let imageHeight = Int(charWindow.imageView.frame.height)
-            let screenName = charWindow.window.screen?.localizedName ?? "不明"
+            let rawScreenName = charWindow.window.screen?.localizedName ?? ""
+            let screenName = rawScreenName.isEmpty ? "不明" : rawScreenName
             let leftText = "\(index + 1): \(charWindow.displayName) (#\(charWindow.windowId))"
             let rightText = "[\(imageWidth)×\(imageHeight)] \(screenName)"
             let fullText = "\(leftText)\t\(rightText)"
