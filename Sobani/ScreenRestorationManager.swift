@@ -1,10 +1,11 @@
-import Foundation
+import AppKit
 
 // MARK: - Pending Restoration
 
 struct PendingRestoration {
     let windowId: Int
     let originalState: WindowState
+    let displayID: CGDirectDisplayID
     let adjustedOriginX: CGFloat
     let adjustedOriginY: CGFloat
     let createdAt: Date
@@ -25,11 +26,13 @@ class ScreenRestorationManager {
         return !pendingRestorations.isEmpty
     }
 
-    func addPending(windowId: Int, originalState: WindowState, adjustedOriginX: CGFloat, adjustedOriginY: CGFloat) {
+    func addPending(windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
+                    adjustedOriginX: CGFloat, adjustedOriginY: CGFloat) {
         pendingRestorations.removeAll { $0.windowId == windowId }
         let entry = PendingRestoration(
             windowId: windowId,
             originalState: originalState,
+            displayID: displayID,
             adjustedOriginX: adjustedOriginX,
             adjustedOriginY: adjustedOriginY,
             createdAt: currentDate()
@@ -46,9 +49,20 @@ class ScreenRestorationManager {
         pendingRestorations.removeAll { now.timeIntervalSince($0.createdAt) > timeout }
     }
 
-    func restorableEntries(using isVisible: (WindowState) -> Bool) -> [PendingRestoration] {
+    func restorableEntries() -> [PendingRestoration] {
         purgeExpired()
-        return pendingRestorations.filter { isVisible($0.originalState) }
+        return pendingRestorations.filter { entry in
+            if entry.displayID != 0 {
+                // displayIDが既知: モニターIDで判定
+                return NSScreen.screens.contains { screen in
+                    (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
+                        as? CGDirectDisplayID) == entry.displayID
+                }
+            } else {
+                // displayIDが不明（スリープなし切断）: 元の位置が現在可視かどうかで判定
+                return WindowStateManager.isPositionVisible(entry.originalState)
+            }
+        }
     }
 
     func clearAll() {

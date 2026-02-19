@@ -52,9 +52,15 @@ extension AppDelegate {
 
     @objc func handleWillSleep() {
         preSleepStates = [:]
+        preSleepDisplayIDs = [:]
+        screenRestorationManager.clearAll()
         for charWindow in characterWindows {
             let state = WindowStateManager.captureState(from: charWindow)
             preSleepStates[charWindow.windowId] = state
+            if let screen = NSScreen.screen(containing: charWindow.window.frame),
+               let displayID = screen.displayID {
+                preSleepDisplayIDs[charWindow.windowId] = displayID
+            }
         }
     }
 
@@ -65,27 +71,60 @@ extension AppDelegate {
     }
 
     func attemptPendingRestorations() {
-        // フェーズ1: スリープ復帰後の全ウィンドウ復元
+        // フェーズ0: スリープなしのモニター切断対応
+        // preSleepStates が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
+        if preSleepStates.isEmpty {
+            for charWindow in characterWindows {
+                let currentState = WindowStateManager.captureState(from: charWindow)
+                guard !WindowStateManager.isPositionVisible(currentState) else { continue }
+                let adjusted = WindowStateManager.adjustToVisibleArea(currentState)
+                charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
+                // displayID は切断後には取得不可のため 0 を使用（位置ベースで復元判定）
+                screenRestorationManager.addPending(
+                    windowId: charWindow.windowId,
+                    originalState: currentState,
+                    displayID: 0,
+                    adjustedOriginX: adjusted.originX,
+                    adjustedOriginY: adjusted.originY
+                )
+            }
+        }
+
+        // フェーズ1: スリープ復帰後の全ウィンドウ復元（displayIDベース）
         if !preSleepStates.isEmpty {
             for charWindow in characterWindows {
                 guard let savedState = preSleepStates[charWindow.windowId] else { continue }
-                let adjusted = WindowStateManager.adjustToVisibleArea(savedState)
-                charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
-                // 位置が調整された（モニター切断）場合はペンディングへ追加
-                if adjusted.originX != savedState.originX || adjusted.originY != savedState.originY {
+
+                let targetOrigin: NSPoint
+                let savedDisplayID = preSleepDisplayIDs[charWindow.windowId]
+
+                if let savedID = savedDisplayID, let screen = NSScreen.screen(withDisplayID: savedID) {
+                    // モニターが接続中 → 保存位置をそのモニター内に収めて復元
+                    let clampedX = max(screen.frame.minX,
+                        min(savedState.originX, screen.frame.maxX - savedState.width))
+                    let clampedY = max(screen.frame.minY,
+                        min(savedState.originY, screen.frame.maxY - savedState.height))
+                    targetOrigin = NSPoint(x: clampedX, y: clampedY)
+                } else {
+                    // モニター未接続 → メインスクリーン中央へ + 再接続時のためペンディング追加
+                    let adjusted = WindowStateManager.adjustToVisibleArea(savedState)
+                    targetOrigin = NSPoint(x: adjusted.originX, y: adjusted.originY)
                     screenRestorationManager.addPending(
                         windowId: charWindow.windowId,
                         originalState: savedState,
+                        displayID: savedDisplayID ?? 0,
                         adjustedOriginX: adjusted.originX,
                         adjustedOriginY: adjusted.originY
                     )
                 }
+                charWindow.window.setFrameOrigin(targetOrigin)
             }
             preSleepStates = [:]
+            preSleepDisplayIDs = [:]
         }
 
         // フェーズ2: モニター再接続後の復元（ペンディングキュー）
-        let restorable = screenRestorationManager.restorableEntries(using: WindowStateManager.isPositionVisible)
+        let restorable = screenRestorationManager.restorableEntries()
         for entry in restorable {
             guard let charWindow = characterWindows.first(where: { $0.windowId == entry.windowId }) else {
                 screenRestorationManager.removePending(windowId: entry.windowId)
@@ -95,9 +134,31 @@ extension AppDelegate {
             let deltaX = abs(currentOrigin.x - entry.adjustedOriginX)
             let deltaY = abs(currentOrigin.y - entry.adjustedOriginY)
             if deltaX <= 20 && deltaY <= 20 {
-                charWindow.window.setFrameOrigin(NSPoint(x: entry.originalState.originX, y: entry.originalState.originY))
+                charWindow.window.setFrameOrigin(
+                    NSPoint(x: entry.originalState.originX, y: entry.originalState.originY)
+                )
             }
             screenRestorationManager.removePending(windowId: entry.windowId)
+        }
+    }
+}
+
+// MARK: - NSScreen Helpers
+
+private extension NSScreen {
+    var displayID: CGDirectDisplayID? {
+        deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+    }
+
+    static func screen(withDisplayID displayID: CGDirectDisplayID) -> NSScreen? {
+        screens.first { $0.displayID == displayID }
+    }
+
+    static func screen(containing rect: NSRect) -> NSScreen? {
+        screens.max {
+            let areaA = $0.frame.intersection(rect)
+            let areaB = $1.frame.intersection(rect)
+            return areaA.width * areaA.height < areaB.width * areaB.height
         }
     }
 }

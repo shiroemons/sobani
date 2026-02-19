@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
     var preSleepStates: [Int: WindowState] = [:]
+    var preSleepDisplayIDs: [Int: CGDirectDisplayID] = [:]
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
@@ -59,6 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                     screenRestorationManager.addPending(
                         windowId: state.windowId,
                         originalState: state,
+                        displayID: 0,
                         adjustedOriginX: adjusted.originX,
                         adjustedOriginY: adjusted.originY
                     )
