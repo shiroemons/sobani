@@ -45,6 +45,7 @@
         <nav class="hidden md:flex items-center space-x-8">
           <a href="#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
           <a href="#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
+          <a href="#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">動画</a>
           <a href="#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">ダウンロード</a>
           <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
           <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替">
@@ -68,6 +69,7 @@
       <nav class="px-4 py-4 space-y-3">
         <a href="#features" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
         <a href="#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
+        <a href="#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">動画</a>
         <a href="#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">ダウンロード</a>
         <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
         <button id="theme-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替">
@@ -205,6 +207,31 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </section>
+
+  <!-- 動画セクション -->
+  <section id="video" class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          使用例
+        </h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
+          実際の動作をご覧ください
+        </p>
+      </div>
+      <div class="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
+        <video
+          controls
+          preload="metadata"
+          class="w-full"
+          playsinline
+        >
+          <source src="videos/Sobani.mp4" type="video/mp4">
+          <p>お使いのブラウザは動画の再生に対応していません。</p>
+        </video>
       </div>
     </div>
   </section>
