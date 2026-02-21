@@ -57,6 +57,11 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         super.init()
         setupMenu()
 
+        imageView.onMouseDown = { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.characterWindowDidBecomeActive(self)
+        }
+
         imageView.onRotationChanged = { [weak self] in
             self?.adjustmentPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
         }
@@ -375,6 +380,7 @@ protocol CharacterWindowDelegate: AnyObject {
     func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
     func characterWindowDidClose(_ sender: CharacterWindow)
     func characterWindowDidDeleteImage(named name: String)
+    func characterWindowDidBecomeActive(_ sender: CharacterWindow)
 }
 
 // MARK: - CharacterWindow + Adjust Submenu

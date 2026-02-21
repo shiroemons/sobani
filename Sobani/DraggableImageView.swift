@@ -26,8 +26,10 @@ class DraggableImageView: NSImageView {
     }
     var onOpacityChanged: (() -> Void)?
     var scrollRotationHandler: ((CGFloat) -> Void)?
+    var onMouseDown: (() -> Void)?
 
     override func mouseDown(with event: NSEvent) {
+        onMouseDown?()
         if event.modifierFlags.contains(.option) {
             isDraggingAll = true
             dragStartLocation = NSEvent.mouseLocation

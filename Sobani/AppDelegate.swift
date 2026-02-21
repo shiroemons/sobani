@@ -159,8 +159,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             if idx == 0 {
                 charWindow.window.orderFront(nil)
             } else {
-                let windowAbove = backToFront[idx - 1]
-                charWindow.window.order(.below, relativeTo: windowAbove.window.windowNumber)
+                let windowBelow = backToFront[idx - 1]
+                charWindow.window.order(.above, relativeTo: windowBelow.window.windowNumber)
             }
         }
     }
@@ -300,6 +300,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             areWindowsHidden = false
         }
         quitIfNoWindows()
+    }
+
+    func characterWindowDidBecomeActive(_ sender: CharacterWindow) {
+        moveWindowToFront(sender)
     }
 
     func characterWindowDidDeleteImage(named name: String) {
