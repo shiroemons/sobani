@@ -3,13 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="dns-prefetch" href="https://www.youtube.com">
+  <link rel="preconnect" href="https://www.youtube.com" crossorigin>
   <title>Sobani — 推しを、そばに。</title>
   <meta name="description" content="推しを、そばに。お気に入りの画像をアクリルスタンドのようにデスクトップに飾れるmacOSアプリ">
   <meta property="og:title" content="Sobani — 推しを、そばに。">
   <meta property="og:description" content="推しを、そばに。お気に入りの画像をアクリルスタンドのようにデスクトップに飾れるmacOSアプリ">
-  <meta property="og:image" content="https://shiroemons.github.io/sobani/images/og-image.png">
+  <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://xn--xckxf.jp/sobani/">
+  <meta property="og:url" content="https://xn--xckxf.jp/sobani/">
+  <meta property="og:site_name" content="Sobani">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:title" content="Sobani — 推しを、そばに。">
+  <meta name="twitter:description" content="推しを、そばに。お気に入りの画像をアクリルスタンドのようにデスクトップに飾れるmacOSアプリ">
+  <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
+  <meta name="theme-color" content="#f59e0b">
+  <meta name="author" content="shiroemons">
+  <meta name="keywords" content="macOS,デスクトップマスコット,アクリルスタンド,デスクトップアクスタ,Sobani,推し,常に最前面,最前面表示,PNG透過表示,透過ウィンドウ,複数画像表示,ドラッグ移動,回転,透明度調整,仮想デスクトップ対応,Swift,無料,軽量">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192.png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
@@ -33,6 +47,32 @@
   <style>
     html { scroll-behavior: smooth; }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Sobani",
+    "description": "推しを、そばに。お気に入りの画像をアクリルスタンドのようにデスクトップに飾れるmacOSアプリ",
+    "url": "https://xn--xckxf.jp/sobani/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "macOS 13.0+",
+    "author": {
+      "@type": "Person",
+      "name": "shiroemons",
+      "url": "https://github.com/shiroemons"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "JPY"
+    },
+    "license": "https://opensource.org/licenses/MIT",
+    "downloadUrl": "https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.zip",
+    "image": "https://xn--xckxf.jp/sobani/images/og-image.png",
+    "screenshot": "https://xn--xckxf.jp/sobani/screenshots/sobani-desktop.png",
+    "inLanguage": "ja"
+  }
+  </script>
 </head>
 <body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
 
@@ -42,7 +82,7 @@
       <div class="flex items-center justify-between h-16">
         <a href="#" class="text-xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">Sobani</a>
         <!-- デスクトップナビ -->
-        <nav class="hidden md:flex items-center space-x-8">
+        <nav class="hidden md:flex items-center space-x-8" aria-label="メインナビゲーション">
           <a href="#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
           <a href="#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
           <a href="#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">動画</a>
@@ -66,7 +106,7 @@
     </div>
     <!-- モバイルメニュー -->
     <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
-      <nav class="px-4 py-4 space-y-3">
+      <nav class="px-4 py-4 space-y-3" aria-label="モバイルナビゲーション">
         <a href="#features" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
         <a href="#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
         <a href="#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">動画</a>
@@ -85,6 +125,7 @@
     </div>
   </header>
 
+  <main>
   <!-- ヒーローセクション -->
   <section class="relative overflow-hidden">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
@@ -124,7 +165,7 @@
           </div>
         </div>
         <div class="lg:flex-1 flex justify-center">
-          <img src="images/app-icon.png" alt="Sobani アプリアイコン" class="w-48 sm:w-56 lg:w-72 rounded-3xl shadow-2xl dark:shadow-amber-500/10">
+          <img src="images/app-icon.png" alt="Sobani アプリアイコン" width="1024" height="1024" class="w-48 sm:w-56 lg:w-72 rounded-3xl shadow-2xl dark:shadow-amber-500/10">
         </div>
       </div>
     </div>
@@ -235,6 +276,7 @@
           <iframe
             class="absolute inset-0 w-full h-full"
             src="https://www.youtube.com/embed/Ru7LU_AKLK0"
+            loading="lazy"
             title="Sobani 使用例"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -353,6 +395,7 @@
       </div>
     </div>
   </section>
+  </main>
 
   <!-- フッター -->
   <footer class="border-t border-slate-200 dark:border-slate-700">
