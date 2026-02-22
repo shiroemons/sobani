@@ -1,5 +1,20 @@
 import Foundation
 
+/// Localization helper that supports runtime language switching via LanguageManager.
+/// Falls back to NSLocalizedString with the main bundle when no custom bundle is set.
+func L(_ key: String) -> String {
+    if let bundle = LanguageManager.shared.currentBundle {
+        return NSLocalizedString(key, bundle: bundle, comment: "")
+    }
+    return NSLocalizedString(key, comment: "")
+}
+
+class LanguageManager {
+    static let shared = LanguageManager()
+    var currentBundle: Bundle?
+    private init() {}
+}
+
 enum AppConstants {
     static let defaultImageName = "default"
 }

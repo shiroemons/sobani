@@ -21,6 +21,13 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     var windowId: Int = 0
     private var adjustmentPanelController: AdjustmentPanelController?
 
+    var localizedDisplayName: String {
+        if displayName == AppConstants.defaultImageName {
+            return L("image.default_display")
+        }
+        return displayName
+    }
+
     init(image: NSImage) {
         let maxHeight: CGFloat = 600
         let scale = maxHeight / image.size.height
@@ -96,24 +103,24 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
 
-        let registeredItem = NSMenuItem(title: "表示画像の変更", action: nil, keyEquivalent: "")
+        let registeredItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
         registeredItem.tag = MenuItemTag.changeImageSubmenu.rawValue
         registeredItem.submenu = NSMenu()
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
-        let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
+        let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
         newWindowItem.tag = MenuItemTag.addNewWindowSubmenu.rawValue
         newWindowItem.submenu = NSMenu()
         menu.addItem(newWindowItem)
         menu.addItem(NSMenuItem.separator())
-        let deleteRegisteredItem = NSMenuItem(title: "登録画像を削除", action: nil, keyEquivalent: "")
+        let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
         deleteRegisteredItem.tag = MenuItemTag.deleteRegisteredSubmenu.rawValue
         let deleteRegisteredSubmenu = NSMenu()
         deleteRegisteredItem.submenu = deleteRegisteredSubmenu
         menu.addItem(deleteRegisteredItem)
         menu.addItem(NSMenuItem.separator())
 
-        let adjustItem = NSMenuItem(title: "表示の調整", action: nil, keyEquivalent: "")
+        let adjustItem = NSMenuItem(title: L("adjust.title"), action: nil, keyEquivalent: "")
         adjustItem.tag = MenuItemTag.adjustSubmenu.rawValue
         let adjustSubmenu = NSMenu()
         adjustSubmenu.autoenablesItems = false
@@ -121,13 +128,13 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.addItem(adjustItem)
         menu.addItem(NSMenuItem.separator())
 
-        let closeItem = NSMenuItem(title: "この画像を閉じる", action: #selector(closeThisWindow), keyEquivalent: "w")
+        let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.tag = MenuItemTag.close.rawValue
         closeItem.target = self
         menu.addItem(closeItem)
         menu.addItem(NSMenuItem.separator())
 
-        let quitItem = NSMenuItem(title: "終了", action: #selector(quitApp), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
         quitItem.tag = MenuItemTag.quit.rawValue
         quitItem.target = self
         menu.addItem(quitItem)
@@ -141,11 +148,11 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         submenu.removeAllItems()
         submenu.autoenablesItems = false
 
-        let changeItem = NSMenuItem(title: "画像を変更...", action: #selector(changeImage), keyEquivalent: "o")
+        let changeItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImage), keyEquivalent: "o")
         changeItem.target = self
         submenu.addItem(changeItem)
 
-        let defaultItem = NSMenuItem(title: "デフォルト画像に戻す", action: #selector(resetToDefault), keyEquivalent: "d")
+        let defaultItem = NSMenuItem(title: L("image.default_reset"), action: #selector(resetToDefault), keyEquivalent: "d")
         defaultItem.target = self
         defaultItem.isEnabled = displayName != AppConstants.defaultImageName
         submenu.addItem(defaultItem)
@@ -153,7 +160,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         let names = ImageManager.shared.registeredImageNames()
         if !names.isEmpty {
             submenu.addItem(NSMenuItem.separator())
-            let registeredLabel = NSMenuItem(title: "登録画像", action: nil, keyEquivalent: "")
+            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
             registeredLabel.isEnabled = false
             submenu.addItem(registeredLabel)
             for name in names {
@@ -168,17 +175,17 @@ class CharacterWindow: NSObject, NSMenuDelegate {
               let newWindowSubmenu = newWindowItem.submenu else { return }
 
         newWindowSubmenu.removeAllItems()
-        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
+        let selectImageItem = NSMenuItem(title: L("image.select"), action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
         selectImageItem.target = self
         newWindowSubmenu.addItem(selectImageItem)
 
-        let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindow), keyEquivalent: "n")
+        let defaultWindowItem = NSMenuItem(title: L("image.default"), action: #selector(addNewWindow), keyEquivalent: "n")
         defaultWindowItem.target = self
         newWindowSubmenu.addItem(defaultWindowItem)
 
         if !names.isEmpty {
             newWindowSubmenu.addItem(NSMenuItem.separator())
-            let registeredWindowLabel = NSMenuItem(title: "登録画像", action: nil, keyEquivalent: "")
+            let registeredWindowLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
             registeredWindowLabel.isEnabled = false
             newWindowSubmenu.addItem(registeredWindowLabel)
             for name in names {
@@ -292,9 +299,9 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func changeImage() {
         let panel = NSOpenPanel()
-        panel.title = "画像を選択"
-        panel.message = "表示する画像ファイルを選択してください"
-        panel.prompt = "選択"
+        panel.title = L("dialog.select_image")
+        panel.message = L("dialog.select_image_message")
+        panel.prompt = L("dialog.select")
         panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -337,9 +344,9 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func addNewWindowWithNewImage(_ sender: NSMenuItem) {
         let panel = NSOpenPanel()
-        panel.title = "画像を選択"
-        panel.message = "追加表示する画像ファイルを選択してください"
-        panel.prompt = "選択"
+        panel.title = L("dialog.select_image")
+        panel.message = L("dialog.select_add_image_message")
+        panel.prompt = L("dialog.select")
         panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -395,32 +402,32 @@ extension CharacterWindow {
     func populateAdjustSubmenu(_ adjustSubmenu: NSMenu) {
         adjustSubmenu.removeAllItems()
 
-        let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlip), keyEquivalent: "")
+        let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlip), keyEquivalent: "")
         flipItem.target = self
         flipItem.state = imageView.isFlippedHorizontally ? .on : .off
         adjustSubmenu.addItem(flipItem)
 
         adjustSubmenu.addItem(NSMenuItem.separator())
 
-        let adjustPanelItem = NSMenuItem(title: "表示の調整...", action: #selector(showAdjustmentPanel), keyEquivalent: "")
+        let adjustPanelItem = NSMenuItem(title: L("adjust.open"), action: #selector(showAdjustmentPanel), keyEquivalent: "")
         adjustPanelItem.target = self
         adjustSubmenu.addItem(adjustPanelItem)
 
         adjustSubmenu.addItem(NSMenuItem.separator())
 
-        let resetRotationItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotation), keyEquivalent: "")
+        let resetRotationItem = NSMenuItem(title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: "")
         resetRotationItem.target = self
         resetRotationItem.isEnabled = imageView.rotationAngle != 0
         adjustSubmenu.addItem(resetRotationItem)
 
-        let resetOpacityItem = NSMenuItem(title: "透明度をリセット", action: #selector(resetOpacity), keyEquivalent: "")
+        let resetOpacityItem = NSMenuItem(title: L("adjust.reset_opacity"), action: #selector(resetOpacity), keyEquivalent: "")
         resetOpacityItem.target = self
         resetOpacityItem.isEnabled = imageView.opacityLevel != 1.0
         adjustSubmenu.addItem(resetOpacityItem)
 
         adjustSubmenu.addItem(NSMenuItem.separator())
 
-        let resetDisplayItem = NSMenuItem(title: "表示をリセット", action: #selector(resetDisplay), keyEquivalent: "")
+        let resetDisplayItem = NSMenuItem(title: L("adjust.reset_display"), action: #selector(resetDisplay), keyEquivalent: "")
         resetDisplayItem.target = self
         adjustSubmenu.addItem(resetDisplayItem)
     }

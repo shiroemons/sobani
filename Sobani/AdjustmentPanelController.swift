@@ -146,7 +146,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        newPanel.title = "表示の調整"
+        newPanel.title = L("adjust.panel_title")
         newPanel.level = .modalPanel
         newPanel.isFloatingPanel = true
         newPanel.delegate = self
@@ -191,7 +191,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         dialView = dial
 
         // "角度:" label
-        let label = NSTextField(labelWithString: "角度:")
+        let label = NSTextField(labelWithString: L("adjust.angle"))
         label.frame = NSRect(x: 110, y: 100 + offsetY, width: 40, height: 20)
         label.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(label)
@@ -207,13 +207,13 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         textField = field
 
         // "°" label
-        let degreeLabel = NSTextField(labelWithString: "°")
+        let degreeLabel = NSTextField(labelWithString: L("adjust.degree"))
         degreeLabel.frame = NSRect(x: 202, y: 100 + offsetY, width: 15, height: 20)
         degreeLabel.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(degreeLabel)
 
         // Reset button
-        let resetButton = NSButton(title: "リセット", target: self, action: #selector(resetAngle))
+        let resetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetAngle))
         resetButton.frame = NSRect(x: 110, y: 60 + offsetY, width: 90, height: 28)
         resetButton.bezelStyle = .rounded
         resetButton.font = NSFont.systemFont(ofSize: 12)
@@ -221,7 +221,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
     }
 
     private func setupOpacitySection(in contentView: NSView, opacity: CGFloat) {
-        let opacitySectionLabel = NSTextField(labelWithString: "透明度:")
+        let opacitySectionLabel = NSTextField(labelWithString: L("adjust.opacity"))
         opacitySectionLabel.frame = NSRect(x: 10, y: 85, width: 50, height: 20)
         opacitySectionLabel.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(opacitySectionLabel)
@@ -245,7 +245,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         contentView.addSubview(slider)
         opacitySlider = slider
 
-        let opacityResetButton = NSButton(title: "リセット", target: self, action: #selector(resetOpacity))
+        let opacityResetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetOpacity))
         opacityResetButton.frame = NSRect(x: 110, y: 20, width: 90, height: 28)
         opacityResetButton.bezelStyle = .rounded
         opacityResetButton.font = NSFont.systemFont(ofSize: 12)

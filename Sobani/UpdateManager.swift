@@ -159,14 +159,14 @@ class UpdateManager {
                 // 内部エラー詳細はログのみ、ユーザーには汎用メッセージを表示
                 NSLog("[UpdateManager] Check error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
-                    self.setStateForTrigger(trigger, manualState: .error("更新の確認に失敗しました。ネットワーク接続を確認してください。"))
+                    self.setStateForTrigger(trigger, manualState: .error(L("update.network_error")))
                 }
                 return
             }
 
             guard let data = data else {
                 DispatchQueue.main.async {
-                    self.setStateForTrigger(trigger, manualState: .error("更新情報を取得できませんでした。しばらく後に再試行してください。"))
+                    self.setStateForTrigger(trigger, manualState: .error(L("update.fetch_error")))
                 }
                 return
             }
@@ -195,7 +195,7 @@ class UpdateManager {
                 // パース失敗の詳細はログのみ
                 NSLog("[UpdateManager] Parse error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
-                    self.setStateForTrigger(trigger, manualState: .error("更新情報の解析に失敗しました。しばらく後に再試行してください。"))
+                    self.setStateForTrigger(trigger, manualState: .error(L("update.parse_error")))
                 }
             }
         }
@@ -235,10 +235,10 @@ class UpdateManager {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 let alert = NSAlert()
-                alert.messageText = "チェックサムファイルが見つかりません"
-                alert.informativeText = "ダウンロードファイルの整合性を検証できません。続行しますか？"
-                alert.addButton(withTitle: "続行")
-                alert.addButton(withTitle: "キャンセル")
+                alert.messageText = L("update.checksum_missing_title")
+                alert.informativeText = L("update.checksum_missing_message")
+                alert.addButton(withTitle: L("update.continue"))
+                alert.addButton(withTitle: L("update.cancel"))
                 alert.alertStyle = .warning
                 if alert.runModal() == .alertFirstButtonReturn {
                     self.downloadAsset(from: url, expectedChecksum: nil, format: format)
@@ -294,14 +294,14 @@ class UpdateManager {
                 // 内部エラーはログのみ
                 NSLog("[UpdateManager] Download error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
-                    self.state = .error("ダウンロードに失敗しました。ネットワーク接続を確認してください。")
+                    self.state = .error(L("update.download_error"))
                 }
                 return
             }
 
             guard let tempURL = tempURL else {
                 DispatchQueue.main.async {
-                    self.state = .error("ダウンロードファイルが見つかりません。")
+                    self.state = .error(L("update.file_not_found"))
                 }
                 return
             }
@@ -311,7 +311,7 @@ class UpdateManager {
                 guard Self.verifySHA256(of: tempURL, expectedHex: expected) else {
                     NSLog("[UpdateManager] Checksum mismatch for downloaded file")
                     DispatchQueue.main.async {
-                        self.state = .error("ダウンロードファイルの整合性検証に失敗しました。再試行してください。")
+                        self.state = .error(L("update.checksum_failed"))
                     }
                     return
                 }
@@ -384,7 +384,7 @@ private extension UpdateManager {
 
             guard extractProcess.terminationStatus == 0 else {
                 DispatchQueue.main.async {
-                    self.state = .error("ZIPの展開に失敗しました。")
+                    self.state = .error(L("update.zip_extract_failed"))
                 }
                 return
             }
@@ -393,7 +393,7 @@ private extension UpdateManager {
             let contents = try fm.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
             guard let newAppURL = contents.first(where: { $0.pathExtension == "app" }) else {
                 DispatchQueue.main.async {
-                    self.state = .error("アップデートのアプリが見つかりません。")
+                    self.state = .error(L("update.app_not_found"))
                 }
                 return
             }
@@ -402,7 +402,7 @@ private extension UpdateManager {
         } catch {
             NSLog("[UpdateManager] Install preparation error: %@", error.localizedDescription)
             DispatchQueue.main.async {
-                self.state = .error("更新の準備に失敗しました。再試行してください。")
+                self.state = .error(L("update.prepare_failed"))
             }
         }
     }
@@ -427,7 +427,7 @@ private extension UpdateManager {
             guard attachProcess.terminationStatus == 0 else {
                 try? fm.removeItem(at: mountPoint)
                 DispatchQueue.main.async {
-                    self.state = .error("DMGのマウントに失敗しました。")
+                    self.state = .error(L("update.dmg_mount_failed"))
                 }
                 return
             }
@@ -446,7 +446,7 @@ private extension UpdateManager {
             let contents = try fm.contentsOfDirectory(at: mountPoint, includingPropertiesForKeys: nil)
             guard let appInDMG = contents.first(where: { $0.pathExtension == "app" }) else {
                 DispatchQueue.main.async {
-                    self.state = .error("アップデートのアプリが見つかりません。")
+                    self.state = .error(L("update.app_not_found"))
                 }
                 return
             }
@@ -464,7 +464,7 @@ private extension UpdateManager {
         } catch {
             NSLog("[UpdateManager] DMG install error: %@", error.localizedDescription)
             DispatchQueue.main.async {
-                self.state = .error("更新の準備に失敗しました。再試行してください。")
+                self.state = .error(L("update.prepare_failed"))
             }
         }
     }
@@ -474,7 +474,7 @@ private extension UpdateManager {
 
         guard let currentAppURL = Bundle.main.bundleURL as URL? else {
             DispatchQueue.main.async {
-                self.state = .error("現在のアプリの場所を取得できません。")
+                self.state = .error(L("update.location_error"))
             }
             return
         }
@@ -507,13 +507,13 @@ private extension UpdateManager {
                 try? fm.moveItem(at: backupURL, to: currentAppURL)
 
                 DispatchQueue.main.async {
-                    self.state = .error("アプリの更新に失敗しました。再試行してください。")
+                    self.state = .error(L("update.install_failed"))
                 }
             }
         } catch {
             NSLog("[UpdateManager] Backup error: %@", error.localizedDescription)
             DispatchQueue.main.async {
-                self.state = .error("更新の準備に失敗しました。再試行してください。")
+                self.state = .error(L("update.prepare_failed"))
             }
         }
     }
@@ -530,10 +530,10 @@ extension AppDelegate: UpdateManagerDelegate {
         guard case .available(let version, let url, let checksumURL, let format) = UpdateManager.shared.state else { return }
 
         let alert = NSAlert()
-        alert.messageText = "Sobani を v\(version) に更新しますか？"
-        alert.informativeText = "アプリが再起動されます。"
-        alert.addButton(withTitle: "更新")
-        alert.addButton(withTitle: "キャンセル")
+        alert.messageText = String(format: L("update.confirm_title"), version)
+        alert.informativeText = L("update.confirm_message")
+        alert.addButton(withTitle: L("update.button"))
+        alert.addButton(withTitle: L("update.cancel"))
         alert.alertStyle = .informational
 
         if alert.runModal() == .alertFirstButtonReturn {
@@ -546,10 +546,10 @@ extension AppDelegate: UpdateManagerDelegate {
         case .available(let version, let url, let checksumURL, let format):
             if manager.lastCheckTrigger != .automatic {
                 let alert = NSAlert()
-                alert.messageText = "新しいバージョンがあります"
-                alert.informativeText = "Sobani v\(version) が利用可能です。"
-                alert.addButton(withTitle: "更新")
-                alert.addButton(withTitle: "後で")
+                alert.messageText = L("update.new_version_title")
+                alert.informativeText = String(format: L("update.new_version_message"), version)
+                alert.addButton(withTitle: L("update.button"))
+                alert.addButton(withTitle: L("update.later"))
                 alert.alertStyle = .informational
                 if alert.runModal() == .alertFirstButtonReturn {
                     UpdateManager.shared.downloadAndInstall(url: url, checksumURL: checksumURL, format: format)
@@ -557,16 +557,16 @@ extension AppDelegate: UpdateManagerDelegate {
             }
         case .upToDate:
             let alert = NSAlert()
-            alert.messageText = "最新バージョンです"
-            alert.informativeText = "Sobani は最新の状態です。"
-            alert.addButton(withTitle: "OK")
+            alert.messageText = L("update.up_to_date_title")
+            alert.informativeText = L("update.up_to_date_message")
+            alert.addButton(withTitle: L("update.ok"))
             alert.alertStyle = .informational
             alert.runModal()
         case .error(let message):
             let alert = NSAlert()
-            alert.messageText = "更新の確認に失敗しました"
+            alert.messageText = L("update.check_failed_title")
             alert.informativeText = message
-            alert.addButton(withTitle: "OK")
+            alert.addButton(withTitle: L("update.ok"))
             alert.alertStyle = .warning
             alert.runModal()
         default:

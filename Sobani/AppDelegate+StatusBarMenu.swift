@@ -19,39 +19,14 @@ extension AppDelegate {
         guard menu === statusItem.menu else { return }
         menu.removeAllItems()
 
-        let aboutItem = NSMenuItem(title: "Sobani について...", action: #selector(showAbout), keyEquivalent: "")
+        let aboutItem = NSMenuItem(title: L("menu.about"), action: #selector(showAbout), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
 
-        switch UpdateManager.shared.state {
-        case .available(let version, _, _, _):
-            let updateItem = NSMenuItem(
-                title: "更新する（v\(version)）",
-                action: #selector(performUpdate),
-                keyEquivalent: ""
-            )
-            updateItem.target = self
-            menu.addItem(updateItem)
-        case .checking:
-            let checkingItem = NSMenuItem(title: "確認中...", action: nil, keyEquivalent: "")
-            checkingItem.isEnabled = false
-            menu.addItem(checkingItem)
-        case .downloading:
-            let downloadingItem = NSMenuItem(title: "ダウンロード中...", action: nil, keyEquivalent: "")
-            downloadingItem.isEnabled = false
-            menu.addItem(downloadingItem)
-        default:
-            let checkItem = NSMenuItem(
-                title: "更新を確認...",
-                action: #selector(checkForUpdateManually),
-                keyEquivalent: ""
-            )
-            checkItem.target = self
-            menu.addItem(checkItem)
-        }
+        menu.addItem(buildUpdateMenuItem())
 
         let loginItem = NSMenuItem(
-            title: "ログイン時に起動",
+            title: L("menu.launch_at_login"),
             action: #selector(toggleLaunchAtLogin),
             keyEquivalent: ""
         )
@@ -61,8 +36,14 @@ extension AppDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        let countLabel = areWindowsHidden ? "非表示中" : "表示中"
-        let countItem = NSMenuItem(title: "\(countLabel): \(characterWindows.count)体", action: nil, keyEquivalent: "")
+        let countItem = NSMenuItem(
+            title: areWindowsHidden
+                ? String(format: L("status.showing_count"), "\(characterWindows.count)")
+                    .replacingOccurrences(of: L("status.showing"), with: L("status.hidden"))
+                : String(format: L("status.showing_count"), "\(characterWindows.count)"),
+            action: nil,
+            keyEquivalent: ""
+        )
         if !characterWindows.isEmpty {
             countItem.submenu = buildCharacterWindowsSubmenu()
         } else {
@@ -71,11 +52,11 @@ extension AppDelegate {
         menu.addItem(countItem)
         menu.addItem(NSMenuItem.separator())
 
-        let bringFrontItem = NSMenuItem(title: "すべて手前に表示", action: #selector(bringAllToFront), keyEquivalent: "f")
+        let bringFrontItem = NSMenuItem(title: L("window.bring_to_front"), action: #selector(bringAllToFront), keyEquivalent: "f")
         bringFrontItem.target = self
         menu.addItem(bringFrontItem)
 
-        let toggleTitle = areWindowsHidden ? "すべて表示" : "すべて非表示"
+        let toggleTitle = areWindowsHidden ? L("window.show_all") : L("window.hide_all")
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleAllWindowsVisibility), keyEquivalent: "h")
         toggleItem.keyEquivalentModifierMask = [.option]
         toggleItem.target = self
@@ -88,31 +69,60 @@ extension AppDelegate {
 
         menu.addItem(buildNewWindowMenuItem())
 
-        let closeAllItem = NSMenuItem(title: "すべて閉じる", action: #selector(closeAllWindows), keyEquivalent: "")
+        let closeAllItem = NSMenuItem(title: L("menu.close_all"), action: #selector(closeAllWindows), keyEquivalent: "")
         closeAllItem.target = self
         menu.addItem(closeAllItem)
         menu.addItem(NSMenuItem.separator())
 
-        let changeDefaultItem = NSMenuItem(title: "デフォルト画像を変更...", action: #selector(changeDefaultImageFromMenu), keyEquivalent: "")
+        let changeDefaultItem = NSMenuItem(title: L("image.default_change"), action: #selector(changeDefaultImageFromMenu), keyEquivalent: "")
         changeDefaultItem.target = self
         menu.addItem(changeDefaultItem)
 
         if ImageManager.shared.hasCustomDefault {
-            let resetDefaultItem = NSMenuItem(title: "デフォルト画像をリセット", action: #selector(resetDefaultImage), keyEquivalent: "")
+            let resetDefaultItem = NSMenuItem(title: L("image.default_reset_action"), action: #selector(resetDefaultImage), keyEquivalent: "")
             resetDefaultItem.target = self
             menu.addItem(resetDefaultItem)
         }
 
         menu.addItem(NSMenuItem.separator())
-        let quitItem = NSMenuItem(title: "終了", action: #selector(quitFromMenu), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitFromMenu), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
+    }
+
+    func buildUpdateMenuItem() -> NSMenuItem {
+        switch UpdateManager.shared.state {
+        case .available(let version, _, _, _):
+            let item = NSMenuItem(
+                title: String(format: L("update.available"), version),
+                action: #selector(performUpdate),
+                keyEquivalent: ""
+            )
+            item.target = self
+            return item
+        case .checking:
+            let item = NSMenuItem(title: L("update.checking"), action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            return item
+        case .downloading:
+            let item = NSMenuItem(title: L("update.downloading"), action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            return item
+        default:
+            let item = NSMenuItem(
+                title: L("update.check"),
+                action: #selector(checkForUpdateManually),
+                keyEquivalent: ""
+            )
+            item.target = self
+            return item
+        }
     }
 
     func buildResetRotationMenuItem() -> NSMenuItem {
         let hasRotation = characterWindows.contains { $0.imageView.rotationAngle != 0 }
         let item = NSMenuItem(
-            title: "すべての画像の回転をリセット",
+            title: L("adjust.reset_all_rotation"),
             action: #selector(resetAllRotations),
             keyEquivalent: ""
         )
@@ -124,7 +134,7 @@ extension AppDelegate {
     func buildResetOpacityMenuItem() -> NSMenuItem {
         let hasOpacity = characterWindows.contains { $0.imageView.opacityLevel != 1.0 }
         let item = NSMenuItem(
-            title: "すべての画像の透明度をリセット",
+            title: L("adjust.reset_all_opacity"),
             action: #selector(resetAllOpacity),
             keyEquivalent: ""
         )
@@ -134,21 +144,21 @@ extension AppDelegate {
     }
 
     func buildNewWindowMenuItem() -> NSMenuItem {
-        let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
+        let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
         let submenu = NSMenu()
 
-        let selectImageItem = NSMenuItem(title: "画像を選択...", action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
+        let selectImageItem = NSMenuItem(title: L("image.select"), action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
         selectImageItem.target = self
         submenu.addItem(selectImageItem)
 
-        let defaultWindowItem = NSMenuItem(title: "デフォルト画像", action: #selector(addNewWindowFromMenu), keyEquivalent: "")
+        let defaultWindowItem = NSMenuItem(title: L("image.default"), action: #selector(addNewWindowFromMenu), keyEquivalent: "")
         defaultWindowItem.target = self
         submenu.addItem(defaultWindowItem)
 
         let names = ImageManager.shared.registeredImageNames()
         if !names.isEmpty {
             submenu.addItem(NSMenuItem.separator())
-            let registeredLabel = NSMenuItem(title: "登録画像", action: nil, keyEquivalent: "")
+            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
             registeredLabel.isEnabled = false
             submenu.addItem(registeredLabel)
             for name in names {
@@ -173,7 +183,7 @@ extension AppDelegate {
 
         var maxLeftWidth: CGFloat = 0
         for (index, charWindow) in orderedWindows.enumerated() {
-            let leftText = "\(index + 1): \(charWindow.displayName) (#\(charWindow.windowId))"
+            let leftText = "\(index + 1): \(charWindow.localizedDisplayName) (#\(charWindow.windowId))"
             let width = (leftText as NSString).size(withAttributes: [.font: font]).width
             if width > maxLeftWidth {
                 maxLeftWidth = width
@@ -188,9 +198,9 @@ extension AppDelegate {
             let imageWidth = Int(charWindow.imageView.frame.width)
             let imageHeight = Int(charWindow.imageView.frame.height)
             let rawScreenName = charWindow.window.screen?.localizedName ?? ""
-            let screenName = rawScreenName.isEmpty ? "不明" : rawScreenName
-            let leftText = "\(index + 1): \(charWindow.displayName) (#\(charWindow.windowId))"
-            let rightText = "[\(imageWidth)×\(imageHeight)] \(screenName)"
+            let screenName = rawScreenName.isEmpty ? L("image.unknown") : rawScreenName
+            let leftText = "\(index + 1): \(charWindow.localizedDisplayName) (#\(charWindow.windowId))"
+            let rightText = "[\(imageWidth)\u{00d7}\(imageHeight)] \(screenName)"
             let fullText = "\(leftText)\t\(rightText)"
 
             let attributedTitle = NSAttributedString(
@@ -219,7 +229,7 @@ extension AppDelegate {
 
         submenu.addItem(NSMenuItem.separator())
 
-        let flipItem = NSMenuItem(title: "左右反転", action: #selector(toggleFlipByWindowNumber(_:)), keyEquivalent: "")
+        let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlipByWindowNumber(_:)), keyEquivalent: "")
         flipItem.target = self
         flipItem.state = charWindow.imageView.isFlippedHorizontally ? .on : .off
         flipItem.tag = windowNumber
@@ -228,19 +238,19 @@ extension AppDelegate {
 
         submenu.addItem(NSMenuItem.separator())
 
-        let adjustItem = NSMenuItem(title: "表示の調整...", action: #selector(showAdjustmentPanelByWindowNumber(_:)), keyEquivalent: "")
+        let adjustItem = NSMenuItem(title: L("adjust.open"), action: #selector(showAdjustmentPanelByWindowNumber(_:)), keyEquivalent: "")
         adjustItem.target = self
         adjustItem.tag = windowNumber
         adjustItem.isEnabled = !areWindowsHidden
         submenu.addItem(adjustItem)
 
-        let resetRotationItem = NSMenuItem(title: "回転をリセット", action: #selector(resetRotationByWindowNumber(_:)), keyEquivalent: "")
+        let resetRotationItem = NSMenuItem(title: L("adjust.reset_rotation"), action: #selector(resetRotationByWindowNumber(_:)), keyEquivalent: "")
         resetRotationItem.target = self
         resetRotationItem.tag = windowNumber
         resetRotationItem.isEnabled = charWindow.imageView.rotationAngle != 0
         submenu.addItem(resetRotationItem)
 
-        let resetOpacityItem = NSMenuItem(title: "透明度をリセット", action: #selector(resetOpacityByWindowNumber(_:)), keyEquivalent: "")
+        let resetOpacityItem = NSMenuItem(title: L("adjust.reset_opacity"), action: #selector(resetOpacityByWindowNumber(_:)), keyEquivalent: "")
         resetOpacityItem.target = self
         resetOpacityItem.tag = windowNumber
         resetOpacityItem.isEnabled = charWindow.imageView.opacityLevel != 1.0
@@ -248,14 +258,14 @@ extension AppDelegate {
 
         submenu.addItem(NSMenuItem.separator())
 
-        let resetDisplayItem = NSMenuItem(title: "表示をリセット", action: #selector(resetDisplayByWindowNumber(_:)), keyEquivalent: "")
+        let resetDisplayItem = NSMenuItem(title: L("adjust.reset_display"), action: #selector(resetDisplayByWindowNumber(_:)), keyEquivalent: "")
         resetDisplayItem.target = self
         resetDisplayItem.tag = windowNumber
         submenu.addItem(resetDisplayItem)
 
         submenu.addItem(NSMenuItem.separator())
 
-        let closeItem = NSMenuItem(title: "この画像を閉じる", action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
+        let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
         closeItem.target = self
         closeItem.tag = windowNumber
         submenu.addItem(closeItem)
@@ -264,25 +274,25 @@ extension AppDelegate {
     }
 
     func buildLayerOrderItems(into menu: NSMenu, windowNumber: Int, index: Int, count: Int, canReorder: Bool) {
-        let toFrontItem = NSMenuItem(title: "最前面へ移動", action: #selector(moveWindowToFrontByWindowNumber(_:)), keyEquivalent: "")
+        let toFrontItem = NSMenuItem(title: L("window.move_to_front"), action: #selector(moveWindowToFrontByWindowNumber(_:)), keyEquivalent: "")
         toFrontItem.target = self
         toFrontItem.tag = windowNumber
         toFrontItem.isEnabled = canReorder && index > 0
         menu.addItem(toFrontItem)
 
-        let forwardItem = NSMenuItem(title: "前面へ移動", action: #selector(moveWindowForwardByWindowNumber(_:)), keyEquivalent: "")
+        let forwardItem = NSMenuItem(title: L("window.move_forward"), action: #selector(moveWindowForwardByWindowNumber(_:)), keyEquivalent: "")
         forwardItem.target = self
         forwardItem.tag = windowNumber
         forwardItem.isEnabled = canReorder && index > 0
         menu.addItem(forwardItem)
 
-        let backwardItem = NSMenuItem(title: "背面へ移動", action: #selector(moveWindowBackwardByWindowNumber(_:)), keyEquivalent: "")
+        let backwardItem = NSMenuItem(title: L("window.move_backward"), action: #selector(moveWindowBackwardByWindowNumber(_:)), keyEquivalent: "")
         backwardItem.target = self
         backwardItem.tag = windowNumber
         backwardItem.isEnabled = canReorder && index < count - 1
         menu.addItem(backwardItem)
 
-        let toBackItem = NSMenuItem(title: "最背面へ移動", action: #selector(moveWindowToBackByWindowNumber(_:)), keyEquivalent: "")
+        let toBackItem = NSMenuItem(title: L("window.move_to_back"), action: #selector(moveWindowToBackByWindowNumber(_:)), keyEquivalent: "")
         toBackItem.target = self
         toBackItem.tag = windowNumber
         toBackItem.isEnabled = canReorder && index < count - 1
@@ -372,9 +382,9 @@ extension AppDelegate {
 
     @objc func changeDefaultImageFromMenu() {
         let panel = NSOpenPanel()
-        panel.title = "デフォルト画像を選択"
-        panel.message = "デフォルトに設定する画像ファイルを選択してください"
-        panel.prompt = "選択"
+        panel.title = L("dialog.select_default_image")
+        panel.message = L("dialog.select_default_image_message")
+        panel.prompt = L("dialog.select")
         panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false

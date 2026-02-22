@@ -26,6 +26,7 @@
 		FF000003 /* ScreenRestorationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000004 /* ScreenRestorationManagerTests.swift */; };
 		FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000006 /* AppDelegate+ScreenRestoration.swift */; };
 		GG000001 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG000002 /* Constants.swift */; };
+		HH000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = HH000002 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		FF000004 /* ScreenRestorationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManagerTests.swift; sourceTree = "<group>"; };
 		FF000006 /* AppDelegate+ScreenRestoration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+ScreenRestoration.swift"; sourceTree = "<group>"; };
 		GG000002 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		HH000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				FF000006 /* AppDelegate+ScreenRestoration.swift */,
 				GG000002 /* Constants.swift */,
 				DD000010 /* WindowStateManager.swift */,
+				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
 			);
@@ -216,6 +219,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000003 /* Assets.xcassets in Resources */,
+				HH000001 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
