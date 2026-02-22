@@ -166,6 +166,7 @@
           <p class="mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto lg:mx-0" data-i18n="hero.description">
             好きな画像を、アクリルスタンドのようにデスクトップに飾れるアプリ。推しのキャラクター、アイドル、ペット、家族——いつでも目に入る場所に、お気に入りを。
           </p>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 italic max-w-xl mx-auto lg:mx-0" data-i18n="hero.nameOrigin"></p>
           <div class="mt-10 space-y-3">
             <div class="flex justify-center lg:justify-start">
               <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-base font-bold bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-400 text-white shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
@@ -467,6 +468,7 @@
           downloadButton: "Sobani-universal.dmg \u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9",
           copyCommand: "\u30b3\u30de\u30f3\u30c9\u3092\u30b3\u30d4\u30fc",
           copyTitle: "\u30b3\u30d4\u30fc",
+          nameOrigin: "",
           appIconAlt: "Sobani \u30a2\u30d7\u30ea\u30a2\u30a4\u30b3\u30f3"
         },
         features: {
@@ -568,6 +570,7 @@
           universalBinary: "Supports both Apple Silicon and Intel Mac (Universal Binary)",
           description: "Display your favorite images on the desktop like acrylic stands. Characters, idols, pets, family \u2014 right where you can always see them.",
           downloadButton: "Download Sobani-universal.dmg",
+          nameOrigin: "\"Sobani\" comes from the Japanese word \"sobani\" (\u305d\u3070\u306b), meaning \"by your side.\"",
           copyCommand: "Copy command",
           copyTitle: "Copy",
           appIconAlt: "Sobani app icon"
@@ -786,7 +789,14 @@
       for (var i = 0; i < elems.length; i++) {
         var key = elems[i].getAttribute('data-i18n');
         var val = getNestedValue(t, key);
-        if (val !== undefined) elems[i].textContent = val;
+        if (val !== undefined) {
+          elems[i].textContent = val;
+          if (val === '') {
+            elems[i].setAttribute('hidden', '');
+          } else {
+            elems[i].removeAttribute('hidden');
+          }
+        }
       }
 
       // Update data-i18n-html elements (innerHTML)
