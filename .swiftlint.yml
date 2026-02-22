@@ -42,5 +42,8 @@ identifier_name:
   excluded:
     - fm
     - w
+    - x
+    - y
+    - h
     - iv
     - L

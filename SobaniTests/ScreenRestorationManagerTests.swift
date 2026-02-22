@@ -271,4 +271,81 @@ final class ScreenRestorationManagerTests: XCTestCase {
 
         XCTAssertEqual(loader.pendingRestorations[0].displayID, displayID)
     }
+
+    // MARK: - preSleepScreenFrame
+
+    func testAddPendingWithScreenFrame() {
+        let state = makeState()
+        let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
+        manager.addPending(windowId: 1, originalState: state, displayID: 42,
+                          adjustedOriginX: 50, adjustedOriginY: 60,
+                          preSleepScreenFrame: frame)
+        XCTAssertEqual(manager.pendingRestorations.count, 1)
+        XCTAssertEqual(manager.pendingRestorations[0].preSleepScreenFrame, frame)
+    }
+
+    func testAddPendingWithoutScreenFrameDefaultsToNil() {
+        let state = makeState()
+        manager.addPending(windowId: 1, originalState: state, displayID: 42,
+                          adjustedOriginX: 50, adjustedOriginY: 60)
+        XCTAssertNil(manager.pendingRestorations[0].preSleepScreenFrame)
+    }
+
+    func testScreenFramePreservedAcrossSaveLoad() {
+        let state = makeState(windowId: 1)
+        let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 42,
+                            adjustedOriginX: 0, adjustedOriginY: 0,
+                            preSleepScreenFrame: frame)
+        ioManager.savePending()
+
+        let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
+        loader.loadPending()
+
+        XCTAssertEqual(loader.pendingRestorations[0].preSleepScreenFrame, frame)
+    }
+
+    func testNilScreenFramePreservedAcrossSaveLoad() {
+        let state = makeState(windowId: 1)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 42,
+                            adjustedOriginX: 0, adjustedOriginY: 0)
+        ioManager.savePending()
+
+        let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
+        loader.loadPending()
+
+        XCTAssertNil(loader.pendingRestorations[0].preSleepScreenFrame)
+    }
+
+    func testLoadPendingBackwardCompatibilityWithoutScreenFrame() {
+        // 古いフォーマット（screenFrame フィールドなし）のJSONを読み込めることを確認
+        let oldFormatJSON = """
+        [
+            {
+                "windowId": 1,
+                "originalState": {
+                    "imageName": "テスト",
+                    "originX": 100,
+                    "originY": 200,
+                    "width": 300,
+                    "height": 400,
+                    "isFlippedHorizontally": false,
+                    "windowId": 1
+                },
+                "displayID": 42,
+                "adjustedOriginX": 50,
+                "adjustedOriginY": 60,
+                "createdAt": \(Date().timeIntervalSinceReferenceDate)
+            }
+        ]
+        """
+        let url = ioManager.pendingFileURL!
+        try? Data(oldFormatJSON.utf8).write(to: url, options: .atomic)
+
+        let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
+        loader.loadPending()
+
+        XCTAssertEqual(loader.pendingRestorations.count, 1)
+        XCTAssertNil(loader.pendingRestorations[0].preSleepScreenFrame)
+    }
 }

@@ -16,6 +16,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     var screenChangeDebounceTimer: Timer?
     var preSleepStates: [Int: WindowState] = [:]
     var preSleepDisplayIDs: [Int: CGDirectDisplayID] = [:]
+    var preSleepScreenFrames: [CGDirectDisplayID: NSRect] = [:]
+    var preSleepWindowOrigins: [Int: NSPoint] = [:]
+    var isInWakeRestoration = false
+    var wakeRestorationRetryCount = 0
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
