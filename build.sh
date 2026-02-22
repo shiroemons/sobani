@@ -85,7 +85,8 @@ PLIST="$PROJECT_DIR/$APP_NAME.app/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Delete :CFBundleLocalizations" "$PLIST" 2>/dev/null || true
 /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations array" "$PLIST"
 /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:0 string ja" "$PLIST"
-echo "🌐 日本語ローカライゼーションを設定しました"
+/usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:1 string en" "$PLIST"
+echo "🌐 日本語・英語ローカライゼーションを設定しました"
 
 # コード署名
 if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
