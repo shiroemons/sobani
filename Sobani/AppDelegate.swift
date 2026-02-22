@@ -40,15 +40,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                 let image: NSImage
                 let resolvedDisplayName: String
 
-                if state.imageName == "デフォルト" {
+                if state.imageName == AppConstants.defaultImageName {
                     image = ImageManager.shared.defaultImage() ?? NSImage()
-                    resolvedDisplayName = "デフォルト"
+                    resolvedDisplayName = AppConstants.defaultImageName
                 } else if let registered = ImageManager.shared.loadRegisteredImage(named: state.imageName) {
                     image = registered
                     resolvedDisplayName = state.imageName
                 } else {
                     image = ImageManager.shared.defaultImage() ?? NSImage()
-                    resolvedDisplayName = "デフォルト"
+                    resolvedDisplayName = AppConstants.defaultImageName
                 }
 
                 let charWindow = CharacterWindow(image: image)
@@ -259,7 +259,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         }
         let charWindow = CharacterWindow(image: image)
         charWindow.delegate = self
-        charWindow.displayName = imageName ?? "デフォルト"
+        charWindow.displayName = imageName ?? AppConstants.defaultImageName
         charWindow.windowId = nextWindowId
         nextWindowId += 1
         characterWindows.append(charWindow)
@@ -309,7 +309,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     func characterWindowDidDeleteImage(named name: String) {
         guard let defaultImage = ImageManager.shared.defaultImage() else { return }
         for charWindow in characterWindows where charWindow.displayName == name {
-            charWindow.displayName = "デフォルト"
+            charWindow.displayName = AppConstants.defaultImageName
             charWindow.applyImage(defaultImage)
         }
     }

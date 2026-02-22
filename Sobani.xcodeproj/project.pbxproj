@@ -25,6 +25,7 @@
 		FF000001 /* ScreenRestorationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000002 /* ScreenRestorationManager.swift */; };
 		FF000003 /* ScreenRestorationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000004 /* ScreenRestorationManagerTests.swift */; };
 		FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000006 /* AppDelegate+ScreenRestoration.swift */; };
+		GG000001 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG000002 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 		FF000002 /* ScreenRestorationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManager.swift; sourceTree = "<group>"; };
 		FF000004 /* ScreenRestorationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManagerTests.swift; sourceTree = "<group>"; };
 		FF000006 /* AppDelegate+ScreenRestoration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+ScreenRestoration.swift"; sourceTree = "<group>"; };
+		GG000002 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +104,7 @@
 				EE000002 /* LaunchAtLoginManager.swift */,
 				FF000002 /* ScreenRestorationManager.swift */,
 				FF000006 /* AppDelegate+ScreenRestoration.swift */,
+				GG000002 /* Constants.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
@@ -256,6 +259,7 @@
 				EE000001 /* LaunchAtLoginManager.swift in Sources */,
 				FF000001 /* ScreenRestorationManager.swift in Sources */,
 				FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */,
+				GG000001 /* Constants.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

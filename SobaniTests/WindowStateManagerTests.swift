@@ -23,7 +23,7 @@ final class WindowStateManagerTests: XCTestCase {
     // MARK: - Helpers
 
     private func makeState(
-        imageName: String = "デフォルト",
+        imageName: String = AppConstants.defaultImageName,
         originX: CGFloat = 100,
         originY: CGFloat = 200,
         width: CGFloat = 300,
@@ -68,7 +68,7 @@ final class WindowStateManagerTests: XCTestCase {
         let states = [
             makeState(imageName: "image1.png", originX: 10, originY: 20),
             makeState(imageName: "image2.png", originX: 30, originY: 40),
-            makeState(imageName: "デフォルト", originX: 50, originY: 60)
+            makeState(imageName: AppConstants.defaultImageName, originX: 50, originY: 60)
         ]
         stateManager.saveStates(states)
         let loaded = stateManager.loadStates()
@@ -322,6 +322,27 @@ final class WindowStateManagerTests: XCTestCase {
         )
         let adjusted = WindowStateManager.adjustToVisibleArea(state)
         XCTAssertEqual(adjusted.windowId, 7)
+    }
+
+    func testLoadStatesNormalizesLegacyDefaultImageName() {
+        // Write JSON with legacy "デフォルト" imageName
+        let legacyJSON = """
+        [{\
+        "imageName":"デフォルト",\
+        "originX":100,"originY":200,\
+        "width":300,"height":400,\
+        "isFlippedHorizontally":false,\
+        "rotationAngle":0,\
+        "opacityLevel":1.0,\
+        "windowId":1\
+        }]
+        """
+        let jsonURL = tempDirectory.appendingPathComponent("window_states.json")
+        try! legacyJSON.data(using: .utf8)!.write(to: jsonURL)
+
+        let states = stateManager.loadStates()
+        XCTAssertEqual(states.first?.imageName, AppConstants.defaultImageName)
+        XCTAssertEqual(states.first?.imageName, "default")
     }
 
     func testWindowIdInSaveAndLoad() {

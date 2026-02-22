@@ -3,7 +3,7 @@ import Cocoa
 // MARK: - Window State
 
 struct WindowState: Codable, Equatable {
-    let imageName: String
+    var imageName: String
     let originX: CGFloat
     let originY: CGFloat
     let width: CGFloat
@@ -93,7 +93,17 @@ class WindowStateManager {
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
         guard let data = try? Data(contentsOf: url) else { return [] }
-        return (try? JSONDecoder().decode([WindowState].self, from: data)) ?? []
+        var states = (try? JSONDecoder().decode([WindowState].self, from: data)) ?? []
+        // Backward compatibility: normalize legacy "デフォルト" to internal constant
+        states = states.map { state in
+            if state.imageName == "デフォルト" {
+                var normalized = state
+                normalized.imageName = AppConstants.defaultImageName
+                return normalized
+            }
+            return state
+        }
+        return states
     }
 
     static func captureState(from charWindow: CharacterWindow) -> WindowState {

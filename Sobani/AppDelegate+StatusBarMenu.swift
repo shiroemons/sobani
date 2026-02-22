@@ -381,7 +381,7 @@ extension AppDelegate {
         if panel.runModal() == .OK, let url = panel.url {
             ImageManager.shared.setCustomDefault(from: url)
             if let newDefault = ImageManager.shared.defaultImage() {
-                for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
+                for charWindow in characterWindows where charWindow.displayName == AppConstants.defaultImageName {
                     charWindow.applyImage(newDefault)
                 }
             }
@@ -391,7 +391,7 @@ extension AppDelegate {
     @objc func resetDefaultImage() {
         ImageManager.shared.resetCustomDefault()
         if let newDefault = ImageManager.shared.defaultImage() {
-            for charWindow in characterWindows where charWindow.displayName == "デフォルト" {
+            for charWindow in characterWindows where charWindow.displayName == AppConstants.defaultImageName {
                 charWindow.applyImage(newDefault)
             }
         }

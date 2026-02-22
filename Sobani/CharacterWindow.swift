@@ -17,7 +17,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
     let imageView: DraggableImageView
     weak var delegate: CharacterWindowDelegate?
-    var displayName: String = "デフォルト"
+    var displayName: String = AppConstants.defaultImageName
     var windowId: Int = 0
     private var adjustmentPanelController: AdjustmentPanelController?
 
@@ -141,7 +141,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
         let defaultItem = NSMenuItem(title: "デフォルト画像に戻す", action: #selector(resetToDefault), keyEquivalent: "d")
         defaultItem.target = self
-        defaultItem.isEnabled = displayName != "デフォルト"
+        defaultItem.isEnabled = displayName != AppConstants.defaultImageName
         submenu.addItem(defaultItem)
 
         let names = ImageManager.shared.registeredImageNames()
@@ -315,7 +315,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func resetToDefault() {
         if let defaultImage = ImageManager.shared.defaultImage() {
-            displayName = "デフォルト"
+            displayName = AppConstants.defaultImageName
             applyImage(defaultImage)
         }
     }
