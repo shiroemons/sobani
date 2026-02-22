@@ -384,8 +384,7 @@ extension AppDelegate {
 
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationVersion: String(format: L("about.version"), version, "v\(version)"),
-            .version: "",
-            NSApplication.AboutPanelOptionKey(rawValue: "Copyright"): L("about.copyright")
+            .version: ""
         ])
         NSApp.activate(ignoringOtherApps: true)
     }

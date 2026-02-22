@@ -29,6 +29,7 @@
 		HH000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = HH000002 /* Localizable.xcstrings */; };
 		II000001 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000002 /* LanguageManager.swift */; };
 		II000003 /* LanguageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000004 /* LanguageManagerTests.swift */; };
+		JJ000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = JJ000004 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +68,8 @@
 		HH000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		II000002 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		II000004 /* LanguageManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManagerTests.swift; sourceTree = "<group>"; };
+		JJ000002 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		JJ000003 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +119,7 @@
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
+				JJ000004 /* InfoPlist.strings */,
 			);
 			path = Sobani;
 			sourceTree = "<group>";
@@ -226,6 +230,7 @@
 			files = (
 				AA000003 /* Assets.xcassets in Resources */,
 				HH000001 /* Localizable.xcstrings in Resources */,
+				JJ000001 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,6 +302,18 @@
 			targetProxy = BB000006 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		JJ000004 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				JJ000002 /* en */,
+				JJ000003 /* ja */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		AA000060 /* Debug */ = {

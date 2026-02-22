@@ -1329,22 +1329,6 @@
         }
       }
     },
-    "about.copyright" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 shiroemons"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 shiroemons"
-          }
-        }
-      }
-    },
     "file.select_new_image_message" : {
       "localizations" : {
         "ja" : {
