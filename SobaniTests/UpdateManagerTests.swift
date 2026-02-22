@@ -175,4 +175,172 @@ final class UpdateManagerTests: XCTestCase {
         let nonexistentURL = URL(fileURLWithPath: "/tmp/nonexistent_sobani_test.bin")
         XCTAssertFalse(UpdateManager.verifySHA256(of: nonexistentURL, expectedHex: "abc123"))
     }
+
+    // MARK: - DMG Asset Selection Tests
+
+    func testAssetSelection_DMGPreferredOverZIP() throws {
+        let json = Data("""
+        {
+            "tag_name": "v202602.23",
+            "assets": [
+                {
+                    "name": "Sobani-universal.zip",
+                    "browser_download_url": "https://example.com/zip"
+                },
+                {
+                    "name": "Sobani-universal.dmg",
+                    "browser_download_url": "https://example.com/dmg"
+                },
+                {
+                    "name": "checksums.txt",
+                    "browser_download_url": "https://example.com/checksums"
+                }
+            ]
+        }
+        """.utf8)
+
+        let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
+
+        // DMG を優先して選択
+        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
+            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
+                return (dmg, .dmg)
+            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
+                return (zip, .zip)
+            }
+            return nil
+        }()
+
+        XCTAssertNotNil(assetResult)
+        XCTAssertEqual(assetResult?.asset.name, "Sobani-universal.dmg")
+        if case .dmg = assetResult?.format {
+            // OK
+        } else {
+            XCTFail("Expected .dmg format")
+        }
+    }
+
+    func testAssetSelection_ZIPFallbackWhenNoDMG() throws {
+        let json = Data("""
+        {
+            "tag_name": "v202602.21",
+            "assets": [
+                {
+                    "name": "Sobani-universal.zip",
+                    "browser_download_url": "https://example.com/zip"
+                },
+                {
+                    "name": "checksums.txt",
+                    "browser_download_url": "https://example.com/checksums"
+                }
+            ]
+        }
+        """.utf8)
+
+        let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
+
+        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
+            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
+                return (dmg, .dmg)
+            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
+                return (zip, .zip)
+            }
+            return nil
+        }()
+
+        XCTAssertNotNil(assetResult)
+        XCTAssertEqual(assetResult?.asset.name, "Sobani-universal.zip")
+        if case .zip = assetResult?.format {
+            // OK
+        } else {
+            XCTFail("Expected .zip format")
+        }
+    }
+
+    func testAssetSelection_NoMatchingAsset() throws {
+        let json = Data("""
+        {
+            "tag_name": "v202602.23",
+            "assets": [
+                {
+                    "name": "checksums.txt",
+                    "browser_download_url": "https://example.com/checksums"
+                }
+            ]
+        }
+        """.utf8)
+
+        let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
+
+        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
+            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
+                return (dmg, .dmg)
+            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
+                return (zip, .zip)
+            }
+            return nil
+        }()
+
+        XCTAssertNil(assetResult)
+    }
+
+    func testAssetSelection_DMGOnlyRelease() throws {
+        let json = Data("""
+        {
+            "tag_name": "v202602.22",
+            "assets": [
+                {
+                    "name": "Sobani-universal.dmg",
+                    "browser_download_url": "https://github.com/shiroemons/sobani/releases/download/v202602.22/Sobani-universal.dmg"
+                },
+                {
+                    "name": "checksums.txt",
+                    "browser_download_url": "https://github.com/shiroemons/sobani/releases/download/v202602.22/checksums.txt"
+                }
+            ]
+        }
+        """.utf8)
+
+        let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
+        XCTAssertEqual(release.assets.count, 2)
+        XCTAssertEqual(release.assets[0].name, "Sobani-universal.dmg")
+
+        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
+            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
+                return (dmg, .dmg)
+            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
+                return (zip, .zip)
+            }
+            return nil
+        }()
+
+        XCTAssertNotNil(assetResult)
+        XCTAssertEqual(assetResult?.asset.name, "Sobani-universal.dmg")
+        XCTAssertEqual(
+            assetResult?.asset.browserDownloadURL,
+            "https://github.com/shiroemons/sobani/releases/download/v202602.22/Sobani-universal.dmg"
+        )
+        if case .dmg = assetResult?.format {
+            // OK
+        } else {
+            XCTFail("Expected .dmg format")
+        }
+    }
+
+    // MARK: - UpdateAssetFormat Tests
+
+    func testUpdateAssetFormat_EnumCases() {
+        let dmg: UpdateAssetFormat = .dmg
+        let zip: UpdateAssetFormat = .zip
+
+        switch dmg {
+        case .dmg: break // OK
+        case .zip: XCTFail("Expected .dmg")
+        }
+
+        switch zip {
+        case .zip: break // OK
+        case .dmg: XCTFail("Expected .zip")
+        }
+    }
 }

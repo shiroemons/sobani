@@ -82,21 +82,36 @@ jobs:
           echo "name=$DMG_NAME" >> "$GITHUB_OUTPUT"
           echo "💿 $DMG_NAME を作成しました"
 
+      - name: ZIP 作成
+        id: zip
+        run: |
+          ZIP_NAME="Sobani-universal.zip"
+          ditto -c -k --keepParent Sobani.app "$ZIP_NAME"
+          echo "name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+          echo "📦 $ZIP_NAME を作成しました"
+
       - name: SHA256 計算
         id: sha
         env:
           DMG_NAME: ${{ steps.dmg.outputs.name }}
+          ZIP_NAME: ${{ steps.zip.outputs.name }}
         run: |
-          SHA256=$(shasum -a 256 "$DMG_NAME" | awk '{print $1}')
-          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
-          echo "🔐 SHA256: $SHA256"
+          DMG_SHA256=$(shasum -a 256 "$DMG_NAME" | awk '{print $1}')
+          ZIP_SHA256=$(shasum -a 256 "$ZIP_NAME" | awk '{print $1}')
+          echo "dmg_sha256=$DMG_SHA256" >> "$GITHUB_OUTPUT"
+          echo "zip_sha256=$ZIP_SHA256" >> "$GITHUB_OUTPUT"
+          echo "🔐 DMG SHA256: $DMG_SHA256"
+          echo "🔐 ZIP SHA256: $ZIP_SHA256"
 
       - name: checksums.txt 作成
         env:
-          SHA256: ${{ steps.sha.outputs.sha256 }}
+          DMG_SHA256: ${{ steps.sha.outputs.dmg_sha256 }}
           DMG_NAME: ${{ steps.dmg.outputs.name }}
+          ZIP_SHA256: ${{ steps.sha.outputs.zip_sha256 }}
+          ZIP_NAME: ${{ steps.zip.outputs.name }}
         run: |
-          echo "$SHA256  $DMG_NAME" > checksums.txt
+          echo "$ZIP_SHA256  $ZIP_NAME" > checksums.txt
+          echo "$DMG_SHA256  $DMG_NAME" >> checksums.txt
           echo "📝 checksums.txt を作成しました"
 
       - name: GitHub Release 作成
@@ -104,9 +119,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
           DMG_NAME: ${{ steps.dmg.outputs.name }}
+          ZIP_NAME: ${{ steps.zip.outputs.name }}
         run: |
           gh release create "$TAG" \
             "$DMG_NAME" \
+            "$ZIP_NAME" \
             checksums.txt \
             --generate-notes
 
@@ -115,7 +132,7 @@ jobs:
           TAP_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          SHA256="${{ steps.sha.outputs.sha256 }}"
+          SHA256="${{ steps.sha.outputs.dmg_sha256 }}"
 
           git clone "https://x-access-token:${TAP_TOKEN}@github.com/shiroemons/homebrew-tap.git" /tmp/homebrew-tap
           mkdir -p /tmp/homebrew-tap/Casks
