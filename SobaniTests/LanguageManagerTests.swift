@@ -55,4 +55,19 @@ final class LanguageManagerTests: XCTestCase {
         XCTAssertTrue(Language.allCases.contains(.japanese))
         XCTAssertTrue(Language.allCases.contains(.english))
     }
+
+    func testLanguageChangePostsNotification() {
+        let expectation = XCTestExpectation(description: "Language change notification posted")
+        let observer = NotificationCenter.default.addObserver(
+            forName: .languageDidChange,
+            object: nil,
+            queue: .main
+        ) { _ in
+            expectation.fulfill()
+        }
+
+        LanguageManager.shared.currentLanguage = .english
+        wait(for: [expectation], timeout: 1.0)
+        NotificationCenter.default.removeObserver(observer)
+    }
 }

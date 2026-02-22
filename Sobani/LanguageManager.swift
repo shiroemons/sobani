@@ -1,5 +1,9 @@
 import Foundation
 
+extension Notification.Name {
+    static let languageDidChange = Notification.Name("languageDidChange")
+}
+
 enum Language: String, CaseIterable {
     case system = "system"
     case japanese = "ja"
@@ -37,6 +41,7 @@ class LanguageManager {
                 UserDefaults.standard.set([newValue.rawValue], forKey: "AppleLanguages")
             }
             updateBundle()
+            NotificationCenter.default.post(name: .languageDidChange, object: nil)
         }
     }
 

@@ -375,29 +375,16 @@ extension AppDelegate {
         let currentLanguage = LanguageManager.shared.currentLanguage
         guard language != currentLanguage else { return }
 
-        let alert = NSAlert()
-        alert.messageText = L("language.restart_title")
-        alert.informativeText = L("language.restart_message")
-        alert.addButton(withTitle: L("language.restart_button"))
-        alert.addButton(withTitle: L("language.cancel"))
-        alert.alertStyle = .informational
-
-        if alert.runModal() == .alertFirstButtonReturn {
-            LanguageManager.shared.currentLanguage = language
-            // Restart the app
-            let url = Bundle.main.bundleURL
-            let task = Process()
-            task.launchPath = "/bin/sh"
-            task.arguments = ["-c", "sleep 1; open \"\(url.path)\""]
-            task.launch()
-            NSApplication.shared.terminate(nil)
-        }
+        LanguageManager.shared.currentLanguage = language
+        // Menu will rebuild automatically on next open via menuNeedsUpdate
     }
 
     @objc func showAbout() {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+
         NSApp.orderFrontStandardAboutPanel(options: [
-            .version: "v\(version)"
+            .applicationVersion: String(format: L("about.version"), version, "v\(version)"),
+            .version: ""
         ])
         NSApp.activate(ignoringOtherApps: true)
     }
