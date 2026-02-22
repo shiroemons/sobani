@@ -21,13 +21,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     var windowId: Int = 0
     private var adjustmentPanelController: AdjustmentPanelController?
 
-    var localizedDisplayName: String {
-        if displayName == AppConstants.defaultImageName {
-            return L("image.default_display")
-        }
-        return displayName
-    }
-
     init(image: NSImage) {
         let maxHeight: CGFloat = 600
         let scale = maxHeight / image.size.height
@@ -144,6 +137,8 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
         guard let registeredItem = menu.items.first(where: { $0.tag == MenuItemTag.changeImageSubmenu.rawValue }),
               let submenu = registeredItem.submenu else { return }
+
+        updateTopLevelMenuTitles(menu)
 
         submenu.removeAllItems()
         submenu.autoenablesItems = false
@@ -449,6 +444,34 @@ extension CharacterWindow {
         window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
         imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
         imageView.needsLayout = true
+    }
+}
+
+// MARK: - CharacterWindow + Menu Title Update
+
+private let menuTitleMap: [Int: String] = [
+    MenuItemTag.changeImageSubmenu.rawValue: "image.change",
+    MenuItemTag.addNewWindowSubmenu.rawValue: "image.add_display",
+    MenuItemTag.deleteRegisteredSubmenu.rawValue: "image.delete_registered",
+    MenuItemTag.adjustSubmenu.rawValue: "adjust.title",
+    MenuItemTag.close.rawValue: "menu.close_image",
+    MenuItemTag.quit.rawValue: "menu.quit"
+]
+
+extension CharacterWindow {
+    var localizedDisplayName: String {
+        if displayName == AppConstants.defaultImageName {
+            return L("image.default_display")
+        }
+        return displayName
+    }
+
+    func updateTopLevelMenuTitles(_ menu: NSMenu) {
+        for item in menu.items {
+            if let key = menuTitleMap[item.tag] {
+                item.title = L(key)
+            }
+        }
     }
 }
 
