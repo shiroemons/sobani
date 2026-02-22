@@ -76,7 +76,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Launch at Login"
+            "value" : "Open at Login"
           }
         }
       }
@@ -268,7 +268,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registered Images"
+            "value" : "Saved Images"
           }
         }
       }
@@ -284,7 +284,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete Registered Images"
+            "value" : "Delete Saved Images"
           }
         }
       }
@@ -428,7 +428,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reset All Rotation"
+            "value" : "Reset All Rotations"
           }
         }
       }
@@ -444,7 +444,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reset All Opacity"
+            "value" : "Reset Opacity for All"
           }
         }
       }
@@ -1148,7 +1148,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update app not found."
+            "value" : "Updated app not found."
           }
         }
       }
@@ -1180,7 +1180,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to mount DMG."
+            "value" : "Failed to mount the disk image."
           }
         }
       }
@@ -1228,7 +1228,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quit the application?"
+            "value" : "Quit Sobani?"
           }
         }
       }
@@ -1356,7 +1356,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select an image file to display as new"
+            "value" : "Select a new image file to display"
           }
         }
       }
