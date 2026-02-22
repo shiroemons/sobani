@@ -43,6 +43,16 @@
       }
     })();
   </script>
+  <script>
+    (function() {
+      var lang = localStorage.getItem('lang');
+      if (!lang) {
+        var browserLang = (navigator.language || 'ja').toLowerCase();
+        lang = browserLang.startsWith('ja') ? 'ja' : 'en';
+      }
+      document.documentElement.lang = lang;
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -90,13 +100,13 @@
       <div class="flex items-center justify-between h-16">
         <a href="#" class="text-xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">Sobani</a>
         <!-- デスクトップナビ -->
-        <nav class="hidden md:flex items-center space-x-8" aria-label="メインナビゲーション">
-          <a href="#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
-          <a href="#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
-          <a href="#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">動画</a>
-          <a href="#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">ダウンロード</a>
+        <nav class="hidden md:flex items-center space-x-8" aria-label="メインナビゲーション" data-i18n-attr="aria-label:nav.mainNav">
+          <a href="#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.features">特長</a>
+          <a href="#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
+          <a href="#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
+          <a href="#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
           <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
-          <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替">
+          <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替" data-i18n-attr="aria-label:nav.themeToggle,title:nav.themeToggle">
             <!-- 太陽: ライトモード -->
             <svg class="w-5 h-5 theme-icon-light hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             <!-- 月: ダークモード -->
@@ -104,9 +114,13 @@
             <!-- モニター: システム -->
             <svg class="w-5 h-5 theme-icon-system hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           </button>
+          <button id="lang-toggle" class="p-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Switch language">
+            <svg class="w-5 h-5 inline-block mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            <span data-i18n="nav.langSwitch">EN</span>
+          </button>
         </nav>
         <!-- モバイルメニューボタン -->
-        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="メニューを開く" aria-expanded="false">
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="メニューを開く" aria-expanded="false" data-i18n-attr="aria-label:nav.openMenu">
           <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
           <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
@@ -114,20 +128,24 @@
     </div>
     <!-- モバイルメニュー -->
     <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
-      <nav class="px-4 py-4 space-y-3" aria-label="モバイルナビゲーション">
-        <a href="#features" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">特長</a>
-        <a href="#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">使い方</a>
-        <a href="#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">動画</a>
-        <a href="#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">ダウンロード</a>
+      <nav class="px-4 py-4 space-y-3" aria-label="モバイルナビゲーション" data-i18n-attr="aria-label:nav.mobileNav">
+        <a href="#features" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.features">特長</a>
+        <a href="#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
+        <a href="#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
+        <a href="#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
         <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
-        <button id="theme-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替">
+        <button id="theme-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替" data-i18n-attr="aria-label:nav.themeToggle,title:nav.themeToggle">
           <!-- 太陽: ライトモード -->
           <svg class="w-5 h-5 theme-icon-light hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           <!-- 月: ダークモード -->
           <svg class="w-5 h-5 theme-icon-dark hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           <!-- モニター: システム -->
           <svg class="w-5 h-5 theme-icon-system hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          <span class="ml-2 text-sm font-medium">テーマ切替</span>
+          <span class="ml-2 text-sm font-medium" data-i18n="nav.themeToggle">テーマ切替</span>
+        </button>
+        <button id="lang-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Switch language">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          <span class="ml-2 text-sm font-medium" data-i18n="nav.langSwitch">EN</span>
         </button>
       </nav>
     </div>
@@ -140,19 +158,19 @@
       <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
         <div class="text-center lg:text-left lg:flex-1">
           <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
-            <span class="text-amber-600 dark:text-amber-400">推しを、</span><br>
-            <span class="text-slate-900 dark:text-slate-100">そばに。</span>
+            <span class="text-amber-600 dark:text-amber-400" data-i18n="hero.headingLine1">推しを、</span><br>
+            <span class="text-slate-900 dark:text-slate-100" data-i18n="hero.headingLine2">そばに。</span>
           </h1>
-          <p class="mt-4 text-lg sm:text-xl font-medium text-slate-500 dark:text-slate-400">デスクトップアクスタアプリ for macOS</p>
-          <p class="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">Apple Silicon・Intel Mac 両対応（ユニバーサルバイナリ）</p>
-          <p class="mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto lg:mx-0">
+          <p class="mt-4 text-lg sm:text-xl font-medium text-slate-500 dark:text-slate-400" data-i18n="hero.subheading">デスクトップアクスタアプリ for macOS</p>
+          <p class="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400" data-i18n="hero.universalBinary">Apple Silicon・Intel Mac 両対応（ユニバーサルバイナリ）</p>
+          <p class="mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto lg:mx-0" data-i18n="hero.description">
             好きな画像を、アクリルスタンドのようにデスクトップに飾れるアプリ。推しのキャラクター、アイドル、ペット、家族——いつでも目に入る場所に、お気に入りを。
           </p>
           <div class="mt-10 space-y-3">
             <div class="flex justify-center lg:justify-start">
               <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-base font-bold bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-400 text-white shadow-lg hover:shadow-xl transition-all whitespace-nowrap">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Sobani-universal.dmg をダウンロード
+                <span data-i18n="hero.downloadButton">Sobani-universal.dmg をダウンロード</span>
               </a>
             </div>
             <div class="flex items-center max-w-lg mx-auto lg:mx-0 gap-3">
@@ -164,7 +182,7 @@
               <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
                 <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
-                <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー">
+                <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー" data-i18n-attr="aria-label:hero.copyCommand,title:hero.copyTitle">
                   <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                   <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </button>
@@ -173,7 +191,7 @@
           </div>
         </div>
         <div class="lg:flex-1 flex justify-center">
-          <img src="images/app-icon.png" alt="Sobani アプリアイコン" width="1024" height="1024" class="w-48 sm:w-56 lg:w-72 rounded-3xl shadow-2xl dark:shadow-amber-500/10">
+          <img src="images/app-icon.png" alt="Sobani アプリアイコン" width="1024" height="1024" class="w-48 sm:w-56 lg:w-72 rounded-3xl shadow-2xl dark:shadow-amber-500/10" data-i18n-attr="alt:hero.appIconAlt">
         </div>
       </div>
     </div>
@@ -183,32 +201,32 @@
   <section id="features" class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
       <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">特長</h2>
-        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">「飾る」に特化した、軽くてシンプルなアプリ</p>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="features.sectionTitle">特長</h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="features.sectionSubtitle">「飾る」に特化した、軽くてシンプルなアプリ</p>
       </div>
       <div class="grid sm:grid-cols-2 gap-6 lg:gap-8">
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
-          <h3 class="text-lg font-semibold mb-2">いつでも最前面に</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">透明な背景で画像だけをデスクトップに表示。常に最前面、すべての仮想デスクトップに対応しています。</p>
+          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card1Title">いつでも最前面に</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card1Desc">透明な背景で画像だけをデスクトップに表示。常に最前面、すべての仮想デスクトップに対応しています。</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5C2;&#xFE0F;</div>
-          <h3 class="text-lg font-semibold mb-2">好きな画像を自由に</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">PNG・JPEG・GIF・TIFF・HEICに対応。好きな画像を何枚でも登録して、気分に合わせて切り替えられます。</p>
+          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card2Title">好きな画像を自由に</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card2Desc">PNG・JPEG・GIF・TIFF・HEICに対応。好きな画像を何枚でも登録して、気分に合わせて切り替えられます。</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5B1;&#xFE0F;</div>
-          <h3 class="text-lg font-semibold mb-2">直感的な操作</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">ドラッグで移動、スクロールでサイズ変更、回転や透明度もパネルから調整。右クリックメニューですべての操作にすぐアクセスできます。</p>
+          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card3Title">直感的な操作</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card3Desc">ドラッグで移動、スクロールでサイズ変更、回転や透明度もパネルから調整。右クリックメニューですべての操作にすぐアクセスできます。</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1FA9F;</div>
-          <h3 class="text-lg font-semibold mb-2">好きなだけ並べて飾れる</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">同時に複数の画像を表示できます。重ね順の管理やOptionキー一括操作で、自由にレイアウト。</p>
+          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card4Title">好きなだけ並べて飾れる</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card4Desc">同時に複数の画像を表示できます。重ね順の管理やOptionキー一括操作で、自由にレイアウト。</p>
         </div>
       </div>
-      <p class="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">位置・サイズ・画像・回転・透明度・重ね順は自動保存。アップデートもアプリ内から確認できます。</p>
+      <p class="mt-8 text-center text-sm text-slate-500 dark:text-slate-400" data-i18n="features.autoSaveNote">位置・サイズ・画像・回転・透明度・重ね順は自動保存。アップデートもアプリ内から確認できます。</p>
     </div>
   </section>
 
@@ -216,40 +234,40 @@
   <section id="howto" class="scroll-mt-20">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
       <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">使い方</h2>
-        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">かんたん3ステップで、すぐに飾れます</p>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="howto.sectionTitle">使い方</h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="howto.sectionSubtitle">かんたん3ステップで、すぐに飾れます</p>
       </div>
       <div class="space-y-16 lg:space-y-24">
 
         <!-- Step 1: インストールして起動 -->
         <div>
           <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-sm mb-4">1</div>
-          <h3 class="text-2xl font-bold mb-4">インストールして起動</h3>
-          <p class="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">Homebrewでワンコマンド。起動するとメニューバーにアイコンが現れ、デスクトップに画像が表示されます。</p>
+          <h3 class="text-2xl font-bold mb-4" data-i18n="howto.step1Title">インストールして起動</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed" data-i18n="howto.step1Desc">Homebrewでワンコマンド。起動するとメニューバーにアイコンが現れ、デスクトップに画像が表示されます。</p>
           <div class="relative max-w-lg">
             <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
               <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
-              <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー">
+              <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー" data-i18n-attr="aria-label:hero.copyCommand,title:hero.copyTitle">
                 <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               </button>
             </div>
           </div>
-          <p class="mt-4 text-sm text-slate-500 dark:text-slate-500">または <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="text-amber-600 dark:text-amber-400 hover:underline">Sobani-universal.dmg を直接ダウンロード</a>することもできます。</p>
+          <p class="mt-4 text-sm text-slate-500 dark:text-slate-500" data-i18n-html="howto.step1Alt">または <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="text-amber-600 dark:text-amber-400 hover:underline">Sobani-universal.dmg を直接ダウンロード</a>することもできます。</p>
         </div>
 
         <!-- Step 2: お気に入りの画像に差し替える -->
         <div>
           <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-sm mb-4">2</div>
-          <h3 class="text-2xl font-bold mb-4">お気に入りの画像に差し替える</h3>
-          <p class="text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">メニューバーから「デフォルト画像を変更...」を選んで、好きな画像を設定するだけ。<br>右クリック →「表示画像の変更」で、画像の追加登録や切り替えもできます。</p>
+          <h3 class="text-2xl font-bold mb-4" data-i18n="howto.step2Title">お気に入りの画像に差し替える</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-4 leading-relaxed" data-i18n-html="howto.step2Desc">メニューバーから「デフォルト画像を変更...」を選んで、好きな画像を設定するだけ。<br>右クリック →「表示画像の変更」で、画像の追加登録や切り替えもできます。</p>
           <div class="space-y-2">
             <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-              <p class="text-sm text-amber-800 dark:text-amber-300">&#x1F4A1; ヒント: 透過処理されたPNG画像を使うと、背景なしで画像だけが表示されます。</p>
+              <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step2Hint1">&#x1F4A1; ヒント: 透過処理されたPNG画像を使うと、背景なしで画像だけが表示されます。</p>
             </div>
             <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-              <p class="text-sm text-amber-800 dark:text-amber-300">&#x1F4A1; ヒント: アニメーションGIFやアニメーションPNG（APNG）も表示できます。動く推しをそばに飾りましょう。</p>
+              <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step2Hint2">&#x1F4A1; ヒント: アニメーションGIFやアニメーションPNG（APNG）も表示できます。動く推しをそばに飾りましょう。</p>
             </div>
           </div>
         </div>
@@ -257,10 +275,10 @@
         <!-- Step 3: 好きなように配置する -->
         <div>
           <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-sm mb-4">3</div>
-          <h3 class="text-2xl font-bold mb-4">好きなように配置する</h3>
-          <p class="text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">ドラッグで移動、スクロールでサイズ変更。<br>右クリックから「画像を追加表示」で画像を増やしたり、「表示の調整」で回転・透明度・左右反転を調整したり。自由にデスクトップを飾りましょう。</p>
+          <h3 class="text-2xl font-bold mb-4" data-i18n="howto.step3Title">好きなように配置する</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-4 leading-relaxed" data-i18n-html="howto.step3Desc">ドラッグで移動、スクロールでサイズ変更。<br>右クリックから「画像を追加表示」で画像を増やしたり、「表示の調整」で回転・透明度・左右反転を調整したり。自由にデスクトップを飾りましょう。</p>
           <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-            <p class="text-sm text-amber-800 dark:text-amber-300">&#x1F4A1; ヒント: Optionキーを押しながら操作すると、すべてのウィンドウをまとめて動かせます。</p>
+            <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step3Hint">&#x1F4A1; ヒント: Optionキーを押しながら操作すると、すべてのウィンドウをまとめて動かせます。</p>
           </div>
         </div>
 
@@ -272,10 +290,10 @@
   <section id="video" class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
       <div class="text-center mb-12">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100" data-i18n="video.sectionTitle">
           使用例
         </h2>
-        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="video.sectionSubtitle">
           実際の動作をご覧ください
         </p>
       </div>
@@ -289,6 +307,7 @@
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
+            data-i18n-attr="title:video.iframeTitle"
           ></iframe>
         </div>
       </div>
@@ -299,53 +318,53 @@
   <section class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
       <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">他のデスクトップマスコットとの違い</h2>
-        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">Sobaniは「画像を飾る」ことに特化した、アクリルスタンド型のアプリです</p>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="comparison.sectionTitle">他のデスクトップマスコットとの違い</h2>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="comparison.sectionSubtitle">Sobaniは「画像を飾る」ことに特化した、アクリルスタンド型のアプリです</p>
       </div>
       <div class="max-w-4xl mx-auto overflow-x-auto">
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b-2 border-slate-200 dark:border-slate-700">
               <th class="py-4 px-4 font-semibold text-slate-500 dark:text-slate-400"></th>
-              <th class="py-4 px-4 font-bold text-amber-600 dark:text-amber-400 text-center">Sobani</th>
-              <th class="py-4 px-4 font-semibold text-slate-500 dark:text-slate-400 text-center">一般的なデスクトップマスコット</th>
+              <th class="py-4 px-4 font-bold text-amber-600 dark:text-amber-400 text-center" data-i18n="comparison.colSobani">Sobani</th>
+              <th class="py-4 px-4 font-semibold text-slate-500 dark:text-slate-400 text-center" data-i18n="comparison.colOthers">一般的なデスクトップマスコット</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
             <tr>
-              <td class="py-3 px-4 font-medium">コンセプト</td>
-              <td class="py-3 px-4 text-center">デスクトップアクスタ（静的表示）</td>
-              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">動くキャラクター・対話型</td>
+              <td class="py-3 px-4 font-medium" data-i18n="comparison.row1Label">コンセプト</td>
+              <td class="py-3 px-4 text-center" data-i18n="comparison.row1Sobani">デスクトップアクスタ（静的表示）</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400" data-i18n="comparison.row1Others">動くキャラクター・対話型</td>
             </tr>
             <tr class="bg-slate-50/50 dark:bg-slate-800/30">
-              <td class="py-3 px-4 font-medium">画像</td>
-              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">自分の好きな画像を自由に設定</td>
-              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">アプリ固有のキャラクター</td>
+              <td class="py-3 px-4 font-medium" data-i18n="comparison.row2Label">画像</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400" data-i18n="comparison.row2Sobani">自分の好きな画像を自由に設定</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400" data-i18n="comparison.row2Others">アプリ固有のキャラクター</td>
             </tr>
             <tr>
-              <td class="py-3 px-4 font-medium">表示方式</td>
-              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">静止画特化 — 軽量で安定</td>
-              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">アニメーション（歩く・踊る等）</td>
+              <td class="py-3 px-4 font-medium" data-i18n="comparison.row3Label">表示方式</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400" data-i18n="comparison.row3Sobani">静止画特化 — 軽量で安定</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400" data-i18n="comparison.row3Others">アニメーション（歩く・踊る等）</td>
             </tr>
             <tr class="bg-slate-50/50 dark:bg-slate-800/30">
-              <td class="py-3 px-4 font-medium">設計思想</td>
-              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">画像を飾ることに集中</td>
-              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">AI・対話・会話機能</td>
+              <td class="py-3 px-4 font-medium" data-i18n="comparison.row4Label">設計思想</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400" data-i18n="comparison.row4Sobani">画像を飾ることに集中</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400" data-i18n="comparison.row4Others">AI・対話・会話機能</td>
             </tr>
             <tr>
-              <td class="py-3 px-4 font-medium">リソース消費</td>
-              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">極めて軽量</td>
-              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">中〜高</td>
+              <td class="py-3 px-4 font-medium" data-i18n="comparison.row5Label">リソース消費</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400" data-i18n="comparison.row5Sobani">極めて軽量</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400" data-i18n="comparison.row5Others">中〜高</td>
             </tr>
             <tr class="bg-slate-50/50 dark:bg-slate-800/30">
-              <td class="py-3 px-4 font-medium">外部依存</td>
-              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">ゼロ</td>
-              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">ランタイム・ライブラリ等</td>
+              <td class="py-3 px-4 font-medium" data-i18n="comparison.row6Label">外部依存</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400" data-i18n="comparison.row6Sobani">ゼロ</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400" data-i18n="comparison.row6Others">ランタイム・ライブラリ等</td>
             </tr>
             <tr>
-              <td class="py-3 px-4 font-medium">複数画像の同時表示</td>
-              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400">対応</td>
-              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400">アプリによる</td>
+              <td class="py-3 px-4 font-medium" data-i18n="comparison.row7Label">複数画像の同時表示</td>
+              <td class="py-3 px-4 text-center font-medium text-amber-600 dark:text-amber-400" data-i18n="comparison.row7Sobani">対応</td>
+              <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400" data-i18n="comparison.row7Others">アプリによる</td>
             </tr>
           </tbody>
         </table>
@@ -358,35 +377,35 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
       <div class="max-w-2xl mx-auto text-center">
         <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">
-          <span class="text-amber-600 dark:text-amber-400">推しを、</span>そばに置こう。
+          <span class="text-amber-600 dark:text-amber-400" data-i18n="download.headingHighlight">推しを、</span><span data-i18n="download.headingRest">そばに置こう。</span>
         </h2>
-        <p class="mt-4 text-slate-600 dark:text-slate-400">ネイティブSwift製。ゼロ依存で驚くほど軽い。</p>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">macOS 13.0（Ventura）以降 ／ Apple Silicon・Intel Mac 両対応（ユニバーサルバイナリ）</p>
+        <p class="mt-4 text-slate-600 dark:text-slate-400" data-i18n="download.subtitle">ネイティブSwift製。ゼロ依存で驚くほど軽い。</p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-500" data-i18n="download.systemReq">macOS 13.0（Ventura）以降 ／ Apple Silicon・Intel Mac 両対応（ユニバーサルバイナリ）</p>
         <div class="mt-8 space-y-6">
           <!-- 直接ダウンロードボタン -->
           <div class="flex justify-center">
             <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="inline-flex items-center justify-center px-8 py-4 rounded-xl text-base font-bold bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-400 text-white shadow-lg hover:shadow-xl transition-all">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              Sobani-universal.dmg をダウンロード
+              <span data-i18n="download.downloadButton">Sobani-universal.dmg をダウンロード</span>
             </a>
           </div>
           <!-- 手動インストール手順 -->
           <div class="text-left max-w-lg mx-auto bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
-            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">手動インストール手順</p>
+            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3" data-i18n="download.manualTitle">手動インストール手順</p>
             <ol class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li class="flex items-start gap-2"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-xs">1</span>ダウンロードした DMG ファイルを開く</li>
-              <li class="flex items-start gap-2"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-xs">2</span>Sobani.app をアプリケーションフォルダにドラッグ＆ドロップする</li>
-              <li class="flex items-start gap-2"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-xs">3</span>Sobani.app を起動する（初回は右クリック →「開く」）</li>
+              <li class="flex items-start gap-2"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-xs">1</span><span data-i18n="download.manualStep1">ダウンロードした DMG ファイルを開く</span></li>
+              <li class="flex items-start gap-2"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-xs">2</span><span data-i18n="download.manualStep2">Sobani.app をアプリケーションフォルダにドラッグ＆ドロップする</span></li>
+              <li class="flex items-start gap-2"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-xs">3</span><span data-i18n="download.manualStep3">Sobani.app を起動する（初回は右クリック →「開く」）</span></li>
             </ol>
           </div>
           <!-- または Homebrew -->
           <div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">または Homebrew でインストール</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-3" data-i18n="download.homebrewLabel">または Homebrew でインストール</p>
             <div class="relative max-w-lg mx-auto">
               <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
                 <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
-                <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー">
+                <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー" data-i18n-attr="aria-label:download.copyCommand,title:download.copyTitle">
                   <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                   <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </button>
@@ -396,7 +415,7 @@
           <div class="flex justify-center">
             <a href="https://github.com/shiroemons/sobani/releases" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-              GitHub Releases からダウンロード
+              <span data-i18n="download.githubButton">GitHub Releases からダウンロード</span>
             </a>
           </div>
         </div>
@@ -419,6 +438,217 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    var translations = {
+      ja: {
+        meta: {
+          title: "Sobani \u2014 \u63a8\u3057\u3092\u3001\u305d\u3070\u306b\u3002",
+          description: "\u63a8\u3057\u3092\u3001\u305d\u3070\u306b\u3002\u304a\u6c17\u306b\u5165\u308a\u306e\u753b\u50cf\u3092\u30a2\u30af\u30ea\u30eb\u30b9\u30bf\u30f3\u30c9\u306e\u3088\u3046\u306b\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u306b\u98fe\u308c\u308bmacOS\u30a2\u30d7\u30ea",
+          keywords: "macOS,\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30de\u30b9\u30b3\u30c3\u30c8,\u30a2\u30af\u30ea\u30eb\u30b9\u30bf\u30f3\u30c9,\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30a2\u30af\u30b9\u30bf,Sobani,\u63a8\u3057,\u5e38\u306b\u6700\u524d\u9762,\u6700\u524d\u9762\u8868\u793a,PNG\u900f\u904e\u8868\u793a,\u900f\u904e\u30a6\u30a3\u30f3\u30c9\u30a6,\u8907\u6570\u753b\u50cf\u8868\u793a,\u30c9\u30e9\u30c3\u30b0\u79fb\u52d5,\u56de\u8ee2,\u900f\u660e\u5ea6\u8abf\u6574,\u4eee\u60f3\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u5bfe\u5fdc,Swift,\u7121\u6599,\u8efd\u91cf"
+        },
+        nav: {
+          features: "\u7279\u9577",
+          howto: "\u4f7f\u3044\u65b9",
+          video: "\u52d5\u753b",
+          download: "\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9",
+          themeToggle: "\u30c6\u30fc\u30de\u5207\u66ff",
+          openMenu: "\u30e1\u30cb\u30e5\u30fc\u3092\u958b\u304f",
+          mainNav: "\u30e1\u30a4\u30f3\u30ca\u30d3\u30b2\u30fc\u30b7\u30e7\u30f3",
+          mobileNav: "\u30e2\u30d0\u30a4\u30eb\u30ca\u30d3\u30b2\u30fc\u30b7\u30e7\u30f3",
+          langSwitch: "EN"
+        },
+        hero: {
+          headingLine1: "\u63a8\u3057\u3092\u3001",
+          headingLine2: "\u305d\u3070\u306b\u3002",
+          subheading: "\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30a2\u30af\u30b9\u30bf\u30a2\u30d7\u30ea for macOS",
+          universalBinary: "Apple Silicon\u30fbIntel Mac \u4e21\u5bfe\u5fdc\uff08\u30e6\u30cb\u30d0\u30fc\u30b5\u30eb\u30d0\u30a4\u30ca\u30ea\uff09",
+          description: "\u597d\u304d\u306a\u753b\u50cf\u3092\u3001\u30a2\u30af\u30ea\u30eb\u30b9\u30bf\u30f3\u30c9\u306e\u3088\u3046\u306b\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u306b\u98fe\u308c\u308b\u30a2\u30d7\u30ea\u3002\u63a8\u3057\u306e\u30ad\u30e3\u30e9\u30af\u30bf\u30fc\u3001\u30a2\u30a4\u30c9\u30eb\u3001\u30da\u30c3\u30c8\u3001\u5bb6\u65cf\u2014\u2014\u3044\u3064\u3067\u3082\u76ee\u306b\u5165\u308b\u5834\u6240\u306b\u3001\u304a\u6c17\u306b\u5165\u308a\u3092\u3002",
+          downloadButton: "Sobani-universal.dmg \u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9",
+          copyCommand: "\u30b3\u30de\u30f3\u30c9\u3092\u30b3\u30d4\u30fc",
+          copyTitle: "\u30b3\u30d4\u30fc",
+          appIconAlt: "Sobani \u30a2\u30d7\u30ea\u30a2\u30a4\u30b3\u30f3"
+        },
+        features: {
+          sectionTitle: "\u7279\u9577",
+          sectionSubtitle: "\u300c\u98fe\u308b\u300d\u306b\u7279\u5316\u3057\u305f\u3001\u8efd\u304f\u3066\u30b7\u30f3\u30d7\u30eb\u306a\u30a2\u30d7\u30ea",
+          card1Title: "\u3044\u3064\u3067\u3082\u6700\u524d\u9762\u306b",
+          card1Desc: "\u900f\u660e\u306a\u80cc\u666f\u3067\u753b\u50cf\u3060\u3051\u3092\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u306b\u8868\u793a\u3002\u5e38\u306b\u6700\u524d\u9762\u3001\u3059\u3079\u3066\u306e\u4eee\u60f3\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u306b\u5bfe\u5fdc\u3057\u3066\u3044\u307e\u3059\u3002",
+          card2Title: "\u597d\u304d\u306a\u753b\u50cf\u3092\u81ea\u7531\u306b",
+          card2Desc: "PNG\u30fbJPEG\u30fbGIF\u30fbTIFF\u30fbHEIC\u306b\u5bfe\u5fdc\u3002\u597d\u304d\u306a\u753b\u50cf\u3092\u4f55\u679a\u3067\u3082\u767b\u9332\u3057\u3066\u3001\u6c17\u5206\u306b\u5408\u308f\u305b\u3066\u5207\u308a\u66ff\u3048\u3089\u308c\u307e\u3059\u3002",
+          card3Title: "\u76f4\u611f\u7684\u306a\u64cd\u4f5c",
+          card3Desc: "\u30c9\u30e9\u30c3\u30b0\u3067\u79fb\u52d5\u3001\u30b9\u30af\u30ed\u30fc\u30eb\u3067\u30b5\u30a4\u30ba\u5909\u66f4\u3001\u56de\u8ee2\u3084\u900f\u660e\u5ea6\u3082\u30d1\u30cd\u30eb\u304b\u3089\u8abf\u6574\u3002\u53f3\u30af\u30ea\u30c3\u30af\u30e1\u30cb\u30e5\u30fc\u3067\u3059\u3079\u3066\u306e\u64cd\u4f5c\u306b\u3059\u3050\u30a2\u30af\u30bb\u30b9\u3067\u304d\u307e\u3059\u3002",
+          card4Title: "\u597d\u304d\u306a\u3060\u3051\u4e26\u3079\u3066\u98fe\u308c\u308b",
+          card4Desc: "\u540c\u6642\u306b\u8907\u6570\u306e\u753b\u50cf\u3092\u8868\u793a\u3067\u304d\u307e\u3059\u3002\u91cd\u306d\u9806\u306e\u7ba1\u7406\u3084Option\u30ad\u30fc\u4e00\u62ec\u64cd\u4f5c\u3067\u3001\u81ea\u7531\u306b\u30ec\u30a4\u30a2\u30a6\u30c8\u3002",
+          autoSaveNote: "\u4f4d\u7f6e\u30fb\u30b5\u30a4\u30ba\u30fb\u753b\u50cf\u30fb\u56de\u8ee2\u30fb\u900f\u660e\u5ea6\u30fb\u91cd\u306d\u9806\u306f\u81ea\u52d5\u4fdd\u5b58\u3002\u30a2\u30c3\u30d7\u30c7\u30fc\u30c8\u3082\u30a2\u30d7\u30ea\u5185\u304b\u3089\u78ba\u8a8d\u3067\u304d\u307e\u3059\u3002"
+        },
+        howto: {
+          sectionTitle: "\u4f7f\u3044\u65b9",
+          sectionSubtitle: "\u304b\u3093\u305f\u30933\u30b9\u30c6\u30c3\u30d7\u3067\u3001\u3059\u3050\u306b\u98fe\u308c\u307e\u3059",
+          step1Title: "\u30a4\u30f3\u30b9\u30c8\u30fc\u30eb\u3057\u3066\u8d77\u52d5",
+          step1Desc: "Homebrew\u3067\u30ef\u30f3\u30b3\u30de\u30f3\u30c9\u3002\u8d77\u52d5\u3059\u308b\u3068\u30e1\u30cb\u30e5\u30fc\u30d0\u30fc\u306b\u30a2\u30a4\u30b3\u30f3\u304c\u73fe\u308c\u3001\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u306b\u753b\u50cf\u304c\u8868\u793a\u3055\u308c\u307e\u3059\u3002",
+          step1Alt: '\u307e\u305f\u306f <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="text-amber-600 dark:text-amber-400 hover:underline">Sobani-universal.dmg \u3092\u76f4\u63a5\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9</a>\u3059\u308b\u3053\u3068\u3082\u3067\u304d\u307e\u3059\u3002',
+          step2Title: "\u304a\u6c17\u306b\u5165\u308a\u306e\u753b\u50cf\u306b\u5dee\u3057\u66ff\u3048\u308b",
+          step2Desc: '\u30e1\u30cb\u30e5\u30fc\u30d0\u30fc\u304b\u3089\u300c\u30c7\u30d5\u30a9\u30eb\u30c8\u753b\u50cf\u3092\u5909\u66f4...\u300d\u3092\u9078\u3093\u3067\u3001\u597d\u304d\u306a\u753b\u50cf\u3092\u8a2d\u5b9a\u3059\u308b\u3060\u3051\u3002<br>\u53f3\u30af\u30ea\u30c3\u30af \u2192\u300c\u8868\u793a\u753b\u50cf\u306e\u5909\u66f4\u300d\u3067\u3001\u753b\u50cf\u306e\u8ffd\u52a0\u767b\u9332\u3084\u5207\u308a\u66ff\u3048\u3082\u3067\u304d\u307e\u3059\u3002',
+          step2Hint1: "&#x1F4A1; \u30d2\u30f3\u30c8: \u900f\u904e\u51e6\u7406\u3055\u308c\u305fPNG\u753b\u50cf\u3092\u4f7f\u3046\u3068\u3001\u80cc\u666f\u306a\u3057\u3067\u753b\u50cf\u3060\u3051\u304c\u8868\u793a\u3055\u308c\u307e\u3059\u3002",
+          step2Hint2: "&#x1F4A1; \u30d2\u30f3\u30c8: \u30a2\u30cb\u30e1\u30fc\u30b7\u30e7\u30f3GIF\u3084\u30a2\u30cb\u30e1\u30fc\u30b7\u30e7\u30f3PNG\uff08APNG\uff09\u3082\u8868\u793a\u3067\u304d\u307e\u3059\u3002\u52d5\u304f\u63a8\u3057\u3092\u305d\u3070\u306b\u98fe\u308a\u307e\u3057\u3087\u3046\u3002",
+          step3Title: "\u597d\u304d\u306a\u3088\u3046\u306b\u914d\u7f6e\u3059\u308b",
+          step3Desc: '\u30c9\u30e9\u30c3\u30b0\u3067\u79fb\u52d5\u3001\u30b9\u30af\u30ed\u30fc\u30eb\u3067\u30b5\u30a4\u30ba\u5909\u66f4\u3002<br>\u53f3\u30af\u30ea\u30c3\u30af\u304b\u3089\u300c\u753b\u50cf\u3092\u8ffd\u52a0\u8868\u793a\u300d\u3067\u753b\u50cf\u3092\u5897\u3084\u3057\u305f\u308a\u3001\u300c\u8868\u793a\u306e\u8abf\u6574\u300d\u3067\u56de\u8ee2\u30fb\u900f\u660e\u5ea6\u30fb\u5de6\u53f3\u53cd\u8ee2\u3092\u8abf\u6574\u3057\u305f\u308a\u3002\u81ea\u7531\u306b\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u3092\u98fe\u308a\u307e\u3057\u3087\u3046\u3002',
+          step3Hint: "&#x1F4A1; \u30d2\u30f3\u30c8: Option\u30ad\u30fc\u3092\u62bc\u3057\u306a\u304c\u3089\u64cd\u4f5c\u3059\u308b\u3068\u3001\u3059\u3079\u3066\u306e\u30a6\u30a3\u30f3\u30c9\u30a6\u3092\u307e\u3068\u3081\u3066\u52d5\u304b\u305b\u307e\u3059\u3002"
+        },
+        video: {
+          sectionTitle: "\u4f7f\u7528\u4f8b",
+          sectionSubtitle: "\u5b9f\u969b\u306e\u52d5\u4f5c\u3092\u3054\u89a7\u304f\u3060\u3055\u3044",
+          iframeTitle: "Sobani \u4f7f\u7528\u4f8b"
+        },
+        comparison: {
+          sectionTitle: "\u4ed6\u306e\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30de\u30b9\u30b3\u30c3\u30c8\u3068\u306e\u9055\u3044",
+          sectionSubtitle: "Sobani\u306f\u300c\u753b\u50cf\u3092\u98fe\u308b\u300d\u3053\u3068\u306b\u7279\u5316\u3057\u305f\u3001\u30a2\u30af\u30ea\u30eb\u30b9\u30bf\u30f3\u30c9\u578b\u306e\u30a2\u30d7\u30ea\u3067\u3059",
+          colSobani: "Sobani",
+          colOthers: "\u4e00\u822c\u7684\u306a\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30de\u30b9\u30b3\u30c3\u30c8",
+          row1Label: "\u30b3\u30f3\u30bb\u30d7\u30c8",
+          row1Sobani: "\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30a2\u30af\u30b9\u30bf\uff08\u9759\u7684\u8868\u793a\uff09",
+          row1Others: "\u52d5\u304f\u30ad\u30e3\u30e9\u30af\u30bf\u30fc\u30fb\u5bfe\u8a71\u578b",
+          row2Label: "\u753b\u50cf",
+          row2Sobani: "\u81ea\u5206\u306e\u597d\u304d\u306a\u753b\u50cf\u3092\u81ea\u7531\u306b\u8a2d\u5b9a",
+          row2Others: "\u30a2\u30d7\u30ea\u56fa\u6709\u306e\u30ad\u30e3\u30e9\u30af\u30bf\u30fc",
+          row3Label: "\u8868\u793a\u65b9\u5f0f",
+          row3Sobani: "\u9759\u6b62\u753b\u7279\u5316 \u2014 \u8efd\u91cf\u3067\u5b89\u5b9a",
+          row3Others: "\u30a2\u30cb\u30e1\u30fc\u30b7\u30e7\u30f3\uff08\u6b69\u304f\u30fb\u8e0a\u308b\u7b49\uff09",
+          row4Label: "\u8a2d\u8a08\u601d\u60f3",
+          row4Sobani: "\u753b\u50cf\u3092\u98fe\u308b\u3053\u3068\u306b\u96c6\u4e2d",
+          row4Others: "AI\u30fb\u5bfe\u8a71\u30fb\u4f1a\u8a71\u6a5f\u80fd",
+          row5Label: "\u30ea\u30bd\u30fc\u30b9\u6d88\u8cbb",
+          row5Sobani: "\u6975\u3081\u3066\u8efd\u91cf",
+          row5Others: "\u4e2d\u301c\u9ad8",
+          row6Label: "\u5916\u90e8\u4f9d\u5b58",
+          row6Sobani: "\u30bc\u30ed",
+          row6Others: "\u30e9\u30f3\u30bf\u30a4\u30e0\u30fb\u30e9\u30a4\u30d6\u30e9\u30ea\u7b49",
+          row7Label: "\u8907\u6570\u753b\u50cf\u306e\u540c\u6642\u8868\u793a",
+          row7Sobani: "\u5bfe\u5fdc",
+          row7Others: "\u30a2\u30d7\u30ea\u306b\u3088\u308b"
+        },
+        download: {
+          headingHighlight: "\u63a8\u3057\u3092\u3001",
+          headingRest: "\u305d\u3070\u306b\u7f6e\u3053\u3046\u3002",
+          subtitle: "\u30cd\u30a4\u30c6\u30a3\u30d6Swift\u88fd\u3002\u30bc\u30ed\u4f9d\u5b58\u3067\u9a5a\u304f\u307b\u3069\u8efd\u3044\u3002",
+          systemReq: "macOS 13.0\uff08Ventura\uff09\u4ee5\u964d \uff0f Apple Silicon\u30fbIntel Mac \u4e21\u5bfe\u5fdc\uff08\u30e6\u30cb\u30d0\u30fc\u30b5\u30eb\u30d0\u30a4\u30ca\u30ea\uff09",
+          downloadButton: "Sobani-universal.dmg \u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9",
+          manualTitle: "\u624b\u52d5\u30a4\u30f3\u30b9\u30c8\u30fc\u30eb\u624b\u9806",
+          manualStep1: "\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u3057\u305f DMG \u30d5\u30a1\u30a4\u30eb\u3092\u958b\u304f",
+          manualStep2: "Sobani.app \u3092\u30a2\u30d7\u30ea\u30b1\u30fc\u30b7\u30e7\u30f3\u30d5\u30a9\u30eb\u30c0\u306b\u30c9\u30e9\u30c3\u30b0\uff06\u30c9\u30ed\u30c3\u30d7\u3059\u308b",
+          manualStep3: "Sobani.app \u3092\u8d77\u52d5\u3059\u308b\uff08\u521d\u56de\u306f\u53f3\u30af\u30ea\u30c3\u30af \u2192\u300c\u958b\u304f\u300d\uff09",
+          homebrewLabel: "\u307e\u305f\u306f Homebrew \u3067\u30a4\u30f3\u30b9\u30c8\u30fc\u30eb",
+          githubButton: "GitHub Releases \u304b\u3089\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9",
+          copyCommand: "\u30b3\u30de\u30f3\u30c9\u3092\u30b3\u30d4\u30fc",
+          copyTitle: "\u30b3\u30d4\u30fc"
+        }
+      },
+      en: {
+        meta: {
+          title: "Sobani \u2014 Your Favorites, Always Close.",
+          description: "Your favorites, always close. A macOS app that displays your favorite images on the desktop like acrylic stands.",
+          keywords: "macOS,desktop mascot,acrylic stand,desktop character,Sobani,always on top,PNG transparent,transparent window,multiple images,drag to move,rotate,opacity,virtual desktop,Swift,free,lightweight"
+        },
+        nav: {
+          features: "Features",
+          howto: "How to Use",
+          video: "Video",
+          download: "Download",
+          themeToggle: "Toggle theme",
+          openMenu: "Open menu",
+          mainNav: "Main navigation",
+          mobileNav: "Mobile navigation",
+          langSwitch: "\u65e5\u672c\u8a9e"
+        },
+        hero: {
+          headingLine1: "Your favorites,",
+          headingLine2: "always close.",
+          subheading: "Desktop Acrylic Stand App for macOS",
+          universalBinary: "Supports both Apple Silicon and Intel Mac (Universal Binary)",
+          description: "Display your favorite images on the desktop like acrylic stands. Characters, idols, pets, family \u2014 right where you can always see them.",
+          downloadButton: "Download Sobani-universal.dmg",
+          copyCommand: "Copy command",
+          copyTitle: "Copy",
+          appIconAlt: "Sobani app icon"
+        },
+        features: {
+          sectionTitle: "Features",
+          sectionSubtitle: "A lightweight, simple app focused on displaying images",
+          card1Title: "Always on Top",
+          card1Desc: "Displays only the image on your desktop against a transparent background. Always on top and works across all virtual desktops.",
+          card2Title: "Any Image You Like",
+          card2Desc: "Supports PNG, JPEG, GIF, TIFF, and HEIC. Register as many images as you want and switch between them anytime.",
+          card3Title: "Intuitive Controls",
+          card3Desc: "Drag to move, scroll to resize, adjust rotation and opacity from the panel. Right-click for instant access to all controls.",
+          card4Title: "Display as Many as You Like",
+          card4Desc: "Show multiple images at the same time. Manage layer order and hold Option to control all windows at once \u2014 arrange your desktop freely.",
+          autoSaveNote: "Position, size, image, rotation, opacity, and layer order are all auto-saved. You can also check for updates from within the app."
+        },
+        howto: {
+          sectionTitle: "How to Use",
+          sectionSubtitle: "Get started in 3 easy steps",
+          step1Title: "Install and Launch",
+          step1Desc: "One command with Homebrew. On launch, an icon appears in the menu bar and a character image is displayed on the desktop.",
+          step1Alt: 'Or you can <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="text-amber-600 dark:text-amber-400 hover:underline">download Sobani-universal.dmg directly</a>.',
+          step2Title: "Swap in Your Favorite Image",
+          step2Desc: 'Select "Change Default Image..." from the menu bar and choose any image you like.<br>Right-click \u2192 "Change Display Image" to register additional images or switch between them.',
+          step2Hint1: "&#x1F4A1; Tip: Use a PNG with a transparent background to display the image without any background.",
+          step2Hint2: "&#x1F4A1; Tip: Animated GIFs and animated PNGs (APNG) are also supported. Display your animated favorites right beside you.",
+          step3Title: "Arrange However You Like",
+          step3Desc: 'Drag to move, scroll to resize.<br>Right-click \u2192 "Add Another Image" to add more, or use "Adjust Display" to control rotation, opacity, and flip. Make your desktop your own.',
+          step3Hint: "&#x1F4A1; Tip: Hold the Option key while dragging or scrolling to move or resize all windows at once."
+        },
+        video: {
+          sectionTitle: "Demo",
+          sectionSubtitle: "See it in action",
+          iframeTitle: "Sobani Demo"
+        },
+        comparison: {
+          sectionTitle: "How Sobani Differs from Other Desktop Mascots",
+          sectionSubtitle: "Sobani is an acrylic stand-style app focused purely on displaying images",
+          colSobani: "Sobani",
+          colOthers: "Typical Desktop Mascot",
+          row1Label: "Concept",
+          row1Sobani: "Desktop acrylic stand (static display)",
+          row1Others: "Animated character / interactive",
+          row2Label: "Images",
+          row2Sobani: "Any image you choose, freely configurable",
+          row2Others: "App-specific built-in character",
+          row3Label: "Display Style",
+          row3Sobani: "Still-image focused \u2014 lightweight and stable",
+          row3Others: "Animation (walking, dancing, etc.)",
+          row4Label: "Design Philosophy",
+          row4Sobani: "Focused solely on displaying images",
+          row4Others: "AI / interactive / conversation features",
+          row5Label: "Resource Usage",
+          row5Sobani: "Extremely lightweight",
+          row5Others: "Medium to high",
+          row6Label: "External Dependencies",
+          row6Sobani: "Zero",
+          row6Others: "Runtimes, libraries, etc.",
+          row7Label: "Multiple Images at Once",
+          row7Sobani: "Supported",
+          row7Others: "Varies by app"
+        },
+        download: {
+          headingHighlight: "Your favorites,",
+          headingRest: "always close.",
+          subtitle: "Built natively in Swift. Zero dependencies, surprisingly lightweight.",
+          systemReq: "Requires macOS 13.0 (Ventura) or later. Supports both Apple Silicon and Intel Mac (Universal Binary).",
+          downloadButton: "Download Sobani-universal.dmg",
+          manualTitle: "Manual Installation Steps",
+          manualStep1: "Open the downloaded DMG file",
+          manualStep2: "Drag Sobani.app into your Applications folder",
+          manualStep3: 'Launch Sobani.app (first time: right-click \u2192 "Open")',
+          homebrewLabel: "Or install via Homebrew",
+          githubButton: "Download from GitHub Releases",
+          copyCommand: "Copy command",
+          copyTitle: "Copy"
+        }
+      }
+    };
+  </script>
 
   <script>
     // モバイルメニュー
@@ -517,6 +747,92 @@
         }, 2000);
       });
     }
+
+    // Language switching
+    function getLanguage() {
+      var saved = localStorage.getItem('lang');
+      if (saved) return saved;
+      var browserLang = (navigator.language || 'ja').toLowerCase();
+      return browserLang.startsWith('ja') ? 'ja' : 'en';
+    }
+
+    function applyLanguage(lang) {
+      document.documentElement.lang = lang;
+
+      // Update meta tags
+      var t = translations[lang];
+      document.title = t.meta.title;
+      document.querySelector('meta[name="description"]').setAttribute('content', t.meta.description);
+      document.querySelector('meta[name="keywords"]').setAttribute('content', t.meta.keywords);
+      document.querySelector('meta[property="og:title"]').setAttribute('content', t.meta.title);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', t.meta.description);
+      document.querySelector('meta[property="og:locale"]').setAttribute('content', lang === 'ja' ? 'ja_JP' : 'en_US');
+      document.querySelector('meta[name="twitter:title"]').setAttribute('content', t.meta.title);
+      document.querySelector('meta[name="twitter:description"]').setAttribute('content', t.meta.description);
+
+      // Update JSON-LD
+      var ldScript = document.querySelector('script[type="application/ld+json"]');
+      if (ldScript) {
+        try {
+          var ld = JSON.parse(ldScript.textContent);
+          ld.description = t.meta.description;
+          ld.inLanguage = lang;
+          ldScript.textContent = JSON.stringify(ld, null, 2);
+        } catch(e) {}
+      }
+
+      // Update data-i18n elements (textContent)
+      var elems = document.querySelectorAll('[data-i18n]');
+      for (var i = 0; i < elems.length; i++) {
+        var key = elems[i].getAttribute('data-i18n');
+        var val = getNestedValue(t, key);
+        if (val !== undefined) elems[i].textContent = val;
+      }
+
+      // Update data-i18n-html elements (innerHTML)
+      // Note: All HTML content comes from hardcoded translations, not user input
+      var htmlElems = document.querySelectorAll('[data-i18n-html]');
+      for (var i = 0; i < htmlElems.length; i++) {
+        var key = htmlElems[i].getAttribute('data-i18n-html');
+        var val = getNestedValue(t, key);
+        if (val !== undefined) htmlElems[i].innerHTML = val;
+      }
+
+      // Update data-i18n-attr elements (attributes)
+      var attrElems = document.querySelectorAll('[data-i18n-attr]');
+      for (var i = 0; i < attrElems.length; i++) {
+        var pairs = attrElems[i].getAttribute('data-i18n-attr').split(',');
+        for (var j = 0; j < pairs.length; j++) {
+          var parts = pairs[j].split(':');
+          var attrName = parts[0].trim();
+          var key = parts[1].trim();
+          var val = getNestedValue(t, key);
+          if (val !== undefined) attrElems[i].setAttribute(attrName, val);
+        }
+      }
+    }
+
+    function getNestedValue(obj, path) {
+      var parts = path.split('.');
+      var current = obj;
+      for (var i = 0; i < parts.length; i++) {
+        if (current === undefined || current === null) return undefined;
+        current = current[parts[i]];
+      }
+      return current;
+    }
+
+    function toggleLanguage() {
+      var next = getLanguage() === 'ja' ? 'en' : 'ja';
+      localStorage.setItem('lang', next);
+      applyLanguage(next);
+    }
+
+    // Language initialization
+    applyLanguage(getLanguage());
+
+    document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
+    document.getElementById('lang-toggle-mobile').addEventListener('click', toggleLanguage);
   </script>
 
 </body>
