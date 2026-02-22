@@ -46,6 +46,12 @@ class LanguageManager {
     }
 
     private init() {
+        // Restore AppleLanguages from saved preference on launch
+        // This must happen before any UI is loaded so system strings respect the language
+        if let raw = UserDefaults.standard.string(forKey: userDefaultsKey),
+           let lang = Language(rawValue: raw), lang != .system {
+            UserDefaults.standard.set([lang.rawValue], forKey: "AppleLanguages")
+        }
         updateBundle()
     }
 
