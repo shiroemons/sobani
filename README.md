@@ -306,6 +306,38 @@ brew install swiftlint
 
 ビルドスクリプト（`./build.sh`）実行時に自動でリントチェックが行われます。Xcode でのビルド時にも Build Phase として実行されます。SwiftLint が未インストールの場合は警告を表示し、ビルドは続行します。
 
+## トラブルシューティング
+
+### ウィンドウ位置の復元ログを確認する
+
+スリープ復帰やモニター切断時のウィンドウ位置復元に問題がある場合、`os_log` のログで動作を確認できます。
+
+**リアルタイムで監視する:**
+
+```sh
+log stream --predicate 'subsystem == "com.shiroemons.Sobani"' --style compact
+```
+
+**直近のログを確認する:**
+
+```sh
+log show --predicate 'subsystem == "com.shiroemons.Sobani"' --last 5m --style compact
+```
+
+ログには以下の情報が記録されます:
+
+| イベント | ログ例 |
+|---------|--------|
+| オブザーバ登録 | `[ScreenRestoration] observers registered, screens=3` |
+| スクリーン変更検出 | `screenChange: isWake=true, screens=3` |
+| スリープ前の状態保存 | `[ScreenRestoration] willSleep: saved 3 windows` |
+| ウェイク復元開始 | `[ScreenRestoration] didWake: 3 windows to restore` |
+| ウィンドウ復元結果 | `restore #4: saved={x, y} -> {x, y} -> {x, y}` |
+| 復元試行状況 | `attempt #1: restoredAll=true, screens=[...]` |
+| モニター未検出 | `restore #1: screen not found (displayID=2)` |
+
+> ウィンドウ復元結果の3つの座標は、左から順に「保存時の座標」→「計算後の座標」→「クランプ後の座標」を表します。正常時は3つが一致します。
+
 ## ライセンス
 
 本プロジェクトのソースコードは [MIT License](LICENSE) のもとで公開されています。
