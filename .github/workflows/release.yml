@@ -34,6 +34,9 @@ jobs:
 
           echo "✅ Developer ID 証明書をインポートしました"
 
+      - name: create-dmg インストール
+        run: brew install create-dmg
+
       - name: バージョン抽出
         id: version
         run: |
@@ -52,7 +55,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: SOBANI_ARCHS="arm64 x86_64" NOTARIZE=1 ./build.sh
+        run: SOBANI_ARCHS="arm64 x86_64" NOTARIZE=1 CREATE_DMG=1 ./build.sh
 
       - name: バイナリ検証
         run: |
@@ -71,39 +74,39 @@ jobs:
           spctl --assess --type execute --verbose=2 Sobani.app
           echo "✅ 署名・公証検証完了"
 
-      - name: ZIP 作成
-        id: zip
+      - name: DMG リネーム
+        id: dmg
         run: |
-          ZIP_NAME="Sobani-universal.zip"
-          ditto -c -k --keepParent Sobani.app "$ZIP_NAME"
-          echo "name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
-          echo "📦 $ZIP_NAME を作成しました"
+          DMG_NAME="Sobani-universal.dmg"
+          mv Sobani.dmg "$DMG_NAME"
+          echo "name=$DMG_NAME" >> "$GITHUB_OUTPUT"
+          echo "💿 $DMG_NAME を作成しました"
 
       - name: SHA256 計算
         id: sha
         env:
-          ZIP_NAME: ${{ steps.zip.outputs.name }}
+          DMG_NAME: ${{ steps.dmg.outputs.name }}
         run: |
-          SHA256=$(shasum -a 256 "$ZIP_NAME" | awk '{print $1}')
+          SHA256=$(shasum -a 256 "$DMG_NAME" | awk '{print $1}')
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           echo "🔐 SHA256: $SHA256"
 
       - name: checksums.txt 作成
         env:
           SHA256: ${{ steps.sha.outputs.sha256 }}
-          ZIP_NAME: ${{ steps.zip.outputs.name }}
+          DMG_NAME: ${{ steps.dmg.outputs.name }}
         run: |
-          echo "$SHA256  $ZIP_NAME" > checksums.txt
+          echo "$SHA256  $DMG_NAME" > checksums.txt
           echo "📝 checksums.txt を作成しました"
 
       - name: GitHub Release 作成
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
-          ZIP_NAME: ${{ steps.zip.outputs.name }}
+          DMG_NAME: ${{ steps.dmg.outputs.name }}
         run: |
           gh release create "$TAG" \
-            "$ZIP_NAME" \
+            "$DMG_NAME" \
             checksums.txt \
             --generate-notes
 
@@ -122,7 +125,7 @@ jobs:
             version "${VERSION}"
             sha256 "${SHA256}"
 
-            url "https://github.com/shiroemons/sobani/releases/download/v#{version}/Sobani-universal.zip"
+            url "https://github.com/shiroemons/sobani/releases/download/v#{version}/Sobani-universal.dmg"
             name "Sobani"
             desc "Desktop mascot app that displays character images"
             homepage "https://github.com/shiroemons/sobani"

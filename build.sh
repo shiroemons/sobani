@@ -6,6 +6,7 @@
 #   SKIP_CODESIGN=1   - コード署名をスキップ
 #   NOTARIZE=1        - Apple 公証を有効化
 #   NOTARIZE_PROFILE   - notarytool キーチェーンプロファイル名
+#   CREATE_DMG=1       - DMG ファイルを作成
 #   APPLE_ID          - Apple ID (公証用)
 #   APPLE_ID_PASSWORD  - App 用パスワード (公証用)
 #   APPLE_TEAM_ID     - Apple Developer Team ID (公証用)
@@ -129,6 +130,53 @@ if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
     fi
 fi
 
+# DMG 作成
+if [ "${CREATE_DMG:-0}" = "1" ]; then
+    echo "💿 DMG 作成中..."
+    DMG_NAME="${APP_NAME}.dmg"
+    DMG_PATH="$PROJECT_DIR/$DMG_NAME"
+    DMG_STAGING_DIR="$PROJECT_DIR/dmg_staging"
+
+    rm -f "$DMG_PATH"
+    rm -rf "$DMG_STAGING_DIR"
+    mkdir -p "$DMG_STAGING_DIR"
+
+    cp -R "$PROJECT_DIR/$APP_NAME.app" "$DMG_STAGING_DIR/"
+    create-dmg \
+        --volname "$APP_NAME" \
+        --volicon "$PROJECT_DIR/$APP_NAME/AppIcon.icns" \
+        --window-size 600 400 \
+        --icon-size 100 \
+        --icon "$APP_NAME.app" 150 190 \
+        --hide-extension "$APP_NAME.app" \
+        --app-drop-link 450 190 \
+        --no-internet-enable \
+        "$DMG_PATH" \
+        "$DMG_STAGING_DIR"
+
+    rm -rf "$DMG_STAGING_DIR"
+
+    # DMG の公証（アプリが公証済みの場合）
+    if [ "${NOTARIZE:-0}" = "1" ] && [ "${SKIP_CODESIGN:-0}" != "1" ]; then
+        echo "📤 DMG を公証中..."
+        if [ -n "${NOTARIZE_PROFILE:-}" ]; then
+            xcrun notarytool submit "$DMG_PATH" \
+                --keychain-profile "$NOTARIZE_PROFILE" \
+                --wait
+        elif [ -n "${APPLE_ID:-}" ] && [ -n "${APPLE_ID_PASSWORD:-}" ] && [ -n "${APPLE_TEAM_ID:-}" ]; then
+            xcrun notarytool submit "$DMG_PATH" \
+                --apple-id "$APPLE_ID" \
+                --password "$APPLE_ID_PASSWORD" \
+                --team-id "$APPLE_TEAM_ID" \
+                --wait
+        fi
+        xcrun stapler staple "$DMG_PATH"
+        echo "✅ DMG 公証完了"
+    fi
+
+    echo "💿 $DMG_NAME を作成しました"
+fi
+
 rm -rf "$BUILD_DIR"
 
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST")
@@ -144,6 +192,9 @@ if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
     fi
 else
     echo "⚠️  未署名（SKIP_CODESIGN=1 が設定されています）"
+fi
+if [ "${CREATE_DMG:-0}" = "1" ]; then
+    echo "💿 $PROJECT_DIR/$APP_NAME.dmg"
 fi
 echo ""
 echo "ダブルクリックで起動できます"
