@@ -384,7 +384,11 @@ extension AppDelegate {
 
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationVersion: String(format: L("about.version"), version, "v\(version)"),
-            .version: ""
+            .version: "",
+            .credits: NSAttributedString(
+                string: L("about.copyright"),
+                attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.secondaryLabelColor]
+            )
         ])
         NSApp.activate(ignoringOtherApps: true)
     }
