@@ -97,20 +97,24 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.autoenablesItems = false
 
         let registeredItem = NSMenuItem(title: "表示画像の変更", action: nil, keyEquivalent: "")
+        registeredItem.tag = MenuItemTag.changeImageSubmenu.rawValue
         registeredItem.submenu = NSMenu()
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
         let newWindowItem = NSMenuItem(title: "画像を追加表示", action: nil, keyEquivalent: "")
+        newWindowItem.tag = MenuItemTag.addNewWindowSubmenu.rawValue
         newWindowItem.submenu = NSMenu()
         menu.addItem(newWindowItem)
         menu.addItem(NSMenuItem.separator())
         let deleteRegisteredItem = NSMenuItem(title: "登録画像を削除", action: nil, keyEquivalent: "")
+        deleteRegisteredItem.tag = MenuItemTag.deleteRegisteredSubmenu.rawValue
         let deleteRegisteredSubmenu = NSMenu()
         deleteRegisteredItem.submenu = deleteRegisteredSubmenu
         menu.addItem(deleteRegisteredItem)
         menu.addItem(NSMenuItem.separator())
 
         let adjustItem = NSMenuItem(title: "表示の調整", action: nil, keyEquivalent: "")
+        adjustItem.tag = MenuItemTag.adjustSubmenu.rawValue
         let adjustSubmenu = NSMenu()
         adjustSubmenu.autoenablesItems = false
         adjustItem.submenu = adjustSubmenu
@@ -118,18 +122,20 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         menu.addItem(NSMenuItem.separator())
 
         let closeItem = NSMenuItem(title: "この画像を閉じる", action: #selector(closeThisWindow), keyEquivalent: "w")
+        closeItem.tag = MenuItemTag.close.rawValue
         closeItem.target = self
         menu.addItem(closeItem)
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(title: "終了", action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.tag = MenuItemTag.quit.rawValue
         quitItem.target = self
         menu.addItem(quitItem)
         imageView.menu = menu
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        guard let registeredItem = menu.items.first(where: { $0.title == "表示画像の変更" }),
+        guard let registeredItem = menu.items.first(where: { $0.tag == MenuItemTag.changeImageSubmenu.rawValue }),
               let submenu = registeredItem.submenu else { return }
 
         submenu.removeAllItems()
@@ -158,7 +164,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             }
         }
 
-        guard let newWindowItem = menu.items.first(where: { $0.title == "画像を追加表示" }),
+        guard let newWindowItem = menu.items.first(where: { $0.tag == MenuItemTag.addNewWindowSubmenu.rawValue }),
               let newWindowSubmenu = newWindowItem.submenu else { return }
 
         newWindowSubmenu.removeAllItems()
@@ -183,7 +189,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             }
         }
 
-        if let deleteRegisteredItem = menu.items.first(where: { $0.title == "登録画像を削除" }),
+        if let deleteRegisteredItem = menu.items.first(where: { $0.tag == MenuItemTag.deleteRegisteredSubmenu.rawValue }),
            let deleteRegisteredSubmenu = deleteRegisteredItem.submenu {
             deleteRegisteredSubmenu.removeAllItems()
             if !names.isEmpty {
@@ -197,7 +203,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             deleteRegisteredItem.isEnabled = !names.isEmpty
         }
 
-        if let adjustItem = menu.items.first(where: { $0.title == "表示の調整" }),
+        if let adjustItem = menu.items.first(where: { $0.tag == MenuItemTag.adjustSubmenu.rawValue }),
            let adjustSubmenu = adjustItem.submenu {
             populateAdjustSubmenu(adjustSubmenu)
         }

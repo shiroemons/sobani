@@ -20,4 +20,8 @@ enum MenuItemTag: Int {
     case launchAtLogin = 1012
     case checkForUpdates = 1013
     case quit = 1014
+    case changeImageSubmenu = 1015
+    case addNewWindowSubmenu = 1016
+    case deleteRegisteredSubmenu = 1017
+    case adjustSubmenu = 1018
 }
