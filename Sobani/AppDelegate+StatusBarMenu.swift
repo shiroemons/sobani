@@ -85,6 +85,21 @@ extension AppDelegate {
         }
 
         menu.addItem(NSMenuItem.separator())
+
+        let languageItem = NSMenuItem(title: L("language.title"), action: nil, keyEquivalent: "")
+        let languageSubmenu = NSMenu()
+        let currentLanguage = LanguageManager.shared.currentLanguage
+        for language in Language.allCases {
+            let item = NSMenuItem(title: language.displayName, action: #selector(changeLanguage(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = language.rawValue
+            item.state = language == currentLanguage ? .on : .off
+            languageSubmenu.addItem(item)
+        }
+        languageItem.submenu = languageSubmenu
+        menu.addItem(languageItem)
+
+        menu.addItem(NSMenuItem.separator())
         let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitFromMenu), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
@@ -351,6 +366,32 @@ extension AppDelegate {
     @objc func closeWindowByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         charWindow.closeThisWindow()
+    }
+
+    @objc func changeLanguage(_ sender: NSMenuItem) {
+        guard let languageRaw = sender.representedObject as? String,
+              let language = Language(rawValue: languageRaw) else { return }
+
+        let currentLanguage = LanguageManager.shared.currentLanguage
+        guard language != currentLanguage else { return }
+
+        let alert = NSAlert()
+        alert.messageText = L("language.restart_title")
+        alert.informativeText = L("language.restart_message")
+        alert.addButton(withTitle: L("language.restart_button"))
+        alert.addButton(withTitle: L("language.cancel"))
+        alert.alertStyle = .informational
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            LanguageManager.shared.currentLanguage = language
+            // Restart the app
+            let url = Bundle.main.bundleURL
+            let task = Process()
+            task.launchPath = "/bin/sh"
+            task.arguments = ["-c", "sleep 1; open \"\(url.path)\""]
+            task.launch()
+            NSApplication.shared.terminate(nil)
+        }
     }
 
     @objc func showAbout() {

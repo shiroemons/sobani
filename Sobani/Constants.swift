@@ -9,12 +9,6 @@ func L(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
 }
 
-class LanguageManager {
-    static let shared = LanguageManager()
-    var currentBundle: Bundle?
-    private init() {}
-}
-
 enum AppConstants {
     static let defaultImageName = "default"
 }

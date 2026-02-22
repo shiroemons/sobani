@@ -27,6 +27,8 @@
 		FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000006 /* AppDelegate+ScreenRestoration.swift */; };
 		GG000001 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG000002 /* Constants.swift */; };
 		HH000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = HH000002 /* Localizable.xcstrings */; };
+		II000001 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000002 /* LanguageManager.swift */; };
+		II000003 /* LanguageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000004 /* LanguageManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +65,8 @@
 		FF000006 /* AppDelegate+ScreenRestoration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+ScreenRestoration.swift"; sourceTree = "<group>"; };
 		GG000002 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		HH000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		II000002 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
+		II000004 /* LanguageManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +111,7 @@
 				FF000002 /* ScreenRestorationManager.swift */,
 				FF000006 /* AppDelegate+ScreenRestoration.swift */,
 				GG000002 /* Constants.swift */,
+				II000002 /* LanguageManager.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -132,6 +137,7 @@
 				DD000012 /* WindowStateManagerTests.swift */,
 				EE000004 /* LaunchAtLoginManagerTests.swift */,
 				FF000004 /* ScreenRestorationManagerTests.swift */,
+				II000004 /* LanguageManagerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -264,6 +270,7 @@
 				FF000001 /* ScreenRestorationManager.swift in Sources */,
 				FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */,
 				GG000001 /* Constants.swift in Sources */,
+				II000001 /* LanguageManager.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -277,6 +284,7 @@
 				DD000011 /* WindowStateManagerTests.swift in Sources */,
 				EE000003 /* LaunchAtLoginManagerTests.swift in Sources */,
 				FF000003 /* ScreenRestorationManagerTests.swift in Sources */,
+				II000003 /* LanguageManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
