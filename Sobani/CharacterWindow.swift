@@ -418,12 +418,12 @@ extension CharacterWindow {
 
         let resetRotationItem = NSMenuItem(title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: "")
         resetRotationItem.target = self
-        resetRotationItem.isEnabled = imageView.rotationAngle != 0
+        resetRotationItem.isEnabled = abs(imageView.rotationAngle) > 0.01
         adjustSubmenu.addItem(resetRotationItem)
 
         let resetOpacityItem = NSMenuItem(title: L("adjust.reset_opacity"), action: #selector(resetOpacity), keyEquivalent: "")
         resetOpacityItem.target = self
-        resetOpacityItem.isEnabled = imageView.opacityLevel != 1.0
+        resetOpacityItem.isEnabled = abs(imageView.opacityLevel - 1.0) > 0.01
         adjustSubmenu.addItem(resetOpacityItem)
 
         adjustSubmenu.addItem(NSMenuItem.separator())
