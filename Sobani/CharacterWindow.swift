@@ -455,16 +455,16 @@ extension CharacterWindow {
 
 // MARK: - CharacterWindow + Menu Title Update
 
-private let menuTitleMap: [Int: String] = [
-    MenuItemTag.changeImageSubmenu.rawValue: "image.change",
-    MenuItemTag.addNewWindowSubmenu.rawValue: "image.add_display",
-    MenuItemTag.deleteRegisteredSubmenu.rawValue: "image.delete_registered",
-    MenuItemTag.adjustSubmenu.rawValue: "adjust.title",
-    MenuItemTag.close.rawValue: "menu.close_image",
-    MenuItemTag.quit.rawValue: "menu.quit"
-]
-
 extension CharacterWindow {
+    private static let menuTitleMap: [Int: String] = [
+        MenuItemTag.changeImageSubmenu.rawValue: "image.change",
+        MenuItemTag.addNewWindowSubmenu.rawValue: "image.add_display",
+        MenuItemTag.deleteRegisteredSubmenu.rawValue: "image.delete_registered",
+        MenuItemTag.adjustSubmenu.rawValue: "adjust.title",
+        MenuItemTag.close.rawValue: "menu.close_image",
+        MenuItemTag.quit.rawValue: "menu.quit"
+    ]
+
     var localizedDisplayName: String {
         if displayName == AppConstants.defaultImageName {
             return L("image.default_display")
@@ -474,7 +474,7 @@ extension CharacterWindow {
 
     func updateTopLevelMenuTitles(_ menu: NSMenu) {
         for item in menu.items {
-            if let key = menuTitleMap[item.tag] {
+            if let key = Self.menuTitleMap[item.tag] {
                 item.title = L(key)
             }
         }
