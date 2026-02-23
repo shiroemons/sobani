@@ -28,6 +28,10 @@ class DraggableImageView: NSImageView {
     var scrollRotationHandler: ((CGFloat) -> Void)?
     var onMouseDown: (() -> Void)?
 
+    private var allCharacterWindows: [NSWindow] {
+        NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
+    }
+
     override func mouseDown(with event: NSEvent) {
         onMouseDown?()
         if event.modifierFlags.contains(.option) {
@@ -45,12 +49,12 @@ class DraggableImageView: NSImageView {
         let deltaX = currentLocation.x - dragStartLocation.x
         let deltaY = currentLocation.y - dragStartLocation.y
         dragStartLocation = currentLocation
-        let allWindows = NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
-        for w in allWindows {
-            var origin = w.frame.origin
+        let allWindows = allCharacterWindows
+        for targetWindow in allWindows {
+            var origin = targetWindow.frame.origin
             origin.x += deltaX
             origin.y += deltaY
-            w.setFrameOrigin(origin)
+            targetWindow.setFrameOrigin(origin)
         }
     }
 
@@ -63,10 +67,10 @@ class DraggableImageView: NSImageView {
         }
         let scaleFactor: CGFloat = 1.0 + (delta * AppConstants.scrollScaleSensitivity)
         if event.modifierFlags.contains(.option) {
-            let allWindows = NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
-            for w in allWindows {
-                guard let iv = w.contentView?.subviews.first as? DraggableImageView else { continue }
-                resizeWindow(w, imageView: iv, scaleFactor: scaleFactor)
+            let allWindows = allCharacterWindows
+            for targetWindow in allWindows {
+                guard let targetImageView = targetWindow.contentView?.subviews.first as? DraggableImageView else { continue }
+                resizeWindow(targetWindow, imageView: targetImageView, scaleFactor: scaleFactor)
             }
         } else {
             guard let window = window else { return }
