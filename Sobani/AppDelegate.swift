@@ -35,7 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             }
             let charWindow = CharacterWindow(image: image)
             charWindow.delegate = self
-            charWindow.windowId = nextWindowId
+            charWindow.setWindowId(nextWindowId)
             nextWindowId += 1
             charWindow.window.center()
             characterWindows.append(charWindow)
@@ -57,8 +57,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
                 let charWindow = CharacterWindow(image: image)
                 charWindow.delegate = self
-                charWindow.displayName = resolvedDisplayName
-                charWindow.windowId = state.windowId
+                charWindow.setDisplayName(resolvedDisplayName)
+                charWindow.setWindowId(state.windowId)
                 let wasAdjusted = charWindow.restore(from: state)
                 if wasAdjusted {
                     let adjusted = WindowStateManager.adjustToVisibleArea(state)
@@ -77,7 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
             let maxExistingId = characterWindows.map(\.windowId).max() ?? 0
             nextWindowId = maxExistingId + 1
             for charWindow in characterWindows where charWindow.windowId == 0 {
-                charWindow.windowId = nextWindowId
+                charWindow.setWindowId(nextWindowId)
                 nextWindowId += 1
             }
             // Ensure nextWindowId is always beyond the max assigned ID
@@ -263,8 +263,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         }
         let charWindow = CharacterWindow(image: image)
         charWindow.delegate = self
-        charWindow.displayName = imageName ?? AppConstants.defaultImageName
-        charWindow.windowId = nextWindowId
+        charWindow.setDisplayName(imageName ?? AppConstants.defaultImageName)
+        charWindow.setWindowId(nextWindowId)
         nextWindowId += 1
         characterWindows.append(charWindow)
         zOrderedWindows.insert(charWindow, at: 0)
@@ -313,7 +313,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     func characterWindowDidDeleteImage(named name: String) {
         guard let defaultImage = ImageManager.shared.defaultImage() else { return }
         for charWindow in characterWindows where charWindow.displayName == name {
-            charWindow.displayName = AppConstants.defaultImageName
+            charWindow.setDisplayName(AppConstants.defaultImageName)
             charWindow.applyImage(defaultImage)
         }
     }

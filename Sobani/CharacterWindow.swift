@@ -17,8 +17,8 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
     let imageView: DraggableImageView
     weak var delegate: CharacterWindowDelegate?
-    var displayName: String = AppConstants.defaultImageName
-    var windowId: Int = 0
+    private(set) var displayName: String = AppConstants.defaultImageName
+    private(set) var windowId: Int = 0
     private var adjustmentPanelController: AdjustmentPanelController?
 
     init(image: NSImage) {
@@ -488,5 +488,17 @@ extension CharacterWindow {
     func hideHighlightBorder() {
         window.contentView?.layer?.borderWidth = 0
         window.contentView?.layer?.borderColor = nil
+    }
+}
+
+// MARK: - CharacterWindow + Property Setters
+
+extension CharacterWindow {
+    func setDisplayName(_ name: String) {
+        displayName = name
+    }
+
+    func setWindowId(_ newId: Int) {
+        windowId = newId
     }
 }
