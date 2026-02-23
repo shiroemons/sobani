@@ -135,7 +135,7 @@ extension AppDelegate {
     }
 
     func buildResetRotationMenuItem() -> NSMenuItem {
-        let hasRotation = characterWindows.contains { $0.imageView.rotationAngle != 0 }
+        let hasRotation = characterWindows.contains { abs($0.imageView.rotationAngle) > AppConstants.floatingPointTolerance }
         let item = NSMenuItem(
             title: L("adjust.reset_all_rotation"),
             action: #selector(resetAllRotations),
@@ -147,7 +147,7 @@ extension AppDelegate {
     }
 
     func buildResetOpacityMenuItem() -> NSMenuItem {
-        let hasOpacity = characterWindows.contains { $0.imageView.opacityLevel != 1.0 }
+        let hasOpacity = characterWindows.contains { abs($0.imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance }
         let item = NSMenuItem(
             title: L("adjust.reset_all_opacity"),
             action: #selector(resetAllOpacity),
@@ -262,13 +262,13 @@ extension AppDelegate {
         let resetRotationItem = NSMenuItem(title: L("adjust.reset_rotation"), action: #selector(resetRotationByWindowNumber(_:)), keyEquivalent: "")
         resetRotationItem.target = self
         resetRotationItem.tag = windowNumber
-        resetRotationItem.isEnabled = charWindow.imageView.rotationAngle != 0
+        resetRotationItem.isEnabled = abs(charWindow.imageView.rotationAngle) > AppConstants.floatingPointTolerance
         submenu.addItem(resetRotationItem)
 
         let resetOpacityItem = NSMenuItem(title: L("adjust.reset_opacity"), action: #selector(resetOpacityByWindowNumber(_:)), keyEquivalent: "")
         resetOpacityItem.target = self
         resetOpacityItem.tag = windowNumber
-        resetOpacityItem.isEnabled = charWindow.imageView.opacityLevel != 1.0
+        resetOpacityItem.isEnabled = abs(charWindow.imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance
         submenu.addItem(resetOpacityItem)
 
         submenu.addItem(NSMenuItem.separator())

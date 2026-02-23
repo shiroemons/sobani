@@ -201,7 +201,7 @@ extension CharacterWindow {
     @discardableResult
     func restore(from state: WindowState) -> Bool {
         let adjusted = WindowStateManager.adjustToVisibleArea(state)
-        let wasAdjusted = (adjusted.originX != state.originX || adjusted.originY != state.originY)
+        let wasAdjusted = (abs(adjusted.originX - state.originX) > AppConstants.floatingPointTolerance || abs(adjusted.originY - state.originY) > AppConstants.floatingPointTolerance)
         imageView.aspectRatio = adjusted.width / adjusted.height
         imageView.frame = NSRect(x: 0, y: 0, width: adjusted.width, height: adjusted.height)
 
@@ -221,9 +221,9 @@ extension CharacterWindow {
         // AppKit resets the backing layer's affineTransform during
         // the initial window display cycle. Defer re-application
         // to the next run loop so the transform sticks.
-        if adjusted.isFlippedHorizontally || adjusted.rotationAngle != 0 {
+        if adjusted.isFlippedHorizontally || abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
             DispatchQueue.main.async { [weak self] in
-                if adjusted.rotationAngle != 0 {
+                if abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
                     self?.adjustWindowForRotation()
                 }
                 self?.imageView.needsLayout = true

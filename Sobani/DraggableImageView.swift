@@ -109,7 +109,7 @@ class DraggableImageView: NSImageView {
         let centerX = bounds.width / 2
         let centerY = bounds.height / 2
 
-        if rotationAngle != 0 {
+        if abs(rotationAngle) > AppConstants.floatingPointTolerance {
             let radians = -rotationAngle * .pi / 180
             transform = transform
                 .translatedBy(x: centerX, y: centerY)
