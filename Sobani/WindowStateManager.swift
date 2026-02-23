@@ -201,7 +201,9 @@ extension CharacterWindow {
     @discardableResult
     func restore(from state: WindowState) -> Bool {
         let adjusted = WindowStateManager.adjustToVisibleArea(state)
-        let wasAdjusted = (abs(adjusted.originX - state.originX) > AppConstants.floatingPointTolerance || abs(adjusted.originY - state.originY) > AppConstants.floatingPointTolerance)
+        let tolerance = AppConstants.floatingPointTolerance
+        let wasAdjusted = abs(adjusted.originX - state.originX) > tolerance
+            || abs(adjusted.originY - state.originY) > tolerance
         imageView.aspectRatio = adjusted.width / adjusted.height
         imageView.frame = NSRect(x: 0, y: 0, width: adjusted.width, height: adjusted.height)
 
