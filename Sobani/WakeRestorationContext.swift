@@ -10,11 +10,6 @@ struct WakeRestorationContext {
     var retryCount: Int = 0
 
     mutating func clear() {
-        states = [:]
-        displayIDs = [:]
-        screenFrames = [:]
-        windowOrigins = [:]
-        isActive = false
-        retryCount = 0
+        self = WakeRestorationContext()
     }
 }
