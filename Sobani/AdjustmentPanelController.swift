@@ -331,7 +331,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
     private func formatAngle(_ angle: CGFloat) -> String {
         let rounded = angle.rounded()
-        if abs(angle - rounded) < 0.01 {
+        if abs(angle - rounded) < AppConstants.floatingPointTolerance {
             return String(format: "%.0f", rounded)
         }
         return String(format: "%.1f", angle)

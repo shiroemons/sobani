@@ -28,6 +28,9 @@ enum AppConstants {
 
     // Fallback
     static let fallbackScreenSize = NSSize(width: 1920, height: 1080)
+
+    // Floating-point comparison
+    static let floatingPointTolerance: CGFloat = 0.01
 }
 
 enum GeometryUtils {
