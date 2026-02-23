@@ -25,9 +25,9 @@ classDiagram
         +createNewWindow()
     }
     class CharacterWindow {
+        +window: NSWindow
         +imageView: DraggableImageView
         +windowId: Int
-        +rotatableContainer: RotatableContainer
         +delegate: CharacterWindowDelegate
     }
     class DraggableImageView {
@@ -65,9 +65,11 @@ classDiagram
     AppDelegate --> CharacterWindow : manages
     AppDelegate ..|> CharacterWindowDelegate
     AppDelegate ..|> UpdateManagerDelegate
+    AppDelegate ..|> NSMenuDelegate
     CharacterWindow --> DraggableImageView : contains
     CharacterWindow --> AdjustmentPanelController : opens
     CharacterWindow ..|> AdjustmentPanelDelegate
+    CharacterWindow ..|> NSMenuDelegate
     AppDelegate --> ImageManager : uses
     AppDelegate --> WindowStateManager : uses
     AppDelegate --> UpdateManager : uses
@@ -92,7 +94,7 @@ classDiagram
 | `WindowStateManager.swift` | ウィンドウ状態の永続化（シングルトン） |
 | `UpdateManager.swift` | GitHub Releases 経由の自動アップデート（シングルトン） |
 | `LaunchAtLoginManager.swift` | ログイン時自動起動の管理（`SMAppService`、シングルトン） |
-| `ScreenRestorationManager.swift` | 復元待ちキューの管理 |
+| `ScreenRestorationManager.swift` | 復元待ちキューの管理（シングルトンではなく `AppDelegate` が所有）。`PendingRestoration` 構造体も同ファイルに定義 |
 | `LanguageManager.swift` | ランタイム言語切り替え（シングルトン） |
 | `Constants.swift` | `AppConstants`、`GeometryUtils`、`MenuItemTag`、`L()` ヘルパー |
 | `WakeRestorationContext.swift` | スリープ/復帰時の復元コンテキスト |
@@ -117,11 +119,11 @@ classDiagram
 
 | メソッド | 用途 |
 |---|---|
-| `characterWindowRequestedNewWindow` | 新しいキャラクターウィンドウの生成を要求 |
-| `characterWindowDidClose` | ウィンドウが閉じられたことを通知 |
-| `characterWindowDidBecomeActive` | ウィンドウがアクティブになったことを通知（Z-order 管理） |
-| `characterWindowDidDeleteImage` | 画像が削除されたことを通知 |
-| `characterWindowRequestedNewWindowWithFileURL` | ファイル URL を指定した新しいウィンドウの生成を要求 |
+| `characterWindowRequestedNewWindow(_:imageName:)` | 新しいキャラクターウィンドウの生成を要求 |
+| `characterWindowRequestedNewWindowWithFileURL(_:fileURL:)` | ファイル URL を指定した新しいウィンドウの生成を要求 |
+| `characterWindowDidClose(_:)` | ウィンドウが閉じられたことを通知 |
+| `characterWindowDidDeleteImage(named:)` | 画像が削除されたことを通知 |
+| `characterWindowDidBecomeActive(_:)` | ウィンドウがアクティブになったことを通知（Z-order 管理） |
 
 ### AdjustmentPanelDelegate
 
@@ -129,10 +131,10 @@ classDiagram
 
 | メソッド | 用途 |
 |---|---|
-| `rotationPanel(didChangeAngle:)` | 回転ダイアルの角度変更を通知 |
-| `rotationPanelDidReset` | 回転のリセットを通知 |
-| `adjustmentPanel(didChangeOpacity:)` | 透明度スライダーの変更を通知 |
-| `adjustmentPanelDidResetOpacity` | 透明度のリセットを通知 |
+| `rotationPanel(_:didChangeAngle:)` | 回転ダイアルの角度変更を通知 |
+| `rotationPanelDidReset(_:)` | 回転のリセットを通知 |
+| `adjustmentPanel(_:didChangeOpacity:)` | 透明度スライダーの変更を通知 |
+| `adjustmentPanelDidResetOpacity(_:)` | 透明度のリセットを通知 |
 
 ### UpdateManagerDelegate
 
@@ -140,7 +142,7 @@ classDiagram
 
 | メソッド | 用途 |
 |---|---|
-| `updateManager(didChangeState:)` | アップデート状態の変化を通知 |
+| `updateManager(_:didChangeState:)` | アップデート状態の変化を通知 |
 
 ## アプリのライフサイクル
 
@@ -163,14 +165,18 @@ stateDiagram-v2
     state 起動完了 {
         [*] --> ステータスバー作成
         ステータスバー作成 --> ホットキー登録
-        ホットキー登録 --> 保存状態読み込み
+        ホットキー登録 --> ペンディングキュー読み込み
+        ペンディングキュー読み込み --> 保存状態読み込み
         保存状態読み込み --> ウィンドウ生成
+        ウィンドウ生成 --> アップデートチェック開始
+        アップデートチェック開始 --> オブザーバー登録
     }
 
     state 終了処理 {
         [*] --> ウィンドウ状態保存
         ウィンドウ状態保存 --> ペンディング保存
-        ペンディング保存 --> モニター解除
+        ペンディング保存 --> ホットキーモニター解除
+        ホットキーモニター解除 --> オブザーバー解除
     }
 ```
 
@@ -180,7 +186,7 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    CW["CharacterWindow\n(NSWindow)\nボーダーレス・透明・常に最前面"]
+    CW["CharacterWindow\n(NSObject)\nNSWindow を保持\nボーダーレス・透明・常に最前面"]
     RC["RotatableContainer\n(NSView)\n回転時のバウンディングボックス調整"]
     DIV["DraggableImageView\n(NSImageView)\nドラッグ・リサイズ・反転・回転・透明度"]
     AP["AdjustmentPanelController\n(NSPanel)\n回転ダイアル・透明度スライダー"]
@@ -191,9 +197,9 @@ flowchart TD
     AP -.-> |AdjustmentPanelDelegate| CW
 ```
 
-`CharacterWindow` はボーダーレスかつ透明で、全 Space に表示される常に最前面のウィンドウです。`contentView` として `RotatableContainer` を持ち、その子ビューとして `DraggableImageView` が配置されます。
+`CharacterWindow` は `NSObject` のサブクラスで、`NSWindow` インスタンスをプロパティとして保持します。ウィンドウはボーダーレスかつ透明で、全 Space に表示される常に最前面のウィンドウです。`contentView` として `RotatableContainer` を設定し、その子ビューとして `DraggableImageView` が配置されます。
 
-`RotatableContainer` は回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・透明度の状態を保持します。
+`RotatableContainer` は `CharacterWindow.swift` 内に定義された `private class` であり、外部からは参照できません。`CharacterWindow` のプロパティとしては保持されず、`init` 内でローカル変数として生成され `window.contentView` に設定されます。回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・透明度の状態を保持します。
 
 `AdjustmentPanelController` は別の `NSPanel` として表示されるフローティングパネルで、`AdjustmentPanelDelegate` を通じて `CharacterWindow` に変更を伝えます。
 

@@ -29,14 +29,14 @@ stateDiagram-v2
     error --> checking : checkForUpdate()
 
     checking --> available : 新バージョンあり
-    checking --> upToDate : 最新版
-    checking --> error : API エラー
-    checking --> idle : automatic で更新なし
+    checking --> upToDate : 最新版（手動のみ）
+    checking --> error : API エラー（手動のみ）
+    checking --> idle : startup/automatic で更新なし
 
     available --> downloading : downloadAndInstall()
     available --> idle : キャンセル
 
-    downloading --> idle : 成功（再起動）
+    downloading --> [*] : 成功（プロセス終了→再起動）
     downloading --> error : チェックサム不一致
     downloading --> error : ダウンロード失敗
 ```
@@ -73,9 +73,9 @@ sequenceDiagram
             UM->>FS: ditto で展開
         end
 
-        UM->>FS: 現在の .app → _backup.app
+        UM->>FS: 現在の .app → Sobani_backup.app
         UM->>FS: 新 .app → 現在位置
-        UM->>FS: バックアップ削除
+        UM->>FS: Sobani_backup.app 削除
         UM->>FS: /bin/sh 子プロセス起動
         Note right of FS: PID 終了待ち → open 新アプリ
         UM->>App: NSApp.terminate
@@ -97,10 +97,12 @@ sequenceDiagram
 新しいアプリを配置した後、現在のプロセスをそのまま終了するのではなく、`/bin/sh` の子プロセスを先に起動してから終了します。
 
 ```
-/bin/sh -c "while kill -0 <PID>; do sleep 0.1; done; open <APP_PATH>"
+/bin/sh -c "while kill -0 <PID> 2>/dev/null; do sleep 0.1; done; open \"<APP_PATH>\""
 ```
 
 - 子プロセスは親プロセス（現在の Sobani）の PID が消えるまでポーリングを続けます。
+- `2>/dev/null` により、プロセスが終了した際に `kill -0` が出力するエラーメッセージを抑制します。
+- `<APP_PATH>` はダブルクォートで囲まれており、パスにスペースが含まれる場合も正しく処理されます。
 - PID が消えた（= 終了した）ことを確認してから `open` コマンドで新しいアプリを起動します。
 - この方式により、ファイル置き換えと再起動の競合状態を回避できます。
 
@@ -121,7 +123,7 @@ flowchart TD
     Event -->|"NSWorkspace\ndidWake"| P1W
 
     subgraph Phase0["Phase 0: モニター切断"]
-        P0["handleScreenChange\n(1秒デバウンス)"]
+        P0["handleScreenChange\n(デバウンス: 通常1秒/Wake中1.5秒)"]
         P0CHK{"wakeContext\n.isActive?"}
         P0VIS{"各ウィンドウ\n画面内?"}
         P0MOVE["メイン画面に移動\n+ addPending"]
@@ -159,17 +161,17 @@ flowchart TD
         P1RETRY -->|上限到達| P1PENDING
     end
 
-    P1PENDING --> Phase0
+    P1PENDING --> P0
 ```
 
 ### Phase 0: モニター切断
 
-`NSApplication.didChangeScreenParametersNotification` を受信したとき、1秒のデバウンス後に `handleScreenChange` が実行されます。
+`NSApplication.didChangeScreenParametersNotification` を受信したとき、デバウンス（通常1秒、Wake中1.5秒）後に `handleScreenChange` がデバウンスタイマー経由で `attemptPendingRestorations()` を呼び出し、実際のオフスクリーン検出とウィンドウ移動処理が実行されます。
 
 **処理の流れ:**
 
 1. `wakeContext.isActive` が `true` の場合はスリープ/復帰処理中（Phase 1）として委譲し、Phase 0 の処理はスキップします。
-2. 全ウィンドウの位置を確認し、いずれかの画面内に収まっているか検査します。
+2. `attemptPendingRestorations()` 内で全ウィンドウの位置を確認し、いずれかの画面内に収まっているか検査します。
    - 画面外のウィンドウ → メイン画面の表示可能領域に移動し、`displayID: 0` としてペンディングキューに追加します。
 3. 既存のペンディングキューを確認し、元のモニターが再接続されている場合は元の位置に復元して `removePending` します。
 
@@ -189,7 +191,7 @@ flowchart TD
   - **geometry フォールバック**: `displayID` が一致しない場合、スクリーンフレームの位置を 100px の許容差で比較し、最も近いモニターに復元します。
   - **未検出**: リトライキューに入れます。
 - リトライは最大10回、3秒間隔で実行されます。
-- 2回成功した後、macOS の自動移動に対抗するための追加リトライも実行します。
+- 最初の3回（retryCount ≤ 2）は成功しても、macOS の自動移動に対抗するための追加リトライも実行します。
 - 最大リトライ回数に達した後も未復元のウィンドウは `moveUnrestoredToPendingQueue` でペンディングキューに移行し、`wakeContext` をクリアします。
 
 ### Phase 2: モニター再接続（ペンディングキュー）
@@ -212,7 +214,10 @@ struct PendingRestoration: Codable {
     let adjustedOriginX: CGFloat
     let adjustedOriginY: CGFloat
     let createdAt: Date
-    let screenFrameX, screenFrameY, screenFrameWidth, screenFrameHeight: CGFloat?
+    let screenFrameX: CGFloat?
+    let screenFrameY: CGFloat?
+    let screenFrameWidth: CGFloat?
+    let screenFrameHeight: CGFloat?
 }
 ```
 

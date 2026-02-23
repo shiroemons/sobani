@@ -47,6 +47,8 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `opacityLevel` | `CGFloat` | 透明度（0.1–1.0） | `1.0` |
 | `windowId` | `Int` | ウィンドウ識別子（旧バージョン互換用デフォルト 0） | `0` |
 
+> **注**: Z-order はウィンドウ状態の配列順で表現されます（構造体のフィールドではありません）。保存時は背面→前面の順で格納され、復元時に逆順にすることで正しい重なり順を再現します。
+
 ### 保存・復元フロー
 
 終了時には Z-order を保ちながら各ウィンドウの状態をキャプチャして JSON に書き込みます。起動時は JSON を読み込み、画面外に位置するウィンドウを `ScreenRestorationManager` に委譲しつつ各ウィンドウを再生成します。
@@ -62,32 +64,35 @@ sequenceDiagram
     Note over App,FS: 終了時の保存
     App->>App: zOrderedWindows を逆順取得
     loop 各ウィンドウ
-        App->>WSM: captureState(from: window)
-        WSM->>CW: frame, imageView の状態取得
-        WSM-->>App: WindowState
+        App->>App: WindowStateManager.captureState(from: window)
+        App-->>App: WindowState
     end
     App->>WSM: saveStates(states)
     WSM->>FS: JSON エンコード & アトミック書き込み
 
     Note over App,FS: 起動時の復元
     App->>WSM: loadStates()
-    WSM->>FS: JSON 読み込み & デコード
+    WSM->>FS: JSON 読み込み & デコード（レガシー正規化含む）
     WSM-->>App: [WindowState]
     loop 各 WindowState
-        App->>App: isPositionVisible?
-        alt 画面内
-            App->>CW: そのまま配置
-        else 画面外
-            App->>App: adjustToVisibleArea
-            App->>SRM: addPending(windowId, state)
-            App->>CW: メイン画面に配置
+        App->>CW: restore(from: state)
+        Note right of CW: 内部で adjustToVisibleArea を呼び出し
+        CW-->>App: wasAdjusted: Bool
+        alt wasAdjusted == true
+            App->>App: WindowStateManager.adjustToVisibleArea(state)
+            Note right of App: 調整後の座標を取得
+            App->>SRM: addPending(windowId:originalState:displayID:adjustedOriginX:adjustedOriginY:)
         end
     end
 ```
 
+#### レガシー正規化
+
+`loadStates()` はデコード後に後方互換性のための正規化を行います。旧バージョンで使用されていた `"デフォルト"` という画像名は、読み込み時に自動的に `"default"` へ変換されます。
+
 #### 可視性チェックの条件
 
-`isPositionVisible` は、ウィンドウの矩形がいずれかのスクリーンと **50×50px 以上** 交差している場合に `true` を返します。この閾値は `AppConstants.screenIntersectionThreshold` で定義されています。画面外と判定された場合は `adjustToVisibleArea` でメイン画面の中央付近に移動したうえで、元の状態を `ScreenRestorationManager` の復元待ちキューに追加します。
+`isPositionVisible` は、ウィンドウの矩形がいずれかのスクリーンと **50×50px 以上** 交差している場合に `true` を返します。この閾値は `AppConstants.screenIntersectionThreshold` で定義されています。画面外と判定された場合は `WindowStateManager.adjustToVisibleArea` でメイン画面の中央付近に移動したうえで、元の状態を `ScreenRestorationManager` の復元待ちキューに追加します。
 
 ---
 
@@ -127,7 +132,7 @@ flowchart LR
     IMG --> DEL
     BI --> DF --> WIN
     DFLT --> DF
-    URL --> DFLT
+    URL -->|setCustomDefault| DFLT
 ```
 
 #### 主な操作
@@ -138,6 +143,7 @@ flowchart LR
 | `loadRegisteredImage(named:)` | パストラバーサル対策を行いつつ `images/` から画像を読み込む |
 | `removeRegisteredImage(named:)` | パストラバーサル対策後に `images/` からファイルを削除する |
 | `defaultImage()` | `default.png` が存在すればそれを返し、なければ内蔵の `character` アセットを返す |
+| `registeredImageNames()` | 登録済み画像名をソート済みリストで返す。メニューへの画像名表示に使用 |
 | `setCustomDefault(from:)` | 指定 URL のファイルを `default.png` としてコピーする |
 | `resetCustomDefault()` | `default.png` を削除して内蔵画像に戻す |
 
@@ -161,7 +167,7 @@ zOrderedWindows[N]  →  最背面（backmost）
 | `moveWindowBackward` | 対象のインデックスを +1 |
 | `moveWindowToBack` | 対象を末尾へ移動 |
 
-変更後は `applyZOrderToWindows()` が呼ばれ、配列を逆順にイテレートしながら `orderFront` を順番に呼び出すことで、配列の順序が画面の重なり順に反映されます。
+変更後は `applyZOrderToWindows()` が呼ばれ、配列を逆順にイテレートし、最初のウィンドウ（最背面）は `orderFront(nil)` で表示し、以降のウィンドウは `order(.above, relativeTo:)` で前のウィンドウの上に配置することで、配列の順序が画面の重なり順に反映されます。
 
 ---
 

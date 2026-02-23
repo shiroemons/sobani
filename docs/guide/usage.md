@@ -30,35 +30,41 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    ICON[メニューバーアイコン] --> ABOUT[Sobaniについて]
+    ICON[メニューバーアイコン] --> ABOUT["Sobani について..."]
     ICON --> UPDATE[アップデートを確認]
-    ICON --> LOGIN[ログイン時に起動 ✓]
+    ICON --> LOGIN["ログイン時に起動"]
     ICON --> SEP1[---]
     ICON --> WINDOWS[表示中: X体]
     WINDOWS --> WIN_LIST[ウィンドウ一覧\nZオーダー順]
     WIN_LIST --> WIN_ACTIONS[各ウィンドウの操作]
     WIN_ACTIONS --> LAYER[重ね順変更]
+    LAYER --> LAYER_FRONT["最前面へ移動"]
+    LAYER --> LAYER_FORWARD["前面へ移動"]
+    LAYER --> LAYER_BACKWARD["背面へ移動"]
+    LAYER --> LAYER_BACK["最背面へ移動"]
     WIN_ACTIONS --> FLIP[左右反転]
-    WIN_ACTIONS --> ADJUST[調整パネル]
-    WIN_ACTIONS --> RESET[リセット]
+    WIN_ACTIONS --> ADJUST["表示の調整..."]
+    WIN_ACTIONS --> RESET_ROT_W["回転をリセット"]
+    WIN_ACTIONS --> RESET_OPA_W["透明度をリセット"]
+    WIN_ACTIONS --> RESET_DISP["表示をリセット"]
     WIN_ACTIONS --> CLOSE_ONE[閉じる]
     ICON --> SEP2[---]
     ICON --> FRONT[すべて手前に表示]
     ICON --> TOGGLE[すべて非表示 / すべて表示]
-    ICON --> RESET_ROT[すべての回転をリセット]
-    ICON --> RESET_OPA[すべての透明度をリセット]
+    ICON --> RESET_ROT["すべての画像の回転をリセット"]
+    ICON --> RESET_OPA["すべての画像の透明度をリセット"]
     ICON --> SEP3[---]
     ICON --> ADD[画像を追加表示]
     ADD --> ADD_FILE[画像を選択して追加]
-    ADD --> ADD_DEFAULT[デフォルト]
-    ADD --> ADD_REG[登録画像...]
+    ADD --> ADD_DEFAULT["デフォルト画像"]
+    ADD --> ADD_REG["登録画像"]
     ICON --> CLOSE_ALL[すべて閉じる]
     ICON --> SEP4[---]
-    ICON --> CHANGE_DEFAULT[デフォルト画像を変更]
+    ICON --> CHANGE_DEFAULT["デフォルト画像を変更..."]
     ICON --> RESET_DEFAULT[デフォルト画像をリセット]
     ICON --> SEP5[---]
-    ICON --> LANG[言語]
-    LANG --> LANG_SYS[システム言語を使う]
+    ICON --> LANG["言語 / Language"]
+    LANG --> LANG_SYS["システム設定に従う"]
     LANG --> LANG_JA[日本語]
     LANG --> LANG_EN[English]
     ICON --> SEP6[---]
@@ -73,20 +79,20 @@ flowchart TD
 flowchart TD
     RC[右クリック] --> CHANGE[表示画像の変更]
     CHANGE --> CHANGE_FILE[画像を変更...]
-    CHANGE --> CHANGE_DEFAULT[デフォルトに戻す]
-    CHANGE --> CHANGE_REG[登録画像...]
+    CHANGE --> CHANGE_DEFAULT["デフォルト画像に戻す"]
+    CHANGE --> CHANGE_REG["登録画像"]
 
     RC --> ADD[画像を追加表示]
     ADD --> ADD_FILE[画像を選択して追加]
-    ADD --> ADD_DEFAULT[デフォルト]
-    ADD --> ADD_REG[登録画像...]
+    ADD --> ADD_DEFAULT["デフォルト画像"]
+    ADD --> ADD_REG["登録画像"]
 
     RC --> DELETE[登録画像を削除]
-    DELETE --> DELETE_REG[登録画像...]
+    DELETE --> DELETE_REG["登録画像"]
 
     RC --> VIEW[表示の調整]
     VIEW --> FLIP[左右反転]
-    VIEW --> PANEL[調整パネルを開く]
+    VIEW --> PANEL["表示の調整..."]
     VIEW --> RESET_ROT[回転をリセット]
     VIEW --> RESET_OPA[透明度をリセット]
     VIEW --> RESET_ALL[表示をリセット]
@@ -120,28 +126,42 @@ flowchart LR
 
 ---
 
+## マウス操作
+
+| 操作 | 動作 |
+|------|------|
+| ドラッグ | ウィンドウを移動 |
+| `Option` + ドラッグ | すべてのウィンドウを同時に移動 |
+| スクロールホイール | ウィンドウサイズを変更（100px〜6000px） |
+| `Option` + スクロールホイール | すべてのウィンドウのサイズを同時に変更 |
+| 調整パネルが開いている状態でスクロールホイール | 回転角度を変更 |
+
+---
+
 ## 調整パネル
 
 調整パネルでは、キャラクターの回転角度と透明度を細かく調整できます。
 
-- **回転ダイアル**: 0°〜360° の範囲でドラッグ操作により回転を指定します。5° 単位でスナップします。
+- **回転ダイアル**: 0°〜360° の範囲でドラッグ操作により回転を指定します。5° 単位でスナップします。ダイアル横のテキストフィールドに直接数値を入力して角度を指定することもできます。調整パネルが開いている状態では、スクロールホイールでも回転を変更できます。
 - **透明度スライダー**: 10%〜100% の範囲で透明度を調整します。
 
-調整パネルはステータスバーメニューの「表示中」サブメニュー内の各ウィンドウ操作、または右クリックメニューの「表示の調整 → 調整パネルを開く」から起動できます。
+調整パネルはステータスバーメニューの「表示中」サブメニュー内の各ウィンドウ操作、または右クリックメニューの「表示の調整 → 表示の調整...」から起動できます。
 
 ---
 
 ## キーボードショートカット
 
-| キー | 動作 |
-|------|------|
-| `d` | デフォルト画像に戻す |
-| `o` | 画像を変更 |
-| `n` | 新しいウィンドウを開く |
-| `w` | ウィンドウを閉じる |
-| `f` | すべて手前に表示 |
-| `Option+H` | 表示/非表示切り替え |
-| `q` | 終了 |
+以下のキーは右クリックメニュー（コンテキストメニュー）が開いているとき、またはステータスバーメニューが開いているときに有効なショートカットです。`Option+H` のみシステム全体で有効なグローバルホットキーです。
+
+| キー | 動作 | コンテキスト |
+|------|------|------------|
+| `d` | デフォルト画像に戻す | 右クリックメニュー |
+| `o` | 画像を変更 | 右クリックメニュー |
+| `n` | 新しいウィンドウを開く | 右クリックメニュー |
+| `w` | ウィンドウを閉じる | 右クリックメニュー |
+| `f` | すべて手前に表示 | ステータスバーメニュー |
+| `Option+H` | 表示/非表示切り替え | グローバルホットキー（常に有効） |
+| `q` | 終了 | 右クリックメニュー / ステータスバーメニュー |
 
 ---
 
