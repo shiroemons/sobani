@@ -383,11 +383,17 @@ extension CharacterWindow: AdjustmentPanelDelegate {
 
 // MARK: - Character Window Delegate
 
+/// CharacterWindow からのイベントを AppDelegate に通知するプロトコル
 protocol CharacterWindowDelegate: AnyObject {
+    /// 新しいウィンドウの作成を要求する
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
+    /// ファイルURLを指定して新しいウィンドウの作成を要求する
     func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
+    /// ウィンドウが閉じられたことを通知する
     func characterWindowDidClose(_ sender: CharacterWindow)
+    /// 登録画像が削除されたことを通知する
     func characterWindowDidDeleteImage(named name: String)
+    /// ウィンドウがアクティブになったことを通知する（Z-order更新用）
     func characterWindowDidBecomeActive(_ sender: CharacterWindow)
 }
 

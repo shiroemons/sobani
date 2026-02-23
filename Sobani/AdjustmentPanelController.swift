@@ -2,10 +2,15 @@ import Cocoa
 
 // MARK: - Adjustment Panel Delegate
 
+/// 調整パネルでの変更を CharacterWindow に通知するプロトコル
 protocol AdjustmentPanelDelegate: AnyObject {
+    /// 回転角度が変更された
     func rotationPanel(_ panel: AdjustmentPanelController, didChangeAngle angle: CGFloat)
+    /// 回転角度がリセットされた
     func rotationPanelDidReset(_ panel: AdjustmentPanelController)
+    /// 不透明度が変更された
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeOpacity opacity: CGFloat)
+    /// 不透明度がリセットされた
     func adjustmentPanelDidResetOpacity(_ panel: AdjustmentPanelController)
 }
 
