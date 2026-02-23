@@ -351,6 +351,20 @@ log show --predicate 'subsystem == "com.shiroemons.Sobani"' --level debug --last
 
 > ウィンドウ復元結果の3つの座標は、左から順に「保存時の座標」→「計算後の座標」→「クランプ後の座標」を表します。正常時は3つが一致します。
 
+## ドキュメント
+
+詳細なガイドを `docs/guide/` に用意しています。
+
+### ユーザー向け
+
+- [操作ガイド](docs/guide/usage.md) — メニュー構造、画像管理、調整パネルの使い方
+- [アップデートと画面復元](docs/guide/update-and-restore.md) — 自動アップデートの仕組みとモニター復元
+
+### 開発者向け
+
+- [アーキテクチャ](docs/guide/architecture.md) — コンポーネント関係、ライフサイクル、ウィンドウ構造
+- [データフロー](docs/guide/data-flow.md) — ウィンドウ状態の保存・復元、画像管理のデータの流れ
+
 ## ライセンス
 
 本プロジェクトのソースコードは [MIT License](LICENSE) のもとで公開されています。
