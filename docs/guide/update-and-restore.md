@@ -14,7 +14,7 @@
 |---|---|---|
 | `manual` | メニューバーから手動実行 | 全結果（最新版・エラーも含む） |
 | `startup` | アプリ起動時 | 更新ありのみ |
-| `automatic` | 24時間タイマー / スリープ復帰後（前回から24時間経過時） | なし（サイレント） |
+| `automatic` | 24時間タイマー / スリープ復帰後（前回から24時間経過時） | なし（サイレント検出、メニューから手動確認可能） |
 
 - 24時間タイマーは `Timer.scheduledTimer(interval: 86400)` で設定されます。
 - スリープ復帰時は `NSWorkspace.didWakeNotification` を受信し、前回チェックから24時間経過している場合のみ `.automatic` トリガーで実行されます。
@@ -34,7 +34,7 @@ stateDiagram-v2
     checking --> idle : startup/automatic で更新なし
 
     available --> downloading : downloadAndInstall()
-    available --> idle : キャンセル
+    available --> idle : チェックサムなし警告でキャンセル
 
     downloading --> [*] : 成功（プロセス終了→再起動）
     downloading --> error : チェックサム不一致
@@ -73,6 +73,7 @@ sequenceDiagram
             UM->>FS: ditto で展開
         end
 
+        Note over UM,FS: 既存の Sobani_backup.app があれば削除
         UM->>FS: 現在の .app → Sobani_backup.app
         UM->>FS: 新 .app → 現在位置
         UM->>FS: Sobani_backup.app 削除
@@ -89,7 +90,7 @@ sequenceDiagram
 リリースアセットに `checksums.txt` が存在する場合、ダウンロード後に Apple CryptoKit を使って SHA256 チェックサムを検証します。
 
 - `checksumURL` が存在 → `checksums.txt` を取得 → ダウンロード済みファイルの SHA256 と照合
-- 不一致 → `state = .error("checksum_failed")` としてインストールを中断
+- 不一致 → `state = .error(L("update.checksum_failed"))` としてインストールを中断
 - `checksumURL` が存在しない → 警告ダイアログを表示し、ユーザーが続行またはキャンセルを選択
 
 ### 再起動メカニズム
@@ -132,7 +133,7 @@ flowchart TD
 
         P0 --> P0CHK
         P0CHK -->|No| P0VIS
-        P0CHK -->|Yes| P0SKIP["Phase 1 に委譲"]
+        P0CHK -->|Yes| P0SKIP["1.5秒デバウンスで\nattemptWakeRestoration() を実行"]
         P0VIS -->|画面内| P0SKIP2["変更なし"]
         P0VIS -->|画面外| P0MOVE
         P0MOVE --> P0REST
@@ -180,7 +181,7 @@ flowchart TD
 **スリープ前 (`handleWillSleep`):**
 
 - ペンディングキューと `wakeContext` をクリアします。
-- 全ウィンドウの現在の状態（位置・サイズ・`displayID`・画面フレーム）をスナップショットとして `wakeContext` に保存します。
+- 全ウィンドウの現在の状態（位置・サイズ・`displayID`・画面フレーム・ウィンドウの生の origin（captureState の座標変換を回避））をスナップショットとして `wakeContext` に保存します。
 
 **復帰後 (`handleDidWake`):**
 
@@ -191,7 +192,7 @@ flowchart TD
   - **geometry フォールバック**: `displayID` が一致しない場合、スクリーンフレームの位置を 100px の許容差で比較し、最も近いモニターに復元します。
   - **未検出**: リトライキューに入れます。
 - リトライは最大10回、3秒間隔で実行されます。
-- 最初の3回（retryCount ≤ 2）は成功しても、macOS の自動移動に対抗するための追加リトライも実行します。
+- 最初の2回（インクリメント後の retryCount ≤ 2）は成功しても、macOS の自動移動に対抗するための追加リトライも実行します。
 - 最大リトライ回数に達した後も未復元のウィンドウは `moveUnrestoredToPendingQueue` でペンディングキューに移行し、`wakeContext` をクリアします。
 
 ### Phase 2: モニター再接続（ペンディングキュー）
@@ -202,7 +203,7 @@ flowchart TD
 |---|---|
 | 保存場所 | `~/Library/Application Support/Sobani/pending_restorations.json` |
 | タイムアウト | 300秒（期限切れエントリは自動削除） |
-| 復元条件 | `displayID` の一致、または保存時の画面フレームとの geometry マッチ |
+| 復元条件 | `displayID` の一致、または保存時の画面フレームとの geometry マッチ。`displayID` が 0 の場合は元の位置が画面上に表示可能かで判定 |
 
 **`PendingRestoration` の主なフィールド:**
 

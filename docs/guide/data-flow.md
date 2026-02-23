@@ -38,10 +38,10 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | フィールド | 型 | 説明 | デフォルト |
 |---|---|---|---|
 | `imageName` | `String` | 画像名（`"default"` または登録名） | — |
-| `originX` | `CGFloat` | ウィンドウ左下 X 座標（画像中心基準で算出） | — |
-| `originY` | `CGFloat` | ウィンドウ左下 Y 座標 | — |
-| `width` | `CGFloat` | 画像幅 | — |
-| `height` | `CGFloat` | 画像高さ | — |
+| `originX` | `CGFloat` | 画像領域の左下 X 座標（ウィンドウ中心と画像サイズから算出） | — |
+| `originY` | `CGFloat` | 画像領域の左下 Y 座標（ウィンドウ中心と画像サイズから算出） | — |
+| `width` | `CGFloat` | 表示中の画像幅 | — |
+| `height` | `CGFloat` | 表示中の画像高さ | — |
 | `isFlippedHorizontally` | `Bool` | 左右反転状態 | `false` |
 | `rotationAngle` | `CGFloat` | 回転角度（0–360°） | `0` |
 | `opacityLevel` | `CGFloat` | 透明度（0.1–1.0） | `1.0` |
@@ -108,7 +108,7 @@ flowchart LR
     end
 
     subgraph ImageManager
-        EC["拡張子チェック\nPNG/JPEG/GIF/\nTIFF/HEIC"]
+        EC["拡張子チェック\nPNG/JPEG/JPG/GIF/\nTIFF/HEIC"]
         CP["images/ に\nコピー"]
         RN["重複チェック\n& リネーム\n(_1, _2...)"]
         LD["画像読み込み\nloadRegisteredImage"]

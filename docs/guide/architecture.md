@@ -61,6 +61,12 @@ classDiagram
         +shared: LanguageManager
         +currentLanguage: Language
     }
+    class LaunchAtLoginManager {
+        +shared: LaunchAtLoginManager
+        +isEnabled: Bool
+        +toggle()
+        +status: SMAppServiceStatus
+    }
 
     AppDelegate --> CharacterWindow : manages
     AppDelegate ..|> CharacterWindowDelegate
@@ -75,6 +81,7 @@ classDiagram
     AppDelegate --> UpdateManager : uses
     AppDelegate --> ScreenRestorationManager : owns
     AppDelegate --> LanguageManager : uses
+    AppDelegate --> LaunchAtLoginManager : uses
 ```
 
 `AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
@@ -189,7 +196,7 @@ flowchart TD
     CW["CharacterWindow\n(NSObject)\nNSWindow を保持\nボーダーレス・透明・常に最前面"]
     RC["RotatableContainer\n(NSView)\n回転時のバウンディングボックス調整"]
     DIV["DraggableImageView\n(NSImageView)\nドラッグ・リサイズ・反転・回転・透明度"]
-    AP["AdjustmentPanelController\n(NSPanel)\n回転ダイアル・透明度スライダー"]
+    AP["AdjustmentPanelController\n(NSObject, NSPanel を保持)\n回転ダイアル・透明度スライダー"]
 
     CW --> |contentView| RC
     RC --> |subview| DIV
