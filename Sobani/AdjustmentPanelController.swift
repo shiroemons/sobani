@@ -12,7 +12,7 @@ protocol AdjustmentPanelDelegate: AnyObject {
 // MARK: - Rotation Dial View
 
 class RotationDialView: NSView {
-    private let scrollSensitivity: CGFloat = 0.5
+    private let scrollSensitivity: CGFloat = AppConstants.dialScrollSensitivity
     var angle: CGFloat = 0 {
         didSet { needsDisplay = true }
     }

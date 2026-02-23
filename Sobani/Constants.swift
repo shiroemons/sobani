@@ -1,4 +1,4 @@
-import Foundation
+import Cocoa
 
 /// Localization helper that supports runtime language switching via LanguageManager.
 /// Falls back to NSLocalizedString with the main bundle when no custom bundle is set.
@@ -11,6 +11,23 @@ func L(_ key: String) -> String {
 
 enum AppConstants {
     static let defaultImageName = "default"
+
+    // Window
+    static let defaultWindowHeight: CGFloat = 600
+    static let minImageHeight: CGFloat = 100
+    static let maxImageHeight: CGFloat = 6000
+    static let scrollScaleSensitivity: CGFloat = 0.01
+    static let dialScrollSensitivity: CGFloat = 0.5
+
+    // Screen Restoration
+    static let screenChangeDebounceInterval: TimeInterval = 1.0
+    static let wakeDebounceInterval: TimeInterval = 1.5
+    static let wakeInitialDelay: TimeInterval = 3.0
+    static let screenMatchTolerance: CGFloat = 100
+    static let screenIntersectionThreshold: CGFloat = 50
+
+    // Fallback
+    static let fallbackScreenSize = NSSize(width: 1920, height: 1080)
 }
 
 enum MenuItemTag: Int {

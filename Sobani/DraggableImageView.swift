@@ -4,8 +4,8 @@ import Cocoa
 
 class DraggableImageView: NSImageView {
     var aspectRatio: CGFloat = 1.0
-    let minHeight: CGFloat = 100
-    let maxHeight: CGFloat = 6000
+    let minHeight: CGFloat = AppConstants.minImageHeight
+    let maxHeight: CGFloat = AppConstants.maxImageHeight
     private var dragStartLocation: NSPoint = .zero
     private var isDraggingAll = false
     var isFlippedHorizontally: Bool = false {
@@ -61,7 +61,7 @@ class DraggableImageView: NSImageView {
             handler(delta)
             return
         }
-        let scaleFactor: CGFloat = 1.0 + (delta * 0.01)
+        let scaleFactor: CGFloat = 1.0 + (delta * AppConstants.scrollScaleSensitivity)
         if event.modifierFlags.contains(.option) {
             let allWindows = NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
             for w in allWindows {

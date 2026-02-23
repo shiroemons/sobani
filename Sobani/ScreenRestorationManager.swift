@@ -130,11 +130,12 @@ class ScreenRestorationManager {
                 if matchByID { return true }
                 // displayIDが一致しない場合: ジオメトリベースのフォールバック
                 if let savedFrame = entry.preSleepScreenFrame {
+                    let tol = AppConstants.screenMatchTolerance
                     return NSScreen.screens.contains { screen in
-                        abs(screen.frame.origin.x - savedFrame.origin.x) <= 100
-                            && abs(screen.frame.origin.y - savedFrame.origin.y) <= 100
-                            && abs(screen.frame.size.width - savedFrame.size.width) <= 100
-                            && abs(screen.frame.size.height - savedFrame.size.height) <= 100
+                        abs(screen.frame.origin.x - savedFrame.origin.x) <= tol
+                            && abs(screen.frame.origin.y - savedFrame.origin.y) <= tol
+                            && abs(screen.frame.size.width - savedFrame.size.width) <= tol
+                            && abs(screen.frame.size.height - savedFrame.size.height) <= tol
                     }
                 }
                 return false

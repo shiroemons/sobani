@@ -166,7 +166,8 @@ class WindowStateManager {
         let windowRect = NSRect(x: state.originX, y: state.originY, width: state.width, height: state.height)
         for screen in NSScreen.screens {
             let intersection = windowRect.intersection(screen.frame)
-            if !intersection.isNull && intersection.width >= 50 && intersection.height >= 50 {
+            let threshold = AppConstants.screenIntersectionThreshold
+            if !intersection.isNull && intersection.width >= threshold && intersection.height >= threshold {
                 return true
             }
         }
@@ -177,7 +178,7 @@ class WindowStateManager {
         if isPositionVisible(state) {
             return state
         }
-        let mainFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
+        let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
         let newOriginX = mainFrame.midX - state.width / 2
         let newOriginY = mainFrame.midY - state.height / 2
         return WindowState(

@@ -56,12 +56,12 @@ extension AppDelegate {
         screenChangeDebounceTimer?.invalidate()
         if isInWakeRestoration {
             // Wake 復元中のスクリーン変更 → 復元リトライをトリガー（1.5秒デバウンス）
-            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeDebounceInterval, repeats: false) { [weak self] _ in
                 self?.attemptWakeRestoration()
             }
         } else {
             // 通常時 → ペンディング復元を試行（1秒デバウンス）
-            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.screenChangeDebounceInterval, repeats: false) { [weak self] _ in
                 self?.attemptPendingRestorations()
             }
         }
@@ -110,7 +110,7 @@ extension AppDelegate {
         isInWakeRestoration = true
         wakeRestorationRetryCount = 0
         screenChangeDebounceTimer?.invalidate()
-        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeInitialDelay, repeats: false) { [weak self] _ in
             self?.attemptWakeRestoration()
         }
     }
@@ -300,7 +300,7 @@ extension AppDelegate {
         }
         // ② ジオメトリベースのフォールバック
         if let savedID = displayID, let savedFrame = preSleepScreenFrames[savedID] {
-            return NSScreen.screen(matchingFrame: savedFrame, tolerance: 100)
+            return NSScreen.screen(matchingFrame: savedFrame, tolerance: AppConstants.screenMatchTolerance)
         }
         return nil
     }
@@ -313,7 +313,7 @@ extension AppDelegate {
         }
         // ② ジオメトリベースのフォールバック
         if let savedFrame = entry.preSleepScreenFrame {
-            return NSScreen.screen(matchingFrame: savedFrame, tolerance: 100)
+            return NSScreen.screen(matchingFrame: savedFrame, tolerance: AppConstants.screenMatchTolerance)
         }
         // ③ displayID: 0（スリープなし切断）の場合、元の位置が含まれるスクリーンを返す
         if entry.displayID == 0 {

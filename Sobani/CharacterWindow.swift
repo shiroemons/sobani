@@ -22,7 +22,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     private var adjustmentPanelController: AdjustmentPanelController?
 
     init(image: NSImage) {
-        let maxHeight: CGFloat = 600
+        let maxHeight: CGFloat = AppConstants.defaultWindowHeight
         let scale = maxHeight / image.size.height
         let windowWidth = image.size.width * scale
         let windowHeight = maxHeight
@@ -434,10 +434,10 @@ extension CharacterWindow {
         adjustmentPanelController?.updateAngle(0)
         adjustmentPanelController?.updateOpacity(1.0)
 
-        let defaultHeight: CGFloat = 600
+        let defaultHeight: CGFloat = AppConstants.defaultWindowHeight
         let defaultWidth = defaultHeight * imageView.aspectRatio
 
-        let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
+        let screenFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
         let originX = screenFrame.minX + (screenFrame.width - defaultWidth) / 2
         let originY = screenFrame.minY + (screenFrame.height - defaultHeight) / 2
 
