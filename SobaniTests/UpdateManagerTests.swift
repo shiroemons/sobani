@@ -343,4 +343,12 @@ final class UpdateManagerTests: XCTestCase {
         case .dmg: XCTFail("Expected .zip")
         }
     }
+
+    // MARK: - Default Initialization Safety Tests
+
+    func testDefaultInit_DoesNotCrash() {
+        // デフォルト引数での初期化がクラッシュしないことを確認
+        let manager = UpdateManager(currentVersion: "202602.0")
+        XCTAssertEqual(manager.lastCheckTrigger, .automatic)
+    }
 }

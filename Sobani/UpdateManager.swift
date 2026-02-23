@@ -84,6 +84,8 @@ class UpdateManager {
 
     private static let lastCheckKey = "LastUpdateCheckDate"
     private static let checkInterval: TimeInterval = 24 * 60 * 60 // 24 hours
+    // swiftlint:disable:next force_unwrapping
+    private static let defaultAPIURL = URL(string: "https://api.github.com/repos/shiroemons/sobani/releases/latest")!
 
     init(
         currentVersion: String? = nil,
@@ -93,7 +95,12 @@ class UpdateManager {
             ?? Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
             ?? "0"
         self.apiURL = apiURL
-            ?? URL(string: "https://api.github.com/repos/shiroemons/sobani/releases/latest")!
+            ?? Self.defaultAPIURL
+    }
+
+    deinit {
+        checkTimer?.invalidate()
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 
     // MARK: - Periodic Checks
