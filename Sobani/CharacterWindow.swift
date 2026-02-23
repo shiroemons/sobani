@@ -235,8 +235,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             guard let self = self else { return }
             let angleDelta = delta * scrollRotationSensitivity
             var newAngle = self.imageView.rotationAngle + angleDelta
-            newAngle = newAngle.truncatingRemainder(dividingBy: 360)
-            if newAngle < 0 { newAngle += 360 }
+            newAngle = GeometryUtils.normalizeAngle(newAngle)
             self.applyRotation(newAngle)
         }
     }
@@ -270,10 +269,11 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     func adjustWindowForRotation() {
         let baseWidth = imageView.frame.width
         let baseHeight = imageView.frame.height
-        let radians = imageView.rotationAngle * .pi / 180
-
-        let bbWidth = abs(baseWidth * cos(radians)) + abs(baseHeight * sin(radians))
-        let bbHeight = abs(baseWidth * sin(radians)) + abs(baseHeight * cos(radians))
+        let boundingBox = GeometryUtils.rotatedBoundingBox(
+            width: baseWidth, height: baseHeight, angleDegrees: imageView.rotationAngle
+        )
+        let bbWidth = boundingBox.width
+        let bbHeight = boundingBox.height
 
         let centerX = window.frame.midX
         let centerY = window.frame.midY

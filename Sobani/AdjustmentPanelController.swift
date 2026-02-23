@@ -94,9 +94,7 @@ class RotationDialView: NSView {
     override func scrollWheel(with event: NSEvent) {
         let delta = event.scrollingDeltaY
         if delta == 0 { return }
-        var newAngle = angle + delta * scrollSensitivity
-        newAngle = newAngle.truncatingRemainder(dividingBy: 360)
-        if newAngle < 0 { newAngle += 360 }
+        let newAngle = GeometryUtils.normalizeAngle(angle + delta * scrollSensitivity)
         angle = newAngle
         onAngleChanged?(angle)
     }
@@ -111,8 +109,7 @@ class RotationDialView: NSView {
         var degrees = 90 - mathDegrees
         // Snap to 5-degree increments
         degrees = (degrees / 5).rounded() * 5
-        degrees = degrees.truncatingRemainder(dividingBy: 360)
-        if degrees < 0 { degrees += 360 }
+        degrees = GeometryUtils.normalizeAngle(degrees)
         angle = degrees
         onAngleChanged?(angle)
     }
@@ -298,8 +295,7 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
             sender.stringValue = formatAngle(currentAngle)
             return
         }
-        degrees = degrees.truncatingRemainder(dividingBy: 360)
-        if degrees < 0 { degrees += 360 }
+        degrees = GeometryUtils.normalizeAngle(degrees)
         let angle = CGFloat(degrees)
         currentAngle = angle
         dialView?.angle = angle

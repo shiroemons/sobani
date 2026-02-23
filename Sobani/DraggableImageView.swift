@@ -80,9 +80,11 @@ class DraggableImageView: NSImageView {
         newHeight = max(minHeight, min(maxHeight, newHeight))
         let newWidth = newHeight * imageView.aspectRatio
 
-        let radians = imageView.rotationAngle * .pi / 180
-        let bbWidth = abs(newWidth * cos(radians)) + abs(newHeight * sin(radians))
-        let bbHeight = abs(newWidth * sin(radians)) + abs(newHeight * cos(radians))
+        let boundingBox = GeometryUtils.rotatedBoundingBox(
+            width: newWidth, height: newHeight, angleDegrees: imageView.rotationAngle
+        )
+        let bbWidth = boundingBox.width
+        let bbHeight = boundingBox.height
 
         let centerX = window.frame.midX
         let centerY = window.frame.midY

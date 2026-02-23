@@ -30,6 +30,23 @@ enum AppConstants {
     static let fallbackScreenSize = NSSize(width: 1920, height: 1080)
 }
 
+enum GeometryUtils {
+    /// 回転後のバウンディングボックスサイズを計算
+    static func rotatedBoundingBox(width: CGFloat, height: CGFloat, angleDegrees: CGFloat) -> NSSize {
+        let radians = angleDegrees * .pi / 180
+        let bbWidth = abs(width * cos(radians)) + abs(height * sin(radians))
+        let bbHeight = abs(width * sin(radians)) + abs(height * cos(radians))
+        return NSSize(width: bbWidth, height: bbHeight)
+    }
+
+    /// 角度を 0..<360 の範囲に正規化
+    static func normalizeAngle(_ angle: CGFloat) -> CGFloat {
+        var result = angle.truncatingRemainder(dividingBy: 360)
+        if result < 0 { result += 360 }
+        return result
+    }
+}
+
 enum MenuItemTag: Int {
     // Phase 2 で使用
     case resetToDefault = 1001
