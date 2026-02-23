@@ -71,8 +71,8 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         }
 
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
-        let offsetX = CGFloat.random(in: -100...100)
-        let offsetY = CGFloat.random(in: -100...100)
+        let offsetX = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
+        let offsetY = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
         let originX = (screenCenter.width - windowWidth) / 2 + offsetX
         let originY = (screenCenter.height - windowHeight) / 2 + offsetY
         window.setFrameOrigin(NSPoint(x: originX, y: originY))
@@ -230,10 +230,9 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         }
         controller.show(near: window, currentAngle: imageView.rotationAngle, currentOpacity: imageView.opacityLevel)
         adjustmentPanelController = controller
-        let scrollRotationSensitivity: CGFloat = 0.5
         imageView.scrollRotationHandler = { [weak self] delta in
             guard let self = self else { return }
-            let angleDelta = delta * scrollRotationSensitivity
+            let angleDelta = delta * AppConstants.dialScrollSensitivity
             var newAngle = self.imageView.rotationAngle + angleDelta
             newAngle = GeometryUtils.normalizeAngle(newAngle)
             self.applyRotation(newAngle)

@@ -16,6 +16,7 @@ enum AppConstants {
     static let defaultWindowHeight: CGFloat = 600
     static let minImageHeight: CGFloat = 100
     static let maxImageHeight: CGFloat = 6000
+    static let windowSpawnRandomOffset: CGFloat = 100
     static let scrollScaleSensitivity: CGFloat = 0.01
     static let dialScrollSensitivity: CGFloat = 0.5
 
