@@ -1,8 +1,13 @@
 import Cocoa
+import os.log
 
 // MARK: - Image Manager
 
 class ImageManager {
+    private let logger = Logger(
+        subsystem: "com.shiroemons.Sobani",
+        category: "ImageManager"
+    )
     static let shared = ImageManager()
     private let baseDirectory: URL?
 
@@ -20,7 +25,11 @@ class ImageManager {
             appDir = appSupport.appendingPathComponent("Sobani")
         }
         if !fm.fileExists(atPath: appDir.path) {
-            try? fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+            do {
+                try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+            } catch {
+                logger.error("Failed to create app support directory: \(error.localizedDescription)")
+            }
         }
         return appDir
     }
@@ -30,7 +39,11 @@ class ImageManager {
         let imagesDir = appDir.appendingPathComponent("images")
         let fm = FileManager.default
         if !fm.fileExists(atPath: imagesDir.path) {
-            try? fm.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+            do {
+                try fm.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+            } catch {
+                logger.error("Failed to create images directory: \(error.localizedDescription)")
+            }
         }
         return imagesDir
     }
@@ -77,8 +90,13 @@ class ImageManager {
             finalURL = imagesDir.appendingPathComponent(finalName)
             counter += 1
         }
-        try? fm.copyItem(at: url, to: finalURL)
-        return finalName
+        do {
+            try fm.copyItem(at: url, to: finalURL)
+            return finalName
+        } catch {
+            logger.error("Failed to copy image: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     @discardableResult
@@ -88,7 +106,12 @@ class ImageManager {
               let bitmap = NSBitmapImageRep(data: tiffData),
               let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
         let destURL = imagesDir.appendingPathComponent(name)
-        try? pngData.write(to: destURL)
+        do {
+            try pngData.write(to: destURL)
+        } catch {
+            logger.error("Failed to write image data: \(error.localizedDescription)")
+            return nil
+        }
         return name
     }
 
@@ -99,7 +122,11 @@ class ImageManager {
         guard !safeName.isEmpty, safeName != "." else { return }
         let url = imagesDir.appendingPathComponent(safeName)
         guard url.path.hasPrefix(imagesDir.path + "/") else { return }
-        try? FileManager.default.removeItem(at: url)
+        do {
+            try FileManager.default.removeItem(at: url)
+        } catch {
+            logger.error("Failed to remove image: \(error.localizedDescription)")
+        }
     }
 
     var customDefaultURL: URL? {
@@ -125,12 +152,22 @@ class ImageManager {
     func setCustomDefault(from url: URL) {
         guard let destURL = customDefaultURL else { return }
         let fm = FileManager.default
-        try? fm.removeItem(at: destURL)
-        try? fm.copyItem(at: url, to: destURL)
+        do {
+            if fm.fileExists(atPath: destURL.path) {
+                try fm.removeItem(at: destURL)
+            }
+            try fm.copyItem(at: url, to: destURL)
+        } catch {
+            logger.error("Failed to set custom default: \(error.localizedDescription)")
+        }
     }
 
     func resetCustomDefault() {
         guard let url = customDefaultURL else { return }
-        try? FileManager.default.removeItem(at: url)
+        do {
+            try FileManager.default.removeItem(at: url)
+        } catch {
+            logger.error("Failed to reset custom default: \(error.localizedDescription)")
+        }
     }
 }

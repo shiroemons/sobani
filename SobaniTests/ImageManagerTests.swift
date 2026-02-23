@@ -291,4 +291,13 @@ final class ImageManagerTests: XCTestCase {
         let image = imageManager.loadRegisteredImage(named: "valid.png")
         XCTAssertNotNil(image)
     }
+
+    // MARK: - Copy Failure Tests
+
+    func testRegisterImage_CopyFailure_ReturnsNil() {
+        // 存在しないソースからのコピーは nil を返すことを確認
+        let nonexistentURL = URL(fileURLWithPath: "/tmp/nonexistent_sobani_test.png")
+        let result = imageManager.registerImage(from: nonexistentURL)
+        XCTAssertNil(result)
+    }
 }

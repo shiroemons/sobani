@@ -1,4 +1,5 @@
 import AppKit
+import os.log
 
 // MARK: - Pending Restoration
 
@@ -53,6 +54,10 @@ struct PendingRestoration: Codable {
 // MARK: - Screen Restoration Manager
 
 class ScreenRestorationManager {
+    private let logger = Logger(
+        subsystem: "com.shiroemons.Sobani",
+        category: "ScreenRestorationManager"
+    )
     private(set) var pendingRestorations: [PendingRestoration] = []
     private let timeout: TimeInterval
     private let baseDirectory: URL?
@@ -73,7 +78,13 @@ class ScreenRestorationManager {
             appDir = appSupport.appendingPathComponent("Sobani")
         }
         if !fm.fileExists(atPath: appDir.path) {
-            try? fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+            do {
+                try fm.createDirectory(
+                    at: appDir, withIntermediateDirectories: true)
+            } catch {
+                logger.error(
+                    "Failed to create app support directory: \(error.localizedDescription)")
+            }
         }
         return appDir.appendingPathComponent("pending_restorations.json")
     }
@@ -142,14 +153,34 @@ class ScreenRestorationManager {
         guard let url = pendingFileURL else { return }
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
-        guard let data = try? encoder.encode(pendingRestorations) else { return }
-        try? data.write(to: url, options: .atomic)
+        do {
+            let data = try encoder.encode(pendingRestorations)
+            try data.write(to: url, options: .atomic)
+        } catch {
+            logger.error(
+                "Failed to save pending restorations: \(error.localizedDescription)")
+        }
     }
 
     func loadPending() {
         guard let url = pendingFileURL else { return }
-        guard let data = try? Data(contentsOf: url) else { return }
-        let loaded = (try? JSONDecoder().decode([PendingRestoration].self, from: data)) ?? []
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
+            logger.debug(
+                "No pending restorations found: \(error.localizedDescription)")
+            return
+        }
+        let loaded: [PendingRestoration]
+        do {
+            loaded = try JSONDecoder().decode(
+                [PendingRestoration].self, from: data)
+        } catch {
+            logger.error(
+                "Failed to decode pending restorations: \(error.localizedDescription)")
+            return
+        }
         pendingRestorations = loaded
         purgeExpired()
     }

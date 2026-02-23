@@ -1,4 +1,5 @@
 import Cocoa
+import os.log
 
 // MARK: - Window State
 
@@ -57,6 +58,10 @@ struct WindowState: Codable, Equatable {
 
 class WindowStateManager {
     static let shared = WindowStateManager()
+    private let logger = Logger(
+        subsystem: "com.shiroemons.Sobani",
+        category: "WindowStateManager"
+    )
     private let baseDirectory: URL?
 
     init(baseDirectory: URL? = nil) {
@@ -73,7 +78,16 @@ class WindowStateManager {
             appDir = appSupport.appendingPathComponent("Sobani")
         }
         if !fm.fileExists(atPath: appDir.path) {
-            try? fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+            do {
+                try fm.createDirectory(
+                    at: appDir,
+                    withIntermediateDirectories: true
+                )
+            } catch {
+                logger.error(
+                    "Failed to create app support directory: \(error.localizedDescription)"
+                )
+            }
         }
         return appDir
     }
@@ -86,14 +100,39 @@ class WindowStateManager {
         guard let url = statesFileURL else { return }
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
-        guard let data = try? encoder.encode(states) else { return }
-        try? data.write(to: url, options: .atomic)
+        do {
+            let data = try encoder.encode(states)
+            try data.write(to: url, options: .atomic)
+        } catch {
+            logger.error(
+                "Failed to save window states: \(error.localizedDescription)"
+            )
+        }
     }
 
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
-        guard let data = try? Data(contentsOf: url) else { return [] }
-        var states = (try? JSONDecoder().decode([WindowState].self, from: data)) ?? []
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
+            logger.debug(
+                "No saved states found: \(error.localizedDescription)"
+            )
+            return []
+        }
+        var states: [WindowState]
+        do {
+            states = try JSONDecoder().decode(
+                [WindowState].self,
+                from: data
+            )
+        } catch {
+            logger.error(
+                "Failed to decode window states: \(error.localizedDescription)"
+            )
+            return []
+        }
         // Backward compatibility: normalize legacy "デフォルト" to internal constant
         states = states.map { state in
             if state.imageName == "デフォルト" {
