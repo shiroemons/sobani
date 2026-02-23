@@ -22,7 +22,7 @@ class LanguageManager {
     static let shared = LanguageManager()
 
     private let userDefaultsKey = "AppLanguage"
-    var currentBundle: Bundle?
+    private(set) var currentBundle: Bundle?
 
     var currentLanguage: Language {
         get {
@@ -55,14 +55,24 @@ class LanguageManager {
         updateBundle()
     }
 
+    private static let supportedLangCodes: Set<String> = Set(
+        Language.allCases.compactMap { $0 == .system ? nil : $0.rawValue }
+    )
+    private static let defaultLangCode = Language.japanese.rawValue
+
     func updateBundle() {
         let language = currentLanguage
+        let langCode: String
         if language == .system {
-            currentBundle = nil
-            return
+            // アプリがサポートする言語とシステム設定を突き合わせて検出
+            langCode = Bundle.main.preferredLocalizations
+                .first { Self.supportedLangCodes.contains($0) }
+                ?? Self.defaultLangCode
+        } else {
+            langCode = language.rawValue
         }
 
-        if let path = Bundle.main.path(forResource: language.rawValue, ofType: "lproj"),
+        if let path = Bundle.main.path(forResource: langCode, ofType: "lproj"),
            let bundle = Bundle(path: path) {
             currentBundle = bundle
         } else {
