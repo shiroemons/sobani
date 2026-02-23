@@ -346,8 +346,8 @@ final class UpdateManagerTests: XCTestCase {
 
     // MARK: - Default Initialization Safety Tests
 
-    func testDefaultInit_DoesNotCrash() {
-        // デフォルト引数での初期化がクラッシュしないことを確認
+    func testDefaultInit_LastCheckTriggerIsAutomatic() {
+        // デフォルト引数での初期化で lastCheckTrigger が .automatic であることを確認
         let manager = UpdateManager(currentVersion: "202602.0")
         XCTAssertEqual(manager.lastCheckTrigger, .automatic)
     }
