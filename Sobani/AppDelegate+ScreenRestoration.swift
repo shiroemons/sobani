@@ -48,13 +48,13 @@ extension AppDelegate {
     }
 
     @objc func handleScreenChange() {
-        let isWake = isInWakeRestoration
+        let isWake = wakeContext.isActive
         let count = NSScreen.screens.count
         screenRestorationLog.debug(
             "screenChange: isWake=\(isWake, privacy: .public), screens=\(count, privacy: .public)"
         )
         screenChangeDebounceTimer?.invalidate()
-        if isInWakeRestoration {
+        if wakeContext.isActive {
             // Wake 復元中のスクリーン変更 → 復元リトライをトリガー（1.5秒デバウンス）
             screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeDebounceInterval, repeats: false) { [weak self] _ in
                 self?.attemptWakeRestoration()
@@ -69,31 +69,26 @@ extension AppDelegate {
 
     @objc func handleWillSleep() {
         // Wake 復元中のタイマーをキャンセル
-        isInWakeRestoration = false
-        wakeRestorationRetryCount = 0
+        wakeContext.clear()
         screenChangeDebounceTimer?.invalidate()
 
-        preSleepStates = [:]
-        preSleepDisplayIDs = [:]
-        preSleepScreenFrames = [:]
-        preSleepWindowOrigins = [:]
         screenRestorationManager.clearAll()
         for charWindow in characterWindows {
             let state = WindowStateManager.captureState(from: charWindow)
-            preSleepStates[charWindow.windowId] = state
+            wakeContext.states[charWindow.windowId] = state
             // ウィンドウフレームの原点を直接保存（captureState のイメージ中心座標変換を回避）
-            preSleepWindowOrigins[charWindow.windowId] = charWindow.window.frame.origin
+            wakeContext.windowOrigins[charWindow.windowId] = charWindow.window.frame.origin
             if let screen = NSScreen.screen(containing: charWindow.window.frame),
                let displayID = screen.displayID {
-                preSleepDisplayIDs[charWindow.windowId] = displayID
-                preSleepScreenFrames[displayID] = screen.frame
+                wakeContext.displayIDs[charWindow.windowId] = displayID
+                wakeContext.screenFrames[displayID] = screen.frame
             }
         }
-        let savedCount = self.preSleepStates.count
+        let savedCount = wakeContext.states.count
         screenRestorationLog.info("[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows")
-        for (wid, origin) in preSleepWindowOrigins {
-            let did = preSleepDisplayIDs[wid] ?? 0
-            let sFrame = preSleepScreenFrames[did]
+        for (wid, origin) in wakeContext.windowOrigins {
+            let did = wakeContext.displayIDs[wid] ?? 0
+            let sFrame = wakeContext.screenFrames[did]
             let sFrameDesc = sFrame.debugDescription
             let originDesc = NSStringFromPoint(origin)
             screenRestorationLog.debug(
@@ -103,12 +98,12 @@ extension AppDelegate {
     }
 
     @objc func handleDidWake() {
-        let restoreCount = self.preSleepStates.count
+        let restoreCount = wakeContext.states.count
         screenRestorationLog.info("[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore")
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
-        isInWakeRestoration = true
-        wakeRestorationRetryCount = 0
+        wakeContext.isActive = true
+        wakeContext.retryCount = 0
         screenChangeDebounceTimer?.invalidate()
         screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeInitialDelay, repeats: false) { [weak self] _ in
             self?.attemptWakeRestoration()
@@ -116,27 +111,27 @@ extension AppDelegate {
     }
 
     func attemptWakeRestoration() {
-        guard isInWakeRestoration, !preSleepStates.isEmpty else {
-            isInWakeRestoration = false
-            wakeRestorationRetryCount = 0
+        guard wakeContext.isActive, !wakeContext.states.isEmpty else {
+            wakeContext.isActive = false
+            wakeContext.retryCount = 0
             return
         }
 
         let restoredAll = restoreAllPreSleepWindows()
-        self.wakeRestorationRetryCount += 1
-        let retryNum = self.wakeRestorationRetryCount
+        wakeContext.retryCount += 1
+        let retryNum = wakeContext.retryCount
         let screenInfo = NSScreen.screens.map { "\($0.frame)" }.joined(separator: ", ")
         screenRestorationLog.debug(
             "attempt #\(retryNum, privacy: .public): restoredAll=\(restoredAll, privacy: .public), screens=[\(screenInfo, privacy: .public)]"
         )
 
-        if restoredAll && wakeRestorationRetryCount <= 2 {
+        if restoredAll && wakeContext.retryCount <= 2 {
             // 全復元完了だが、macOS が後から再配置する可能性があるため追加リトライ
             scheduleWakeRetry(interval: 3.0)
-        } else if restoredAll || wakeRestorationRetryCount >= 10 {
+        } else if restoredAll || wakeContext.retryCount >= 10 {
             // 確実に全復元完了 or タイムアウト → 残りをペンディングキューに移行
             moveUnrestoredToPendingQueue()
-            clearWakeRestorationState()
+            wakeContext.clear()
         } else {
             // 未復元ウィンドウがある → 3秒後にリトライ
             scheduleWakeRetry(interval: 3.0)
@@ -145,15 +140,15 @@ extension AppDelegate {
 
     /// 全ウィンドウを相対座標ベースで復元。全ウィンドウ復元できたら true を返す。
     private func restoreAllPreSleepWindows() -> Bool {
-        // 注意: preSleepStates から個別に除去しない。macOS はモニタ復帰時に
+        // 注意: wakeContext.states から個別に除去しない。macOS はモニタ復帰時に
         // 全ウィンドウを再配置するため、リトライ毎に全ウィンドウを再復元する必要がある。
         var restoredAll = true
 
         for charWindow in characterWindows {
-            guard preSleepStates[charWindow.windowId] != nil else { continue }
-            guard let savedOrigin = preSleepWindowOrigins[charWindow.windowId] else { continue }
+            guard wakeContext.states[charWindow.windowId] != nil else { continue }
+            guard let savedOrigin = wakeContext.windowOrigins[charWindow.windowId] else { continue }
 
-            let savedDisplayID = preSleepDisplayIDs[charWindow.windowId]
+            let savedDisplayID = wakeContext.displayIDs[charWindow.windowId]
             let targetScreen = findTargetScreen(displayID: savedDisplayID, windowId: charWindow.windowId)
 
             if let screen = targetScreen {
@@ -190,7 +185,7 @@ extension AppDelegate {
     private func computeRestoredOrigin(savedOrigin: NSPoint, savedDisplayID: CGDirectDisplayID?,
                                        currentScreen: NSScreen) -> NSPoint {
         guard let displayID = savedDisplayID,
-              let oldFrame = preSleepScreenFrames[displayID] else {
+              let oldFrame = wakeContext.screenFrames[displayID] else {
             return savedOrigin
         }
         let relativeX = savedOrigin.x - oldFrame.origin.x
@@ -203,12 +198,12 @@ extension AppDelegate {
 
     /// 未復元ウィンドウをペンディングキューに移行
     private func moveUnrestoredToPendingQueue() {
-        for windowId in preSleepStates.keys {
-            let savedDisplayID = preSleepDisplayIDs[windowId]
+        for windowId in wakeContext.states.keys {
+            let savedDisplayID = wakeContext.displayIDs[windowId]
             guard findTargetScreen(displayID: savedDisplayID, windowId: windowId) == nil else { continue }
-            guard let savedState = preSleepStates[windowId] else { continue }
+            guard let savedState = wakeContext.states[windowId] else { continue }
 
-            let screenFrame = savedDisplayID.flatMap { preSleepScreenFrames[$0] }
+            let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
             let adjusted = WindowStateManager.adjustToVisibleArea(savedState)
 
             if let charWindow = characterWindows.first(where: { $0.windowId == windowId }) {
@@ -230,18 +225,9 @@ extension AppDelegate {
         }
     }
 
-    private func clearWakeRestorationState() {
-        preSleepStates = [:]
-        preSleepDisplayIDs = [:]
-        preSleepScreenFrames = [:]
-        preSleepWindowOrigins = [:]
-        isInWakeRestoration = false
-        wakeRestorationRetryCount = 0
-    }
-
     func attemptPendingRestorations() {
         // フェーズ0: スリープなしのモニター切断対応
-        // preSleepStates が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
+        // wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
         for charWindow in characterWindows {
             let currentState = WindowStateManager.captureState(from: charWindow)
             guard !WindowStateManager.isPositionVisible(currentState) else { continue }
@@ -299,7 +285,7 @@ extension AppDelegate {
             return screen
         }
         // ② ジオメトリベースのフォールバック
-        if let savedID = displayID, let savedFrame = preSleepScreenFrames[savedID] {
+        if let savedID = displayID, let savedFrame = wakeContext.screenFrames[savedID] {
             return NSScreen.screen(matchingFrame: savedFrame, tolerance: AppConstants.screenMatchTolerance)
         }
         return nil
@@ -330,14 +316,17 @@ extension AppDelegate {
 // MARK: - NSScreen Helpers
 
 private extension NSScreen {
+    /// スクリーンの CGDirectDisplayID を取得
     var displayID: CGDirectDisplayID? {
         deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
     }
 
+    /// 指定された displayID に一致するスクリーンを検索
     static func screen(withDisplayID displayID: CGDirectDisplayID) -> NSScreen? {
         screens.first { $0.displayID == displayID }
     }
 
+    /// 指定された矩形と最も大きく重なるスクリーンを返す
     static func screen(containing rect: NSRect) -> NSScreen? {
         screens.max {
             let areaA = $0.frame.intersection(rect)
@@ -346,6 +335,7 @@ private extension NSScreen {
         }
     }
 
+    /// 指定されたフレームと位置・サイズが tolerance 以内で一致するスクリーンを返す
     static func screen(matchingFrame savedFrame: NSRect, tolerance: CGFloat) -> NSScreen? {
         screens.first { screen in
             abs(screen.frame.origin.x - savedFrame.origin.x) <= tolerance

@@ -26,6 +26,7 @@
 		FF000003 /* ScreenRestorationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000004 /* ScreenRestorationManagerTests.swift */; };
 		FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000006 /* AppDelegate+ScreenRestoration.swift */; };
 		GG000001 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG000002 /* Constants.swift */; };
+		KK000001 /* WakeRestorationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = KK000002 /* WakeRestorationContext.swift */; };
 		HH000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = HH000002 /* Localizable.xcstrings */; };
 		II000001 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000002 /* LanguageManager.swift */; };
 		II000003 /* LanguageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000004 /* LanguageManagerTests.swift */; };
@@ -65,6 +66,7 @@
 		FF000004 /* ScreenRestorationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManagerTests.swift; sourceTree = "<group>"; };
 		FF000006 /* AppDelegate+ScreenRestoration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+ScreenRestoration.swift"; sourceTree = "<group>"; };
 		GG000002 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		KK000002 /* WakeRestorationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContext.swift; sourceTree = "<group>"; };
 		HH000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		II000002 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		II000004 /* LanguageManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManagerTests.swift; sourceTree = "<group>"; };
@@ -114,6 +116,7 @@
 				FF000002 /* ScreenRestorationManager.swift */,
 				FF000006 /* AppDelegate+ScreenRestoration.swift */,
 				GG000002 /* Constants.swift */,
+				KK000002 /* WakeRestorationContext.swift */,
 				II000002 /* LanguageManager.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
@@ -275,6 +278,7 @@
 				FF000001 /* ScreenRestorationManager.swift in Sources */,
 				FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */,
 				GG000001 /* Constants.swift in Sources */,
+				KK000001 /* WakeRestorationContext.swift in Sources */,
 				II000001 /* LanguageManager.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
