@@ -23,12 +23,25 @@ final class GeometryUtilsTests: XCTestCase {
         XCTAssertEqual(size.height, 50, accuracy: 0.01)
     }
 
+    func testRotatedBoundingBox_270Degrees() {
+        let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 50, angleDegrees: 270)
+        XCTAssertEqual(size.width, 50, accuracy: 0.01)
+        XCTAssertEqual(size.height, 100, accuracy: 0.01)
+    }
+
     func testRotatedBoundingBox_45Degrees() {
         let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 100, angleDegrees: 45)
         // 正方形を45度回転: 対角線の長さ = 100 * sqrt(2) ≈ 141.42
         let expected = 100 * sqrt(2.0)
         XCTAssertEqual(size.width, expected, accuracy: 0.01)
         XCTAssertEqual(size.height, expected, accuracy: 0.01)
+    }
+
+    func testRotatedBoundingBox_45Degrees_NonSquare() {
+        let size = GeometryUtils.rotatedBoundingBox(width: 200, height: 100, angleDegrees: 45)
+        // 200x100を45°回転: |200*cos45°|+|100*sin45°| = 141.42+70.71 = 212.13
+        XCTAssertEqual(size.width, 212.13, accuracy: 0.01)
+        XCTAssertEqual(size.height, 212.13, accuracy: 0.01)
     }
 
     func testRotatedBoundingBox_NegativeAngle() {
@@ -56,21 +69,6 @@ final class GeometryUtilsTests: XCTestCase {
         XCTAssertEqual(GeometryUtils.normalizeAngle(360), 0, accuracy: 0.01)
         XCTAssertEqual(GeometryUtils.normalizeAngle(450), 90, accuracy: 0.01)
         XCTAssertEqual(GeometryUtils.normalizeAngle(720), 0, accuracy: 0.01)
-    }
-
-    func testRotatedBoundingBox_270Degrees() {
-        let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 50, angleDegrees: 270)
-        XCTAssertEqual(size.width, 50, accuracy: 0.01)
-        XCTAssertEqual(size.height, 100, accuracy: 0.01)
-    }
-
-    func testRotatedBoundingBox_45Degrees_NonSquare() {
-        let size = GeometryUtils.rotatedBoundingBox(width: 200, height: 100, angleDegrees: 45)
-        let rad = 45.0 * .pi / 180.0
-        let expectedWidth = abs(200 * cos(rad)) + abs(100 * sin(rad))
-        let expectedHeight = abs(200 * sin(rad)) + abs(100 * cos(rad))
-        XCTAssertEqual(size.width, expectedWidth, accuracy: 0.01)
-        XCTAssertEqual(size.height, expectedHeight, accuracy: 0.01)
     }
 
     func testNormalizeAngle_LargeNegative() {
