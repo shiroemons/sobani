@@ -14,7 +14,7 @@ Sobani の操作方法をビジュアルに解説します。
 flowchart TD
     A[Sobani.app を起動] --> B[メニューバーにアイコン表示]
     B --> C{前回の状態が存在する?}
-    C -- はい --> D[ウィンドウ状態を復元\n位置・サイズ・画像・反転・回転・透明度・Zオーダー]
+    C -- はい --> D[ウィンドウ状態を復元<br/>位置・サイズ・画像・反転・回転・透明度・Zオーダー]
     C -- いいえ --> E[デフォルト画像でウィンドウを表示]
     D --> F[操作可能な状態]
     E --> F
@@ -35,7 +35,7 @@ flowchart TD
     ICON --> LOGIN["ログイン時に起動"]
     ICON --> SEP1[---]
     ICON --> WINDOWS[表示中: X体]
-    WINDOWS --> WIN_LIST[ウィンドウ一覧\nZオーダー順]
+    WINDOWS --> WIN_LIST[ウィンドウ一覧<br/>Zオーダー順]
     WIN_LIST --> WIN_ACTIONS[各ウィンドウの操作]
     WIN_ACTIONS --> LAYER_FRONT["最前面へ移動"]
     WIN_ACTIONS --> LAYER_FORWARD["前面へ移動"]
@@ -122,12 +122,12 @@ Sobani では、PNG・JPEG/JPG・GIF・TIFF・HEIC 形式の画像を登録し�
 
 ```mermaid
 flowchart LR
-    A[画像を選択\nファイル選択ダイアログ] --> B{拡張子チェック\nPNG/JPEG/JPG/GIF\nTIFF/HEIC}
-    B -- 非対応形式 --> Z[登録失敗\nnil を返す]
-    B -- 対応形式 --> C{同名ファイルが\n存在する?}
-    C -- はい --> D[ファイルをリネーム\n例: image_1.png]
+    A[画像を選択<br/>ファイル選択ダイアログ] --> B{拡張子チェック<br/>PNG/JPEG/JPG/GIF<br/>TIFF/HEIC}
+    B -- 非対応形式 --> Z[登録失敗<br/>nil を返す]
+    B -- 対応形式 --> C{同名ファイルが<br/>存在する?}
+    C -- はい --> D[ファイルをリネーム<br/>例: image_1.png]
     C -- いいえ --> E[そのままコピー]
-    D --> F[~/Library/Application Support\n/Sobani/images/ に保存]
+    D --> F[~/Library/Application Support<br/>/Sobani/images/ に保存]
     E --> F
     F --> G[ウィンドウに表示]
     G --> H[メニューに登録画像として追加]

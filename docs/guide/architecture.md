@@ -193,10 +193,10 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    CW["CharacterWindow\n(NSObject)\nNSWindow を保持\nボーダーレス・透明・常に最前面"]
-    RC["RotatableContainer\n(NSView)\n回転時のバウンディングボックス調整"]
-    DIV["DraggableImageView\n(NSImageView)\nドラッグ・リサイズ・反転・回転・透明度"]
-    AP["AdjustmentPanelController\n(NSObject, NSPanel を保持)\n回転ダイアル・透明度スライダー"]
+    CW["CharacterWindow<br/>(NSObject)<br/>NSWindow を保持<br/>ボーダーレス・透明・常に最前面"]
+    RC["RotatableContainer<br/>(NSView)<br/>回転時のバウンディングボックス調整"]
+    DIV["DraggableImageView<br/>(NSImageView)<br/>ドラッグ・リサイズ・反転・回転・透明度"]
+    AP["AdjustmentPanelController<br/>(NSObject, NSPanel を保持)<br/>回転ダイアル・透明度スライダー"]
 
     CW --> |contentView| RC
     RC --> |subview| DIV

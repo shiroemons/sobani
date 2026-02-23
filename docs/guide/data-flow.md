@@ -103,27 +103,27 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     subgraph 入力
-        URL["ファイル選択\n(URL)"]
-        BI["内蔵画像\n(character)"]
+        URL["ファイル選択<br/>(URL)"]
+        BI["内蔵画像<br/>(character)"]
     end
 
     subgraph ImageManager
-        EC["拡張子チェック\nPNG/JPEG/JPG/GIF/\nTIFF/HEIC"]
-        CP["images/ に\nコピー"]
-        RN["重複チェック\n& リネーム\n(_1, _2...)"]
-        LD["画像読み込み\nloadRegisteredImage"]
-        DEL["画像削除\nremoveRegisteredImage"]
-        DF["デフォルト画像\ndefaultImage()"]
+        EC["拡張子チェック<br/>PNG/JPEG/JPG/GIF/<br/>TIFF/HEIC"]
+        CP["images/ に<br/>コピー"]
+        RN["重複チェック<br/>& リネーム<br/>(_1, _2...)"]
+        LD["画像読み込み<br/>loadRegisteredImage"]
+        DEL["画像削除<br/>removeRegisteredImage"]
+        DF["デフォルト画像<br/>defaultImage()"]
     end
 
     subgraph 保存先["~/Library/Application Support/Sobani/"]
-        IMG["images/\n登録済み画像"]
-        DFLT["default.png\nカスタムデフォルト"]
+        IMG["images/<br/>登録済み画像"]
+        DFLT["default.png<br/>カスタムデフォルト"]
     end
 
     subgraph 出力
-        WIN["CharacterWindow\nに表示"]
-        MENU["メニューに\n画像名表示"]
+        WIN["CharacterWindow<br/>に表示"]
+        MENU["メニューに<br/>画像名表示"]
     end
 
     URL --> EC --> CP --> RN --> IMG

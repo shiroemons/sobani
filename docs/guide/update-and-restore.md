@@ -119,37 +119,37 @@ sequenceDiagram
 flowchart TD
     Event{"イベント発生"}
 
-    Event -->|"NSApplication\ndidChangeScreenParameters"| P0
-    Event -->|"NSWorkspace\nwillSleep"| P1S
-    Event -->|"NSWorkspace\ndidWake"| P1W
+    Event -->|"NSApplication<br/>didChangeScreenParameters"| P0
+    Event -->|"NSWorkspace<br/>willSleep"| P1S
+    Event -->|"NSWorkspace<br/>didWake"| P1W
 
     subgraph Phase0["Phase 0: モニター切断"]
-        P0["handleScreenChange\n(デバウンス: 通常1秒/Wake中1.5秒)"]
-        P0CHK{"wakeContext\n.isActive?"}
-        P0VIS{"各ウィンドウ\n画面内?"}
-        P0MOVE["メイン画面に移動\n+ addPending"]
-        P0REST{"ペンディングに\n復元可能なもの?"}
-        P0OK["元の位置に復元\n+ removePending"]
+        P0["handleScreenChange<br/>(デバウンス: 通常1秒/Wake中1.5秒)"]
+        P0CHK{"wakeContext<br/>.isActive?"}
+        P0VIS{"各ウィンドウ<br/>画面内?"}
+        P0MOVE["メイン画面に移動<br/>+ addPending"]
+        P0REST{"ペンディングに<br/>復元可能なもの?"}
+        P0OK["元の位置に復元<br/>+ removePending"]
 
         P0 --> P0CHK
         P0CHK -->|No| P0VIS
-        P0CHK -->|Yes| P0SKIP["1.5秒デバウンスで\nattemptWakeRestoration() を実行"]
+        P0CHK -->|Yes| P0SKIP["1.5秒デバウンスで<br/>attemptWakeRestoration() を実行"]
         P0VIS -->|画面内| P0SKIP2["変更なし"]
         P0VIS -->|画面外| P0MOVE
         P0MOVE --> P0REST
         P0REST -->|あり| P0OK
-        P0REST -->|なし| P0WAIT["キュー待機\n(300秒で期限切れ)"]
+        P0REST -->|なし| P0WAIT["キュー待機<br/>(300秒で期限切れ)"]
     end
 
     subgraph Phase1["Phase 1: スリープ/復帰"]
-        P1S["handleWillSleep\n全ウィンドウの状態保存"]
-        P1W["handleDidWake\n3秒後に復元開始"]
-        P1FIND{"保存時の\nモニター検索"}
+        P1S["handleWillSleep<br/>全ウィンドウの状態保存"]
+        P1W["handleDidWake<br/>3秒後に復元開始"]
+        P1FIND{"保存時の<br/>モニター検索"}
         P1ID["displayID 一致"]
-        P1GEO["geometry フォールバック\n(100px 許容差)"]
-        P1RESTORE["相対座標で復元\n+ クランプ"]
-        P1RETRY{"リトライ\n(最大10回\n3秒間隔)"}
-        P1PENDING["未復元 →\nペンディングキューへ"]
+        P1GEO["geometry フォールバック<br/>(100px 許容差)"]
+        P1RESTORE["相対座標で復元<br/>+ クランプ"]
+        P1RETRY{"リトライ<br/>(最大10回<br/>3秒間隔)"}
+        P1PENDING["未復元 →<br/>ペンディングキューへ"]
 
         P1S --> P1W
         P1W --> P1FIND
