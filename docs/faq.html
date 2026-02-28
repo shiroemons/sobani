@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4LP459NQ1V"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-4LP459NQ1V');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <title>FAQ - Sobani</title>
+  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。">
+  <meta property="og:title" content="FAQ - Sobani">
+  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。">
+  <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://xn--xckxf.jp/sobani/faq.html">
+  <meta property="og:url" content="https://xn--xckxf.jp/sobani/faq.html">
+  <meta property="og:site_name" content="Sobani">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:title" content="FAQ - Sobani">
+  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。">
+  <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
+  <meta name="theme-color" content="#f59e0b">
+  <meta name="author" content="shiroemons">
+  <meta name="keywords" content="Sobani,FAQ,よくある質問,macOS,デスクトップマスコット,インストール,使い方,トラブルシューティング">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <script>
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches) || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+  <script>
+    (function() {
+      var lang = localStorage.getItem('lang');
+      if (!lang) {
+        var browserLang = (navigator.language || 'ja').toLowerCase();
+        lang = browserLang.startsWith('ja') ? 'ja' : 'en';
+      }
+      document.documentElement.lang = lang;
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    details summary { cursor: pointer; }
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary .faq-chevron { transform: rotate(180deg); }
+    .faq-chevron { transition: transform 0.2s ease; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Sobaniとは何ですか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobaniは、お気に入りの画像をアクリルスタンドのようにMacのデスクトップに飾れる無料のmacOSアプリです。透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "対応している画像形式は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "インストール方法は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "2つの方法でインストールできます。Homebrew（推奨）: ターミナルで brew install --cask shiroemons/tap/sobani を実行。手動ダウンロード: ダウンロードページからSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。Mac App Storeでは配布していません。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "動作環境は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "macOS 13.0（Ventura）以降が必要です。Intel Mac と Apple Silicon（M1/M2/M3/M4）の両方に対応したユニバーサルバイナリです。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "無料ですか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい、Sobaniは完全無料です。MIT ライセンスのオープンソースソフトウェアとして公開されており、誰でも自由に使用できます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "アンインストール方法は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "画像の追加・変更方法は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "キーボードショートカットは？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Option + H で全ウィンドウの表示/非表示を切り替えられます。Option + ドラッグで全ウィンドウを同時に移動、Option + スクロールで全ウィンドウを同時にリサイズできます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "非表示にしたウィンドウを再表示するには？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "データはどこに保存されますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。外部サーバーへのデータ送信は一切ありません。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "プライバシーについて",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobaniはネットワーク通信をアップデート確認（GitHub API）のみに使用します。ユーザーの画像やデータを外部に送信することはありません。すべてのデータはローカルに保存されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "自動アップデートはありますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい。起動時と24時間ごとにGitHub Releasesを確認し、新しいバージョンがあれば通知します。アップデートはSHA256チェックサムで検証された安全なものだけが適用されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "モニター切断/スリープ後にウィンドウが移動した",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobaniは3段階の復元システムを備えています。モニターの切断やスリープ/復帰時にウィンドウ位置を自動的に復元します。モニターが再接続されると、元の位置に戻ります。復元されない場合は、5分以内にモニターを再接続してください。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "画像が表示されない",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "画像が表示されない場合は、以下を確認してください。対応形式（PNG, JPEG, GIF, TIFF, HEIC）のファイルであること。ファイルが破損していないこと（他のアプリで開けるか確認）。Option + H で非表示になっていないか（メニューバーの Sobani アイコンから「すべて表示」を選択）。透過PNG画像を使用すると、背景が透明になり画像だけがデスクトップに表示されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "アップデートに失敗する",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "アップデートに失敗する場合は、以下を確認してください。インターネットに接続されていること。GitHubにアクセスできること（VPNやプロキシを使用している場合は一時的に無効にする）。ディスクの空き容量が十分にあること。アプリケーションフォルダへの書き込み権限があること。エラーコードが表示された場合は「エラーコードの意味は？」を参照してください。問題が解決しない場合は、GitHubのIssuesページで報告してください。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "エラーコードの意味は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "アップデート時にエラーが発生すると、エラーコードが表示されます。チェック（U-1xx）: U-101 ネットワーク接続エラー、U-102 サーバーからのデータ取得失敗、U-103 バージョン情報の解析エラー。ダウンロード（U-2xx）: U-201 ダウンロード中のネットワークエラー、U-202 ダウンロードしたファイルが見つからない、U-203 ファイルの整合性チェック失敗。インストール - ZIP（U-3xx）: U-301 ZIP展開失敗、U-302 ZIP内にアプリなし、U-303 準備中のエラー。インストール - DMG（U-4xx）: U-401 DMGマウント失敗、U-402 DMG内にアプリなし、U-403 準備中のエラー。置換・再起動（U-5xx）: U-501 アプリの場所不明、U-502 バックアップ失敗、U-503 置換失敗。問題が解決しない場合は、エラーコードを添えてGitHubのIssuesページで報告してください。"
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Sobani", "item": "https://xn--xckxf.jp/sobani/" },
+      { "@type": "ListItem", "position": 2, "name": "FAQ", "item": "https://xn--xckxf.jp/sobani/faq.html" }
+    ]
+  }
+  </script>
+</head>
+<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- ヘッダー -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="index.html" class="text-xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">Sobani</a>
+        <!-- デスクトップナビ -->
+        <nav class="hidden md:flex items-center space-x-8" aria-label="メインナビゲーション" data-i18n-attr="aria-label:nav.mainNav">
+          <a href="index.html#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.features">特長</a>
+          <a href="index.html#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
+          <a href="index.html#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
+          <a href="index.html#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
+          <a href="faq.html" class="text-sm font-medium text-amber-600 dark:text-amber-400 font-bold" data-i18n="nav.faq" aria-current="page">FAQ</a>
+          <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
+          <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替" data-i18n-attr="aria-label:nav.themeToggle,title:nav.themeToggle">
+            <!-- 太陽: ライトモード -->
+            <svg class="w-5 h-5 theme-icon-light hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <!-- 月: ダークモード -->
+            <svg class="w-5 h-5 theme-icon-dark hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <!-- モニター: システム -->
+            <svg class="w-5 h-5 theme-icon-system hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </button>
+          <button id="lang-toggle" class="p-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Switch language">
+            <svg class="w-5 h-5 inline-block mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            <span data-i18n="nav.langSwitch">EN</span>
+          </button>
+        </nav>
+        <!-- モバイルメニューボタン -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="メニューを開く" aria-expanded="false" data-i18n-attr="aria-label:nav.openMenu">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
+      <nav class="px-4 py-4 space-y-3" aria-label="モバイルナビゲーション" data-i18n-attr="aria-label:nav.mobileNav">
+        <a href="index.html#features" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.features">特長</a>
+        <a href="index.html#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
+        <a href="index.html#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
+        <a href="index.html#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
+        <a href="faq.html" class="block text-sm font-medium text-amber-600 dark:text-amber-400 font-bold" data-i18n="nav.faq" aria-current="page">FAQ</a>
+        <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
+        <button id="theme-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替" data-i18n-attr="aria-label:nav.themeToggle,title:nav.themeToggle">
+          <svg class="w-5 h-5 theme-icon-light hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg class="w-5 h-5 theme-icon-dark hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <svg class="w-5 h-5 theme-icon-system hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span class="ml-2 text-sm font-medium" data-i18n="nav.themeToggle">テーマ切替</span>
+        </button>
+        <button id="lang-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Switch language">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          <span class="ml-2 text-sm font-medium" data-i18n="nav.langSwitch">EN</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- パンくずリスト -->
+    <nav class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6" aria-label="パンくずリスト">
+      <ol class="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
+        <li><a href="index.html" class="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">Sobani</a></li>
+        <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></li>
+        <li class="text-slate-900 dark:text-slate-100 font-medium">FAQ</li>
+      </ol>
+    </nav>
+
+    <!-- FAQ ヒーロー -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100" data-i18n="faq.pageTitle">よくある質問</h1>
+      <p class="mt-4 text-lg text-slate-600 dark:text-slate-300" data-i18n="faq.pageSubtitle">Sobaniについてよく寄せられる質問と回答をまとめました。</p>
+    </section>
+
+    <!-- FAQ セクション -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-12">
+
+      <!-- 概要 -->
+      <div>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryOverview">概要</h2>
+        <div class="space-y-3">
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q1">Sobaniとは何ですか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a1">Sobaniは、お気に入りの画像をアクリルスタンドのようにMacのデスクトップに飾れる無料のmacOSアプリです。透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。</div>
+          </details>
+        </div>
+      </div>
+
+      <!-- 導入 -->
+      <div>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categorySetup">導入</h2>
+        <div class="space-y-3">
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q2">対応している画像形式は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a2">PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q3">インストール方法は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a3">2つの方法でインストールできます。<br><br><strong>Homebrew（推奨）</strong><br>ターミナルで以下のコマンドを実行してください。<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="コピー" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>手動ダウンロード</strong><br><a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">ダウンロードページ</a>からSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。<br><br>Mac App Storeでは配布していません。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q4">動作環境は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a4">macOS 13.0（Ventura）以降が必要です。Intel Mac と Apple Silicon（M1/M2/M3/M4）の両方に対応したユニバーサルバイナリです。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q5">無料ですか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a5">はい、Sobaniは完全無料です。MIT ライセンスのオープンソースソフトウェアとして公開されており、誰でも自由に使用できます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q6">アンインストール方法は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a6">Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。</div>
+          </details>
+        </div>
+      </div>
+
+      <!-- 操作 -->
+      <div>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUsage">操作</h2>
+        <div class="space-y-3">
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q7">画像の追加・変更方法は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a7">メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q8">キーボードショートカットは？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a8">Option + H で全ウィンドウの表示/非表示を切り替えられます。Option + ドラッグで全ウィンドウを同時に移動、Option + スクロールで全ウィンドウを同時にリサイズできます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q9">非表示にしたウィンドウを再表示するには？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a9">Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。</div>
+          </details>
+        </div>
+      </div>
+
+      <!-- データ -->
+      <div>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryData">データ</h2>
+        <div class="space-y-3">
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q10">データはどこに保存されますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a10">すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。外部サーバーへのデータ送信は一切ありません。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q11">プライバシーについて</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a11">Sobaniはネットワーク通信をアップデート確認（GitHub API）のみに使用します。ユーザーの画像やデータを外部に送信することはありません。すべてのデータはローカルに保存されます。</div>
+          </details>
+        </div>
+      </div>
+
+      <!-- アップデート -->
+      <div>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUpdate">アップデート</h2>
+        <div class="space-y-3">
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q12">自動アップデートはありますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a12">はい。起動時と24時間ごとにGitHub Releasesを確認し、新しいバージョンがあれば通知します。アップデートはSHA256チェックサムで検証された安全なものだけが適用されます。</div>
+          </details>
+        </div>
+      </div>
+
+      <!-- トラブルシューティング -->
+      <div>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryTroubleshooting">トラブルシューティング</h2>
+        <div class="space-y-3">
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q13">モニター切断/スリープ後にウィンドウが移動した</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a13">Sobaniは3段階の復元システムを備えています。モニターの切断やスリープ/復帰時にウィンドウ位置を自動的に復元します。モニターが再接続されると、元の位置に戻ります。復元されない場合は、5分以内にモニターを再接続してください。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q14">画像が表示されない</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a14">画像が表示されない場合は、以下を確認してください。<br><br>・対応形式（PNG, JPEG, GIF, TIFF, HEIC）のファイルであること<br>・ファイルが破損していないこと（他のアプリで開けるか確認）<br>・Option + H で非表示になっていないか（メニューバーの Sobani アイコンから「すべて表示」を選択）<br><br>透過PNG画像を使用すると、背景が透明になり画像だけがデスクトップに表示されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q15">アップデートに失敗する</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a15">アップデートに失敗する場合は、以下を確認してください。<br><br>・インターネットに接続されていること<br>・GitHubにアクセスできること（VPNやプロキシを使用している場合は一時的に無効にする）<br>・ディスクの空き容量が十分にあること<br>・アプリケーションフォルダへの書き込み権限があること<br><br>エラーコードが表示された場合は、上記の「エラーコードの意味は？」を参照してください。問題が解決しない場合は、<a href="https://github.com/shiroemons/sobani/issues" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 underline">GitHubのIssuesページ</a>で報告してください。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q16">エラーコードの意味は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a16">
+              アップデート時にエラーが発生すると、エラーコードが表示されます。以下を参考に対処してください。
+              <br><br>
+              <strong>■ チェック（U-1xx）</strong><br>
+              U-101: ネットワーク接続エラー<br>
+              → インターネット接続を確認してください。Wi-Fiやルーターの再起動も有効です。<br>
+              <br>
+              U-102: サーバーからのデータ取得失敗<br>
+              → GitHubのサーバーが一時的に不安定な可能性があります。しばらく待ってから再試行してください。<br>
+              <br>
+              U-103: バージョン情報の解析エラー<br>
+              → しばらく待ってから再試行してください。繰り返し発生する場合はIssuesで報告してください。
+              <br><br>
+              <strong>■ ダウンロード（U-2xx）</strong><br>
+              U-201: ダウンロード中のネットワークエラー<br>
+              → インターネット接続を確認し、再試行してください。VPNやプロキシを使用している場合は、一時的に無効にしてみてください。<br>
+              <br>
+              U-202: ダウンロードしたファイルが見つからない<br>
+              → ディスクの空き容量を確認してください。空き容量が不足している場合があります。<br>
+              <br>
+              U-203: ファイルの整合性チェック（SHA256）に失敗<br>
+              → ダウンロードが途中で破損した可能性があります。再試行してください。繰り返す場合はGitHubから手動でダウンロードしてください。
+              <br><br>
+              <strong>■ インストール - ZIP（U-3xx）</strong><br>
+              U-301: ZIPファイルの展開に失敗<br>
+              → ディスクの空き容量を確認してください。また、一時ファイルの書き込み権限に問題がないか確認してください。<br>
+              <br>
+              U-302: ZIP内にアプリが見つからない<br>
+              → ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。<br>
+              <br>
+              U-303: インストールの準備中にエラー<br>
+              → 再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。
+              <br><br>
+              <strong>■ インストール - DMG（U-4xx）</strong><br>
+              U-401: DMGファイルのマウントに失敗<br>
+              → ディスクの空き容量を確認してください。他のDMGファイルが大量にマウントされている場合はアンマウントしてください。<br>
+              <br>
+              U-402: DMG内にアプリが見つからない<br>
+              → ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。<br>
+              <br>
+              U-403: インストールの準備中にエラー<br>
+              → 再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。
+              <br><br>
+              <strong>■ 置換・再起動（U-5xx）</strong><br>
+              U-501: 現在のアプリの場所を特定できない<br>
+              → Sobani.appがアプリケーションフォルダに正しく配置されているか確認してください。<br>
+              <br>
+              U-502: バックアップの作成に失敗<br>
+              → アプリケーションフォルダへの書き込み権限を確認してください。ディスクの空き容量も確認してください。<br>
+              <br>
+              U-503: アプリの置換に失敗<br>
+              → アプリケーションフォルダへの書き込み権限を確認してください。Sobaniが他のプロセスで使用されていないか確認してください。バックアップから自動的に復元されます。
+              <br><br>
+              問題が解決しない場合は、エラーコードを添えて<a href="https://github.com/shiroemons/sobani/issues" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 underline">GitHubのIssuesページ</a>で報告してください。
+            </div>
+          </details>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- フッター -->
+  <footer class="border-t border-slate-200 dark:border-slate-700">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="text-center space-y-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">&copy; 2026 Sobani. MIT License.</p>
+        <div>
+          <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-sm text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
+            <svg class="w-5 h-5 mr-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    var translations = {
+      ja: {
+        meta: {
+          title: "FAQ - Sobani",
+          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。",
+          keywords: "Sobani,FAQ,よくある質問,macOS,デスクトップマスコット,インストール,使い方,トラブルシューティング"
+        },
+        nav: {
+          features: "特長",
+          howto: "使い方",
+          comparison: "比較",
+          download: "ダウンロード",
+          themeToggle: "テーマ切替",
+          openMenu: "メニューを開く",
+          mainNav: "メインナビゲーション",
+          mobileNav: "モバイルナビゲーション",
+          langSwitch: "EN",
+          faq: "FAQ"
+        },
+        faq: {
+          pageTitle: "よくある質問",
+          pageSubtitle: "Sobaniについてよく寄せられる質問と回答をまとめました。",
+          categoryOverview: "概要",
+          categorySetup: "導入",
+          categoryUsage: "操作",
+          categoryData: "データ",
+          categoryUpdate: "アップデート",
+          categoryTroubleshooting: "トラブルシューティング",
+          q1: "Sobaniとは何ですか？",
+          a1: "Sobaniは、お気に入りの画像をアクリルスタンドのようにMacのデスクトップに飾れる無料のmacOSアプリです。透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。",
+          q2: "対応している画像形式は？",
+          a2: "PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。",
+          q3: "インストール方法は？",
+          a3: '2つの方法でインストールできます。<br><br><strong>Homebrew（推奨）</strong><br>ターミナルで以下のコマンドを実行してください。<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="コピー" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>手動ダウンロード</strong><br><a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">ダウンロードページ</a>からSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。<br><br>Mac App Storeでは配布していません。',
+          copyTooltip: "コピー",
+          q4: "動作環境は？",
+          a4: "macOS 13.0（Ventura）以降が必要です。Intel Mac と Apple Silicon（M1/M2/M3/M4）の両方に対応したユニバーサルバイナリです。",
+          q5: "無料ですか？",
+          a5: "はい、Sobaniは完全無料です。MIT ライセンスのオープンソースソフトウェアとして公開されており、誰でも自由に使用できます。",
+          q6: "アンインストール方法は？",
+          a6: "Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。",
+          q7: "画像の追加・変更方法は？",
+          a7: "メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。",
+          q8: "キーボードショートカットは？",
+          a8: "Option + H で全ウィンドウの表示/非表示を切り替えられます。Option + ドラッグで全ウィンドウを同時に移動、Option + スクロールで全ウィンドウを同時にリサイズできます。",
+          q9: "非表示にしたウィンドウを再表示するには？",
+          a9: "Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。",
+          q10: "データはどこに保存されますか？",
+          a10: "すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。外部サーバーへのデータ送信は一切ありません。",
+          q11: "プライバシーについて",
+          a11: "Sobaniはネットワーク通信をアップデート確認（GitHub API）のみに使用します。ユーザーの画像やデータを外部に送信することはありません。すべてのデータはローカルに保存されます。",
+          q12: "自動アップデートはありますか？",
+          a12: "はい。起動時と24時間ごとにGitHub Releasesを確認し、新しいバージョンがあれば通知します。アップデートはSHA256チェックサムで検証された安全なものだけが適用されます。",
+          q13: "モニター切断/スリープ後にウィンドウが移動した",
+          a13: "Sobaniは3段階の復元システムを備えています。モニターの切断やスリープ/復帰時にウィンドウ位置を自動的に復元します。モニターが再接続されると、元の位置に戻ります。復元されない場合は、5分以内にモニターを再接続してください。",
+          q14: "画像が表示されない",
+          a14: "画像が表示されない場合は、以下を確認してください。<br><br>・対応形式（PNG, JPEG, GIF, TIFF, HEIC）のファイルであること<br>・ファイルが破損していないこと（他のアプリで開けるか確認）<br>・Option + H で非表示になっていないか（メニューバーの Sobani アイコンから「すべて表示」を選択）<br><br>透過PNG画像を使用すると、背景が透明になり画像だけがデスクトップに表示されます。",
+          q15: "アップデートに失敗する",
+          a15: "アップデートに失敗する場合は、以下を確認してください。<br><br>・インターネットに接続されていること<br>・GitHubにアクセスできること（VPNやプロキシを使用している場合は一時的に無効にする）<br>・ディスクの空き容量が十分にあること<br>・アプリケーションフォルダへの書き込み権限があること<br><br>エラーコードが表示された場合は、上記の「エラーコードの意味は？」を参照してください。問題が解決しない場合は、<a href=\"https://github.com/shiroemons/sobani/issues\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-amber-600 dark:text-amber-400 underline\">GitHubのIssuesページ</a>で報告してください。",
+          q16: "エラーコードの意味は？",
+          a16: "アップデート時にエラーが発生すると、エラーコードが表示されます。以下を参考に対処してください。<br><br><strong>■ チェック（U-1xx）</strong><br>U-101: ネットワーク接続エラー<br>→ インターネット接続を確認してください。Wi-Fiやルーターの再起動も有効です。<br><br>U-102: サーバーからのデータ取得失敗<br>→ GitHubのサーバーが一時的に不安定な可能性があります。しばらく待ってから再試行してください。<br><br>U-103: バージョン情報の解析エラー<br>→ しばらく待ってから再試行してください。繰り返し発生する場合はIssuesで報告してください。<br><br><strong>■ ダウンロード（U-2xx）</strong><br>U-201: ダウンロード中のネットワークエラー<br>→ インターネット接続を確認し、再試行してください。VPNやプロキシを使用している場合は、一時的に無効にしてみてください。<br><br>U-202: ダウンロードしたファイルが見つからない<br>→ ディスクの空き容量を確認してください。空き容量が不足している場合があります。<br><br>U-203: ファイルの整合性チェック（SHA256）に失敗<br>→ ダウンロードが途中で破損した可能性があります。再試行してください。繰り返す場合はGitHubから手動でダウンロードしてください。<br><br><strong>■ インストール - ZIP（U-3xx）</strong><br>U-301: ZIPファイルの展開に失敗<br>→ ディスクの空き容量を確認してください。また、一時ファイルの書き込み権限に問題がないか確認してください。<br><br>U-302: ZIP内にアプリが見つからない<br>→ ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。<br><br>U-303: インストールの準備中にエラー<br>→ 再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。<br><br><strong>■ インストール - DMG（U-4xx）</strong><br>U-401: DMGファイルのマウントに失敗<br>→ ディスクの空き容量を確認してください。他のDMGファイルが大量にマウントされている場合はアンマウントしてください。<br><br>U-402: DMG内にアプリが見つからない<br>→ ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。<br><br>U-403: インストールの準備中にエラー<br>→ 再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。<br><br><strong>■ 置換・再起動（U-5xx）</strong><br>U-501: 現在のアプリの場所を特定できない<br>→ Sobani.appがアプリケーションフォルダに正しく配置されているか確認してください。<br><br>U-502: バックアップの作成に失敗<br>→ アプリケーションフォルダへの書き込み権限を確認してください。ディスクの空き容量も確認してください。<br><br>U-503: アプリの置換に失敗<br>→ アプリケーションフォルダへの書き込み権限を確認してください。Sobaniが他のプロセスで使用されていないか確認してください。バックアップから自動的に復元されます。<br><br>問題が解決しない場合は、エラーコードを添えて<a href=\"https://github.com/shiroemons/sobani/issues\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-amber-600 dark:text-amber-400 underline\">GitHubのIssuesページ</a>で報告してください。"
+        }
+      },
+      en: {
+        meta: {
+          title: "FAQ - Sobani",
+          description: "Frequently asked questions about Sobani. Covers installation, usage, troubleshooting, and more.",
+          keywords: "Sobani,FAQ,frequently asked questions,macOS,desktop mascot,installation,usage,troubleshooting"
+        },
+        nav: {
+          features: "Features",
+          howto: "How to Use",
+          comparison: "Comparison",
+          download: "Download",
+          themeToggle: "Toggle theme",
+          openMenu: "Open menu",
+          mainNav: "Main navigation",
+          mobileNav: "Mobile navigation",
+          langSwitch: "\u65e5\u672c\u8a9e",
+          faq: "FAQ"
+        },
+        faq: {
+          pageTitle: "Frequently Asked Questions",
+          pageSubtitle: "Find answers to common questions about Sobani.",
+          categoryOverview: "Overview",
+          categorySetup: "Getting Started",
+          categoryUsage: "Usage",
+          categoryData: "Data",
+          categoryUpdate: "Updates",
+          categoryTroubleshooting: "Troubleshooting",
+          q1: "What is Sobani?",
+          a1: "Sobani is a free macOS app that lets you display your favorite images on your Mac desktop like acrylic stands. It shows images with a transparent background, always on top across all virtual desktops. Built natively in Swift with zero external dependencies, it runs extremely lightweight.",
+          q2: "What image formats are supported?",
+          a2: "Sobani supports PNG, JPEG (JPG), GIF, TIFF, and HEIC formats. Using transparent PNG images allows the background to be invisible, displaying only the image on your desktop.",
+          q3: "How do I install Sobani?",
+          a3: 'There are two ways to install Sobani.<br><br><strong>Homebrew (Recommended)</strong><br>Run the following command in Terminal:<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Copy" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>Manual Download</strong><br>Download Sobani-universal.dmg from the <a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">download page</a>, open it, and drag Sobani.app to your Applications folder.<br><br>Not available on the Mac App Store.',
+          copyTooltip: "Copy",
+          q4: "What are the system requirements?",
+          a4: "Requires macOS 13.0 (Ventura) or later. It is a universal binary supporting both Intel Mac and Apple Silicon (M1/M2/M3/M4).",
+          q5: "Is it free?",
+          a5: "Yes, Sobani is completely free. It is released as open source software under the MIT License, and anyone can use it freely.",
+          q6: "How do I uninstall Sobani?",
+          a6: "Move Sobani.app to the Trash. Settings and data are stored in the ~/Library/Application Support/Sobani/ folder. To completely remove all data, delete this folder as well.",
+          q7: "How do I add or change images?",
+          a7: "Click the Sobani icon in the menu bar and select an image from \"Add Image.\" You can also right-click a displayed image and choose \"Change Image\" to replace it with a different one.",
+          q8: "What keyboard shortcuts are available?",
+          a8: "Option + H toggles the visibility of all windows. Option + drag moves all windows simultaneously, and Option + scroll resizes all windows at once.",
+          q9: "How do I show hidden windows again?",
+          a9: "After hiding windows with Option + H, if focus has moved to another application, pressing Option + H again may not show them. In that case, click the Sobani icon in the menu bar and select \"Show All.\" Menu bar operations work reliably regardless of which application has focus.",
+          q10: "Where is my data stored?",
+          a10: "All data is stored in ~/Library/Application Support/Sobani/. Registered images are in the images/ folder, and window states are saved in window_states.json. No data is ever sent to external servers.",
+          q11: "About privacy",
+          a11: "Sobani uses network communication only for update checks (GitHub API). It never sends your images or data externally. All data is stored locally.",
+          q12: "Is there automatic updating?",
+          a12: "Yes. Sobani checks GitHub Releases on launch and every 24 hours. If a new version is available, you will be notified. Only updates verified with SHA256 checksums are applied.",
+          q13: "Windows moved after monitor disconnection or sleep",
+          a13: "Sobani has a three-phase restoration system. It automatically restores window positions when monitors are disconnected or after sleep/wake cycles. Windows return to their original positions when the monitor is reconnected. If not restored, please reconnect the monitor within 5 minutes.",
+          q14: "Images are not displaying",
+          a14: "If images are not displaying, please check the following:<br><br>• The file is in a supported format (PNG, JPEG, GIF, TIFF, HEIC)<br>• The file is not corrupted (try opening it in another app)<br>• Windows are not hidden via Option + H (click the Sobani icon in the menu bar and select \"Show All\")<br><br>Using transparent PNG images will make the background invisible, displaying only the image on your desktop.",
+          q15: "Updates are failing",
+          a15: "If updates are failing, please check the following:<br><br>• You are connected to the internet<br>• GitHub is accessible (if using a VPN or proxy, try disabling it temporarily)<br>• You have enough free disk space<br>• You have write permissions to the Applications folder<br><br>If an error code is displayed, refer to \"What do the error codes mean?\" above. If the problem persists, please report it on the <a href=\"https://github.com/shiroemons/sobani/issues\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-amber-600 dark:text-amber-400 underline\">GitHub Issues page</a>.",
+          q16: "What do the error codes mean?",
+          a16: "When an error occurs during an update, an error code is displayed. Refer to the following for troubleshooting.<br><br><strong>■ Check (U-1xx)</strong><br>U-101: Network connection error<br>→ Check your internet connection. Restarting Wi-Fi or your router may help.<br><br>U-102: Failed to fetch data from the server<br>→ GitHub servers may be temporarily unstable. Wait a moment and try again.<br><br>U-103: Failed to parse version information<br>→ Wait a moment and try again. If this persists, please report it on Issues.<br><br><strong>■ Download (U-2xx)</strong><br>U-201: Network error during download<br>→ Check your internet connection and try again. If you are using a VPN or proxy, try disabling it temporarily.<br><br>U-202: Downloaded file not found<br>→ Check your available disk space. There may not be enough free space.<br><br>U-203: File integrity check (SHA256) failed<br>→ The download may have been corrupted. Try again. If the problem persists, download manually from GitHub.<br><br><strong>■ Install - ZIP (U-3xx)</strong><br>U-301: Failed to extract ZIP file<br>→ Check your available disk space and ensure you have write permissions for temporary files.<br><br>U-302: App not found in ZIP<br>→ The download may be corrupted. Try again or download manually from GitHub.<br><br>U-303: Error during installation preparation<br>→ Try again. If the problem continues, download and install manually from GitHub.<br><br><strong>■ Install - DMG (U-4xx)</strong><br>U-401: Failed to mount DMG file<br>→ Check your available disk space. If many DMG files are mounted, unmount some of them.<br><br>U-402: App not found in DMG<br>→ The download may be corrupted. Try again or download manually from GitHub.<br><br>U-403: Error during installation preparation<br>→ Try again. If the problem continues, download and install manually from GitHub.<br><br><strong>■ Replace &amp; Restart (U-5xx)</strong><br>U-501: Unable to locate the current app<br>→ Verify that Sobani.app is correctly placed in the Applications folder.<br><br>U-502: Failed to create backup<br>→ Check write permissions for the Applications folder. Also check available disk space.<br><br>U-503: Failed to replace the app<br>→ Check write permissions for the Applications folder. Ensure Sobani is not being used by another process. The previous version will be automatically restored from backup.<br><br>If the problem persists, please report it with the error code on the <a href=\"https://github.com/shiroemons/sobani/issues\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-amber-600 dark:text-amber-400 underline\">GitHub Issues page</a>."
+        }
+      }
+    };
+  </script>
+
+  <script>
+    // モバイルメニュー
+    var menuBtn = document.getElementById('mobile-menu-btn');
+    var mobileMenu = document.getElementById('mobile-menu');
+    var iconOpen = document.getElementById('menu-icon-open');
+    var iconClose = document.getElementById('menu-icon-close');
+
+    menuBtn.addEventListener('click', function() {
+      var isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+      menuBtn.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    // モバイルメニュー内のリンクをクリックしたら閉じる
+    var mobileLinks = mobileMenu.querySelectorAll('a');
+    for (var i = 0; i < mobileLinks.length; i++) {
+      mobileLinks[i].addEventListener('click', function() {
+        mobileMenu.classList.add('hidden');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    // テーマ切替（ライト → ダーク → システム → ライト...）
+    function getEffectiveTheme() {
+      var theme = localStorage.getItem('theme');
+      if (!theme || theme === 'system') return 'system';
+      return theme;
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        // system
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+      updateThemeIcons(theme);
+    }
+
+    function updateThemeIcons(theme) {
+      var icons = document.querySelectorAll('.theme-icon-light, .theme-icon-dark, .theme-icon-system');
+      for (var i = 0; i < icons.length; i++) {
+        icons[i].classList.add('hidden');
+      }
+      var showClass = 'theme-icon-' + theme;
+      var targets = document.querySelectorAll('.' + showClass);
+      for (var i = 0; i < targets.length; i++) {
+        targets[i].classList.remove('hidden');
+      }
+    }
+
+    function cycleTheme() {
+      var current = getEffectiveTheme();
+      var next;
+      if (current === 'light') next = 'dark';
+      else if (current === 'dark') next = 'system';
+      else next = 'light';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+    }
+
+    // 初期化
+    applyTheme(getEffectiveTheme());
+
+    // システムテーマ変更を監視
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+      if (getEffectiveTheme() === 'system') {
+        applyTheme('system');
+      }
+    });
+
+    document.getElementById('theme-toggle').addEventListener('click', cycleTheme);
+    document.getElementById('theme-toggle-mobile').addEventListener('click', cycleTheme);
+
+    // Language switching
+    function getLanguage() {
+      var saved = localStorage.getItem('lang');
+      if (saved) return saved;
+      var browserLang = (navigator.language || 'ja').toLowerCase();
+      return browserLang.startsWith('ja') ? 'ja' : 'en';
+    }
+
+    function applyLanguage(lang) {
+      document.documentElement.lang = lang;
+
+      // Update meta tags
+      var t = translations[lang];
+      document.title = t.meta.title;
+      document.querySelector('meta[name="description"]').setAttribute('content', t.meta.description);
+      document.querySelector('meta[name="keywords"]').setAttribute('content', t.meta.keywords);
+      document.querySelector('meta[property="og:title"]').setAttribute('content', t.meta.title);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', t.meta.description);
+      document.querySelector('meta[property="og:locale"]').setAttribute('content', lang === 'ja' ? 'ja_JP' : 'en_US');
+      document.querySelector('meta[name="twitter:title"]').setAttribute('content', t.meta.title);
+      document.querySelector('meta[name="twitter:description"]').setAttribute('content', t.meta.description);
+
+      // Update data-i18n elements (textContent)
+      var elems = document.querySelectorAll('[data-i18n]');
+      for (var i = 0; i < elems.length; i++) {
+        var key = elems[i].getAttribute('data-i18n');
+        var val = getNestedValue(t, key);
+        if (val !== undefined) {
+          elems[i].textContent = val;
+          if (val === '') {
+            elems[i].setAttribute('hidden', '');
+          } else {
+            elems[i].removeAttribute('hidden');
+          }
+        }
+      }
+
+      // Update data-i18n-html elements (innerHTML)
+      var htmlElems = document.querySelectorAll('[data-i18n-html]');
+      for (var i = 0; i < htmlElems.length; i++) {
+        var key = htmlElems[i].getAttribute('data-i18n-html');
+        var val = getNestedValue(t, key);
+        if (val !== undefined) {
+          htmlElems[i].innerHTML = val;
+        }
+      }
+
+      // Update data-i18n-attr elements (attributes)
+      var attrElems = document.querySelectorAll('[data-i18n-attr]');
+      for (var i = 0; i < attrElems.length; i++) {
+        var pairs = attrElems[i].getAttribute('data-i18n-attr').split(',');
+        for (var j = 0; j < pairs.length; j++) {
+          var parts = pairs[j].split(':');
+          var attrName = parts[0].trim();
+          var key = parts[1].trim();
+          var val = getNestedValue(t, key);
+          if (val !== undefined) attrElems[i].setAttribute(attrName, val);
+        }
+      }
+    }
+
+    function getNestedValue(obj, path) {
+      var parts = path.split('.');
+      var current = obj;
+      for (var i = 0; i < parts.length; i++) {
+        if (current === undefined || current === null) return undefined;
+        current = current[parts[i]];
+      }
+      return current;
+    }
+
+    function toggleLanguage() {
+      var next = getLanguage() === 'ja' ? 'en' : 'ja';
+      localStorage.setItem('lang', next);
+      applyLanguage(next);
+    }
+
+    function copyBrewCommand(btn) {
+      navigator.clipboard.writeText('brew install --cask shiroemons/tap/sobani').then(function() {
+        var svg = btn.querySelector('svg');
+        var original = svg.innerHTML;
+        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+        setTimeout(function() { svg.innerHTML = original; }, 1500);
+      });
+    }
+
+    // Language initialization
+    applyLanguage(getLanguage());
+
+    document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
+    document.getElementById('lang-toggle-mobile').addEventListener('click', toggleLanguage);
+  </script>
+
+</body>
+</html>
