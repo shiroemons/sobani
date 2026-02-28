@@ -14,9 +14,9 @@
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <title>FAQ - Sobani</title>
-  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。">
+  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。">
   <meta property="og:title" content="FAQ - Sobani">
-  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。">
+  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。">
   <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -25,11 +25,11 @@
   <meta property="og:site_name" content="Sobani">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:title" content="FAQ - Sobani">
-  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。">
+  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta name="theme-color" content="#f59e0b">
   <meta name="author" content="shiroemons">
-  <meta name="keywords" content="Sobani,FAQ,よくある質問,macOS,デスクトップマスコット,インストール,使い方,トラブルシューティング">
+  <meta name="keywords" content="Sobani,FAQ,よくある質問,macOS,デスクトップアクスタ,デスクトップマスコット,インストール,使い方,カスタマイズ,トラブルシューティング,画像表示">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192.png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
@@ -77,15 +77,7 @@
         "name": "Sobaniとは何ですか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Sobaniは、お気に入りの画像をアクリルスタンドのようにMacのデスクトップに飾れる無料のmacOSアプリです。透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。"
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "対応している画像形式は？",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。"
+          "text": "Sobaniは、お気に入りの画像を「デスクトップアクスタ」としてMacの画面に飾れる無料のmacOSアプリです。実物のアクリルスタンドのように、透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。"
         }
       },
       {
@@ -114,10 +106,18 @@
       },
       {
         "@type": "Question",
-        "name": "アンインストール方法は？",
+        "name": "Dockにアイコンが表示されないのはなぜですか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。"
+          "text": "Sobaniはメニューバー常駐型アプリとして設計されています。Dockにアイコンを表示せず、画面上部のメニューバーにアイコンが表示されます。これにより、Dockのスペースを消費せず、デスクトップアクスタとしての役割に集中できます。すべての操作はメニューバーのアイコンまたは画像の右クリックメニューから行えます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "起動時に自動的に立ち上げるには？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "メニューバーのSobaniアイコンをクリックし、「ログイン時に起動」にチェックを入れてください。次回のMac起動時からSobaniが自動的に立ち上がり、前回終了時のウィンドウ配置が復元されます。"
         }
       },
       {
@@ -126,6 +126,22 @@
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "対応している画像形式は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "複数の画像を同時に表示できますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。"
         }
       },
       {
@@ -146,10 +162,42 @@
       },
       {
         "@type": "Question",
+        "name": "画像の回転や不透明度を調整するには？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "表示中の画像を右クリックし、「調整」を選択すると調整パネルが表示されます。回転ダイヤル（0〜360度、5度刻み）と不透明度スライダー（10%〜100%）でリアルタイムに調整できます。設定はアプリ終了時に自動保存されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "画像の最大表示サイズが6000pxなのはなぜですか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "macOSはGPUを使って画像を高速に描画しますが、GPUのテクスチャサイズには上限があります（Intel Macでは8,192px）。Sobaniは画像の回転表示に対応しており、回転時のバウンディングボックスは元のサイズより大きくなります。6000pxであれば回転してもGPUの処理範囲内に収まるため、すべてのMacで滑らかに動作します。GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作する設計上の最適値です。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "動画ファイル（MP4等）には対応していますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobaniは「デスクトップアクスタ」をコンセプトとしたアプリです。実物のアクリルスタンドと同じように、お気に入りの画像をそのままデスクトップに飾ることを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。"
+        }
+      },
+      {
+        "@type": "Question",
         "name": "データはどこに保存されますか？",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。外部サーバーへのデータ送信は一切ありません。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "アプリ終了後にウィンドウの配置は保存されますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい。ウィンドウの位置、サイズ、表示画像、回転角度、不透明度、左右反転、表示順序がすべて自動的に保存されます。次回起動時に前回の状態がそのまま復元されます。"
         }
       },
       {
@@ -162,10 +210,34 @@
       },
       {
         "@type": "Question",
+        "name": "アンインストール方法は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。"
+        }
+      },
+      {
+        "@type": "Question",
         "name": "自動アップデートはありますか？",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "はい。起動時と24時間ごとにGitHub Releasesを確認し、新しいバージョンがあれば通知します。アップデートはSHA256チェックサムで検証された安全なものだけが適用されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "アップデートに失敗する",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "アップデートに失敗する場合は、以下を確認してください。インターネットに接続されていること。GitHubにアクセスできること（VPNやプロキシを使用している場合は一時的に無効にする）。ディスクの空き容量が十分にあること。アプリケーションフォルダへの書き込み権限があること。エラーコードが表示された場合は「エラーコードの意味は？」を参照してください。問題が解決しない場合は、GitHubのIssuesページで報告してください。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "「開発元が未確認」と表示されて起動できない",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "macOSのGatekeeper機能によるものです。Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。Homebrewでインストールした場合はこの問題は発生しません。"
         }
       },
       {
@@ -186,26 +258,10 @@
       },
       {
         "@type": "Question",
-        "name": "アップデートに失敗する",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "アップデートに失敗する場合は、以下を確認してください。インターネットに接続されていること。GitHubにアクセスできること（VPNやプロキシを使用している場合は一時的に無効にする）。ディスクの空き容量が十分にあること。アプリケーションフォルダへの書き込み権限があること。エラーコードが表示された場合は「エラーコードの意味は？」を参照してください。問題が解決しない場合は、GitHubのIssuesページで報告してください。"
-        }
-      },
-      {
-        "@type": "Question",
         "name": "エラーコードの意味は？",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "アップデート時にエラーが発生すると、エラーコードが表示されます。チェック（U-1xx）: U-101 ネットワーク接続エラー、U-102 サーバーからのデータ取得失敗、U-103 バージョン情報の解析エラー。ダウンロード（U-2xx）: U-201 ダウンロード中のネットワークエラー、U-202 ダウンロードしたファイルが見つからない、U-203 ファイルの整合性チェック失敗。インストール - ZIP（U-3xx）: U-301 ZIP展開失敗、U-302 ZIP内にアプリなし、U-303 準備中のエラー。インストール - DMG（U-4xx）: U-401 DMGマウント失敗、U-402 DMG内にアプリなし、U-403 準備中のエラー。置換・再起動（U-5xx）: U-501 アプリの場所不明、U-502 バックアップ失敗、U-503 置換失敗。問題が解決しない場合は、エラーコードを添えてGitHubのIssuesページで報告してください。"
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "画像の最大表示サイズが6000pxなのはなぜですか？",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "macOSはGPUを使って画像を高速に描画しますが、GPUのテクスチャサイズには上限があります（Intel Macでは8,192px）。Sobaniは画像の回転表示に対応しており、回転時のバウンディングボックスは元のサイズより大きくなります。6000pxであれば回転してもGPUの処理範囲内に収まるため、すべてのMacで滑らかに動作します。GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作する設計上の最適値です。"
         }
       }
     ]
@@ -299,30 +355,16 @@
     <!-- FAQ セクション -->
     <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-12">
 
-      <!-- 概要 -->
+      <!-- はじめに -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryOverview">概要</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryGettingStarted">はじめに</h2>
         <div class="space-y-3">
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q1">Sobaniとは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a1">Sobaniは、お気に入りの画像をアクリルスタンドのようにMacのデスクトップに飾れる無料のmacOSアプリです。透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。</div>
-          </details>
-        </div>
-      </div>
-
-      <!-- 導入 -->
-      <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categorySetup">導入</h2>
-        <div class="space-y-3">
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q2">対応している画像形式は？</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a2">PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a1">Sobaniは、お気に入りの画像を「デスクトップアクスタ」としてMacの画面に飾れる無料のmacOSアプリです。実物のアクリルスタンドのように、透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -351,17 +393,25 @@
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q6">アンインストール方法は？</span>
+              <span data-i18n="faq.q18">Dockにアイコンが表示されないのはなぜですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a6">Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a18">Sobaniはメニューバー常駐型アプリとして設計されています。Dockにアイコンを表示せず、画面上部のメニューバーにアイコンが表示されます。これにより、Dockのスペースを消費せず、デスクトップアクスタとしての役割に集中できます。すべての操作はメニューバーのアイコンまたは画像の右クリックメニューから行えます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q19">起動時に自動的に立ち上げるには？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a19">メニューバーのSobaniアイコンをクリックし、「ログイン時に起動」にチェックを入れてください。次回のMac起動時からSobaniが自動的に立ち上がり、前回終了時のウィンドウ配置が復元されます。</div>
           </details>
         </div>
       </div>
 
-      <!-- 操作 -->
+      <!-- 操作・カスタマイズ -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUsage">操作</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUsage">操作・カスタマイズ</h2>
         <div class="space-y-3">
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
@@ -369,6 +419,22 @@
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a7">メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q2">対応している画像形式は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a2">PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q20">複数の画像を同時に表示できますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a20">はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -386,12 +452,36 @@
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a9">Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。</div>
           </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q21">画像の回転や不透明度を調整するには？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a21">表示中の画像を右クリックし、「調整」を選択すると調整パネルが表示されます。回転ダイヤル（0〜360度、5度刻み）と不透明度スライダー（10%〜100%）でリアルタイムに調整できます。設定はアプリ終了時に自動保存されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q17">画像の最大表示サイズが6000pxなのはなぜですか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a17">Sobaniでは画像の回転表示に対応しているため、回転時に生成される外接矩形（バウンディングボックス）が元の画像サイズよりも大きくなります。macOSはGPUを使って画像を高速に描画しますが、GPUが一度に処理できるテクスチャサイズには上限があります（Intel Macでは8,192px）。6000pxの画像であれば、一般的な縦長の画像を任意の角度に回転してもGPUの処理範囲内に収まるため、Intel Mac・Apple Siliconの両方ですべての操作が滑らかに動作します。この値は、GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作するよう設計された上限値です。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q22">動画ファイル（MP4等）には対応していますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a22">Sobaniは「デスクトップアクスタ」をコンセプトとしたアプリです。実物のアクリルスタンドと同じように、お気に入りの画像をそのままデスクトップに飾ることを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。</div>
+          </details>
         </div>
       </div>
 
-      <!-- データ -->
+      <!-- データとプライバシー -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryData">データ</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryDataPrivacy">データとプライバシー</h2>
         <div class="space-y-3">
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
@@ -403,10 +493,26 @@
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q23">アプリ終了後にウィンドウの配置は保存されますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a23">はい。ウィンドウの位置、サイズ、表示画像、回転角度、不透明度、左右反転、表示順序がすべて自動的に保存されます。次回起動時に前回の状態がそのまま復元されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q11">プライバシーについて</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a11">Sobaniはネットワーク通信をアップデート確認（GitHub API）のみに使用します。ユーザーの画像やデータを外部に送信することはありません。すべてのデータはローカルに保存されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q6">アンインストール方法は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a6">Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。</div>
           </details>
         </div>
       </div>
@@ -422,6 +528,14 @@
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a12">はい。起動時と24時間ごとにGitHub Releasesを確認し、新しいバージョンがあれば通知します。アップデートはSHA256チェックサムで検証された安全なものだけが適用されます。</div>
           </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q15">アップデートに失敗する</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a15">アップデートに失敗する場合は、以下を確認してください。<br><br>・インターネットに接続されていること<br>・GitHubにアクセスできること（VPNやプロキシを使用している場合は一時的に無効にする）<br>・ディスクの空き容量が十分にあること<br>・アプリケーションフォルダへの書き込み権限があること<br><br>エラーコードが表示された場合は、上記の「エラーコードの意味は？」を参照してください。問題が解決しない場合は、<a href="https://github.com/shiroemons/sobani/issues" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 underline">GitHubのIssuesページ</a>で報告してください。</div>
+          </details>
         </div>
       </div>
 
@@ -429,6 +543,14 @@
       <div>
         <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryTroubleshooting">トラブルシューティング</h2>
         <div class="space-y-3">
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q24">「開発元が未確認」と表示されて起動できない</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a24">macOSのGatekeeper機能によるものです。Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。<br><br>Homebrewでインストールした場合はこの問題は発生しません。</div>
+          </details>
+
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q13">モニター切断/スリープ後にウィンドウが移動した</span>
@@ -443,14 +565,6 @@
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a14">画像が表示されない場合は、以下を確認してください。<br><br>・対応形式（PNG, JPEG, GIF, TIFF, HEIC）のファイルであること<br>・ファイルが破損していないこと（他のアプリで開けるか確認）<br>・Option + H で非表示になっていないか（メニューバーの Sobani アイコンから「すべて表示」を選択）<br><br>透過PNG画像を使用すると、背景が透明になり画像だけがデスクトップに表示されます。</div>
-          </details>
-
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q15">アップデートに失敗する</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a15">アップデートに失敗する場合は、以下を確認してください。<br><br>・インターネットに接続されていること<br>・GitHubにアクセスできること（VPNやプロキシを使用している場合は一時的に無効にする）<br>・ディスクの空き容量が十分にあること<br>・アプリケーションフォルダへの書き込み権限があること<br><br>エラーコードが表示された場合は、上記の「エラーコードの意味は？」を参照してください。問題が解決しない場合は、<a href="https://github.com/shiroemons/sobani/issues" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 underline">GitHubのIssuesページ</a>で報告してください。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -514,14 +628,6 @@
               問題が解決しない場合は、エラーコードを添えて<a href="https://github.com/shiroemons/sobani/issues" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 underline">GitHubのIssuesページ</a>で報告してください。
             </div>
           </details>
-
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q17">画像の最大表示サイズが6000pxなのはなぜですか？</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a17">Sobaniでは画像の回転表示に対応しているため、回転時に生成される外接矩形（バウンディングボックス）が元の画像サイズよりも大きくなります。macOSはGPUを使って画像を高速に描画しますが、GPUが一度に処理できるテクスチャサイズには上限があります（Intel Macでは8,192px）。6000pxの画像であれば、一般的な縦長の画像を任意の角度に回転してもGPUの処理範囲内に収まるため、Intel Mac・Apple Siliconの両方ですべての操作が滑らかに動作します。この値は、GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作するよう設計された上限値です。</div>
-          </details>
         </div>
       </div>
 
@@ -548,8 +654,8 @@
       ja: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、トラブルシューティングなどを掲載。",
-          keywords: "Sobani,FAQ,よくある質問,macOS,デスクトップマスコット,インストール,使い方,トラブルシューティング"
+          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。",
+          keywords: "Sobani,FAQ,よくある質問,macOS,デスクトップアクスタ,デスクトップマスコット,インストール,使い方,カスタマイズ,トラブルシューティング,画像表示"
         },
         nav: {
           features: "特長",
@@ -566,14 +672,13 @@
         faq: {
           pageTitle: "よくある質問",
           pageSubtitle: "Sobaniについてよく寄せられる質問と回答をまとめました。",
-          categoryOverview: "概要",
-          categorySetup: "導入",
-          categoryUsage: "操作",
-          categoryData: "データ",
+          categoryGettingStarted: "はじめに",
+          categoryUsage: "操作・カスタマイズ",
+          categoryDataPrivacy: "データとプライバシー",
           categoryUpdate: "アップデート",
           categoryTroubleshooting: "トラブルシューティング",
           q1: "Sobaniとは何ですか？",
-          a1: "Sobaniは、お気に入りの画像をアクリルスタンドのようにMacのデスクトップに飾れる無料のmacOSアプリです。透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。",
+          a1: "Sobaniは、お気に入りの画像を「デスクトップアクスタ」としてMacの画面に飾れる無料のmacOSアプリです。実物のアクリルスタンドのように、透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。",
           q2: "対応している画像形式は？",
           a2: "PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。",
           q3: "インストール方法は？",
@@ -606,14 +711,28 @@
           q16: "エラーコードの意味は？",
           a16: "アップデート時にエラーが発生すると、エラーコードが表示されます。以下を参考に対処してください。<br><br><strong>■ チェック（U-1xx）</strong><br>U-101: ネットワーク接続エラー<br>→ インターネット接続を確認してください。Wi-Fiやルーターの再起動も有効です。<br><br>U-102: サーバーからのデータ取得失敗<br>→ GitHubのサーバーが一時的に不安定な可能性があります。しばらく待ってから再試行してください。<br><br>U-103: バージョン情報の解析エラー<br>→ しばらく待ってから再試行してください。繰り返し発生する場合はIssuesで報告してください。<br><br><strong>■ ダウンロード（U-2xx）</strong><br>U-201: ダウンロード中のネットワークエラー<br>→ インターネット接続を確認し、再試行してください。VPNやプロキシを使用している場合は、一時的に無効にしてみてください。<br><br>U-202: ダウンロードしたファイルが見つからない<br>→ ディスクの空き容量を確認してください。空き容量が不足している場合があります。<br><br>U-203: ファイルの整合性チェック（SHA256）に失敗<br>→ ダウンロードが途中で破損した可能性があります。再試行してください。繰り返す場合はGitHubから手動でダウンロードしてください。<br><br><strong>■ インストール - ZIP（U-3xx）</strong><br>U-301: ZIPファイルの展開に失敗<br>→ ディスクの空き容量を確認してください。また、一時ファイルの書き込み権限に問題がないか確認してください。<br><br>U-302: ZIP内にアプリが見つからない<br>→ ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。<br><br>U-303: インストールの準備中にエラー<br>→ 再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。<br><br><strong>■ インストール - DMG（U-4xx）</strong><br>U-401: DMGファイルのマウントに失敗<br>→ ディスクの空き容量を確認してください。他のDMGファイルが大量にマウントされている場合はアンマウントしてください。<br><br>U-402: DMG内にアプリが見つからない<br>→ ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。<br><br>U-403: インストールの準備中にエラー<br>→ 再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。<br><br><strong>■ 置換・再起動（U-5xx）</strong><br>U-501: 現在のアプリの場所を特定できない<br>→ Sobani.appがアプリケーションフォルダに正しく配置されているか確認してください。<br><br>U-502: バックアップの作成に失敗<br>→ アプリケーションフォルダへの書き込み権限を確認してください。ディスクの空き容量も確認してください。<br><br>U-503: アプリの置換に失敗<br>→ アプリケーションフォルダへの書き込み権限を確認してください。Sobaniが他のプロセスで使用されていないか確認してください。バックアップから自動的に復元されます。<br><br>問題が解決しない場合は、エラーコードを添えて<a href=\"https://github.com/shiroemons/sobani/issues\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-amber-600 dark:text-amber-400 underline\">GitHubのIssuesページ</a>で報告してください。",
           q17: "画像の最大表示サイズが6000pxなのはなぜですか？",
-          a17: "Sobaniでは画像の回転表示に対応しているため、回転時に生成される外接矩形（バウンディングボックス）が元の画像サイズよりも大きくなります。macOSはGPUを使って画像を高速に描画しますが、GPUが一度に処理できるテクスチャサイズには上限があります（Intel Macでは8,192px）。6000pxの画像であれば、一般的な縦長の画像を任意の角度に回転してもGPUの処理範囲内に収まるため、Intel Mac・Apple Siliconの両方ですべての操作が滑らかに動作します。この値は、GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作するよう設計された上限値です。"
+          a17: "Sobaniでは画像の回転表示に対応しているため、回転時に生成される外接矩形（バウンディングボックス）が元の画像サイズよりも大きくなります。macOSはGPUを使って画像を高速に描画しますが、GPUが一度に処理できるテクスチャサイズには上限があります（Intel Macでは8,192px）。6000pxの画像であれば、一般的な縦長の画像を任意の角度に回転してもGPUの処理範囲内に収まるため、Intel Mac・Apple Siliconの両方ですべての操作が滑らかに動作します。この値は、GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作するよう設計された上限値です。",
+          q18: "Dockにアイコンが表示されないのはなぜですか？",
+          a18: "Sobaniはメニューバー常駐型アプリとして設計されています。Dockにアイコンを表示せず、画面上部のメニューバーにアイコンが表示されます。これにより、Dockのスペースを消費せず、デスクトップアクスタとしての役割に集中できます。すべての操作はメニューバーのアイコンまたは画像の右クリックメニューから行えます。",
+          q19: "起動時に自動的に立ち上げるには？",
+          a19: "メニューバーのSobaniアイコンをクリックし、「ログイン時に起動」にチェックを入れてください。次回のMac起動時からSobaniが自動的に立ち上がり、前回終了時のウィンドウ配置が復元されます。",
+          q20: "複数の画像を同時に表示できますか？",
+          a20: "はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。",
+          q21: "画像の回転や不透明度を調整するには？",
+          a21: "表示中の画像を右クリックし、「調整」を選択すると調整パネルが表示されます。回転ダイヤル（0〜360度、5度刻み）と不透明度スライダー（10%〜100%）でリアルタイムに調整できます。設定はアプリ終了時に自動保存されます。",
+          q22: "動画ファイル（MP4等）には対応していますか？",
+          a22: "Sobaniは「デスクトップアクスタ」をコンセプトとしたアプリです。実物のアクリルスタンドと同じように、お気に入りの画像をそのままデスクトップに飾ることを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。",
+          q23: "アプリ終了後にウィンドウの配置は保存されますか？",
+          a23: "はい。ウィンドウの位置、サイズ、表示画像、回転角度、不透明度、左右反転、表示順序がすべて自動的に保存されます。次回起動時に前回の状態がそのまま復元されます。",
+          q24: "「開発元が未確認」と表示されて起動できない",
+          a24: "macOSのGatekeeper機能によるものです。Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。<br><br>Homebrewでインストールした場合はこの問題は発生しません。"
         }
       },
       en: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Frequently asked questions about Sobani. Covers installation, usage, troubleshooting, and more.",
-          keywords: "Sobani,FAQ,frequently asked questions,macOS,desktop mascot,installation,usage,troubleshooting"
+          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 24 items total.",
+          keywords: "Sobani,FAQ,frequently asked questions,macOS,desktop acrylic stand,desktop mascot,installation,usage,customization,troubleshooting,image display"
         },
         nav: {
           features: "Features",
@@ -630,14 +749,13 @@
         faq: {
           pageTitle: "Frequently Asked Questions",
           pageSubtitle: "Find answers to common questions about Sobani.",
-          categoryOverview: "Overview",
-          categorySetup: "Getting Started",
-          categoryUsage: "Usage",
-          categoryData: "Data",
+          categoryGettingStarted: "Getting Started",
+          categoryUsage: "Usage & Customization",
+          categoryDataPrivacy: "Data & Privacy",
           categoryUpdate: "Updates",
           categoryTroubleshooting: "Troubleshooting",
           q1: "What is Sobani?",
-          a1: "Sobani is a free macOS app that lets you display your favorite images on your Mac desktop like acrylic stands. It shows images with a transparent background, always on top across all virtual desktops. Built natively in Swift with zero external dependencies, it runs extremely lightweight.",
+          a1: "Sobani is a free macOS app that lets you display your favorite images as \"desktop acrylic stands\" on your Mac. Like real acrylic stands, it shows images with a transparent background, always on top across all virtual desktops. Built natively in Swift with zero external dependencies, it runs extremely lightweight.",
           q2: "What image formats are supported?",
           a2: "Sobani supports PNG, JPEG (JPG), GIF, TIFF, and HEIC formats. Using transparent PNG images allows the background to be invisible, displaying only the image on your desktop.",
           q3: "How do I install Sobani?",
@@ -670,7 +788,21 @@
           q16: "What do the error codes mean?",
           a16: "When an error occurs during an update, an error code is displayed. Refer to the following for troubleshooting.<br><br><strong>■ Check (U-1xx)</strong><br>U-101: Network connection error<br>→ Check your internet connection. Restarting Wi-Fi or your router may help.<br><br>U-102: Failed to fetch data from the server<br>→ GitHub servers may be temporarily unstable. Wait a moment and try again.<br><br>U-103: Failed to parse version information<br>→ Wait a moment and try again. If this persists, please report it on Issues.<br><br><strong>■ Download (U-2xx)</strong><br>U-201: Network error during download<br>→ Check your internet connection and try again. If you are using a VPN or proxy, try disabling it temporarily.<br><br>U-202: Downloaded file not found<br>→ Check your available disk space. There may not be enough free space.<br><br>U-203: File integrity check (SHA256) failed<br>→ The download may have been corrupted. Try again. If the problem persists, download manually from GitHub.<br><br><strong>■ Install - ZIP (U-3xx)</strong><br>U-301: Failed to extract ZIP file<br>→ Check your available disk space and ensure you have write permissions for temporary files.<br><br>U-302: App not found in ZIP<br>→ The download may be corrupted. Try again or download manually from GitHub.<br><br>U-303: Error during installation preparation<br>→ Try again. If the problem continues, download and install manually from GitHub.<br><br><strong>■ Install - DMG (U-4xx)</strong><br>U-401: Failed to mount DMG file<br>→ Check your available disk space. If many DMG files are mounted, unmount some of them.<br><br>U-402: App not found in DMG<br>→ The download may be corrupted. Try again or download manually from GitHub.<br><br>U-403: Error during installation preparation<br>→ Try again. If the problem continues, download and install manually from GitHub.<br><br><strong>■ Replace &amp; Restart (U-5xx)</strong><br>U-501: Unable to locate the current app<br>→ Verify that Sobani.app is correctly placed in the Applications folder.<br><br>U-502: Failed to create backup<br>→ Check write permissions for the Applications folder. Also check available disk space.<br><br>U-503: Failed to replace the app<br>→ Check write permissions for the Applications folder. Ensure Sobani is not being used by another process. The previous version will be automatically restored from backup.<br><br>If the problem persists, please report it with the error code on the <a href=\"https://github.com/shiroemons/sobani/issues\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-amber-600 dark:text-amber-400 underline\">GitHub Issues page</a>.",
           q17: "Why is the maximum display size limited to 6000px?",
-          a17: "Sobani supports image rotation, which means the bounding box of a rotated image becomes larger than the original dimensions. macOS leverages GPU acceleration for rendering, but GPUs have a maximum texture size they can process in hardware (8,192px on Intel Macs). At 6000px, even typical portrait-oriented images rotated to any angle stay within the GPU's processing limits. This ensures smooth performance across both Intel and Apple Silicon Macs. The 6000px limit is an engineered optimum — maximizing display size while guaranteeing hardware-accelerated rendering on every supported Mac."
+          a17: "Sobani supports image rotation, which means the bounding box of a rotated image becomes larger than the original dimensions. macOS leverages GPU acceleration for rendering, but GPUs have a maximum texture size they can process in hardware (8,192px on Intel Macs). At 6000px, even typical portrait-oriented images rotated to any angle stay within the GPU's processing limits. This ensures smooth performance across both Intel and Apple Silicon Macs. The 6000px limit is an engineered optimum — maximizing display size while guaranteeing hardware-accelerated rendering on every supported Mac.",
+          q18: "Why doesn't Sobani appear in the Dock?",
+          a18: "Sobani is designed as a menu bar app. Instead of appearing in the Dock, its icon is shown in the menu bar at the top of the screen. This keeps your Dock uncluttered and lets Sobani focus on its role as a desktop acrylic stand. All operations can be performed from the menu bar icon or by right-clicking on a displayed image.",
+          q19: "How do I launch Sobani automatically at startup?",
+          a19: "Click the Sobani icon in the menu bar and check \"Launch at Login.\" From the next Mac startup, Sobani will launch automatically and restore your previous window arrangement.",
+          q20: "Can I display multiple images at once?",
+          a20: "Yes, you can display multiple images on your desktop simultaneously. Each time you select \"Add Image\" from the Sobani menu bar icon, a new window is added. Each window can be independently resized, moved, rotated, and have its opacity adjusted. You can manage them individually from the \"Displaying: X\" menu.",
+          q21: "How do I adjust rotation and opacity?",
+          a21: "Right-click on a displayed image and select \"Adjust\" to open the adjustment panel. You can adjust in real-time using the rotation dial (0–360°, 5° increments) and the opacity slider (10%–100%). Settings are automatically saved when the app quits.",
+          q22: "Does Sobani support video files (MP4, etc.)?",
+          a22: "Sobani is built around the concept of a \"desktop acrylic stand.\" Just like a real acrylic stand, it's designed to display your favorite images as-is on your desktop, so it does not support video files such as MP4 or MOV. By focusing on still images, Sobani keeps CPU and memory usage minimal, ensuring lightweight operation even when running continuously. Note that animated GIFs and animated PNGs (APNG) are supported, so simple animations can be displayed.",
+          q23: "Are window positions saved after quitting?",
+          a23: "Yes. Window position, size, displayed image, rotation angle, opacity, flip state, and display order are all automatically saved. Everything is restored exactly as it was when you next launch the app.",
+          q24: "I get an \"unidentified developer\" warning and can't open Sobani",
+          a24: "This is caused by macOS Gatekeeper. Right-click (or Control-click) on Sobani.app and select \"Open.\" A confirmation dialog will appear — click \"Open.\" This is only required the first time.<br><br>If you installed via Homebrew, this issue does not occur."
         }
       }
     };
