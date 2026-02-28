@@ -70,6 +70,26 @@ enum UpdateErrorCode: String {
     case locationError      = "U-501"
     case backupFailed       = "U-502"
     case installFailed      = "U-503"
+
+    var troubleshootingKey: String {
+        switch self {
+        case .networkError:     return "update.hint.U-101"
+        case .fetchError:       return "update.hint.U-102"
+        case .parseError:       return "update.hint.U-103"
+        case .downloadError:    return "update.hint.U-201"
+        case .fileNotFound:     return "update.hint.U-202"
+        case .checksumFailed:   return "update.hint.U-203"
+        case .zipExtractFailed: return "update.hint.U-301"
+        case .zipAppNotFound:   return "update.hint.U-302"
+        case .zipPrepareFailed: return "update.hint.U-303"
+        case .dmgMountFailed:   return "update.hint.U-401"
+        case .dmgAppNotFound:   return "update.hint.U-402"
+        case .dmgPrepareFailed: return "update.hint.U-403"
+        case .locationError:    return "update.hint.U-501"
+        case .backupFailed:     return "update.hint.U-502"
+        case .installFailed:    return "update.hint.U-503"
+        }
+    }
 }
 
 // MARK: - Update Manager Delegate
@@ -597,7 +617,8 @@ extension AppDelegate: UpdateManagerDelegate {
         case .error(let code, let message):
             let alert = NSAlert()
             alert.messageText = L("update.check_failed_title")
-            alert.informativeText = "\(message)\n\n\(String(format: L("update.error_code_label"), code.rawValue))"
+            let hint = L(code.troubleshootingKey)
+            alert.informativeText = "\(message)\n\n\(L("update.hint_label"))\(hint)\n\n\(String(format: L("update.error_code_label"), code.rawValue))"
             alert.addButton(withTitle: L("update.ok"))
             alert.alertStyle = .warning
             alert.runModal()

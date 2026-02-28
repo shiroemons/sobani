@@ -53,4 +53,57 @@ final class UpdateErrorCodeTests: XCTestCase {
             XCTFail("Expected .error state")
         }
     }
+
+    // MARK: - TroubleshootingKey Tests
+
+    func testTroubleshootingKey_allCodesReturnNonEmptyKey() {
+        let allCodes: [UpdateErrorCode] = [
+            .networkError, .fetchError, .parseError,
+            .downloadError, .fileNotFound, .checksumFailed,
+            .zipExtractFailed, .zipAppNotFound, .zipPrepareFailed,
+            .dmgMountFailed, .dmgAppNotFound, .dmgPrepareFailed,
+            .locationError, .backupFailed, .installFailed
+        ]
+
+        for code in allCodes {
+            XCTAssertFalse(code.troubleshootingKey.isEmpty, "\(code) should have a non-empty troubleshootingKey")
+        }
+    }
+
+    func testTroubleshootingKey_containsErrorCode() {
+        let allCodes: [UpdateErrorCode] = [
+            .networkError, .fetchError, .parseError,
+            .downloadError, .fileNotFound, .checksumFailed,
+            .zipExtractFailed, .zipAppNotFound, .zipPrepareFailed,
+            .dmgMountFailed, .dmgAppNotFound, .dmgPrepareFailed,
+            .locationError, .backupFailed, .installFailed
+        ]
+
+        for code in allCodes {
+            XCTAssertTrue(code.troubleshootingKey.contains(code.rawValue),
+                          "\(code).troubleshootingKey should contain \(code.rawValue)")
+        }
+    }
+
+    func testTroubleshootingKey_specificValues() {
+        XCTAssertEqual(UpdateErrorCode.networkError.troubleshootingKey, "update.hint.U-101")
+        XCTAssertEqual(UpdateErrorCode.downloadError.troubleshootingKey, "update.hint.U-201")
+        XCTAssertEqual(UpdateErrorCode.zipExtractFailed.troubleshootingKey, "update.hint.U-301")
+        XCTAssertEqual(UpdateErrorCode.dmgMountFailed.troubleshootingKey, "update.hint.U-401")
+        XCTAssertEqual(UpdateErrorCode.locationError.troubleshootingKey, "update.hint.U-501")
+    }
+
+    func testTroubleshootingKey_allCodesHaveUniqueKeys() {
+        let allCodes: [UpdateErrorCode] = [
+            .networkError, .fetchError, .parseError,
+            .downloadError, .fileNotFound, .checksumFailed,
+            .zipExtractFailed, .zipAppNotFound, .zipPrepareFailed,
+            .dmgMountFailed, .dmgAppNotFound, .dmgPrepareFailed,
+            .locationError, .backupFailed, .installFailed
+        ]
+
+        let keys = allCodes.map { $0.troubleshootingKey }
+        let uniqueKeys = Set(keys)
+        XCTAssertEqual(keys.count, uniqueKeys.count, "All troubleshootingKeys should be unique")
+    }
 }

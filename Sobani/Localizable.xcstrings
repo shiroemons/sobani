@@ -1057,6 +1057,262 @@
         }
       }
     },
+    "update.hint.U-101" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インターネット接続を確認してください。Wi-Fiやルーターの再起動もお試しください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your internet connection. Try restarting Wi-Fi or your router."
+          }
+        }
+      }
+    },
+    "update.hint.U-102" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHubサーバーが一時的に不安定な可能性があります。しばらく待ってから再試行してください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub servers may be temporarily unavailable. Please try again later."
+          }
+        }
+      }
+    },
+    "update.hint.U-103" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "しばらく待ってから再試行してください。繰り返す場合はGitHub Issuesで報告してください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please try again later. If this persists, report it on GitHub Issues."
+          }
+        }
+      }
+    },
+    "update.hint.U-201" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インターネット接続を確認し、再試行してください。VPN/プロキシ使用中は一時的に無効にしてみてください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your connection and try again. If using VPN/proxy, try disabling it temporarily."
+          }
+        }
+      }
+    },
+    "update.hint.U-202" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスクの空き容量を確認してください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your available disk space."
+          }
+        }
+      }
+    },
+    "update.hint.U-203" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロードが破損した可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The download may be corrupted. Try again, or download manually from GitHub if it persists."
+          }
+        }
+      }
+    },
+    "update.hint.U-301" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスクの空き容量と一時ファイルの書き込み権限を確認してください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your disk space and temp directory write permissions."
+          }
+        }
+      }
+    },
+    "update.hint.U-302" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The downloaded file may be corrupted. Try again or download manually from GitHub."
+          }
+        }
+      }
+    },
+    "update.hint.U-303" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please try again. If the issue persists, download and install manually from GitHub."
+          }
+        }
+      }
+    },
+    "update.hint.U-401" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスクの空き容量を確認してください。マウント中のDMGが多い場合はアンマウントしてください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your disk space. Unmount other disk images if too many are mounted."
+          }
+        }
+      }
+    },
+    "update.hint.U-402" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The downloaded file may be corrupted. Try again or download manually from GitHub."
+          }
+        }
+      }
+    },
+    "update.hint.U-403" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please try again. If the issue persists, download and install manually from GitHub."
+          }
+        }
+      }
+    },
+    "update.hint.U-501" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobani.appがアプリケーションフォルダに正しく配置されているか確認してください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ensure Sobani.app is correctly placed in the Applications folder."
+          }
+        }
+      }
+    },
+    "update.hint.U-502" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションフォルダへの書き込み権限とディスクの空き容量を確認してください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check write permissions for the Applications folder and your disk space."
+          }
+        }
+      }
+    },
+    "update.hint.U-503" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションフォルダへの書き込み権限を確認してください。Sobaniが他のプロセスで使用されていないか確認してください。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check write permissions for the Applications folder. Make sure Sobani is not in use by another process."
+          }
+        }
+      }
+    },
+    "update.hint_label" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💡 対処方法: "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💡 How to fix: "
+          }
+        }
+      }
+    },
     "update.file_not_found" : {
       "localizations" : {
         "ja" : {
