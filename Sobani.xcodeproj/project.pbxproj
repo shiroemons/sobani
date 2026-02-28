@@ -31,6 +31,7 @@
 		II000001 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000002 /* LanguageManager.swift */; };
 		II000003 /* LanguageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000004 /* LanguageManagerTests.swift */; };
 		JJ000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = JJ000004 /* InfoPlist.strings */; };
+		LL000001 /* UpdateErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = LL000002 /* UpdateErrorCodeTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +73,7 @@
 		II000004 /* LanguageManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManagerTests.swift; sourceTree = "<group>"; };
 		JJ000002 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		JJ000003 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		LL000002 /* UpdateErrorCodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateErrorCodeTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +147,7 @@
 				EE000004 /* LaunchAtLoginManagerTests.swift */,
 				FF000004 /* ScreenRestorationManagerTests.swift */,
 				II000004 /* LanguageManagerTests.swift */,
+				LL000002 /* UpdateErrorCodeTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -294,6 +297,7 @@
 				EE000003 /* LaunchAtLoginManagerTests.swift in Sources */,
 				FF000003 /* ScreenRestorationManagerTests.swift in Sources */,
 				II000003 /* LanguageManagerTests.swift in Sources */,
+				LL000001 /* UpdateErrorCodeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

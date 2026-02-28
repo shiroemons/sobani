@@ -1041,6 +1041,22 @@
         }
       }
     },
+    "update.error_code_label" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\u30a8\u30e9\u30fc\u30b3\u30fc\u30c9: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error code: %@"
+          }
+        }
+      }
+    },
     "update.file_not_found" : {
       "localizations" : {
         "ja" : {

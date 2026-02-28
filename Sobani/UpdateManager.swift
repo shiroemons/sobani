@@ -29,7 +29,7 @@ enum UpdateState {
     case available(version: String, downloadURL: URL, checksumURL: URL?, format: UpdateAssetFormat)
     case downloading
     case upToDate
-    case error(String)
+    case error(code: UpdateErrorCode, message: String)
 }
 
 // MARK: - Check Trigger
@@ -45,6 +45,31 @@ enum CheckTrigger: Equatable {
 enum UpdateAssetFormat {
     case dmg
     case zip
+}
+
+// MARK: - Update Error Code
+
+enum UpdateErrorCode: String {
+    // Check phase
+    case networkError       = "U-101"
+    case fetchError         = "U-102"
+    case parseError         = "U-103"
+    // Download phase
+    case downloadError      = "U-201"
+    case fileNotFound       = "U-202"
+    case checksumFailed     = "U-203"
+    // Install phase - ZIP
+    case zipExtractFailed   = "U-301"
+    case zipAppNotFound     = "U-302"
+    case zipPrepareFailed   = "U-303"
+    // Install phase - DMG
+    case dmgMountFailed     = "U-401"
+    case dmgAppNotFound     = "U-402"
+    case dmgPrepareFailed   = "U-403"
+    // Replace & Restart phase
+    case locationError      = "U-501"
+    case backupFailed       = "U-502"
+    case installFailed      = "U-503"
 }
 
 // MARK: - Update Manager Delegate
@@ -166,14 +191,14 @@ class UpdateManager {
                 // 内部エラー詳細はログのみ、ユーザーには汎用メッセージを表示
                 NSLog("[UpdateManager] Check error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
-                    self.setStateForTrigger(trigger, manualState: .error(L("update.network_error")))
+                    self.setStateForTrigger(trigger, manualState: .error(code: .networkError, message: L("update.network_error")))
                 }
                 return
             }
 
             guard let data = data else {
                 DispatchQueue.main.async {
-                    self.setStateForTrigger(trigger, manualState: .error(L("update.fetch_error")))
+                    self.setStateForTrigger(trigger, manualState: .error(code: .fetchError, message: L("update.fetch_error")))
                 }
                 return
             }
@@ -202,7 +227,7 @@ class UpdateManager {
                 // パース失敗の詳細はログのみ
                 NSLog("[UpdateManager] Parse error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
-                    self.setStateForTrigger(trigger, manualState: .error(L("update.parse_error")))
+                    self.setStateForTrigger(trigger, manualState: .error(code: .parseError, message: L("update.parse_error")))
                 }
             }
         }
@@ -301,14 +326,14 @@ class UpdateManager {
                 // 内部エラーはログのみ
                 NSLog("[UpdateManager] Download error: %@", error.localizedDescription)
                 DispatchQueue.main.async {
-                    self.state = .error(L("update.download_error"))
+                    self.state = .error(code: .downloadError, message: L("update.download_error"))
                 }
                 return
             }
 
             guard let tempURL = tempURL else {
                 DispatchQueue.main.async {
-                    self.state = .error(L("update.file_not_found"))
+                    self.state = .error(code: .fileNotFound, message: L("update.file_not_found"))
                 }
                 return
             }
@@ -318,7 +343,7 @@ class UpdateManager {
                 guard Self.verifySHA256(of: tempURL, expectedHex: expected) else {
                     NSLog("[UpdateManager] Checksum mismatch for downloaded file")
                     DispatchQueue.main.async {
-                        self.state = .error(L("update.checksum_failed"))
+                        self.state = .error(code: .checksumFailed, message: L("update.checksum_failed"))
                     }
                     return
                 }
@@ -391,7 +416,7 @@ private extension UpdateManager {
 
             guard extractProcess.terminationStatus == 0 else {
                 DispatchQueue.main.async {
-                    self.state = .error(L("update.zip_extract_failed"))
+                    self.state = .error(code: .zipExtractFailed, message: L("update.zip_extract_failed"))
                 }
                 return
             }
@@ -400,7 +425,7 @@ private extension UpdateManager {
             let contents = try fm.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
             guard let newAppURL = contents.first(where: { $0.pathExtension == "app" }) else {
                 DispatchQueue.main.async {
-                    self.state = .error(L("update.app_not_found"))
+                    self.state = .error(code: .zipAppNotFound, message: L("update.app_not_found"))
                 }
                 return
             }
@@ -409,7 +434,7 @@ private extension UpdateManager {
         } catch {
             NSLog("[UpdateManager] Install preparation error: %@", error.localizedDescription)
             DispatchQueue.main.async {
-                self.state = .error(L("update.prepare_failed"))
+                self.state = .error(code: .zipPrepareFailed, message: L("update.prepare_failed"))
             }
         }
     }
@@ -434,7 +459,7 @@ private extension UpdateManager {
             guard attachProcess.terminationStatus == 0 else {
                 try? fm.removeItem(at: mountPoint)
                 DispatchQueue.main.async {
-                    self.state = .error(L("update.dmg_mount_failed"))
+                    self.state = .error(code: .dmgMountFailed, message: L("update.dmg_mount_failed"))
                 }
                 return
             }
@@ -453,7 +478,7 @@ private extension UpdateManager {
             let contents = try fm.contentsOfDirectory(at: mountPoint, includingPropertiesForKeys: nil)
             guard let appInDMG = contents.first(where: { $0.pathExtension == "app" }) else {
                 DispatchQueue.main.async {
-                    self.state = .error(L("update.app_not_found"))
+                    self.state = .error(code: .dmgAppNotFound, message: L("update.app_not_found"))
                 }
                 return
             }
@@ -471,7 +496,7 @@ private extension UpdateManager {
         } catch {
             NSLog("[UpdateManager] DMG install error: %@", error.localizedDescription)
             DispatchQueue.main.async {
-                self.state = .error(L("update.prepare_failed"))
+                self.state = .error(code: .dmgPrepareFailed, message: L("update.prepare_failed"))
             }
         }
     }
@@ -481,7 +506,7 @@ private extension UpdateManager {
 
         guard let currentAppURL = Bundle.main.bundleURL as URL? else {
             DispatchQueue.main.async {
-                self.state = .error(L("update.location_error"))
+                self.state = .error(code: .locationError, message: L("update.location_error"))
             }
             return
         }
@@ -514,13 +539,13 @@ private extension UpdateManager {
                 try? fm.moveItem(at: backupURL, to: currentAppURL)
 
                 DispatchQueue.main.async {
-                    self.state = .error(L("update.install_failed"))
+                    self.state = .error(code: .installFailed, message: L("update.install_failed"))
                 }
             }
         } catch {
             NSLog("[UpdateManager] Backup error: %@", error.localizedDescription)
             DispatchQueue.main.async {
-                self.state = .error(L("update.prepare_failed"))
+                self.state = .error(code: .backupFailed, message: L("update.prepare_failed"))
             }
         }
     }
@@ -569,10 +594,10 @@ extension AppDelegate: UpdateManagerDelegate {
             alert.addButton(withTitle: L("update.ok"))
             alert.alertStyle = .informational
             alert.runModal()
-        case .error(let message):
+        case .error(let code, let message):
             let alert = NSAlert()
             alert.messageText = L("update.check_failed_title")
-            alert.informativeText = message
+            alert.informativeText = "\(message)\n\n\(String(format: L("update.error_code_label"), code.rawValue))"
             alert.addButton(withTitle: L("update.ok"))
             alert.alertStyle = .warning
             alert.runModal()
