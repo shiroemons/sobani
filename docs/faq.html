@@ -14,9 +14,9 @@
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <title>FAQ - Sobani</title>
-  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。">
+  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。">
   <meta property="og:title" content="FAQ - Sobani">
-  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。">
+  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。">
   <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -25,7 +25,7 @@
   <meta property="og:site_name" content="Sobani">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:title" content="FAQ - Sobani">
-  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。">
+  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta name="theme-color" content="#f59e0b">
   <meta name="author" content="shiroemons">
@@ -293,7 +293,7 @@
         "name": "複数モニターで使えますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。"
+          "text": "はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。たとえば、メインモニターにキャラクター、外部モニターにペットの写真といった使い分けも自由自在。MacBookのクラムシェルモードでも問題なく動作します。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。"
         }
       },
       {
@@ -302,6 +302,38 @@
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "ウィンドウの状態は ~/Library/Application Support/Sobani/window_states.json にJSON形式で保存されています。windowId, imagePath, x, y, width, height, isFlipped, rotation, opacity, zOrderIndex のフィールドがあります。編集する場合は、必ずSobaniを終了してから行ってください。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "データのバックアップ・復元方法は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobaniのすべてのデータは ~/Library/Application Support/Sobani/ フォルダにまとまっています。このフォルダをまるごとコピーするだけでバックアップできます。復元はバックアップしたフォルダを同じ場所に戻してからSobaniを起動するだけです。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "デフォルト画像を変更するには？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "メニューバーのSobaniアイコンをクリックし、「デフォルト画像を変更...」を選択してください。デフォルト画像をリセットしたい場合は、メニューから「デフォルト画像をリセット」を選択すると初期画像に戻ります。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "仕事中にすばやく非表示にしたい",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobaniにフォーカスがある状態で Option + H を押すと、すべてのウィンドウを一瞬で非表示にできます。再表示も同じく Option + H です。別のアプリにフォーカスが移った後は、メニューバーのSobaniアイコンから「すべて表示」を選んでください。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "一眼レフやミラーレスの高解像度写真も使えますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい、そのまま使えます。JPEG、PNG、TIFF、HEICなど主要な形式に対応しています。表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できます。"
         }
       }
     ]
@@ -331,6 +363,7 @@
           <a href="index.html#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
           <a href="index.html#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
           <a href="index.html#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
+          <a href="index.html#usecases" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.usecases">使い方いろいろ</a>
           <a href="faq.html" class="text-sm font-medium text-amber-600 dark:text-amber-400 font-bold" data-i18n="nav.faq" aria-current="page">FAQ</a>
           <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
           <button id="theme-toggle" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替" data-i18n-attr="aria-label:nav.themeToggle,title:nav.themeToggle">
@@ -360,6 +393,7 @@
         <a href="index.html#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
         <a href="index.html#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
         <a href="index.html#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
+        <a href="index.html#usecases" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.usecases">使い方いろいろ</a>
         <a href="faq.html" class="block text-sm font-medium text-amber-600 dark:text-amber-400 font-bold" data-i18n="nav.faq" aria-current="page">FAQ</a>
         <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
         <button id="theme-toggle-mobile" class="flex items-center p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="テーマ切替" title="テーマ切替" data-i18n-attr="aria-label:nav.themeToggle,title:nav.themeToggle">
@@ -471,6 +505,14 @@
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q31">デフォルト画像を変更するには？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a31">メニューバーのSobaniアイコンをクリックし、「デフォルト画像を変更...」を選択してください。ファイル選択ダイアログが開くので、好きな画像を選ぶだけです。<br><br>デフォルト画像をリセットしたい場合は、メニューから「デフォルト画像をリセット」を選択すると初期画像に戻ります。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q2">対応している画像形式は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
@@ -506,7 +548,15 @@
               <span data-i18n="faq.q28">複数モニターで使えますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a28">はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a28">はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。<br><br>たとえば、メインモニターにキャラクター、外部モニターにペットの写真——といった使い分けも自由自在。MacBookのクラムシェルモード（外部モニターのみ）でも問題なく動作します。<br><br>モニター切断時の復元については「モニター切断/スリープ後にウィンドウが移動した」をご覧ください。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q33">一眼レフやミラーレスの高解像度写真も使えますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a33">はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -523,6 +573,14 @@
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a9">Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q32">仕事中にすばやく非表示にしたい</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a32">ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -560,7 +618,7 @@
               <span data-i18n="faq.q10">データはどこに保存されますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a10">すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。外部サーバーへのデータ送信は一切ありません。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a10">すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -585,6 +643,14 @@
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a6">Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q30">データのバックアップ・復元方法は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a30">Sobaniのすべてのデータは <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/</code> フォルダにまとまっています。<br><br><strong>バックアップ</strong><br>このフォルダをまるごとコピーするだけでOKです。USBメモリ、クラウドストレージ、Time Machineなどお好みの方法でバックアップできます。<br><br><strong>復元</strong><br>バックアップしたフォルダを同じ場所に戻してからSobaniを起動すれば、画像・配置・設定がすべて復元されます。<br><br>Sobaniを終了した状態でバックアップ・復元を行ってください。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -734,7 +800,7 @@
       ja: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。",
+          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。",
           keywords: "Sobani,FAQ,よくある質問,macOS,デスクトップアクスタ,デスクトップマスコット,インストール,使い方,カスタマイズ,トラブルシューティング,画像表示"
         },
         nav: {
@@ -742,6 +808,7 @@
           howto: "使い方",
           video: "動画",
           download: "ダウンロード",
+          usecases: "使い方いろいろ",
           themeToggle: "テーマ切替",
           openMenu: "メニューを開く",
           mainNav: "メインナビゲーション",
@@ -777,7 +844,7 @@
           q9: "非表示にしたウィンドウを再表示するには？",
           a9: "Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。",
           q10: "データはどこに保存されますか？",
-          a10: "すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。外部サーバーへのデータ送信は一切ありません。",
+          a10: "すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。",
           q11: "プライバシーについて",
           a11: "Sobaniはネットワーク通信をアップデート確認（GitHub API）のみに使用します。ユーザーの画像やデータを外部に送信することはありません。すべてのデータはローカルに保存されます。",
           q12: "自動アップデートはありますか？",
@@ -813,15 +880,23 @@
           q27: "透過PNG画像はどこで入手・作成できますか？",
           a27: 'いくつかの方法で透過PNG画像を作成できます。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。',
           q28: "複数モニターで使えますか？",
-          a28: "はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。",
+          a28: 'はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。<br><br>たとえば、メインモニターにキャラクター、外部モニターにペットの写真——といった使い分けも自由自在。MacBookのクラムシェルモード（外部モニターのみ）でも問題なく動作します。<br><br>モニター切断時の復元については「モニター切断/スリープ後にウィンドウが移動した」をご覧ください。',
           q29: "設定ファイルの形式は？（上級者向け）",
-          a29: 'ウィンドウの状態は <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code> にJSON形式で保存されています。<br><br>各エントリのフィールド:<br>・<code class="text-sm">windowId</code> — ウィンドウの一意ID<br>・<code class="text-sm">imagePath</code> — 表示画像のパス<br>・<code class="text-sm">x</code>, <code class="text-sm">y</code> — ウィンドウ位置<br>・<code class="text-sm">width</code>, <code class="text-sm">height</code> — ウィンドウサイズ<br>・<code class="text-sm">isFlipped</code> — 左右反転<br>・<code class="text-sm">rotation</code> — 回転角度（0〜360）<br>・<code class="text-sm">opacity</code> — 不透明度（0.1〜1.0）<br>・<code class="text-sm">zOrderIndex</code> — 重ね順<br><br>編集する場合は、必ずSobaniを終了してから行ってください。起動中に編集すると、終了時に上書きされます。'
+          a29: 'ウィンドウの状態は <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code> にJSON形式で保存されています。<br><br>各エントリのフィールド:<br>・<code class="text-sm">windowId</code> — ウィンドウの一意ID<br>・<code class="text-sm">imagePath</code> — 表示画像のパス<br>・<code class="text-sm">x</code>, <code class="text-sm">y</code> — ウィンドウ位置<br>・<code class="text-sm">width</code>, <code class="text-sm">height</code> — ウィンドウサイズ<br>・<code class="text-sm">isFlipped</code> — 左右反転<br>・<code class="text-sm">rotation</code> — 回転角度（0〜360）<br>・<code class="text-sm">opacity</code> — 不透明度（0.1〜1.0）<br>・<code class="text-sm">zOrderIndex</code> — 重ね順<br><br>編集する場合は、必ずSobaniを終了してから行ってください。起動中に編集すると、終了時に上書きされます。',
+          q30: "データのバックアップ・復元方法は？",
+          a30: 'Sobaniのすべてのデータは <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/</code> フォルダにまとまっています。<br><br><strong>バックアップ</strong><br>このフォルダをまるごとコピーするだけでOKです。USBメモリ、クラウドストレージ、Time Machineなどお好みの方法でバックアップできます。<br><br><strong>復元</strong><br>バックアップしたフォルダを同じ場所に戻してからSobaniを起動すれば、画像・配置・設定がすべて復元されます。<br><br>Sobaniを終了した状態でバックアップ・復元を行ってください。',
+          q31: "デフォルト画像を変更するには？",
+          a31: 'メニューバーのSobaniアイコンをクリックし、「デフォルト画像を変更...」を選択してください。ファイル選択ダイアログが開くので、好きな画像を選ぶだけです。<br><br>デフォルト画像をリセットしたい場合は、メニューから「デフォルト画像をリセット」を選択すると初期画像に戻ります。',
+          q32: "仕事中にすばやく非表示にしたい",
+          a32: 'ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。',
+          q33: "一眼レフやミラーレスの高解像度写真も使えますか？",
+          a33: 'はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。'
         }
       },
       en: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 29 items total.",
+          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 33 items total.",
           keywords: "Sobani,FAQ,frequently asked questions,macOS,desktop acrylic stand,desktop mascot,installation,usage,customization,troubleshooting,image display"
         },
         nav: {
@@ -829,6 +904,7 @@
           howto: "How to Use",
           video: "Video",
           download: "Download",
+          usecases: "Use Cases",
           themeToggle: "Toggle theme",
           openMenu: "Open menu",
           mainNav: "Main navigation",
@@ -864,7 +940,7 @@
           q9: "How do I show hidden windows again?",
           a9: "After hiding windows with Option + H, if focus has moved to another application, pressing Option + H again may not show them. In that case, click the Sobani icon in the menu bar and select \"Show All.\" Menu bar operations work reliably regardless of which application has focus.",
           q10: "Where is my data stored?",
-          a10: "All data is stored in ~/Library/Application Support/Sobani/. Registered images are in the images/ folder, and window states are saved in window_states.json. No data is ever sent to external servers.",
+          a10: "All data is stored in ~/Library/Application Support/Sobani/. Registered images are in the images/ folder, and window states are saved in window_states.json.",
           q11: "About privacy",
           a11: "Sobani uses network communication only for update checks (GitHub API). It never sends your images or data externally. All data is stored locally.",
           q12: "Is there automatic updating?",
@@ -900,9 +976,17 @@
           q27: "Where can I get or create transparent PNG images?",
           a27: 'There are several ways to create transparent PNG images.<br><br><strong>macOS Preview</strong><br>Open an image in Preview, then use "Instant Alpha" from the markup toolbar to click and remove the background.<br><br><strong>iPhone "Lift Subject from Background"</strong><br>In the Photos app on iOS 16 or later, long-press on a subject to automatically cut it out. Send the cutout to your Mac and use it as a transparent PNG.<br><br><strong>Web Services</strong><br>Services like remove.bg let you upload a photo and easily create a transparent image.',
           q28: "Does Sobani work with multiple monitors?",
-          a28: "Yes, Sobani fully supports multi-monitor setups. You can freely place images on each monitor, and positions are remembered per-monitor. If a monitor is disconnected, windows temporarily move to the main monitor and automatically return to their original positions when reconnected within 5 minutes.",
+          a28: 'Yes, Sobani fully supports multi-monitor setups. You can freely place images on each monitor, and positions are remembered per-monitor.<br><br>For example, a character on your main monitor and a pet photo on an external display — mix and match however you like. Sobani also works great in MacBook clamshell mode (external monitor only).<br><br>For details on window restoration after disconnection, see "Windows moved after monitor disconnection or sleep."',
           q29: "What is the configuration file format? (Advanced)",
-          a29: 'Window states are stored in JSON format at <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code>.<br><br>Fields in each entry:<br>• <code class="text-sm">windowId</code> — Unique window ID<br>• <code class="text-sm">imagePath</code> — Path to the displayed image<br>• <code class="text-sm">x</code>, <code class="text-sm">y</code> — Window position<br>• <code class="text-sm">width</code>, <code class="text-sm">height</code> — Window size<br>• <code class="text-sm">isFlipped</code> — Horizontal flip<br>• <code class="text-sm">rotation</code> — Rotation angle (0–360)<br>• <code class="text-sm">opacity</code> — Opacity (0.1–1.0)<br>• <code class="text-sm">zOrderIndex</code> — Layer order<br><br>If you want to edit this file, make sure to quit Sobani first. Edits made while Sobani is running will be overwritten when it quits.'
+          a29: 'Window states are stored in JSON format at <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code>.<br><br>Fields in each entry:<br>• <code class="text-sm">windowId</code> — Unique window ID<br>• <code class="text-sm">imagePath</code> — Path to the displayed image<br>• <code class="text-sm">x</code>, <code class="text-sm">y</code> — Window position<br>• <code class="text-sm">width</code>, <code class="text-sm">height</code> — Window size<br>• <code class="text-sm">isFlipped</code> — Horizontal flip<br>• <code class="text-sm">rotation</code> — Rotation angle (0–360)<br>• <code class="text-sm">opacity</code> — Opacity (0.1–1.0)<br>• <code class="text-sm">zOrderIndex</code> — Layer order<br><br>If you want to edit this file, make sure to quit Sobani first. Edits made while Sobani is running will be overwritten when it quits.',
+          q30: "How do I back up and restore my data?",
+          a30: 'All of Sobani\'s data is stored in a single folder: <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/</code>.<br><br><strong>Backup</strong><br>Simply copy this entire folder. Use USB drives, cloud storage, Time Machine, or any method you prefer.<br><br><strong>Restore</strong><br>Copy the backed-up folder back to the same location, then launch Sobani. All images, layouts, and settings will be restored.<br><br>Make sure Sobani is not running when you back up or restore.',
+          q31: "How do I change the default image?",
+          a31: 'Click the Sobani icon in the menu bar and select "Change Default Image...". A file picker dialog will open — just choose any image you like.<br><br>To reset the default image, select "Reset Default Image" from the menu to return to the initial image.',
+          q32: "How do I quickly hide windows during work?",
+          a32: 'Before a video call or screen share, press <strong>Option + H</strong> to instantly hide all windows. For details on showing them again, see "What keyboard shortcuts are available?" and "How do I show hidden windows again?"',
+          q33: "Can I use high-resolution DSLR/mirrorless photos?",
+          a33: 'Yes, they work right out of the camera. See "What image formats are supported?" for the full list.<br><br>The display size can be freely adjusted from 100px to 6000px using scroll, so even large photos can be scaled down to fit comfortably on screen.'
         }
       }
     };
