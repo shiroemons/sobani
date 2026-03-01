@@ -14,9 +14,9 @@
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <title>FAQ - Sobani</title>
-  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。">
+  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。">
   <meta property="og:title" content="FAQ - Sobani">
-  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。">
+  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。">
   <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -25,7 +25,7 @@
   <meta property="og:site_name" content="Sobani">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:title" content="FAQ - Sobani">
-  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。">
+  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta name="theme-color" content="#f59e0b">
   <meta name="author" content="shiroemons">
@@ -133,7 +133,7 @@
         "name": "対応している画像形式は？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。"
+          "text": "スマートフォンで撮った写真（JPEG/HEIC）もそのまま使えます。PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。"
         }
       },
       {
@@ -237,7 +237,7 @@
         "name": "「開発元が未確認」と表示されて起動できない",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "macOSのGatekeeper機能によるものです。Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。Homebrewでインストールした場合はこの問題は発生しません。"
+          "text": "ご安心ください。これはmacOSのGatekeeper機能による警告で、Mac App Store以外から入手したすべてのアプリに表示される一般的なものです。Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。Homebrewでインストールした場合はこの問題は発生しません。"
         }
       },
       {
@@ -262,6 +262,46 @@
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "アップデート時にエラーが発生すると、エラーコードが表示されます。チェック（U-1xx）: U-101 ネットワーク接続エラー、U-102 サーバーからのデータ取得失敗、U-103 バージョン情報の解析エラー。ダウンロード（U-2xx）: U-201 ダウンロード中のネットワークエラー、U-202 ダウンロードしたファイルが見つからない、U-203 ファイルの整合性チェック失敗。インストール - ZIP（U-3xx）: U-301 ZIP展開失敗、U-302 ZIP内にアプリなし、U-303 準備中のエラー。インストール - DMG（U-4xx）: U-401 DMGマウント失敗、U-402 DMG内にアプリなし、U-403 準備中のエラー。置換・再起動（U-5xx）: U-501 アプリの場所不明、U-502 バックアップ失敗、U-503 置換失敗。問題が解決しない場合は、エラーコードを添えてGitHubのIssuesページで報告してください。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "透過PNGとは？JPEG写真でも使えますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "スマートフォンで撮った写真（JPEG/HEIC）や普通のPNG画像もそのまま使えます。「透過PNG」とは、背景が透明な画像のことです。透過PNGを使うと、背景なしで画像だけがデスクトップに表示され、まるで本物のアクリルスタンドのような仕上がりになります。透過PNGは必須ではなく、JPEG写真でも十分にお楽しみいただけます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "バッテリーやメモリへの影響は？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ほとんどありません。SobaniはネイティブSwift製で外部ライブラリをゼロ使用しています。静止画表示中のCPU使用率はほぼ0%で、メモリ消費も最小限です。バッテリーへの影響は無視できるレベルなので、ノートブックでも安心して常時起動できます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "透過PNG画像はどこで入手・作成できますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "macOSプレビューの「インスタントアルファ」、iPhoneの「被写体を切り抜き」（iOS 16以降）、remove.bgなどのWebサービスで作成できます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "複数モニターで使えますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "設定ファイルの形式は？（上級者向け）",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ウィンドウの状態は ~/Library/Application Support/Sobani/window_states.json にJSON形式で保存されています。windowId, imagePath, x, y, width, height, isFlipped, rotation, opacity, zOrderIndex のフィールドがあります。編集する場合は、必ずSobaniを終了してから行ってください。"
         }
       }
     ]
@@ -406,6 +446,14 @@
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a19">メニューバーのSobaniアイコンをクリックし、「ログイン時に起動」にチェックを入れてください。次回のMac起動時からSobaniが自動的に立ち上がり、前回終了時のウィンドウ配置が復元されます。</div>
           </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q26">バッテリーやメモリへの影響は？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a26">ほとんどありません。SobaniはネイティブSwift製で外部ライブラリをゼロ使用しています。静止画表示中のCPU使用率はほぼ0%で、メモリ消費も最小限です。バッテリーへの影響は無視できるレベルなので、ノートブックでも安心して常時起動できます。</div>
+          </details>
         </div>
       </div>
 
@@ -426,7 +474,23 @@
               <span data-i18n="faq.q2">対応している画像形式は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a2">PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a2">スマートフォンで撮った写真（JPEG/HEIC）もそのまま使えます。PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q25">透過PNGとは？JPEG写真でも使えますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a25">スマートフォンで撮った写真（JPEG/HEIC）や普通のPNG画像もそのまま使えます。特別な加工は必要ありません。<br><br>「透過PNG」とは、背景が透明な画像のことです。透過PNGを使うと、背景なしで画像だけがデスクトップに表示され、まるで本物のアクリルスタンドのような仕上がりになります。<br><br>透過PNGは必須ではありません。お手元のJPEG写真でも十分にお楽しみいただけます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q27">透過PNG画像はどこで入手・作成できますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a27">いくつかの方法で透過PNG画像を作成できます。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -435,6 +499,14 @@
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a20">はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q28">複数モニターで使えますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a28">はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -514,6 +586,14 @@
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a6">Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。</div>
           </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q29">設定ファイルの形式は？（上級者向け）</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a29">ウィンドウの状態は <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code> にJSON形式で保存されています。<br><br>各エントリのフィールド:<br>・<code class="text-sm">windowId</code> — ウィンドウの一意ID<br>・<code class="text-sm">imagePath</code> — 表示画像のパス<br>・<code class="text-sm">x</code>, <code class="text-sm">y</code> — ウィンドウ位置<br>・<code class="text-sm">width</code>, <code class="text-sm">height</code> — ウィンドウサイズ<br>・<code class="text-sm">isFlipped</code> — 左右反転<br>・<code class="text-sm">rotation</code> — 回転角度（0〜360）<br>・<code class="text-sm">opacity</code> — 不透明度（0.1〜1.0）<br>・<code class="text-sm">zOrderIndex</code> — 重ね順<br><br>編集する場合は、必ずSobaniを終了してから行ってください。起動中に編集すると、終了時に上書きされます。</div>
+          </details>
         </div>
       </div>
 
@@ -548,7 +628,7 @@
               <span data-i18n="faq.q24">「開発元が未確認」と表示されて起動できない</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a24">macOSのGatekeeper機能によるものです。Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。<br><br>Homebrewでインストールした場合はこの問題は発生しません。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a24">ご安心ください。これはmacOSのGatekeeper機能による警告で、Mac App Store以外から入手したすべてのアプリに表示される一般的なものです。Sobani自体に問題はありません。<br><br>Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。<br><br>Homebrewでインストールした場合はこの問題は発生しません。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -654,7 +734,7 @@
       ja: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全24項目を掲載。",
+          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全29項目を掲載。",
           keywords: "Sobani,FAQ,よくある質問,macOS,デスクトップアクスタ,デスクトップマスコット,インストール,使い方,カスタマイズ,トラブルシューティング,画像表示"
         },
         nav: {
@@ -680,7 +760,7 @@
           q1: "Sobaniとは何ですか？",
           a1: "Sobaniは、お気に入りの画像を「デスクトップアクスタ」としてMacの画面に飾れる無料のmacOSアプリです。実物のアクリルスタンドのように、透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。",
           q2: "対応している画像形式は？",
-          a2: "PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。",
+          a2: "スマートフォンで撮った写真（JPEG/HEIC）もそのまま使えます。PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。",
           q3: "インストール方法は？",
           a3: '2つの方法でインストールできます。<br><br><strong>Homebrew（推奨）</strong><br>ターミナルで以下のコマンドを実行してください。<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="コピー" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>手動ダウンロード</strong><br><a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">ダウンロードページ</a>からSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。<br><br>Mac App Storeでは配布していません。',
           copyTooltip: "コピー",
@@ -725,13 +805,23 @@
           q23: "アプリ終了後にウィンドウの配置は保存されますか？",
           a23: "はい。ウィンドウの位置、サイズ、表示画像、回転角度、不透明度、左右反転、表示順序がすべて自動的に保存されます。次回起動時に前回の状態がそのまま復元されます。",
           q24: "「開発元が未確認」と表示されて起動できない",
-          a24: "macOSのGatekeeper機能によるものです。Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。<br><br>Homebrewでインストールした場合はこの問題は発生しません。"
+          a24: "ご安心ください。これはmacOSのGatekeeper機能による警告で、Mac App Store以外から入手したすべてのアプリに表示される一般的なものです。Sobani自体に問題はありません。<br><br>Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。<br><br>Homebrewでインストールした場合はこの問題は発生しません。",
+          q25: "透過PNGとは？JPEG写真でも使えますか？",
+          a25: 'スマートフォンで撮った写真（JPEG/HEIC）や普通のPNG画像もそのまま使えます。特別な加工は必要ありません。<br><br>「透過PNG」とは、背景が透明な画像のことです。透過PNGを使うと、背景なしで画像だけがデスクトップに表示され、まるで本物のアクリルスタンドのような仕上がりになります。<br><br>透過PNGは必須ではありません。お手元のJPEG写真でも十分にお楽しみいただけます。',
+          q26: "バッテリーやメモリへの影響は？",
+          a26: "ほとんどありません。SobaniはネイティブSwift製で外部ライブラリをゼロ使用しています。静止画表示中のCPU使用率はほぼ0%で、メモリ消費も最小限です。バッテリーへの影響は無視できるレベルなので、ノートブックでも安心して常時起動できます。",
+          q27: "透過PNG画像はどこで入手・作成できますか？",
+          a27: 'いくつかの方法で透過PNG画像を作成できます。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。',
+          q28: "複数モニターで使えますか？",
+          a28: "はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。",
+          q29: "設定ファイルの形式は？（上級者向け）",
+          a29: 'ウィンドウの状態は <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code> にJSON形式で保存されています。<br><br>各エントリのフィールド:<br>・<code class="text-sm">windowId</code> — ウィンドウの一意ID<br>・<code class="text-sm">imagePath</code> — 表示画像のパス<br>・<code class="text-sm">x</code>, <code class="text-sm">y</code> — ウィンドウ位置<br>・<code class="text-sm">width</code>, <code class="text-sm">height</code> — ウィンドウサイズ<br>・<code class="text-sm">isFlipped</code> — 左右反転<br>・<code class="text-sm">rotation</code> — 回転角度（0〜360）<br>・<code class="text-sm">opacity</code> — 不透明度（0.1〜1.0）<br>・<code class="text-sm">zOrderIndex</code> — 重ね順<br><br>編集する場合は、必ずSobaniを終了してから行ってください。起動中に編集すると、終了時に上書きされます。'
         }
       },
       en: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 24 items total.",
+          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 29 items total.",
           keywords: "Sobani,FAQ,frequently asked questions,macOS,desktop acrylic stand,desktop mascot,installation,usage,customization,troubleshooting,image display"
         },
         nav: {
@@ -757,7 +847,7 @@
           q1: "What is Sobani?",
           a1: "Sobani is a free macOS app that lets you display your favorite images as \"desktop acrylic stands\" on your Mac. Like real acrylic stands, it shows images with a transparent background, always on top across all virtual desktops. Built natively in Swift with zero external dependencies, it runs extremely lightweight.",
           q2: "What image formats are supported?",
-          a2: "Sobani supports PNG, JPEG (JPG), GIF, TIFF, and HEIC formats. Using transparent PNG images allows the background to be invisible, displaying only the image on your desktop.",
+          a2: "Photos taken with your smartphone (JPEG/HEIC) can be used as-is. Sobani supports PNG, JPEG (JPG), GIF, TIFF, and HEIC formats. Using transparent PNG images allows the background to be invisible, displaying only the image on your desktop.",
           q3: "How do I install Sobani?",
           a3: 'There are two ways to install Sobani.<br><br><strong>Homebrew (Recommended)</strong><br>Run the following command in Terminal:<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Copy" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>Manual Download</strong><br>Download Sobani-universal.dmg from the <a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">download page</a>, open it, and drag Sobani.app to your Applications folder.<br><br>Not available on the Mac App Store.',
           copyTooltip: "Copy",
@@ -802,7 +892,17 @@
           q23: "Are window positions saved after quitting?",
           a23: "Yes. Window position, size, displayed image, rotation angle, opacity, flip state, and display order are all automatically saved. Everything is restored exactly as it was when you next launch the app.",
           q24: "I get an \"unidentified developer\" warning and can't open Sobani",
-          a24: "This is caused by macOS Gatekeeper. Right-click (or Control-click) on Sobani.app and select \"Open.\" A confirmation dialog will appear — click \"Open.\" This is only required the first time.<br><br>If you installed via Homebrew, this issue does not occur."
+          a24: "Don't worry — this is a standard macOS Gatekeeper warning that appears for all apps downloaded outside the Mac App Store. There is nothing wrong with Sobani itself.<br><br>Right-click (or Control-click) on Sobani.app and select \"Open.\" A confirmation dialog will appear — click \"Open.\" This is only required the first time.<br><br>If you installed via Homebrew, this issue does not occur.",
+          q25: "What is a transparent PNG? Can I use JPEG photos?",
+          a25: 'You can use photos taken with your smartphone (JPEG/HEIC) or regular PNG images as-is. No special processing is required.<br><br>A "transparent PNG" is an image with a transparent background. When you use one, only the image appears on the desktop without any background — just like a real acrylic stand.<br><br>Transparent PNGs are not required. You can fully enjoy Sobani with regular JPEG photos.',
+          q26: "Does Sobani affect battery life or memory?",
+          a26: "Barely at all. Sobani is built natively in Swift with zero external libraries. CPU usage while displaying still images is nearly 0%, and memory consumption is minimal. The impact on battery life is negligible, so you can keep it running on a laptop without worry.",
+          q27: "Where can I get or create transparent PNG images?",
+          a27: 'There are several ways to create transparent PNG images.<br><br><strong>macOS Preview</strong><br>Open an image in Preview, then use "Instant Alpha" from the markup toolbar to click and remove the background.<br><br><strong>iPhone "Lift Subject from Background"</strong><br>In the Photos app on iOS 16 or later, long-press on a subject to automatically cut it out. Send the cutout to your Mac and use it as a transparent PNG.<br><br><strong>Web Services</strong><br>Services like remove.bg let you upload a photo and easily create a transparent image.',
+          q28: "Does Sobani work with multiple monitors?",
+          a28: "Yes, Sobani fully supports multi-monitor setups. You can freely place images on each monitor, and positions are remembered per-monitor. If a monitor is disconnected, windows temporarily move to the main monitor and automatically return to their original positions when reconnected within 5 minutes.",
+          q29: "What is the configuration file format? (Advanced)",
+          a29: 'Window states are stored in JSON format at <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code>.<br><br>Fields in each entry:<br>• <code class="text-sm">windowId</code> — Unique window ID<br>• <code class="text-sm">imagePath</code> — Path to the displayed image<br>• <code class="text-sm">x</code>, <code class="text-sm">y</code> — Window position<br>• <code class="text-sm">width</code>, <code class="text-sm">height</code> — Window size<br>• <code class="text-sm">isFlipped</code> — Horizontal flip<br>• <code class="text-sm">rotation</code> — Rotation angle (0–360)<br>• <code class="text-sm">opacity</code> — Opacity (0.1–1.0)<br>• <code class="text-sm">zOrderIndex</code> — Layer order<br><br>If you want to edit this file, make sure to quit Sobani first. Edits made while Sobani is running will be overwritten when it quits.'
         }
       }
     };
