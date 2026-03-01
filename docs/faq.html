@@ -1087,16 +1087,7 @@
     function applyLanguage(lang) {
       document.documentElement.lang = lang;
 
-      // Update meta tags
       var t = translations[lang];
-      document.title = t.meta.title;
-      document.querySelector('meta[name="description"]').setAttribute('content', t.meta.description);
-      document.querySelector('meta[name="keywords"]').setAttribute('content', t.meta.keywords);
-      document.querySelector('meta[property="og:title"]').setAttribute('content', t.meta.title);
-      document.querySelector('meta[property="og:description"]').setAttribute('content', t.meta.description);
-      document.querySelector('meta[property="og:locale"]').setAttribute('content', lang === 'ja' ? 'ja_JP' : 'en_US');
-      document.querySelector('meta[name="twitter:title"]').setAttribute('content', t.meta.title);
-      document.querySelector('meta[name="twitter:description"]').setAttribute('content', t.meta.description);
 
       // Update data-i18n elements (textContent)
       var elems = document.querySelectorAll('[data-i18n]');
