@@ -32,6 +32,8 @@
 		II000003 /* LanguageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000004 /* LanguageManagerTests.swift */; };
 		JJ000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = JJ000004 /* InfoPlist.strings */; };
 		LL000001 /* UpdateErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = LL000002 /* UpdateErrorCodeTests.swift */; };
+		F0BG000002000000000001 /* BackgroundRemovalManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0BG000001000000000001 /* BackgroundRemovalManager.swift */; };
+		F0BG000004000000000001 /* BackgroundRemovalManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0BG000003000000000001 /* BackgroundRemovalManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +76,8 @@
 		JJ000002 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		JJ000003 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		LL000002 /* UpdateErrorCodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateErrorCodeTests.swift; sourceTree = "<group>"; };
+		F0BG000001000000000001 /* BackgroundRemovalManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemovalManager.swift; sourceTree = "<group>"; };
+		F0BG000003000000000001 /* BackgroundRemovalManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemovalManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +124,7 @@
 				GG000002 /* Constants.swift */,
 				KK000002 /* WakeRestorationContext.swift */,
 				II000002 /* LanguageManager.swift */,
+				F0BG000001000000000001 /* BackgroundRemovalManager.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -148,6 +153,7 @@
 				FF000004 /* ScreenRestorationManagerTests.swift */,
 				II000004 /* LanguageManagerTests.swift */,
 				LL000002 /* UpdateErrorCodeTests.swift */,
+				F0BG000003000000000001 /* BackgroundRemovalManagerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -283,6 +289,7 @@
 				GG000001 /* Constants.swift in Sources */,
 				KK000001 /* WakeRestorationContext.swift in Sources */,
 				II000001 /* LanguageManager.swift in Sources */,
+				F0BG000002000000000001 /* BackgroundRemovalManager.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -298,6 +305,7 @@
 				FF000003 /* ScreenRestorationManagerTests.swift in Sources */,
 				II000003 /* LanguageManagerTests.swift in Sources */,
 				LL000001 /* UpdateErrorCodeTests.swift in Sources */,
+				F0BG000004000000000001 /* BackgroundRemovalManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

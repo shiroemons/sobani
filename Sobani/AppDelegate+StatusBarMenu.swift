@@ -278,6 +278,19 @@ extension AppDelegate {
         resetDisplayItem.tag = windowNumber
         submenu.addItem(resetDisplayItem)
 
+        if #available(macOS 14.0, *) {
+            submenu.addItem(NSMenuItem.separator())
+            let removeBackgroundItem = NSMenuItem(
+                title: L("image.remove_background"),
+                action: #selector(removeBackgroundByWindowNumber(_:)),
+                keyEquivalent: ""
+            )
+            removeBackgroundItem.target = self
+            removeBackgroundItem.tag = windowNumber
+            removeBackgroundItem.isEnabled = !areWindowsHidden && !charWindow.imageHasAlpha()
+            submenu.addItem(removeBackgroundItem)
+        }
+
         submenu.addItem(NSMenuItem.separator())
 
         let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
@@ -366,6 +379,11 @@ extension AppDelegate {
     @objc func closeWindowByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         charWindow.closeThisWindow()
+    }
+
+    @objc func removeBackgroundByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.removeBackground()
     }
 
     @objc func changeLanguage(_ sender: NSMenuItem) {

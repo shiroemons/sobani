@@ -321,6 +321,134 @@
         }
       }
     },
+    "image.remove_background" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景を除去"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Background"
+          }
+        }
+      }
+    },
+    "image.removing_background" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景を除去中..."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removing background..."
+          }
+        }
+      }
+    },
+    "background_removal.error.title" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景除去エラー"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background Removal Error"
+          }
+        }
+      }
+    },
+    "background_removal.error.conversion_failed" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像の変換に失敗しました"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to convert image"
+          }
+        }
+      }
+    },
+    "background_removal.error.no_foreground" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前景オブジェクトが検出されませんでした"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No foreground object detected"
+          }
+        }
+      }
+    },
+    "background_removal.error.mask_failed" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マスク画像の生成に失敗しました"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to generate mask"
+          }
+        }
+      }
+    },
+    "background_removal.error.filter_failed" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィルタ処理に失敗しました"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter processing failed"
+          }
+        }
+      }
+    },
+    "background_removal.error.final_conversion_failed" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最終画像の変換に失敗しました"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to convert final image"
+          }
+        }
+      }
+    },
     "adjust.title" : {
       "localizations" : {
         "ja" : {

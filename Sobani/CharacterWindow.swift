@@ -20,6 +20,8 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     private(set) var displayName: String = AppConstants.defaultImageName
     private(set) var windowId: Int = 0
     private var adjustmentPanelController: AdjustmentPanelController?
+    private var spinnerOverlay: NSProgressIndicator?
+    private var isRemovingBackground = false
 
     init(image: NSImage) {
         let maxHeight: CGFloat = AppConstants.defaultWindowHeight
@@ -87,128 +89,6 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.aspectRatio = baseWidth / baseHeight
         imageView.frame.size = NSSize(width: baseWidth, height: baseHeight)
         adjustWindowForRotation()
-    }
-
-    // MARK: Menu
-
-    func setupMenu() {
-        let menu = NSMenu()
-        menu.delegate = self
-        menu.autoenablesItems = false
-
-        let registeredItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
-        registeredItem.tag = MenuItemTag.changeImageSubmenu.rawValue
-        registeredItem.submenu = NSMenu()
-        menu.addItem(registeredItem)
-        menu.addItem(NSMenuItem.separator())
-        let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
-        newWindowItem.tag = MenuItemTag.addNewWindowSubmenu.rawValue
-        newWindowItem.submenu = NSMenu()
-        menu.addItem(newWindowItem)
-        menu.addItem(NSMenuItem.separator())
-        let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
-        deleteRegisteredItem.tag = MenuItemTag.deleteRegisteredSubmenu.rawValue
-        let deleteRegisteredSubmenu = NSMenu()
-        deleteRegisteredItem.submenu = deleteRegisteredSubmenu
-        menu.addItem(deleteRegisteredItem)
-        menu.addItem(NSMenuItem.separator())
-
-        let adjustItem = NSMenuItem(title: L("adjust.title"), action: nil, keyEquivalent: "")
-        adjustItem.tag = MenuItemTag.adjustSubmenu.rawValue
-        let adjustSubmenu = NSMenu()
-        adjustSubmenu.autoenablesItems = false
-        adjustItem.submenu = adjustSubmenu
-        menu.addItem(adjustItem)
-        menu.addItem(NSMenuItem.separator())
-
-        let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeThisWindow), keyEquivalent: "w")
-        closeItem.tag = MenuItemTag.close.rawValue
-        closeItem.target = self
-        menu.addItem(closeItem)
-        menu.addItem(NSMenuItem.separator())
-
-        let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
-        quitItem.tag = MenuItemTag.quit.rawValue
-        quitItem.target = self
-        menu.addItem(quitItem)
-        imageView.menu = menu
-    }
-
-    func menuNeedsUpdate(_ menu: NSMenu) {
-        guard let registeredItem = menu.items.first(where: { $0.tag == MenuItemTag.changeImageSubmenu.rawValue }),
-              let submenu = registeredItem.submenu else { return }
-
-        updateTopLevelMenuTitles(menu)
-
-        submenu.removeAllItems()
-        submenu.autoenablesItems = false
-
-        let changeItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImage), keyEquivalent: "o")
-        changeItem.target = self
-        submenu.addItem(changeItem)
-
-        let defaultItem = NSMenuItem(title: L("image.default_reset"), action: #selector(resetToDefault), keyEquivalent: "d")
-        defaultItem.target = self
-        defaultItem.isEnabled = displayName != AppConstants.defaultImageName
-        submenu.addItem(defaultItem)
-
-        let names = ImageManager.shared.registeredImageNames()
-        if !names.isEmpty {
-            submenu.addItem(NSMenuItem.separator())
-            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
-            registeredLabel.isEnabled = false
-            submenu.addItem(registeredLabel)
-            for name in names {
-                let item = NSMenuItem(title: name, action: #selector(selectRegisteredImage(_:)), keyEquivalent: "")
-                item.target = self
-                item.representedObject = name
-                submenu.addItem(item)
-            }
-        }
-
-        guard let newWindowItem = menu.items.first(where: { $0.tag == MenuItemTag.addNewWindowSubmenu.rawValue }),
-              let newWindowSubmenu = newWindowItem.submenu else { return }
-
-        newWindowSubmenu.removeAllItems()
-        let selectImageItem = NSMenuItem(title: L("image.select"), action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
-        selectImageItem.target = self
-        newWindowSubmenu.addItem(selectImageItem)
-
-        let defaultWindowItem = NSMenuItem(title: L("image.default"), action: #selector(addNewWindow), keyEquivalent: "n")
-        defaultWindowItem.target = self
-        newWindowSubmenu.addItem(defaultWindowItem)
-
-        if !names.isEmpty {
-            newWindowSubmenu.addItem(NSMenuItem.separator())
-            let registeredWindowLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
-            registeredWindowLabel.isEnabled = false
-            newWindowSubmenu.addItem(registeredWindowLabel)
-            for name in names {
-                let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImage(_:)), keyEquivalent: "")
-                item.target = self
-                item.representedObject = name
-                newWindowSubmenu.addItem(item)
-            }
-        }
-
-        if let deleteRegisteredItem = menu.items.first(where: { $0.tag == MenuItemTag.deleteRegisteredSubmenu.rawValue }),
-           let deleteRegisteredSubmenu = deleteRegisteredItem.submenu {
-            deleteRegisteredSubmenu.removeAllItems()
-            if !names.isEmpty {
-                for name in names {
-                    let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
-                    item.target = self
-                    item.representedObject = name
-                    deleteRegisteredSubmenu.addItem(item)
-                }
-            }
-            deleteRegisteredItem.isEnabled = !names.isEmpty
-        }
-
-        if let adjustItem = menu.items.first(where: { $0.tag == MenuItemTag.adjustSubmenu.rawValue }),
-           let adjustSubmenu = adjustItem.submenu {
-            populateAdjustSubmenu(adjustSubmenu)
-        }
     }
 
     // MARK: Actions
@@ -396,6 +276,150 @@ protocol CharacterWindowDelegate: AnyObject {
     func characterWindowDidBecomeActive(_ sender: CharacterWindow)
 }
 
+// MARK: - CharacterWindow + Context Menu
+
+extension CharacterWindow {
+    func setupMenu() {
+        let menu = NSMenu()
+        menu.delegate = self
+        menu.autoenablesItems = false
+
+        let registeredItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
+        registeredItem.tag = MenuItemTag.changeImageSubmenu.rawValue
+        registeredItem.submenu = NSMenu()
+        menu.addItem(registeredItem)
+        menu.addItem(NSMenuItem.separator())
+        let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
+        newWindowItem.tag = MenuItemTag.addNewWindowSubmenu.rawValue
+        newWindowItem.submenu = NSMenu()
+        menu.addItem(newWindowItem)
+        menu.addItem(NSMenuItem.separator())
+        let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
+        deleteRegisteredItem.tag = MenuItemTag.deleteRegisteredSubmenu.rawValue
+        let deleteRegisteredSubmenu = NSMenu()
+        deleteRegisteredItem.submenu = deleteRegisteredSubmenu
+        menu.addItem(deleteRegisteredItem)
+        menu.addItem(NSMenuItem.separator())
+
+        let adjustItem = NSMenuItem(title: L("adjust.title"), action: nil, keyEquivalent: "")
+        adjustItem.tag = MenuItemTag.adjustSubmenu.rawValue
+        let adjustSubmenu = NSMenu()
+        adjustSubmenu.autoenablesItems = false
+        adjustItem.submenu = adjustSubmenu
+        menu.addItem(adjustItem)
+        menu.addItem(NSMenuItem.separator())
+
+        let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeThisWindow), keyEquivalent: "w")
+        closeItem.tag = MenuItemTag.close.rawValue
+        closeItem.target = self
+        menu.addItem(closeItem)
+        menu.addItem(NSMenuItem.separator())
+
+        let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.tag = MenuItemTag.quit.rawValue
+        quitItem.target = self
+        menu.addItem(quitItem)
+        imageView.menu = menu
+    }
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        guard let registeredItem = menu.items.first(where: { $0.tag == MenuItemTag.changeImageSubmenu.rawValue }),
+              let submenu = registeredItem.submenu else { return }
+
+        updateTopLevelMenuTitles(menu)
+
+        let names = ImageManager.shared.registeredImageNames()
+        populateChangeImageSubmenu(submenu, names: names)
+        populateNewWindowSubmenu(menu, names: names)
+        populateDeleteRegisteredSubmenu(menu, names: names)
+
+        if let adjustItem = menu.items.first(where: { $0.tag == MenuItemTag.adjustSubmenu.rawValue }),
+           let adjustSubmenu = adjustItem.submenu {
+            populateAdjustSubmenu(adjustSubmenu)
+        }
+    }
+
+    private func populateChangeImageSubmenu(_ submenu: NSMenu, names: [String]) {
+        submenu.removeAllItems()
+        submenu.autoenablesItems = false
+
+        let changeItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImage), keyEquivalent: "o")
+        changeItem.target = self
+        submenu.addItem(changeItem)
+
+        let defaultItem = NSMenuItem(title: L("image.default_reset"), action: #selector(resetToDefault), keyEquivalent: "d")
+        defaultItem.target = self
+        defaultItem.isEnabled = displayName != AppConstants.defaultImageName
+        submenu.addItem(defaultItem)
+
+        if !names.isEmpty {
+            submenu.addItem(NSMenuItem.separator())
+            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
+            registeredLabel.isEnabled = false
+            submenu.addItem(registeredLabel)
+            for name in names {
+                let item = NSMenuItem(title: name, action: #selector(selectRegisteredImage(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = name
+                submenu.addItem(item)
+            }
+        }
+
+        if #available(macOS 14.0, *) {
+            submenu.addItem(NSMenuItem.separator())
+            let removeBackgroundItem = NSMenuItem(
+                title: L("image.remove_background"),
+                action: #selector(removeBackground),
+                keyEquivalent: ""
+            )
+            removeBackgroundItem.target = self
+            removeBackgroundItem.tag = MenuItemTag.removeBackground.rawValue
+            removeBackgroundItem.isEnabled = !isRemovingBackground && !imageHasAlpha()
+            submenu.addItem(removeBackgroundItem)
+        }
+    }
+
+    private func populateNewWindowSubmenu(_ menu: NSMenu, names: [String]) {
+        guard let newWindowItem = menu.items.first(where: { $0.tag == MenuItemTag.addNewWindowSubmenu.rawValue }),
+              let newWindowSubmenu = newWindowItem.submenu else { return }
+
+        newWindowSubmenu.removeAllItems()
+        let selectImageItem = NSMenuItem(title: L("image.select"), action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
+        selectImageItem.target = self
+        newWindowSubmenu.addItem(selectImageItem)
+
+        let defaultWindowItem = NSMenuItem(title: L("image.default"), action: #selector(addNewWindow), keyEquivalent: "n")
+        defaultWindowItem.target = self
+        newWindowSubmenu.addItem(defaultWindowItem)
+
+        if !names.isEmpty {
+            newWindowSubmenu.addItem(NSMenuItem.separator())
+            let registeredWindowLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
+            registeredWindowLabel.isEnabled = false
+            newWindowSubmenu.addItem(registeredWindowLabel)
+            for name in names {
+                let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImage(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = name
+                newWindowSubmenu.addItem(item)
+            }
+        }
+    }
+
+    private func populateDeleteRegisteredSubmenu(_ menu: NSMenu, names: [String]) {
+        guard let deleteRegisteredItem = menu.items.first(where: { $0.tag == MenuItemTag.deleteRegisteredSubmenu.rawValue }),
+              let deleteRegisteredSubmenu = deleteRegisteredItem.submenu else { return }
+        deleteRegisteredSubmenu.removeAllItems()
+        for name in names {
+            let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = name
+            deleteRegisteredSubmenu.addItem(item)
+        }
+        deleteRegisteredItem.isEnabled = !names.isEmpty
+    }
+}
+
 // MARK: - CharacterWindow + Adjust Submenu
 
 extension CharacterWindow {
@@ -505,5 +529,70 @@ extension CharacterWindow {
 
     func setWindowId(_ newId: Int) {
         windowId = newId
+    }
+}
+
+// MARK: - CharacterWindow + Background Removal
+
+extension CharacterWindow {
+    @objc func removeBackground() {
+        guard !isRemovingBackground else { return }
+        if #available(macOS 14.0, *) {
+            isRemovingBackground = true
+            guard let currentImage = imageView.image else {
+                isRemovingBackground = false
+                return
+            }
+            showSpinner()
+            BackgroundRemovalManager.shared.removeBackground(from: currentImage) { [weak self] result in
+                guard let self = self else { return }
+                self.hideSpinner()
+                self.isRemovingBackground = false
+                switch result {
+                case .success(let newImage):
+                    let baseName = (self.displayName as NSString).deletingPathExtension
+                    let newName = "\(baseName)_nobg.png"
+                    ImageManager.shared.registerImage(newImage, name: newName)
+                    self.displayName = newName
+                    self.applyImage(newImage)
+                case .failure(let error):
+                    let alert = NSAlert()
+                    alert.messageText = L("background_removal.error.title")
+                    alert.informativeText = error.localizedDescription
+                    alert.alertStyle = .warning
+                    alert.addButton(withTitle: "OK")
+                    alert.runModal()
+                }
+            }
+        }
+    }
+
+    private func showSpinner() {
+        let spinner = NSProgressIndicator()
+        spinner.style = .spinning
+        spinner.controlSize = .regular
+        spinner.sizeToFit()
+        if let contentView = window.contentView {
+            spinner.frame.origin = NSPoint(
+                x: (contentView.bounds.width - spinner.frame.width) / 2,
+                y: (contentView.bounds.height - spinner.frame.height) / 2
+            )
+            spinner.autoresizingMask = [.minXMargin, .maxXMargin, .minYMargin, .maxYMargin]
+            contentView.addSubview(spinner)
+            spinner.startAnimation(nil)
+        }
+        spinnerOverlay = spinner
+    }
+
+    private func hideSpinner() {
+        spinnerOverlay?.stopAnimation(nil)
+        spinnerOverlay?.removeFromSuperview()
+        spinnerOverlay = nil
+    }
+
+    func imageHasAlpha() -> Bool {
+        guard let tiffData = imageView.image?.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiffData) else { return false }
+        return bitmap.hasAlpha
     }
 }

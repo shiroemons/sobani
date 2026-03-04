@@ -71,4 +71,5 @@ enum MenuItemTag: Int {
     case addNewWindowSubmenu = 1016
     case deleteRegisteredSubmenu = 1017
     case adjustSubmenu = 1018
+    case removeBackground = 1019
 }
