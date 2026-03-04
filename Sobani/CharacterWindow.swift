@@ -591,8 +591,26 @@ extension CharacterWindow {
     }
 
     func imageHasAlpha() -> Bool {
-        guard let tiffData = imageView.image?.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData) else { return false }
-        return bitmap.hasAlpha
+        guard let image = imageView.image,
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return false
+        }
+        let alphaInfo = cgImage.alphaInfo
+        if alphaInfo == .none || alphaInfo == .noneSkipFirst || alphaInfo == .noneSkipLast {
+            return false
+        }
+        let width = cgImage.width
+        let height = cgImage.height
+        guard let context = CGContext(
+            data: nil, width: width, height: height,
+            bitsPerComponent: 8, bytesPerRow: width * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return false }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let data = context.data else { return false }
+        let ptr = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
+        let totalBytes = width * height * 4
+        return stride(from: 3, to: totalBytes, by: 4).contains { ptr[$0] < 255 }
     }
 }
