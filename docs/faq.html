@@ -14,9 +14,9 @@
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <title>FAQ - Sobani</title>
-  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。">
+  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全35項目を掲載。">
   <meta property="og:title" content="FAQ - Sobani">
-  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。">
+  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全35項目を掲載。">
   <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -25,7 +25,7 @@
   <meta property="og:site_name" content="Sobani">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:title" content="FAQ - Sobani">
-  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。">
+  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全35項目を掲載。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta name="theme-color" content="#f59e0b">
   <meta name="author" content="shiroemons">
@@ -335,6 +335,22 @@
           "@type": "Answer",
           "text": "はい、そのまま使えます。JPEG、PNG、TIFF、HEICなど主要な形式に対応しています。表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できます。"
         }
+      },
+      {
+        "@type": "Question",
+        "name": "背景除去機能とは何ですか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を変更」→「背景を除去」から実行できます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "背景除去はどの画像で使えますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JPEG、GIF、TIFF、HEICなど背景のある画像で利用できます。すでに背景が透過されている画像（透過PNG）では、メニュー項目が自動的に無効化されます。処理結果は「元のファイル名_nobg.png」として画像ライブラリに保存されます。"
+        }
       }
     ]
   }
@@ -606,6 +622,22 @@
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a22">Sobaniは「デスクトップアクスタ」をコンセプトとしたアプリです。実物のアクリルスタンドと同じように、お気に入りの画像をそのままデスクトップに飾ることを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。</div>
           </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q34">背景除去機能とは何ですか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a34">Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を変更」→「背景を除去」から実行できます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q35">背景除去はどの画像で使えますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a35">JPEG、GIF、TIFF、HEICなど背景のある画像で利用できます。すでに背景が透過されている画像（透過PNG）では、メニュー項目が自動的に無効化されます。処理結果は「元のファイル名_nobg.png」として画像ライブラリに保存されます。</div>
+          </details>
         </div>
       </div>
 
@@ -800,7 +832,7 @@
       ja: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全33項目を掲載。",
+          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全35項目を掲載。",
           keywords: "Sobani,FAQ,よくある質問,macOS,デスクトップアクスタ,デスクトップマスコット,インストール,使い方,カスタマイズ,トラブルシューティング,画像表示"
         },
         nav: {
@@ -890,13 +922,17 @@
           q32: "仕事中にすばやく非表示にしたい",
           a32: 'ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。',
           q33: "一眼レフやミラーレスの高解像度写真も使えますか？",
-          a33: 'はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。'
+          a33: 'はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。',
+          q34: "背景除去機能とは何ですか？",
+          a34: "Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を変更」→「背景を除去」から実行できます。",
+          q35: "背景除去はどの画像で使えますか？",
+          a35: "JPEG、GIF、TIFF、HEICなど背景のある画像で利用できます。すでに背景が透過されている画像（透過PNG）では、メニュー項目が自動的に無効化されます。処理結果は「元のファイル名_nobg.png」として画像ライブラリに保存されます。"
         }
       },
       en: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 33 items total.",
+          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 35 items total.",
           keywords: "Sobani,FAQ,frequently asked questions,macOS,desktop acrylic stand,desktop mascot,installation,usage,customization,troubleshooting,image display"
         },
         nav: {
@@ -986,7 +1022,11 @@
           q32: "How do I quickly hide windows during work?",
           a32: 'Before a video call or screen share, press <strong>Option + H</strong> to instantly hide all windows. For details on showing them again, see "What keyboard shortcuts are available?" and "How do I show hidden windows again?"',
           q33: "Can I use high-resolution DSLR/mirrorless photos?",
-          a33: 'Yes, they work right out of the camera. See "What image formats are supported?" for the full list.<br><br>The display size can be freely adjusted from 100px to 6000px using scroll, so even large photos can be scaled down to fit comfortably on screen.'
+          a33: 'Yes, they work right out of the camera. See "What image formats are supported?" for the full list.<br><br>The display size can be freely adjusted from 100px to 6000px using scroll, so even large photos can be scaled down to fit comfortably on screen.',
+          q34: "What is the background removal feature?",
+          a34: "It's an AI-powered background removal feature built into Sobani. It automatically cuts out subjects from images with backgrounds (like JPEG photos) and saves them as transparent PNGs. Available on macOS 14 (Sonoma) and later, it uses the built-in Vision framework so no external tools are needed. Access it from the right-click menu under 'Change Image' \u2192 'Remove Background'.",
+          q35: "Which images can use background removal?",
+          a35: "It works with images that have backgrounds, such as JPEG, GIF, TIFF, and HEIC formats. For images that are already transparent (transparent PNGs), the menu item is automatically disabled. Results are saved as 'original-filename_nobg.png' in the image library."
         }
       }
     };
