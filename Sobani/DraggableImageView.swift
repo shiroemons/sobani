@@ -27,6 +27,19 @@ class DraggableImageView: NSImageView {
     var onOpacityChanged: (() -> Void)?
     var scrollRotationHandler: ((CGFloat) -> Void)?
     var onMouseDown: (() -> Void)?
+    var onDropImage: ((URL, Bool) -> Void)?
+    var onDragEntered: (() -> Void)?
+    var onDragExited: (() -> Void)?
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        registerForDraggedTypes([.fileURL])
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        registerForDraggedTypes([.fileURL])
+    }
 
     private var allCharacterWindows: [NSWindow] {
         NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
@@ -130,5 +143,29 @@ class DraggableImageView: NSImageView {
         }
 
         layer?.setAffineTransform(transform)
+    }
+}
+
+// MARK: - NSDraggingDestination
+
+extension DraggableImageView {
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        let urls = DragDropUtils.extractImageURLs(from: sender)
+        guard !urls.isEmpty else { return [] }
+        onDragEntered?()
+        return .copy
+    }
+
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        onDragExited?()
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        onDragExited?()
+        let urls = DragDropUtils.extractImageURLs(from: sender)
+        guard let url = urls.first else { return false }
+        let isOption = NSEvent.modifierFlags.contains(.option)
+        onDropImage?(url, isOption)
+        return true
     }
 }

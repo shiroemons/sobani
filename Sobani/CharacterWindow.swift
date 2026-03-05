@@ -72,6 +72,17 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             self?.adjustmentPanelController?.updateOpacity(self?.imageView.opacityLevel ?? 1.0)
         }
 
+        imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
+        imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
+        imageView.onDropImage = { [weak self] url, isOption in
+            guard let self = self else { return }
+            if isOption {
+                self.delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
+            } else {
+                self.handleDroppedImage(url: url)
+            }
+        }
+
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
         let offsetX = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
         let offsetY = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
@@ -185,6 +196,13 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             displayName = savedName ?? url.deletingPathExtension().lastPathComponent
             applyImage(newImage)
         }
+    }
+
+    private func handleDroppedImage(url: URL) {
+        guard let newImage = NSImage(contentsOf: url) else { return }
+        let savedName = ImageManager.shared.registerImage(from: url)
+        displayName = savedName ?? url.deletingPathExtension().lastPathComponent
+        applyImage(newImage)
     }
 
     @objc func selectRegisteredImage(_ sender: NSMenuItem) {
