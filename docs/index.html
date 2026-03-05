@@ -29,6 +29,14 @@
   <meta name="twitter:title" content="Sobani — 推しを、そばに。">
   <meta name="twitter:description" content="推しを、そばに。お気に入りの画像をアクリルスタンドのようにMacのデスクトップに飾れる、無料のmacOSアプリ。透過表示・常に最前面・複数画像同時表示対応。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
+  <meta name="twitter:site" content="@shiroemons">
+  <meta name="twitter:creator" content="@shiroemons">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale:alternate" content="en_US">
+  <link rel="alternate" hreflang="ja" href="https://xn--xckxf.jp/sobani/">
+  <link rel="alternate" hreflang="en" href="https://xn--xckxf.jp/sobani/?lang=en">
+  <link rel="alternate" hreflang="x-default" href="https://xn--xckxf.jp/sobani/">
   <meta name="theme-color" content="#f59e0b">
   <meta name="author" content="shiroemons">
   <meta name="keywords" content="macOS,デスクトップマスコット,アクリルスタンド,デスクトップアクスタ,Sobani,推し,常に最前面,最前面表示,PNG透過表示,透過ウィンドウ,複数画像表示,ドラッグ移動,回転,透明度調整,仮想デスクトップ対応,Swift,無料,軽量,ペット写真,アイドル,K-POP,VTuber,スポーツ,趣味の写真,デスクトップカスタマイズ">
@@ -89,6 +97,20 @@
     "image": "https://xn--xckxf.jp/sobani/images/og-image.png",
     "screenshot": "https://xn--xckxf.jp/sobani/screenshots/sobani-desktop.png",
     "inLanguage": "ja"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Sobani",
+        "item": "https://xn--xckxf.jp/sobani/"
+      }
+    ]
   }
   </script>
 </head>
@@ -905,6 +927,12 @@
 
     // Language switching
     function getLanguage() {
+      var params = new URLSearchParams(window.location.search);
+      var urlLang = params.get('lang');
+      if (urlLang === 'ja' || urlLang === 'en') {
+        localStorage.setItem('lang', urlLang);
+        return urlLang;
+      }
       var saved = localStorage.getItem('lang');
       if (saved) return saved;
       var browserLang = (navigator.language || 'ja').toLowerCase();
