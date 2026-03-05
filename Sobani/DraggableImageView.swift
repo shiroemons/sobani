@@ -168,4 +168,8 @@ extension DraggableImageView {
         onDropImage?(url, isOption)
         return true
     }
+
+    override func concludeDragOperation(_ sender: NSDraggingInfo?) {
+        // NSImageView のデフォルト動作（image プロパティの自動差し替え）を無効化
+    }
 }
