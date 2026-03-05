@@ -673,6 +673,54 @@
         }
       }
     },
+    "adjust.monitor" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\u30e2\u30cb\u30bf\u30fc:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitor:"
+          }
+        }
+      }
+    },
+    "adjust.position" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\u4f4d\u7f6e:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position:"
+          }
+        }
+      }
+    },
+    "adjust.size" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\u30b5\u30a4\u30ba:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size:"
+          }
+        }
+      }
+    },
     "window.show_all" : {
       "localizations" : {
         "ja" : {

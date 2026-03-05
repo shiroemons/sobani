@@ -12,6 +12,14 @@ protocol AdjustmentPanelDelegate: AnyObject {
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeOpacity opacity: CGFloat)
     /// 不透明度がリセットされた
     func adjustmentPanelDidResetOpacity(_ panel: AdjustmentPanelController)
+    /// 位置が変更された（グローバル座標）
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint)
+    /// サイズが変更された（回転前 imageView サイズ）
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize)
+    /// モニターが選択された
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didSelectMonitor screen: NSScreen)
+    /// 位置・サイズがリセットされた
+    func adjustmentPanelDidResetPositionAndSize(_ panel: AdjustmentPanelController)
 }
 
 // MARK: - Rotation Dial View
@@ -120,6 +128,16 @@ class RotationDialView: NSView {
     }
 }
 
+// MARK: - Adjustment Panel State
+
+struct AdjustmentPanelState {
+    let angle: CGFloat
+    let opacity: CGFloat
+    let position: CGPoint
+    let size: CGSize
+    let aspectRatio: CGFloat
+}
+
 // MARK: - Adjustment Panel Controller
 
 class AdjustmentPanelController: NSObject, NSWindowDelegate {
@@ -132,14 +150,28 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
     private var currentOpacity: CGFloat = 1.0
     private var opacitySlider: NSSlider?
     private var opacityLabel: NSTextField?
+    private var monitorPopup: NSPopUpButton?
+    private var resolutionLabel: NSTextField?
+    private var xField: NSTextField?
+    private var yField: NSTextField?
+    private var wField: NSTextField?
+    private var hField: NSTextField?
+    private var currentPosition: CGPoint = .zero
+    private var currentSize: CGSize = .zero
+    private var currentScreen: NSScreen?
+    private var currentAspectRatio: CGFloat = 1.0
 
-    func show(near window: NSWindow, currentAngle angle: CGFloat, currentOpacity opacity: CGFloat) {
-        currentAngle = angle
-        currentOpacity = opacity
+    func show(near window: NSWindow, state: AdjustmentPanelState) {
+        currentAngle = state.angle
+        currentOpacity = state.opacity
+        currentPosition = state.position
+        currentSize = state.size
+        currentAspectRatio = state.aspectRatio
+        currentScreen = NSScreen.screen(containing: window.frame)
         close()
 
         let panelWidth: CGFloat = 220
-        let panelHeight: CGFloat = 280
+        let panelHeight: CGFloat = 460
         let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
 
         let newPanel = NSPanel(
@@ -167,15 +199,22 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
         let contentView = NSView(frame: panelRect)
 
-        let rotationOffsetY: CGFloat = 120
-        setupRotationSection(in: contentView, angle: angle, offsetY: rotationOffsetY)
+        let rotationOffsetY: CGFloat = 300
+        setupRotationSection(in: contentView, angle: state.angle, offsetY: rotationOffsetY)
 
-        // Separator
-        let separator = NSBox(frame: NSRect(x: 10, y: 120, width: 200, height: 1))
-        separator.boxType = .separator
-        contentView.addSubview(separator)
+        // Separator between rotation and opacity
+        let separator1 = NSBox(frame: NSRect(x: 10, y: 300, width: 200, height: 1))
+        separator1.boxType = .separator
+        contentView.addSubview(separator1)
 
-        setupOpacitySection(in: contentView, opacity: opacity)
+        setupOpacitySection(in: contentView, opacity: state.opacity, offsetY: 180)
+
+        // Separator between opacity and position/size
+        let separator2 = NSBox(frame: NSRect(x: 10, y: 180, width: 200, height: 1))
+        separator2.boxType = .separator
+        contentView.addSubview(separator2)
+
+        setupPositionSizeSection(in: contentView)
 
         newPanel.contentView = contentView
         newPanel.makeKeyAndOrderFront(nil)
@@ -222,14 +261,14 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         contentView.addSubview(resetButton)
     }
 
-    private func setupOpacitySection(in contentView: NSView, opacity: CGFloat) {
+    private func setupOpacitySection(in contentView: NSView, opacity: CGFloat, offsetY: CGFloat = 0) {
         let opacitySectionLabel = NSTextField(labelWithString: L("adjust.opacity"))
-        opacitySectionLabel.frame = NSRect(x: 10, y: 85, width: 50, height: 20)
+        opacitySectionLabel.frame = NSRect(x: 10, y: 85 + offsetY, width: 50, height: 20)
         opacitySectionLabel.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(opacitySectionLabel)
 
         let percentLabel = NSTextField(labelWithString: formatOpacity(opacity))
-        percentLabel.frame = NSRect(x: 160, y: 85, width: 50, height: 20)
+        percentLabel.frame = NSRect(x: 160, y: 85 + offsetY, width: 50, height: 20)
         percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
         percentLabel.alignment = .right
         contentView.addSubview(percentLabel)
@@ -242,17 +281,19 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
             target: self,
             action: #selector(opacitySliderChanged(_:))
         )
-        slider.frame = NSRect(x: 10, y: 58, width: 200, height: 20)
+        slider.frame = NSRect(x: 10, y: 58 + offsetY, width: 200, height: 20)
         slider.numberOfTickMarks = 0
         contentView.addSubview(slider)
         opacitySlider = slider
 
         let opacityResetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetOpacity))
-        opacityResetButton.frame = NSRect(x: 110, y: 20, width: 90, height: 28)
+        opacityResetButton.frame = NSRect(x: 110, y: 20 + offsetY, width: 90, height: 28)
         opacityResetButton.bezelStyle = .rounded
         opacityResetButton.font = NSFont.systemFont(ofSize: 12)
         contentView.addSubview(opacityResetButton)
     }
+
+    // MARK: - Close / Cleanup
 
     func close() {
         panel?.orderOut(nil)
@@ -270,11 +311,19 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         textField = nil
         opacitySlider = nil
         opacityLabel = nil
+        monitorPopup = nil
+        resolutionLabel = nil
+        xField = nil
+        yField = nil
+        wField = nil
+        hField = nil
     }
 
     var isVisible: Bool {
         panel?.isVisible ?? false
     }
+
+    // MARK: - Existing Update Methods
 
     func updateAngle(_ angle: CGFloat) {
         currentAngle = angle
@@ -287,6 +336,8 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         opacitySlider?.doubleValue = Double(opacity)
         opacityLabel?.stringValue = formatOpacity(opacity)
     }
+
+    // MARK: - Rotation Handlers
 
     private func angleChanged(_ newAngle: CGFloat) {
         currentAngle = newAngle
@@ -315,6 +366,8 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         delegate?.rotationPanelDidReset(self)
     }
 
+    // MARK: - Opacity Handlers
+
     @objc private func opacitySliderChanged(_ sender: NSSlider) {
         let opacity = CGFloat(sender.doubleValue)
         currentOpacity = opacity
@@ -329,6 +382,8 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         delegate?.adjustmentPanelDidResetOpacity(self)
     }
 
+    // MARK: - Formatting Helpers
+
     private func formatAngle(_ angle: CGFloat) -> String {
         let rounded = angle.rounded()
         if abs(angle - rounded) < AppConstants.floatingPointTolerance {
@@ -339,5 +394,242 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
     private func formatOpacity(_ opacity: CGFloat) -> String {
         return "\(Int(round(opacity * 100)))%"
+    }
+
+}
+
+// MARK: - Position & Size Section
+
+extension AdjustmentPanelController {
+    private func setupPositionSizeSection(in contentView: NSView) {
+        // Monitor popup
+        let monitorLabel = NSTextField(labelWithString: L("adjust.monitor"))
+        monitorLabel.frame = NSRect(x: 10, y: 145, width: 60, height: 20)
+        monitorLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(monitorLabel)
+
+        let popup = NSPopUpButton(frame: NSRect(x: 70, y: 143, width: 140, height: 24), pullsDown: false)
+        popup.font = NSFont.systemFont(ofSize: 11)
+        popup.target = self
+        popup.action = #selector(monitorPopupChanged(_:))
+        contentView.addSubview(popup)
+        monitorPopup = popup
+        populateMonitorPopup()
+
+        // Resolution label
+        let resLabel = NSTextField(labelWithString: "")
+        resLabel.frame = NSRect(x: 70, y: 126, width: 140, height: 16)
+        resLabel.font = NSFont.systemFont(ofSize: 10)
+        resLabel.textColor = .secondaryLabelColor
+        contentView.addSubview(resLabel)
+        resolutionLabel = resLabel
+        updateResolutionLabel()
+
+        // Position
+        let posLabel = NSTextField(labelWithString: L("adjust.position"))
+        posLabel.frame = NSRect(x: 10, y: 100, width: 40, height: 20)
+        posLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(posLabel)
+
+        let xLabel = NSTextField(labelWithString: "X")
+        xLabel.frame = NSRect(x: 55, y: 100, width: 15, height: 20)
+        xLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(xLabel)
+
+        let xInput = NSTextField(frame: NSRect(x: 70, y: 98, width: 60, height: 22))
+        xInput.alignment = .right
+        xInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        xInput.target = self
+        xInput.action = #selector(xFieldChanged(_:))
+        contentView.addSubview(xInput)
+        xField = xInput
+
+        let yLabel = NSTextField(labelWithString: "Y")
+        yLabel.frame = NSRect(x: 140, y: 100, width: 15, height: 20)
+        yLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(yLabel)
+
+        let yInput = NSTextField(frame: NSRect(x: 155, y: 98, width: 60, height: 22))
+        yInput.alignment = .right
+        yInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        yInput.target = self
+        yInput.action = #selector(yFieldChanged(_:))
+        contentView.addSubview(yInput)
+        yField = yInput
+
+        // Size
+        let sizeLabel = NSTextField(labelWithString: L("adjust.size"))
+        sizeLabel.frame = NSRect(x: 10, y: 70, width: 40, height: 20)
+        sizeLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(sizeLabel)
+
+        let wLabel = NSTextField(labelWithString: "W")
+        wLabel.frame = NSRect(x: 55, y: 70, width: 15, height: 20)
+        wLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(wLabel)
+
+        let wInput = NSTextField(frame: NSRect(x: 70, y: 68, width: 60, height: 22))
+        wInput.alignment = .right
+        wInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        wInput.target = self
+        wInput.action = #selector(wFieldChanged(_:))
+        contentView.addSubview(wInput)
+        wField = wInput
+
+        let hLabel = NSTextField(labelWithString: "H")
+        hLabel.frame = NSRect(x: 140, y: 70, width: 15, height: 20)
+        hLabel.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(hLabel)
+
+        let hInput = NSTextField(frame: NSRect(x: 155, y: 68, width: 60, height: 22))
+        hInput.alignment = .right
+        hInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        hInput.target = self
+        hInput.action = #selector(hFieldChanged(_:))
+        contentView.addSubview(hInput)
+        hField = hInput
+
+        // Reset button
+        let resetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetPositionAndSize))
+        resetButton.frame = NSRect(x: 110, y: 20, width: 90, height: 28)
+        resetButton.bezelStyle = .rounded
+        resetButton.font = NSFont.systemFont(ofSize: 12)
+        contentView.addSubview(resetButton)
+
+        updatePositionFields()
+        updateSizeFields()
+    }
+
+    // MARK: Coordinate Conversion
+
+    private func globalToMonitorRelative(_ point: CGPoint, screen: NSScreen) -> CGPoint {
+        return CGPoint(x: point.x - screen.frame.origin.x, y: point.y - screen.frame.origin.y)
+    }
+
+    private func monitorRelativeToGlobal(_ point: CGPoint, screen: NSScreen) -> CGPoint {
+        return CGPoint(x: point.x + screen.frame.origin.x, y: point.y + screen.frame.origin.y)
+    }
+
+    // MARK: Monitor Popup
+
+    private func populateMonitorPopup() {
+        guard let popup = monitorPopup else { return }
+        popup.removeAllItems()
+        let screens = NSScreen.screens
+        for (index, screen) in screens.enumerated() {
+            let title = "\(index + 1): \(Int(screen.frame.width))×\(Int(screen.frame.height))"
+            popup.addItem(withTitle: title)
+            popup.lastItem?.representedObject = screen
+        }
+        if let current = currentScreen, let idx = screens.firstIndex(of: current) {
+            popup.selectItem(at: idx)
+        }
+    }
+
+    private func updateResolutionLabel() {
+        guard let screen = currentScreen else {
+            resolutionLabel?.stringValue = ""
+            return
+        }
+        resolutionLabel?.stringValue = "\(Int(screen.frame.width))×\(Int(screen.frame.height))"
+    }
+
+    @objc private func monitorPopupChanged(_ sender: NSPopUpButton) {
+        guard let screen = sender.selectedItem?.representedObject as? NSScreen else { return }
+        currentScreen = screen
+        updateResolutionLabel()
+        updatePositionFields()
+        delegate?.adjustmentPanel(self, didSelectMonitor: screen)
+    }
+
+    // MARK: Position/Size Field Handlers
+
+    @objc private func xFieldChanged(_ sender: NSTextField) {
+        guard let screen = currentScreen else { return }
+        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
+        guard let value = Double(text) else {
+            updatePositionFields()
+            return
+        }
+        let relative = CGPoint(x: CGFloat(value), y: globalToMonitorRelative(currentPosition, screen: screen).y)
+        let global = monitorRelativeToGlobal(relative, screen: screen)
+        currentPosition = global
+        delegate?.adjustmentPanel(self, didChangePosition: global)
+    }
+
+    @objc private func yFieldChanged(_ sender: NSTextField) {
+        guard let screen = currentScreen else { return }
+        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
+        guard let value = Double(text) else {
+            updatePositionFields()
+            return
+        }
+        let relative = CGPoint(x: globalToMonitorRelative(currentPosition, screen: screen).x, y: CGFloat(value))
+        let global = monitorRelativeToGlobal(relative, screen: screen)
+        currentPosition = global
+        delegate?.adjustmentPanel(self, didChangePosition: global)
+    }
+
+    @objc private func wFieldChanged(_ sender: NSTextField) {
+        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
+        guard let value = Double(text), value > 0 else {
+            updateSizeFields()
+            return
+        }
+        let clampedH = max(AppConstants.minImageHeight, min(AppConstants.maxImageHeight, CGFloat(value) / currentAspectRatio))
+        let clampedW = clampedH * currentAspectRatio
+        currentSize = CGSize(width: clampedW, height: clampedH)
+        updateSizeFields()
+        delegate?.adjustmentPanel(self, didChangeSize: currentSize)
+    }
+
+    @objc private func hFieldChanged(_ sender: NSTextField) {
+        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
+        guard let value = Double(text), value > 0 else {
+            updateSizeFields()
+            return
+        }
+        let clampedH = max(AppConstants.minImageHeight, min(AppConstants.maxImageHeight, CGFloat(value)))
+        let clampedW = clampedH * currentAspectRatio
+        currentSize = CGSize(width: clampedW, height: clampedH)
+        updateSizeFields()
+        delegate?.adjustmentPanel(self, didChangeSize: currentSize)
+    }
+
+    @objc private func resetPositionAndSize() {
+        delegate?.adjustmentPanelDidResetPositionAndSize(self)
+    }
+
+    // MARK: Public Update Methods
+
+    func updatePosition(_ position: CGPoint) {
+        currentPosition = position
+        updatePositionFields()
+    }
+
+    func updateSize(_ size: CGSize) {
+        currentSize = size
+        updateSizeFields()
+    }
+
+    func updateMonitor(_ window: NSWindow) {
+        currentScreen = NSScreen.screen(containing: window.frame)
+        populateMonitorPopup()
+        updateResolutionLabel()
+        updatePositionFields()
+    }
+
+    // MARK: Field Update Helpers
+
+    private func updatePositionFields() {
+        guard let screen = currentScreen else { return }
+        let relative = globalToMonitorRelative(currentPosition, screen: screen)
+        xField?.stringValue = "\(Int(round(relative.x)))"
+        yField?.stringValue = "\(Int(round(relative.y)))"
+    }
+
+    private func updateSizeFields() {
+        wField?.stringValue = "\(Int(round(currentSize.width)))"
+        hField?.stringValue = "\(Int(round(currentSize.height)))"
     }
 }

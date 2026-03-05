@@ -22,6 +22,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     private var adjustmentPanelController: AdjustmentPanelController?
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
+    private var windowMoveObserver: NSObjectProtocol?
 
     init(image: NSImage) {
         let maxHeight: CGFloat = AppConstants.defaultWindowHeight
@@ -117,9 +118,23 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         controller.delegate = self
         controller.onClose = { [weak self] in
             self?.imageView.scrollRotationHandler = nil
+            if let observer = self?.windowMoveObserver {
+                NotificationCenter.default.removeObserver(observer)
+                self?.windowMoveObserver = nil
+            }
+            self?.imageView.onSizeChanged = nil
             self?.adjustmentPanelController = nil
         }
-        controller.show(near: window, currentAngle: imageView.rotationAngle, currentOpacity: imageView.opacityLevel)
+        controller.show(
+            near: window,
+            state: AdjustmentPanelState(
+                angle: imageView.rotationAngle,
+                opacity: imageView.opacityLevel,
+                position: currentImageOrigin(),
+                size: imageView.frame.size,
+                aspectRatio: imageView.aspectRatio
+            )
+        )
         adjustmentPanelController = controller
         imageView.scrollRotationHandler = { [weak self] delta in
             guard let self = self else { return }
@@ -128,12 +143,28 @@ class CharacterWindow: NSObject, NSMenuDelegate {
             newAngle = GeometryUtils.normalizeAngle(newAngle)
             self.applyRotation(newAngle)
         }
+        windowMoveObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification, object: window, queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.adjustmentPanelController?.updatePosition(self.currentImageOrigin())
+            self.adjustmentPanelController?.updateMonitor(self.window)
+        }
+        imageView.onSizeChanged = { [weak self] in
+            guard let self = self else { return }
+            self.adjustmentPanelController?.updateSize(self.imageView.frame.size)
+        }
     }
 
     private func closeAdjustmentPanel() {
         adjustmentPanelController?.close()
         adjustmentPanelController = nil
         imageView.scrollRotationHandler = nil
+        if let observer = windowMoveObserver {
+            NotificationCenter.default.removeObserver(observer)
+            windowMoveObserver = nil
+        }
+        imageView.onSizeChanged = nil
     }
 
     @objc func resetRotation() {
@@ -275,6 +306,63 @@ extension CharacterWindow: AdjustmentPanelDelegate {
 
     func adjustmentPanelDidResetOpacity(_ panel: AdjustmentPanelController) {
         applyOpacity(1.0)
+    }
+
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
+        // position is the image origin in global coordinates
+        let bbSize = GeometryUtils.rotatedBoundingBox(
+            width: imageView.frame.width, height: imageView.frame.height, angleDegrees: imageView.rotationAngle
+        )
+        let centerX = position.x + imageView.frame.width / 2
+        let centerY = position.y + imageView.frame.height / 2
+        window.setFrameOrigin(NSPoint(
+            x: round(centerX - bbSize.width / 2),
+            y: round(centerY - bbSize.height / 2)
+        ))
+    }
+
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize) {
+        imageView.frame.size = size
+        adjustWindowForRotation()
+        adjustmentPanelController?.updatePosition(currentImageOrigin())
+    }
+
+    func adjustmentPanel(_ panel: AdjustmentPanelController, didSelectMonitor screen: NSScreen) {
+        // Maintain monitor-relative position when switching monitors
+        guard let oldScreen = NSScreen.screen(containing: window.frame) else { return }
+        let oldOrigin = currentImageOrigin()
+        let relativeX = oldOrigin.x - oldScreen.frame.origin.x
+        let relativeY = oldOrigin.y - oldScreen.frame.origin.y
+        let newOrigin = CGPoint(
+            x: screen.frame.origin.x + relativeX,
+            y: screen.frame.origin.y + relativeY
+        )
+        let bbSize = GeometryUtils.rotatedBoundingBox(
+            width: imageView.frame.width, height: imageView.frame.height, angleDegrees: imageView.rotationAngle
+        )
+        let centerX = newOrigin.x + imageView.frame.width / 2
+        let centerY = newOrigin.y + imageView.frame.height / 2
+        window.setFrameOrigin(NSPoint(
+            x: round(centerX - bbSize.width / 2),
+            y: round(centerY - bbSize.height / 2)
+        ))
+        adjustmentPanelController?.updatePosition(currentImageOrigin())
+    }
+
+    func adjustmentPanelDidResetPositionAndSize(_ panel: AdjustmentPanelController) {
+        resetDisplay()
+        panel.updatePosition(currentImageOrigin())
+        panel.updateSize(imageView.frame.size)
+        panel.updateMonitor(window)
+    }
+
+    // MARK: Helpers
+
+    private func currentImageOrigin() -> CGPoint {
+        return CGPoint(
+            x: window.frame.midX - imageView.frame.width / 2,
+            y: window.frame.midY - imageView.frame.height / 2
+        )
     }
 }
 

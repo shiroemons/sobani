@@ -315,7 +315,7 @@ extension AppDelegate {
 
 // MARK: - NSScreen Helpers
 
-private extension NSScreen {
+extension NSScreen {
     /// スクリーンの CGDirectDisplayID を取得
     var displayID: CGDirectDisplayID? {
         deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID

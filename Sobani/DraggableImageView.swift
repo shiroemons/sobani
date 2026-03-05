@@ -30,6 +30,7 @@ class DraggableImageView: NSImageView {
     var onDropImage: ((URL, Bool) -> Void)?
     var onDragEntered: (() -> Void)?
     var onDragExited: (() -> Void)?
+    var onSizeChanged: (() -> Void)?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -118,6 +119,7 @@ class DraggableImageView: NSImageView {
             width: newWidth,
             height: newHeight
         )
+        onSizeChanged?()
     }
 
     override func layout() {
