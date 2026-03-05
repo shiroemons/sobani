@@ -150,13 +150,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "\u8868\u793a\u753b\u50cf\u306e\u5909\u66f4"
+            "value" : "\u753b\u50cf\u3092\u5dee\u3057\u66ff\u3048\uff08\u914d\u7f6e\u3092\u7dad\u6301\uff09"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change Image"
+            "value" : "Replace Image (Keep Layout)"
           }
         }
       }
