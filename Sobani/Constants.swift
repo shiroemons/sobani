@@ -32,6 +32,14 @@ enum AppConstants {
 
     // Floating-point comparison
     static let floatingPointTolerance: CGFloat = 0.01
+
+    // Onboarding
+    enum Onboarding {
+        static let width: CGFloat = 520
+        static let height: CGFloat = 480
+        static let currentVersion = 1
+        static let completedVersionKey = "onboardingCompletedVersion"
+    }
 }
 
 enum GeometryUtils {
@@ -70,7 +78,8 @@ enum MenuItemTag: Int {
     case changeImageSubmenu = 1015
     case addNewWindowSubmenu = 1016
     case otherSubmenu = 1018
-    case removeBackground = 1019
-    case flipContext = 1020
-    case adjustPanelContext = 1021
+    case showOnboarding = 1019
+    case removeBackground = 1020
+    case flipContext = 1021
+    case adjustPanelContext = 1022
 }

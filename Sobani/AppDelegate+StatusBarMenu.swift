@@ -99,6 +99,15 @@ extension AppDelegate {
         languageItem.submenu = languageSubmenu
         menu.addItem(languageItem)
 
+        let onboardingItem = NSMenuItem(
+            title: L("menu.show_onboarding"),
+            action: #selector(showOnboarding),
+            keyEquivalent: ""
+        )
+        onboardingItem.target = self
+        onboardingItem.tag = MenuItemTag.showOnboarding.rawValue
+        menu.addItem(onboardingItem)
+
         menu.addItem(NSMenuItem.separator())
         let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitFromMenu), keyEquivalent: "q")
         quitItem.target = self
@@ -524,6 +533,15 @@ extension AppDelegate {
                 charWindow.applyImage(newDefault)
             }
         }
+    }
+
+    @objc func showOnboarding() {
+        let controller = OnboardingWindowController()
+        controller.onAddImage = { [weak self] in
+            self?.changeDefaultImageFromMenu()
+        }
+        controller.show()
+        onboardingController = controller
     }
 
     @objc func resetAllRotations() {

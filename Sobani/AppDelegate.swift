@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
     var wakeContext = WakeRestorationContext()
+    var onboardingController: OnboardingWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
@@ -86,6 +87,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
         UpdateManager.shared.delegate = self
         UpdateManager.shared.startPeriodicChecks()
+
+        if OnboardingManager.shared.shouldShowOnboarding {
+            if savedStates.isEmpty {
+                let controller = OnboardingWindowController()
+                controller.onAddImage = { [weak self] in
+                    self?.changeDefaultImageFromMenu()
+                }
+                controller.onFinish = { [weak self] in
+                    self?.statusItem.button?.performClick(nil)
+                }
+                controller.show()
+                onboardingController = controller
+            } else {
+                OnboardingManager.shared.markCompleted()
+            }
+        }
 
         setupScreenRestorationObservers()
 

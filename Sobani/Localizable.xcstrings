@@ -1,1814 +1,2230 @@
 {
-  "sourceLanguage" : "ja",
-  "strings" : {
-    "menu.about" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani について..."
+  "sourceLanguage": "ja",
+  "strings": {
+    "menu.about": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani について..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About Sobani..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About Sobani..."
           }
         }
       }
     },
-    "menu.quit" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani\u3092\u7d42\u4e86"
+    "menu.quit": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobaniを終了"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quit Sobani"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit Sobani"
           }
         }
       }
     },
-    "menu.other" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u305d\u306e\u4ed6"
+    "menu.other": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "その他"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "More"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More"
           }
         }
       }
     },
-    "menu.close_image" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3053\u306e\u753b\u50cf\u3092\u9589\u3058\u308b"
+    "menu.close_image": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この画像を閉じる"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close This Image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close This Image"
           }
         }
       }
     },
-    "menu.close_all" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3059\u3079\u3066\u9589\u3058\u308b"
+    "menu.close_all": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて閉じる"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close All"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close All"
           }
         }
       }
     },
-    "menu.launch_at_login" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30ed\u30b0\u30a4\u30f3\u6642\u306b\u8d77\u52d5"
+    "menu.launch_at_login": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ログイン時に起動"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open at Login"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open at Login"
           }
         }
       }
     },
-    "status.showing" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8868\u793a\u4e2d"
+    "status.showing": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示中"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Showing"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Showing"
           }
         }
       }
     },
-    "status.hidden" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u975e\u8868\u793a\u4e2d"
+    "status.hidden": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "非表示中"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hidden"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden"
           }
         }
       }
     },
-    "status.showing_count" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8868\u793a\u4e2d: %@\u4f53"
+    "status.showing_count": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示中: %@体"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Showing: %@"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Showing: %@"
           }
         }
       }
     },
-    "image.change" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u753b\u50cf\u3092\u5dee\u3057\u66ff\u3048\uff08\u914d\u7f6e\u3092\u7dad\u6301\uff09"
+    "image.change": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を差し替え（配置を維持）"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Replace Image (Keep Layout)"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace Image (Keep Layout)"
           }
         }
       }
     },
-    "image.change_select" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u753b\u50cf\u3092\u5909\u66f4..."
+    "image.change_select": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を変更..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change Image..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Image..."
           }
         }
       }
     },
-    "image.add_display" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u753b\u50cf\u3092\u8ffd\u52a0\u8868\u793a"
+    "image.add_display": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を追加表示"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Image"
           }
         }
       }
     },
-    "image.select" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u753b\u50cf\u3092\u9078\u629e..."
+    "image.select": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を選択..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select Image..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select Image..."
           }
         }
       }
     },
-    "image.default" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c7\u30d5\u30a9\u30eb\u30c8\u753b\u50cf"
+    "image.default": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルト画像"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default Image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default Image"
           }
         }
       }
     },
-    "image.default_reset" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c7\u30d5\u30a9\u30eb\u30c8\u753b\u50cf\u306b\u623b\u3059"
+    "image.default_reset": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルト画像に戻す"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset to Default Image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset to Default Image"
           }
         }
       }
     },
-    "image.default_change" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c7\u30d5\u30a9\u30eb\u30c8\u753b\u50cf\u3092\u5909\u66f4..."
+    "image.default_change": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルト画像を変更..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change Default Image..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Default Image..."
           }
         }
       }
     },
-    "image.default_reset_action" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c7\u30d5\u30a9\u30eb\u30c8\u753b\u50cf\u3092\u30ea\u30bb\u30c3\u30c8"
+    "image.default_reset_action": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルト画像をリセット"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset Default Image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Default Image"
           }
         }
       }
     },
-    "image.registered" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u767b\u9332\u753b\u50cf"
+    "image.registered": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登録画像"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved Images"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved Images"
           }
         }
       }
     },
-    "image.delete_registered" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u767b\u9332\u753b\u50cf\u3092\u524a\u9664"
+    "image.delete_registered": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登録画像を削除"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete Saved Images"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Saved Images"
           }
         }
       }
     },
-    "image.unknown" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u4e0d\u660e"
+    "image.unknown": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不明"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unknown"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
           }
         }
       }
     },
-    "image.default_display" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c7\u30d5\u30a9\u30eb\u30c8"
+    "image.default_display": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルト"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default"
           }
         }
       }
     },
-    "image.remove_background" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "背景を除去"
+    "image.remove_background": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景を除去"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove Background"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Background"
           }
         }
       }
     },
-    "image.removing_background" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "背景を除去中..."
+    "image.removing_background": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景を除去中..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Removing background..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removing background..."
           }
         }
       }
     },
-    "background_removal.error.title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "背景除去エラー"
+    "background_removal.error.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景除去エラー"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Background Removal Error"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Background Removal Error"
           }
         }
       }
     },
-    "background_removal.error.conversion_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "画像の変換に失敗しました"
+    "background_removal.error.conversion_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像の変換に失敗しました"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to convert image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to convert image"
           }
         }
       }
     },
-    "background_removal.error.no_foreground" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "前景オブジェクトが検出されませんでした"
+    "background_removal.error.no_foreground": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前景オブジェクトが検出されませんでした"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No foreground object detected"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No foreground object detected"
           }
         }
       }
     },
-    "background_removal.error.mask_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "マスク画像の生成に失敗しました"
+    "background_removal.error.mask_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マスク画像の生成に失敗しました"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to generate mask"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to generate mask"
           }
         }
       }
     },
-    "background_removal.error.filter_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フィルタ処理に失敗しました"
+    "background_removal.error.filter_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フィルタ処理に失敗しました"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filter processing failed"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter processing failed"
           }
         }
       }
     },
-    "background_removal.error.final_conversion_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最終画像の変換に失敗しました"
+    "background_removal.error.final_conversion_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最終画像の変換に失敗しました"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to convert final image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to convert final image"
           }
         }
       }
     },
-    "adjust.title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8868\u793a\u306e\u8abf\u6574"
+    "adjust.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示の調整"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adjust Display"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjust Display"
           }
         }
       }
     },
-    "adjust.open" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8868\u793a\u306e\u8abf\u6574..."
+    "adjust.open": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示の調整..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adjust Display..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjust Display..."
           }
         }
       }
     },
-    "adjust.flip" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u5de6\u53f3\u53cd\u8ee2"
+    "adjust.flip": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左右反転"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Flip Horizontal"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flip Horizontal"
           }
         }
       }
     },
-    "adjust.reset_rotation" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u56de\u8ee2\u3092\u30ea\u30bb\u30c3\u30c8"
+    "adjust.reset_rotation": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回転をリセット"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset Rotation"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Rotation"
           }
         }
       }
     },
-    "adjust.reset_opacity" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u900f\u660e\u5ea6\u3092\u30ea\u30bb\u30c3\u30c8"
+    "adjust.reset_opacity": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "透明度をリセット"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset Opacity"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Opacity"
           }
         }
       }
     },
-    "adjust.reset_display" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8868\u793a\u3092\u30ea\u30bb\u30c3\u30c8"
+    "adjust.reset_display": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示をリセット"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset Display"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Display"
           }
         }
       }
     },
-    "adjust.reset_all_rotation" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3059\u3079\u3066\u306e\u753b\u50cf\u306e\u56de\u8ee2\u3092\u30ea\u30bb\u30c3\u30c8"
+    "adjust.reset_all_rotation": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての画像の回転をリセット"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset All Rotations"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset All Rotations"
           }
         }
       }
     },
-    "adjust.reset_all_opacity" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3059\u3079\u3066\u306e\u753b\u50cf\u306e\u900f\u660e\u5ea6\u3092\u30ea\u30bb\u30c3\u30c8"
+    "adjust.reset_all_opacity": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての画像の透明度をリセット"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset Opacity for All"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Opacity for All"
           }
         }
       }
     },
-    "adjust.angle" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u89d2\u5ea6:"
+    "adjust.angle": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "角度:"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Angle:"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angle:"
           }
         }
       }
     },
-    "adjust.degree" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u00b0"
+    "adjust.degree": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "°"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u00b0"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "°"
           }
         }
       }
     },
-    "adjust.reset" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30ea\u30bb\u30c3\u30c8"
+    "adjust.reset": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リセット"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
           }
         }
       }
     },
-    "adjust.opacity" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u900f\u660e\u5ea6:"
+    "adjust.opacity": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "透明度:"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opacity:"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opacity:"
           }
         }
       }
     },
-    "adjust.panel_title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8868\u793a\u306e\u8abf\u6574"
+    "adjust.panel_title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示の調整"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adjust Display"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjust Display"
           }
         }
       }
     },
-    "adjust.monitor" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30e2\u30cb\u30bf\u30fc:"
+    "adjust.monitor": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "モニター:"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monitor:"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitor:"
           }
         }
       }
     },
-    "adjust.position" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u4f4d\u7f6e:"
+    "adjust.position": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置:"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position:"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position:"
           }
         }
       }
     },
-    "adjust.size" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30b5\u30a4\u30ba:"
+    "adjust.size": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サイズ:"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Size:"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Size:"
           }
         }
       }
     },
-    "window.show_all" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3059\u3079\u3066\u8868\u793a"
+    "window.show_all": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて表示"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show All"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show All"
           }
         }
       }
     },
-    "window.hide_all" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3059\u3079\u3066\u975e\u8868\u793a"
+    "window.hide_all": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて非表示"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hide All"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide All"
           }
         }
       }
     },
-    "window.bring_to_front" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3059\u3079\u3066\u624b\u524d\u306b\u8868\u793a"
+    "window.bring_to_front": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて手前に表示"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bring All to Front"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring All to Front"
           }
         }
       }
     },
-    "window.move_to_front" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u6700\u524d\u9762\u3078\u79fb\u52d5"
+    "window.move_to_front": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最前面へ移動"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Front"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to Front"
           }
         }
       }
     },
-    "window.move_forward" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u524d\u9762\u3078\u79fb\u52d5"
+    "window.move_forward": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前面へ移動"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move Forward"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Forward"
           }
         }
       }
     },
-    "window.move_backward" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u80cc\u9762\u3078\u79fb\u52d5"
+    "window.move_backward": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背面へ移動"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move Backward"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Backward"
           }
         }
       }
     },
-    "window.move_to_back" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u6700\u80cc\u9762\u3078\u79fb\u52d5"
+    "window.move_to_back": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最背面へ移動"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Back"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to Back"
           }
         }
       }
     },
-    "dialog.select" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u9078\u629e"
+    "dialog.select": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選択"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select"
           }
         }
       }
     },
-    "dialog.select_image" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u753b\u50cf\u3092\u9078\u629e"
+    "dialog.select_image": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を選択"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select Image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select Image"
           }
         }
       }
     },
-    "dialog.select_image_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8868\u793a\u3059\u308b\u753b\u50cf\u30d5\u30a1\u30a4\u30eb\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044"
+    "dialog.select_image_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示する画像ファイルを選択してください"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select an image file to display"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select an image file to display"
           }
         }
       }
     },
-    "dialog.select_add_image_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u8ffd\u52a0\u8868\u793a\u3059\u308b\u753b\u50cf\u30d5\u30a1\u30a4\u30eb\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044"
+    "dialog.select_add_image_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追加表示する画像ファイルを選択してください"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select an image file to add"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select an image file to add"
           }
         }
       }
     },
-    "dialog.select_default_image" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c7\u30d5\u30a9\u30eb\u30c8\u753b\u50cf\u3092\u9078\u629e"
+    "dialog.select_default_image": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルト画像を選択"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select Default Image"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select Default Image"
           }
         }
       }
     },
-    "dialog.select_default_image_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c7\u30d5\u30a9\u30eb\u30c8\u306b\u8a2d\u5b9a\u3059\u308b\u753b\u50cf\u30d5\u30a1\u30a4\u30eb\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044"
+    "dialog.select_default_image_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルトに設定する画像ファイルを選択してください"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select an image file to set as default"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select an image file to set as default"
           }
         }
       }
     },
-    "update.check" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0\u3092\u78ba\u8a8d..."
+    "update.check": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新を確認..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check for Updates..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for Updates..."
           }
         }
       }
     },
-    "update.checking" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u78ba\u8a8d\u4e2d..."
+    "update.checking": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認中..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checking..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking..."
           }
         }
       }
     },
-    "update.downloading" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u4e2d..."
+    "update.downloading": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロード中..."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Downloading..."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloading..."
           }
         }
       }
     },
-    "update.available" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0\u3059\u308b\uff08v%@\uff09"
+    "update.available": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新する（v%@）"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update (v%@)"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update (v%@)"
           }
         }
       }
     },
-    "update.confirm_title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani \u3092 v%@ \u306b\u66f4\u65b0\u3057\u307e\u3059\u304b\uff1f"
+    "update.confirm_title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani を v%@ に更新しますか？"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Sobani to v%@?"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update Sobani to v%@?"
           }
         }
       }
     },
-    "update.confirm_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30a2\u30d7\u30ea\u304c\u518d\u8d77\u52d5\u3055\u308c\u307e\u3059\u3002"
+    "update.confirm_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリが再起動されます。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The app will restart."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app will restart."
           }
         }
       }
     },
-    "update.button" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0"
+    "update.button": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update"
           }
         }
       }
     },
-    "update.cancel" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30ad\u30e3\u30f3\u30bb\u30eb"
+    "update.cancel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセル"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         }
       }
     },
-    "update.new_version_title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u65b0\u3057\u3044\u30d0\u30fc\u30b8\u30e7\u30f3\u304c\u3042\u308a\u307e\u3059"
+    "update.new_version_title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新しいバージョンがあります"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Version Available"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Version Available"
           }
         }
       }
     },
-    "update.new_version_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani v%@ \u304c\u5229\u7528\u53ef\u80fd\u3067\u3059\u3002"
+    "update.new_version_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani v%@ が利用可能です。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani v%@ is available."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani v%@ is available."
           }
         }
       }
     },
-    "update.later" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u5f8c\u3067"
+    "update.later": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "後で"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Later"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
           }
         }
       }
     },
-    "update.up_to_date_title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u6700\u65b0\u30d0\u30fc\u30b8\u30e7\u30f3\u3067\u3059"
+    "update.up_to_date_title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最新バージョンです"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Up to Date"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to Date"
           }
         }
       }
     },
-    "update.up_to_date_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani \u306f\u6700\u65b0\u306e\u72b6\u614b\u3067\u3059\u3002"
+    "update.up_to_date_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani は最新の状態です。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani is up to date."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani is up to date."
           }
         }
       }
     },
-    "update.ok" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
+    "update.ok": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
           }
         }
       }
     },
-    "update.check_failed_title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0\u306e\u78ba\u8a8d\u306b\u5931\u6557\u3057\u307e\u3057\u305f"
+    "update.check_failed_title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新の確認に失敗しました"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Check Failed"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update Check Failed"
           }
         }
       }
     },
-    "update.network_error" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0\u306e\u78ba\u8a8d\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u63a5\u7d9a\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "update.network_error": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新の確認に失敗しました。ネットワーク接続を確認してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to check for updates. Please check your network connection."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to check for updates. Please check your network connection."
           }
         }
       }
     },
-    "update.fetch_error" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0\u60c5\u5831\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002\u3057\u3070\u3089\u304f\u5f8c\u306b\u518d\u8a66\u884c\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "update.fetch_error": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新情報を取得できませんでした。しばらく後に再試行してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not fetch update information. Please try again later."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not fetch update information. Please try again later."
           }
         }
       }
     },
-    "update.parse_error" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0\u60c5\u5831\u306e\u89e3\u6790\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002\u3057\u3070\u3089\u304f\u5f8c\u306b\u518d\u8a66\u884c\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "update.parse_error": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新情報の解析に失敗しました。しばらく後に再試行してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to parse update information. Please try again later."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to parse update information. Please try again later."
           }
         }
       }
     },
-    "update.download_error" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u63a5\u7d9a\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "update.download_error": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download failed. Please check your network connection."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download failed. Please check your network connection."
           }
         }
       }
     },
-    "update.error_code_label" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30a8\u30e9\u30fc\u30b3\u30fc\u30c9: %@"
+    "update.error_code_label": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エラーコード: %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Error code: %@"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error code: %@"
           }
         }
       }
     },
-    "update.hint.U-101" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "インターネット接続を確認してください。Wi-Fiやルーターの再起動もお試しください。"
+    "update.hint.U-101": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "インターネット接続を確認してください。Wi-Fiやルーターの再起動もお試しください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check your internet connection. Try restarting Wi-Fi or your router."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your internet connection. Try restarting Wi-Fi or your router."
           }
         }
       }
     },
-    "update.hint.U-102" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHubサーバーが一時的に不安定な可能性があります。しばらく待ってから再試行してください。"
+    "update.hint.U-102": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHubサーバーが一時的に不安定な可能性があります。しばらく待ってから再試行してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub servers may be temporarily unavailable. Please try again later."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub servers may be temporarily unavailable. Please try again later."
           }
         }
       }
     },
-    "update.hint.U-103" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "しばらく待ってから再試行してください。繰り返す場合はGitHub Issuesで報告してください。"
+    "update.hint.U-103": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "しばらく待ってから再試行してください。繰り返す場合はGitHub Issuesで報告してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please try again later. If this persists, report it on GitHub Issues."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please try again later. If this persists, report it on GitHub Issues."
           }
         }
       }
     },
-    "update.hint.U-201" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "インターネット接続を確認し、再試行してください。VPN/プロキシ使用中は一時的に無効にしてみてください。"
+    "update.hint.U-201": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "インターネット接続を確認し、再試行してください。VPN/プロキシ使用中は一時的に無効にしてみてください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check your connection and try again. If using VPN/proxy, try disabling it temporarily."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your connection and try again. If using VPN/proxy, try disabling it temporarily."
           }
         }
       }
     },
-    "update.hint.U-202" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ディスクの空き容量を確認してください。"
+    "update.hint.U-202": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスクの空き容量を確認してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check your available disk space."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your available disk space."
           }
         }
       }
     },
-    "update.hint.U-203" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ダウンロードが破損した可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
+    "update.hint.U-203": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードが破損した可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The download may be corrupted. Try again, or download manually from GitHub if it persists."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The download may be corrupted. Try again, or download manually from GitHub if it persists."
           }
         }
       }
     },
-    "update.hint.U-301" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ディスクの空き容量と一時ファイルの書き込み権限を確認してください。"
+    "update.hint.U-301": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスクの空き容量と一時ファイルの書き込み権限を確認してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check your disk space and temp directory write permissions."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your disk space and temp directory write permissions."
           }
         }
       }
     },
-    "update.hint.U-302" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
+    "update.hint.U-302": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The downloaded file may be corrupted. Try again or download manually from GitHub."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The downloaded file may be corrupted. Try again or download manually from GitHub."
           }
         }
       }
     },
-    "update.hint.U-303" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
+    "update.hint.U-303": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please try again. If the issue persists, download and install manually from GitHub."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please try again. If the issue persists, download and install manually from GitHub."
           }
         }
       }
     },
-    "update.hint.U-401" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ディスクの空き容量を確認してください。マウント中のDMGが多い場合はアンマウントしてください。"
+    "update.hint.U-401": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスクの空き容量を確認してください。マウント中のDMGが多い場合はアンマウントしてください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check your disk space. Unmount other disk images if too many are mounted."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your disk space. Unmount other disk images if too many are mounted."
           }
         }
       }
     },
-    "update.hint.U-402" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
+    "update.hint.U-402": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The downloaded file may be corrupted. Try again or download manually from GitHub."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The downloaded file may be corrupted. Try again or download manually from GitHub."
           }
         }
       }
     },
-    "update.hint.U-403" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
+    "update.hint.U-403": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please try again. If the issue persists, download and install manually from GitHub."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please try again. If the issue persists, download and install manually from GitHub."
           }
         }
       }
     },
-    "update.hint.U-501" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sobani.appがアプリケーションフォルダに正しく配置されているか確認してください。"
+    "update.hint.U-501": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani.appがアプリケーションフォルダに正しく配置されているか確認してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ensure Sobani.app is correctly placed in the Applications folder."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ensure Sobani.app is correctly placed in the Applications folder."
           }
         }
       }
     },
-    "update.hint.U-502" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリケーションフォルダへの書き込み権限とディスクの空き容量を確認してください。"
+    "update.hint.U-502": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリケーションフォルダへの書き込み権限とディスクの空き容量を確認してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check write permissions for the Applications folder and your disk space."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check write permissions for the Applications folder and your disk space."
           }
         }
       }
     },
-    "update.hint.U-503" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリケーションフォルダへの書き込み権限を確認してください。Sobaniが他のプロセスで使用されていないか確認してください。"
+    "update.hint.U-503": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリケーションフォルダへの書き込み権限を確認してください。Sobaniが他のプロセスで使用されていないか確認してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check write permissions for the Applications folder. Make sure Sobani is not in use by another process."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check write permissions for the Applications folder. Make sure Sobani is not in use by another process."
           }
         }
       }
     },
-    "update.hint_label" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "💡 対処方法: "
+    "update.hint_label": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💡 対処方法: "
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "💡 How to fix: "
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💡 How to fix: "
           }
         }
       }
     },
-    "update.file_not_found" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u30d5\u30a1\u30a4\u30eb\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002"
+    "update.file_not_found": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードファイルが見つかりません。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Downloaded file not found."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloaded file not found."
           }
         }
       }
     },
-    "update.checksum_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u30d5\u30a1\u30a4\u30eb\u306e\u6574\u5408\u6027\u691c\u8a3c\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002\u518d\u8a66\u884c\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "update.checksum_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードファイルの整合性検証に失敗しました。再試行してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "File integrity verification failed. Please try again."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File integrity verification failed. Please try again."
           }
         }
       }
     },
-    "update.checksum_missing_title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c1\u30a7\u30c3\u30af\u30b5\u30e0\u30d5\u30a1\u30a4\u30eb\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093"
+    "update.checksum_missing_title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チェックサムファイルが見つかりません"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checksum File Not Found"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checksum File Not Found"
           }
         }
       }
     },
-    "update.checksum_missing_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u30d5\u30a1\u30a4\u30eb\u306e\u6574\u5408\u6027\u3092\u691c\u8a3c\u3067\u304d\u307e\u305b\u3093\u3002\u7d9a\u884c\u3057\u307e\u3059\u304b\uff1f"
+    "update.checksum_missing_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードファイルの整合性を検証できません。続行しますか？"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cannot verify file integrity. Continue anyway?"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cannot verify file integrity. Continue anyway?"
           }
         }
       }
     },
-    "update.continue" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u7d9a\u884c"
+    "update.continue": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "続行"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Continue"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
           }
         }
       }
     },
-    "update.zip_extract_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZIP\u306e\u5c55\u958b\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002"
+    "update.zip_extract_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZIPの展開に失敗しました。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to extract ZIP."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to extract ZIP."
           }
         }
       }
     },
-    "update.app_not_found" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30a2\u30c3\u30d7\u30c7\u30fc\u30c8\u306e\u30a2\u30d7\u30ea\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002"
+    "update.app_not_found": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アップデートのアプリが見つかりません。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updated app not found."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated app not found."
           }
         }
       }
     },
-    "update.prepare_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u66f4\u65b0\u306e\u6e96\u5099\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002\u518d\u8a66\u884c\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "update.prepare_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新の準備に失敗しました。再試行してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to prepare update. Please try again."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to prepare update. Please try again."
           }
         }
       }
     },
-    "update.dmg_mount_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DMG\u306e\u30de\u30a6\u30f3\u30c8\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002"
+    "update.dmg_mount_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DMGのマウントに失敗しました。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to mount the disk image."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to mount the disk image."
           }
         }
       }
     },
-    "update.location_error" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u73fe\u5728\u306e\u30a2\u30d7\u30ea\u306e\u5834\u6240\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3002"
+    "update.location_error": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在のアプリの場所を取得できません。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cannot determine the current app location."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cannot determine the current app location."
           }
         }
       }
     },
-    "update.install_failed" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30a2\u30d7\u30ea\u306e\u66f4\u65b0\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002\u518d\u8a66\u884c\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "update.install_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリの更新に失敗しました。再試行してください。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to update the app. Please try again."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to update the app. Please try again."
           }
         }
       }
     },
-    "quit.confirm_title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30a2\u30d7\u30ea\u30b1\u30fc\u30b7\u30e7\u30f3\u3092\u7d42\u4e86\u3057\u307e\u3059\u304b\uff1f"
+    "quit.confirm_title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリケーションを終了しますか？"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quit Sobani?"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit Sobani?"
           }
         }
       }
     },
-    "quit.confirm_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u3059\u3079\u3066\u306e\u753b\u50cf\u304c\u9589\u3058\u3089\u308c\u3001\u30a2\u30d7\u30ea\u304c\u7d42\u4e86\u3057\u307e\u3059\u3002"
+    "quit.confirm_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての画像が閉じられ、アプリが終了します。"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All images will be closed and the app will quit."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All images will be closed and the app will quit."
           }
         }
       }
     },
-    "quit.button" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u7d42\u4e86"
+    "quit.button": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "終了"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quit"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
           }
         }
       }
     },
-    "quit.cancel" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u30ad\u30e3\u30f3\u30bb\u30eb"
+    "quit.cancel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセル"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         }
       }
     },
-    "language.title" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "言語 / Language"
+    "language.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "言語 / Language"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Language / 言語"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language / 言語"
           }
         }
       }
     },
-    "language.system" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "システム設定に従う"
+    "language.system": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "システム設定に従う"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use System Language"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use System Language"
           }
         }
       }
     },
-    "about.version" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "バージョン %@ (%@)"
+    "about.version": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バージョン %@ (%@)"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version %@ (%@)"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@ (%@)"
           }
         }
       }
     },
-    "file.select_new_image_message" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\u65b0\u3057\u3044\u753b\u50cf\u3068\u3057\u3066\u8868\u793a\u3059\u308b\u753b\u50cf\u30d5\u30a1\u30a4\u30eb\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044"
+    "file.select_new_image_message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新しい画像として表示する画像ファイルを選択してください"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select a new image file to display"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a new image file to display"
+          }
+        }
+      }
+    },
+    "onboarding.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使い方ガイド"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guide"
+          }
+        }
+      }
+    },
+    "onboarding.step1.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani へようこそ！"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to Sobani!"
+          }
+        }
+      }
+    },
+    "onboarding.step1.description1": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani はメニューバーから操作するデスクトップアクスタアプリです。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobani is a desktop acrylic stand app operated from the menu bar."
+          }
+        }
+      }
+    },
+    "onboarding.step1.hint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面右上のメニューバーにこのアイコンが表示されています。\nクリックして操作できます。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This icon is in the menu bar at the top right of your screen.\nClick it to operate Sobani."
+          }
+        }
+      }
+    },
+    "onboarding.step2.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "基本操作を覚えよう"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learn the Basics"
+          }
+        }
+      }
+    },
+    "onboarding.step2.dragLabel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドラッグ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag"
+          }
+        }
+      }
+    },
+    "onboarding.step2.drag": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像をドラッグして好きな場所に移動"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag an image to move it anywhere"
+          }
+        }
+      }
+    },
+    "onboarding.step2.scrollLabel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スクロール"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scroll"
+          }
+        }
+      }
+    },
+    "onboarding.step2.scroll": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像上でスクロールしてサイズを変更"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scroll on an image to resize it"
+          }
+        }
+      }
+    },
+    "onboarding.step2.rightClickLabel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右クリック"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right-click"
+          }
+        }
+      }
+    },
+    "onboarding.step2.rightClick": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を右クリックしてメニューを表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right-click an image to show the menu"
+          }
+        }
+      }
+    },
+    "onboarding.step2.hotkeyLabel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option+H"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option+H"
+          }
+        }
+      }
+    },
+    "onboarding.step2.hotkey": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての画像を一括で表示/非表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle all images visible/hidden"
+          }
+        }
+      }
+    },
+    "onboarding.step2.dragHint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option+ドラッグで全画像を同時に移動"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option+Drag to move all images at once"
+          }
+        }
+      }
+    },
+    "onboarding.step2.scrollHint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option+スクロールで全画像を同時にリサイズ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option+Scroll to resize all at once"
+          }
+        }
+      }
+    },
+    "onboarding.step2.hotkeyHint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メニューバーのアイコンから再表示できます"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click the menu bar icon to show them again"
+          }
+        }
+      }
+    },
+    "onboarding.skipHint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メニューバーの「使い方ガイドを表示」からいつでも確認できます"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can always access this from \"Show Guide\" in the menu bar"
+          }
+        }
+      }
+    },
+    "onboarding.step3.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "準備完了！"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're All Set!"
+          }
+        }
+      }
+    },
+    "onboarding.step3.description": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メニューバーの Sobani アイコンから操作できます。\nまずはデフォルト画像を好きな画像に変えてみましょう。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can operate Sobani from the menu bar icon.\nStart by changing the default image to your favorite."
+          }
+        }
+      }
+    },
+    "onboarding.step3.cta": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルト画像を変更 →"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Default Image →"
+          }
+        }
+      }
+    },
+    "onboarding.button.next": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次へ →"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next →"
+          }
+        }
+      }
+    },
+    "onboarding.button.prev": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "← 前へ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "← Back"
+          }
+        }
+      }
+    },
+    "onboarding.button.skip": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スキップ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        }
+      }
+    },
+    "onboarding.button.start": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "はじめる！"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get Started!"
+          }
+        }
+      }
+    },
+    "onboarding.button.close": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閉じる"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "menu.show_onboarding": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使い方ガイドを表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Guide"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }
