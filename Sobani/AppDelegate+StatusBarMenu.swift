@@ -244,6 +244,13 @@ extension AppDelegate {
 
         submenu.addItem(NSMenuItem.separator())
 
+        let changeImageItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
+        changeImageItem.submenu = buildChangeImageSubmenuForWindow(charWindow: charWindow)
+        changeImageItem.isEnabled = !areWindowsHidden
+        submenu.addItem(changeImageItem)
+
+        submenu.addItem(NSMenuItem.separator())
+
         let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlipByWindowNumber(_:)), keyEquivalent: "")
         flipItem.target = self
         flipItem.state = charWindow.imageView.isFlippedHorizontally ? .on : .off
@@ -299,6 +306,41 @@ extension AppDelegate {
         submenu.addItem(closeItem)
 
         return submenu
+    }
+
+    func buildChangeImageSubmenuForWindow(charWindow: CharacterWindow) -> NSMenu {
+        let changeSubmenu = NSMenu()
+        changeSubmenu.autoenablesItems = false
+        let windowNumber = charWindow.window.windowNumber
+
+        let selectItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImageByWindowNumber(_:)), keyEquivalent: "")
+        selectItem.target = self
+        selectItem.tag = windowNumber
+        changeSubmenu.addItem(selectItem)
+
+        let resetItem = NSMenuItem(title: L("image.default_reset"), action: #selector(resetToDefaultByWindowNumber(_:)), keyEquivalent: "")
+        resetItem.target = self
+        resetItem.tag = windowNumber
+        resetItem.isEnabled = charWindow.displayName != AppConstants.defaultImageName
+        changeSubmenu.addItem(resetItem)
+
+        let names = ImageManager.shared.registeredImageNames()
+        if !names.isEmpty {
+            changeSubmenu.addItem(NSMenuItem.separator())
+            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
+            registeredLabel.isEnabled = false
+            changeSubmenu.addItem(registeredLabel)
+            for name in names {
+                let item = NSMenuItem(title: name, action: #selector(selectRegisteredImageByWindowNumber(_:)), keyEquivalent: "")
+                item.target = self
+                item.tag = windowNumber
+                item.representedObject = name
+                item.state = (name == charWindow.displayName) ? .on : .off
+                changeSubmenu.addItem(item)
+            }
+        }
+
+        return changeSubmenu
     }
 
     func buildLayerOrderItems(into menu: NSMenu, windowNumber: Int, index: Int, count: Int, canReorder: Bool) {
@@ -384,6 +426,37 @@ extension AppDelegate {
     @objc func removeBackgroundByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         charWindow.removeBackground()
+    }
+
+    @objc func changeImageByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        let panel = NSOpenPanel()
+        panel.title = L("dialog.select_image")
+        panel.message = L("dialog.select_image_message")
+        panel.prompt = L("dialog.select")
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        if panel.runModal() == .OK, let url = panel.url, let newImage = NSImage(contentsOf: url) {
+            let savedName = ImageManager.shared.registerImage(from: url)
+            charWindow.setDisplayName(savedName ?? url.deletingPathExtension().lastPathComponent)
+            charWindow.applyImage(newImage)
+        }
+    }
+
+    @objc func selectRegisteredImageByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag),
+              let name = sender.representedObject as? String,
+              let image = ImageManager.shared.loadRegisteredImage(named: name) else { return }
+        charWindow.setDisplayName(name)
+        charWindow.applyImage(image)
+    }
+
+    @objc func resetToDefaultByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag),
+              let defaultImage = ImageManager.shared.defaultImage() else { return }
+        charWindow.setDisplayName(AppConstants.defaultImageName)
+        charWindow.applyImage(defaultImage)
     }
 
     @objc func changeLanguage(_ sender: NSMenuItem) {
