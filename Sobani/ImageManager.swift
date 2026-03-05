@@ -9,6 +9,7 @@ class ImageManager {
         category: "ImageManager"
     )
     static let shared = ImageManager()
+    static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
     private let baseDirectory: URL?
 
     init(baseDirectory: URL? = nil) {
@@ -52,7 +53,7 @@ class ImageManager {
         guard let imagesDir = imagesDirectoryURL else { return [] }
         let fm = FileManager.default
         let files = (try? fm.contentsOfDirectory(atPath: imagesDir.path)) ?? []
-        let imageExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
+        let imageExtensions = Self.supportedExtensions
         return files
             .filter { name in
                 let ext = (name as NSString).pathExtension.lowercased()
@@ -75,8 +76,7 @@ class ImageManager {
     func registerImage(from url: URL) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
         let ext = url.pathExtension.lowercased()
-        let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
-        guard supportedExtensions.contains(ext) else { return nil }
+        guard Self.supportedExtensions.contains(ext) else { return nil }
         let name = url.lastPathComponent
         let destURL = imagesDir.appendingPathComponent(name)
         let fm = FileManager.default

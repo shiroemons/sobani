@@ -300,4 +300,11 @@ final class ImageManagerTests: XCTestCase {
         let result = imageManager.registerImage(from: nonexistentURL)
         XCTAssertNil(result)
     }
+
+    // MARK: - supportedExtensions Tests
+
+    func testSupportedExtensions_containsAllFormats() {
+        let expected = Set(["png", "jpg", "jpeg", "gif", "tiff", "heic"])
+        XCTAssertEqual(Set(ImageManager.supportedExtensions), expected)
+    }
 }
