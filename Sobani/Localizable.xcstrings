@@ -22,13 +22,29 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "\u7d42\u4e86"
+            "value" : "Sobani\u3092\u7d42\u4e86"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quit"
+            "value" : "Quit Sobani"
+          }
+        }
+      }
+    },
+    "menu.other" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\u305d\u306e\u4ed6"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
           }
         }
       }

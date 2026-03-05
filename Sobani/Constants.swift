@@ -69,7 +69,8 @@ enum MenuItemTag: Int {
     case quit = 1014
     case changeImageSubmenu = 1015
     case addNewWindowSubmenu = 1016
-    case deleteRegisteredSubmenu = 1017
-    case adjustSubmenu = 1018
+    case otherSubmenu = 1018
     case removeBackground = 1019
+    case flipContext = 1020
+    case adjustPanelContext = 1021
 }

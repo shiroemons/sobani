@@ -289,31 +289,38 @@ extension CharacterWindow {
         registeredItem.submenu = NSMenu()
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
+
+        let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlip), keyEquivalent: "")
+        flipItem.tag = MenuItemTag.flipContext.rawValue
+        flipItem.target = self
+        menu.addItem(flipItem)
+
+        let adjustPanelItem = NSMenuItem(
+            title: L("adjust.open"), action: #selector(showAdjustmentPanel), keyEquivalent: ""
+        )
+        adjustPanelItem.tag = MenuItemTag.adjustPanelContext.rawValue
+        adjustPanelItem.target = self
+        menu.addItem(adjustPanelItem)
+        menu.addItem(NSMenuItem.separator())
+
         let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
         newWindowItem.tag = MenuItemTag.addNewWindowSubmenu.rawValue
         newWindowItem.submenu = NSMenu()
         menu.addItem(newWindowItem)
         menu.addItem(NSMenuItem.separator())
-        let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
-        deleteRegisteredItem.tag = MenuItemTag.deleteRegisteredSubmenu.rawValue
-        let deleteRegisteredSubmenu = NSMenu()
-        deleteRegisteredItem.submenu = deleteRegisteredSubmenu
-        menu.addItem(deleteRegisteredItem)
-        menu.addItem(NSMenuItem.separator())
 
-        let adjustItem = NSMenuItem(title: L("adjust.title"), action: nil, keyEquivalent: "")
-        adjustItem.tag = MenuItemTag.adjustSubmenu.rawValue
-        let adjustSubmenu = NSMenu()
-        adjustSubmenu.autoenablesItems = false
-        adjustItem.submenu = adjustSubmenu
-        menu.addItem(adjustItem)
+        let otherItem = NSMenuItem(title: L("menu.other"), action: nil, keyEquivalent: "")
+        otherItem.tag = MenuItemTag.otherSubmenu.rawValue
+        let otherSubmenu = NSMenu()
+        otherSubmenu.autoenablesItems = false
+        otherItem.submenu = otherSubmenu
+        menu.addItem(otherItem)
         menu.addItem(NSMenuItem.separator())
 
         let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.tag = MenuItemTag.close.rawValue
         closeItem.target = self
         menu.addItem(closeItem)
-        menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
         quitItem.tag = MenuItemTag.quit.rawValue
@@ -331,11 +338,14 @@ extension CharacterWindow {
         let names = ImageManager.shared.registeredImageNames()
         populateChangeImageSubmenu(submenu, names: names)
         populateNewWindowSubmenu(menu, names: names)
-        populateDeleteRegisteredSubmenu(menu, names: names)
 
-        if let adjustItem = menu.items.first(where: { $0.tag == MenuItemTag.adjustSubmenu.rawValue }),
-           let adjustSubmenu = adjustItem.submenu {
-            populateAdjustSubmenu(adjustSubmenu)
+        if let flipItem = menu.items.first(where: { $0.tag == MenuItemTag.flipContext.rawValue }) {
+            flipItem.state = imageView.isFlippedHorizontally ? .on : .off
+        }
+
+        if let otherItem = menu.items.first(where: { $0.tag == MenuItemTag.otherSubmenu.rawValue }),
+           let otherSubmenu = otherItem.submenu {
+            populateOtherSubmenu(otherSubmenu, names: names)
         }
     }
 
@@ -406,54 +416,49 @@ extension CharacterWindow {
         }
     }
 
-    private func populateDeleteRegisteredSubmenu(_ menu: NSMenu, names: [String]) {
-        guard let deleteRegisteredItem = menu.items.first(where: { $0.tag == MenuItemTag.deleteRegisteredSubmenu.rawValue }),
-              let deleteRegisteredSubmenu = deleteRegisteredItem.submenu else { return }
-        deleteRegisteredSubmenu.removeAllItems()
+}
+
+// MARK: - CharacterWindow + Other Submenu
+
+extension CharacterWindow {
+    func populateOtherSubmenu(_ otherSubmenu: NSMenu, names: [String]) {
+        otherSubmenu.removeAllItems()
+
+        let resetRotationItem = NSMenuItem(
+            title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: ""
+        )
+        resetRotationItem.target = self
+        resetRotationItem.isEnabled = abs(imageView.rotationAngle) > AppConstants.floatingPointTolerance
+        otherSubmenu.addItem(resetRotationItem)
+
+        let resetOpacityItem = NSMenuItem(
+            title: L("adjust.reset_opacity"), action: #selector(resetOpacity), keyEquivalent: ""
+        )
+        resetOpacityItem.target = self
+        resetOpacityItem.isEnabled = abs(imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance
+        otherSubmenu.addItem(resetOpacityItem)
+
+        otherSubmenu.addItem(NSMenuItem.separator())
+
+        let resetDisplayItem = NSMenuItem(
+            title: L("adjust.reset_display"), action: #selector(resetDisplay), keyEquivalent: ""
+        )
+        resetDisplayItem.target = self
+        otherSubmenu.addItem(resetDisplayItem)
+
+        otherSubmenu.addItem(NSMenuItem.separator())
+
+        let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
+        let deleteSubmenu = NSMenu()
         for name in names {
             let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = name
-            deleteRegisteredSubmenu.addItem(item)
+            deleteSubmenu.addItem(item)
         }
+        deleteRegisteredItem.submenu = deleteSubmenu
         deleteRegisteredItem.isEnabled = !names.isEmpty
-    }
-}
-
-// MARK: - CharacterWindow + Adjust Submenu
-
-extension CharacterWindow {
-    func populateAdjustSubmenu(_ adjustSubmenu: NSMenu) {
-        adjustSubmenu.removeAllItems()
-
-        let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlip), keyEquivalent: "")
-        flipItem.target = self
-        flipItem.state = imageView.isFlippedHorizontally ? .on : .off
-        adjustSubmenu.addItem(flipItem)
-
-        adjustSubmenu.addItem(NSMenuItem.separator())
-
-        let adjustPanelItem = NSMenuItem(title: L("adjust.open"), action: #selector(showAdjustmentPanel), keyEquivalent: "")
-        adjustPanelItem.target = self
-        adjustSubmenu.addItem(adjustPanelItem)
-
-        adjustSubmenu.addItem(NSMenuItem.separator())
-
-        let resetRotationItem = NSMenuItem(title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: "")
-        resetRotationItem.target = self
-        resetRotationItem.isEnabled = abs(imageView.rotationAngle) > AppConstants.floatingPointTolerance
-        adjustSubmenu.addItem(resetRotationItem)
-
-        let resetOpacityItem = NSMenuItem(title: L("adjust.reset_opacity"), action: #selector(resetOpacity), keyEquivalent: "")
-        resetOpacityItem.target = self
-        resetOpacityItem.isEnabled = abs(imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance
-        adjustSubmenu.addItem(resetOpacityItem)
-
-        adjustSubmenu.addItem(NSMenuItem.separator())
-
-        let resetDisplayItem = NSMenuItem(title: L("adjust.reset_display"), action: #selector(resetDisplay), keyEquivalent: "")
-        resetDisplayItem.target = self
-        adjustSubmenu.addItem(resetDisplayItem)
+        otherSubmenu.addItem(deleteRegisteredItem)
     }
 
     @objc func resetDisplay() {
@@ -481,9 +486,10 @@ extension CharacterWindow {
 extension CharacterWindow {
     private static let menuTitleMap: [Int: String] = [
         MenuItemTag.changeImageSubmenu.rawValue: "image.change",
+        MenuItemTag.flipContext.rawValue: "adjust.flip",
+        MenuItemTag.adjustPanelContext.rawValue: "adjust.open",
         MenuItemTag.addNewWindowSubmenu.rawValue: "image.add_display",
-        MenuItemTag.deleteRegisteredSubmenu.rawValue: "image.delete_registered",
-        MenuItemTag.adjustSubmenu.rawValue: "adjust.title",
+        MenuItemTag.otherSubmenu.rawValue: "menu.other",
         MenuItemTag.close.rawValue: "menu.close_image",
         MenuItemTag.quit.rawValue: "menu.quit"
     ]
