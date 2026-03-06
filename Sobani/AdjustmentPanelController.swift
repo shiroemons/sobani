@@ -148,6 +148,59 @@ struct AdjustmentPanelState {
     let aspectRatio: CGFloat
 }
 
+// MARK: - Section Layout Constants
+
+private enum SectionLayout {
+    static let labelX: CGFloat = 10
+    static let contentWidth: CGFloat = 200
+    static let labelFontSize: CGFloat = 12
+    static let resetButtonWidth: CGFloat = 90
+    static let resetButtonHeight: CGFloat = 28
+}
+
+private enum RotationLayout {
+    static let dialX: CGFloat = 10
+    static let dialRelativeY: CGFloat = 40
+    static let dialSize: CGFloat = 90
+    static let angleLabelX: CGFloat = 110
+    static let angleLabelRelativeY: CGFloat = 100
+    static let angleFieldX: CGFloat = 150
+    static let angleFieldRelativeY: CGFloat = 98
+    static let angleFieldWidth: CGFloat = 50
+    static let degreeLabelX: CGFloat = 202
+    static let resetButtonX: CGFloat = 110
+    static let resetButtonRelativeY: CGFloat = 60
+}
+
+private enum OpacityLayout {
+    static let labelRelativeY: CGFloat = 85
+    static let percentLabelX: CGFloat = 160
+    static let sliderRelativeY: CGFloat = 58
+    static let resetButtonX: CGFloat = 110
+    static let resetButtonRelativeY: CGFloat = 20
+}
+
+private enum PositionSizeLayout {
+    static let monitorLabelY: CGFloat = 145
+    static let monitorPopupX: CGFloat = 70
+    static let monitorPopupY: CGFloat = 143
+    static let monitorPopupWidth: CGFloat = 140
+    static let monitorPopupHeight: CGFloat = 24
+    static let monitorPopupFontSize: CGFloat = 11
+    static let resolutionLabelY: CGFloat = 126
+    static let resolutionLabelHeight: CGFloat = 16
+    static let resolutionLabelFontSize: CGFloat = 10
+    static let positionRowY: CGFloat = 100
+    static let sizeRowY: CGFloat = 70
+    static let firstAxisLabelX: CGFloat = 55
+    static let firstInputX: CGFloat = 70
+    static let inputWidth: CGFloat = 60
+    static let secondAxisLabelX: CGFloat = 140
+    static let secondInputX: CGFloat = 155
+    static let resetButtonX: CGFloat = 110
+    static let resetButtonY: CGFloat = 20
+}
+
 // MARK: - Adjustment Panel Controller
 
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
@@ -220,16 +273,20 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         setupRotationSection(in: contentView, angle: state.angle, offsetY: rotationOffsetY)
 
         // Separator between rotation and opacity
-        let separator1 = NSBox(frame: NSRect(x: 10, y: Self.rotationSectionOffsetY, width: 200, height: 1))
-        separator1.boxType = .separator
-        contentView.addSubview(separator1)
+        let sep1 = NSBox(frame: NSRect(
+            x: SectionLayout.labelX, y: Self.rotationSectionOffsetY, width: SectionLayout.contentWidth, height: 1
+        ))
+        sep1.boxType = .separator
+        contentView.addSubview(sep1)
 
         setupOpacitySection(in: contentView, opacity: state.opacity, offsetY: Self.opacitySectionOffsetY)
 
         // Separator between opacity and position/size
-        let separator2 = NSBox(frame: NSRect(x: 10, y: Self.opacitySectionOffsetY, width: 200, height: 1))
-        separator2.boxType = .separator
-        contentView.addSubview(separator2)
+        let sep2 = NSBox(frame: NSRect(
+            x: SectionLayout.labelX, y: Self.opacitySectionOffsetY, width: SectionLayout.contentWidth, height: 1
+        ))
+        sep2.boxType = .separator
+        contentView.addSubview(sep2)
 
         setupPositionSizeSection(in: contentView)
 
@@ -240,7 +297,11 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
     private func setupRotationSection(in contentView: NSView, angle: CGFloat, offsetY: CGFloat) {
         // Dial view (left side)
-        let dial = RotationDialView(frame: NSRect(x: 10, y: 40 + offsetY, width: 90, height: 90))
+        let dialFrame = NSRect(
+            x: RotationLayout.dialX, y: RotationLayout.dialRelativeY + offsetY,
+            width: RotationLayout.dialSize, height: RotationLayout.dialSize
+        )
+        let dial = RotationDialView(frame: dialFrame)
         dial.angle = angle
         dial.onAngleChanged = { [weak self] newAngle in
             self?.angleChanged(newAngle)
@@ -250,15 +311,20 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
         // "角度:" label
         let label = NSTextField(labelWithString: L("adjust.angle"))
-        label.frame = NSRect(x: 110, y: 100 + offsetY, width: 40, height: 20)
-        label.font = NSFont.systemFont(ofSize: 12)
+        label.frame = NSRect(
+            x: RotationLayout.angleLabelX, y: RotationLayout.angleLabelRelativeY + offsetY, width: 40, height: 20
+        )
+        label.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(label)
 
         // Text field
-        let field = NSTextField(frame: NSRect(x: 150, y: 98 + offsetY, width: 50, height: 22))
+        let field = NSTextField(frame: NSRect(
+            x: RotationLayout.angleFieldX, y: RotationLayout.angleFieldRelativeY + offsetY,
+            width: RotationLayout.angleFieldWidth, height: 22
+        ))
         field.stringValue = formatAngle(angle)
         field.alignment = .right
-        field.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        field.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
         field.target = self
         field.action = #selector(textFieldChanged(_:))
         contentView.addSubview(field)
@@ -266,27 +332,36 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
         // "°" label
         let degreeLabel = NSTextField(labelWithString: L("adjust.degree"))
-        degreeLabel.frame = NSRect(x: 202, y: 100 + offsetY, width: 15, height: 20)
-        degreeLabel.font = NSFont.systemFont(ofSize: 12)
+        degreeLabel.frame = NSRect(
+            x: RotationLayout.degreeLabelX, y: RotationLayout.angleLabelRelativeY + offsetY, width: 15, height: 20
+        )
+        degreeLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(degreeLabel)
 
         // Reset button
         let resetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetAngle))
-        resetButton.frame = NSRect(x: 110, y: 60 + offsetY, width: 90, height: 28)
+        resetButton.frame = NSRect(
+            x: RotationLayout.resetButtonX, y: RotationLayout.resetButtonRelativeY + offsetY,
+            width: SectionLayout.resetButtonWidth, height: SectionLayout.resetButtonHeight
+        )
         resetButton.bezelStyle = .rounded
-        resetButton.font = NSFont.systemFont(ofSize: 12)
+        resetButton.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(resetButton)
     }
 
     private func setupOpacitySection(in contentView: NSView, opacity: CGFloat, offsetY: CGFloat = 0) {
         let opacitySectionLabel = NSTextField(labelWithString: L("adjust.opacity"))
-        opacitySectionLabel.frame = NSRect(x: 10, y: 85 + offsetY, width: 50, height: 20)
-        opacitySectionLabel.font = NSFont.systemFont(ofSize: 12)
+        opacitySectionLabel.frame = NSRect(
+            x: SectionLayout.labelX, y: OpacityLayout.labelRelativeY + offsetY, width: 50, height: 20
+        )
+        opacitySectionLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(opacitySectionLabel)
 
         let percentLabel = NSTextField(labelWithString: formatOpacity(opacity))
-        percentLabel.frame = NSRect(x: 160, y: 85 + offsetY, width: 50, height: 20)
-        percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        percentLabel.frame = NSRect(
+            x: OpacityLayout.percentLabelX, y: OpacityLayout.labelRelativeY + offsetY, width: 50, height: 20
+        )
+        percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
         percentLabel.alignment = .right
         contentView.addSubview(percentLabel)
         opacityLabel = percentLabel
@@ -298,15 +373,25 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
             target: self,
             action: #selector(opacitySliderChanged(_:))
         )
-        slider.frame = NSRect(x: 10, y: 58 + offsetY, width: 200, height: 20)
+        slider.frame = NSRect(
+            x: SectionLayout.labelX, y: OpacityLayout.sliderRelativeY + offsetY,
+            width: SectionLayout.contentWidth, height: 20
+        )
         slider.numberOfTickMarks = 0
         contentView.addSubview(slider)
         opacitySlider = slider
 
-        let opacityResetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetOpacity))
-        opacityResetButton.frame = NSRect(x: 110, y: 20 + offsetY, width: 90, height: 28)
+        let opacityResetButton = NSButton(
+            title: L("adjust.reset"),
+            target: self,
+            action: #selector(resetOpacity)
+        )
+        opacityResetButton.frame = NSRect(
+            x: OpacityLayout.resetButtonX, y: OpacityLayout.resetButtonRelativeY + offsetY,
+            width: SectionLayout.resetButtonWidth, height: SectionLayout.resetButtonHeight
+        )
         opacityResetButton.bezelStyle = .rounded
-        opacityResetButton.font = NSFont.systemFont(ofSize: 12)
+        opacityResetButton.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(opacityResetButton)
     }
 
@@ -420,102 +505,147 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
 extension AdjustmentPanelController {
     private func setupPositionSizeSection(in contentView: NSView) {
-        // Monitor popup
+        setupMonitorControls(in: contentView)
+        setupPositionRow(in: contentView)
+        setupSizeRow(in: contentView)
+
+        // Reset button
+        let resetButton = NSButton(
+            title: L("adjust.reset"),
+            target: self,
+            action: #selector(resetPositionAndSize)
+        )
+        resetButton.frame = NSRect(
+            x: PositionSizeLayout.resetButtonX, y: PositionSizeLayout.resetButtonY,
+            width: SectionLayout.resetButtonWidth, height: SectionLayout.resetButtonHeight
+        )
+        resetButton.bezelStyle = .rounded
+        resetButton.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
+        contentView.addSubview(resetButton)
+
+        updatePositionFields()
+        updateSizeFields()
+    }
+
+    private func setupMonitorControls(in contentView: NSView) {
         let monitorLabel = NSTextField(labelWithString: L("adjust.monitor"))
-        monitorLabel.frame = NSRect(x: 10, y: 145, width: 60, height: 20)
-        monitorLabel.font = NSFont.systemFont(ofSize: 12)
+        monitorLabel.frame = NSRect(
+            x: SectionLayout.labelX, y: PositionSizeLayout.monitorLabelY, width: 60, height: 20
+        )
+        monitorLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(monitorLabel)
 
-        let popup = NSPopUpButton(frame: NSRect(x: 70, y: 143, width: 140, height: 24), pullsDown: false)
-        popup.font = NSFont.systemFont(ofSize: 11)
+        let popup = NSPopUpButton(frame: NSRect(
+            x: PositionSizeLayout.monitorPopupX, y: PositionSizeLayout.monitorPopupY,
+            width: PositionSizeLayout.monitorPopupWidth, height: PositionSizeLayout.monitorPopupHeight
+        ), pullsDown: false)
+        popup.font = NSFont.systemFont(ofSize: PositionSizeLayout.monitorPopupFontSize)
         popup.target = self
         popup.action = #selector(monitorPopupChanged(_:))
         contentView.addSubview(popup)
         monitorPopup = popup
         populateMonitorPopup()
 
-        // Resolution label
         let resLabel = NSTextField(labelWithString: "")
-        resLabel.frame = NSRect(x: 70, y: 126, width: 140, height: 16)
-        resLabel.font = NSFont.systemFont(ofSize: 10)
+        resLabel.frame = NSRect(
+            x: PositionSizeLayout.monitorPopupX, y: PositionSizeLayout.resolutionLabelY,
+            width: PositionSizeLayout.monitorPopupWidth, height: PositionSizeLayout.resolutionLabelHeight
+        )
+        resLabel.font = NSFont.systemFont(ofSize: PositionSizeLayout.resolutionLabelFontSize)
         resLabel.textColor = .secondaryLabelColor
         contentView.addSubview(resLabel)
         resolutionLabel = resLabel
         updateResolutionLabel()
+    }
 
-        // Position
+    private func setupPositionRow(in contentView: NSView) {
         let posLabel = NSTextField(labelWithString: L("adjust.position"))
-        posLabel.frame = NSRect(x: 10, y: 100, width: 40, height: 20)
-        posLabel.font = NSFont.systemFont(ofSize: 12)
+        posLabel.frame = NSRect(
+            x: SectionLayout.labelX, y: PositionSizeLayout.positionRowY, width: 40, height: 20
+        )
+        posLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(posLabel)
 
         let xLabel = NSTextField(labelWithString: "X")
-        xLabel.frame = NSRect(x: 55, y: 100, width: 15, height: 20)
-        xLabel.font = NSFont.systemFont(ofSize: 12)
+        xLabel.frame = NSRect(
+            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.positionRowY, width: 15, height: 20
+        )
+        xLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(xLabel)
 
-        let xInput = NSTextField(frame: NSRect(x: 70, y: 98, width: 60, height: 22))
+        let xInput = NSTextField(frame: NSRect(
+            x: PositionSizeLayout.firstInputX, y: PositionSizeLayout.positionRowY - 2,
+            width: PositionSizeLayout.inputWidth, height: 22
+        ))
         xInput.alignment = .right
-        xInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        xInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
         xInput.target = self
         xInput.action = #selector(xFieldChanged(_:))
         contentView.addSubview(xInput)
         xField = xInput
 
         let yLabel = NSTextField(labelWithString: "Y")
-        yLabel.frame = NSRect(x: 140, y: 100, width: 15, height: 20)
-        yLabel.font = NSFont.systemFont(ofSize: 12)
+        yLabel.frame = NSRect(
+            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.positionRowY, width: 15, height: 20
+        )
+        yLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(yLabel)
 
-        let yInput = NSTextField(frame: NSRect(x: 155, y: 98, width: 60, height: 22))
+        let yInput = NSTextField(frame: NSRect(
+            x: PositionSizeLayout.secondInputX, y: PositionSizeLayout.positionRowY - 2,
+            width: PositionSizeLayout.inputWidth, height: 22
+        ))
         yInput.alignment = .right
-        yInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        yInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
         yInput.target = self
         yInput.action = #selector(yFieldChanged(_:))
         contentView.addSubview(yInput)
         yField = yInput
+    }
 
-        // Size
+    private func setupSizeRow(in contentView: NSView) {
         let sizeLabel = NSTextField(labelWithString: L("adjust.size"))
-        sizeLabel.frame = NSRect(x: 10, y: 70, width: 40, height: 20)
-        sizeLabel.font = NSFont.systemFont(ofSize: 12)
+        sizeLabel.frame = NSRect(
+            x: SectionLayout.labelX, y: PositionSizeLayout.sizeRowY, width: 40, height: 20
+        )
+        sizeLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(sizeLabel)
 
         let wLabel = NSTextField(labelWithString: "W")
-        wLabel.frame = NSRect(x: 55, y: 70, width: 15, height: 20)
-        wLabel.font = NSFont.systemFont(ofSize: 12)
+        wLabel.frame = NSRect(
+            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.sizeRowY, width: 15, height: 20
+        )
+        wLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(wLabel)
 
-        let wInput = NSTextField(frame: NSRect(x: 70, y: 68, width: 60, height: 22))
+        let wInput = NSTextField(frame: NSRect(
+            x: PositionSizeLayout.firstInputX, y: PositionSizeLayout.sizeRowY - 2,
+            width: PositionSizeLayout.inputWidth, height: 22
+        ))
         wInput.alignment = .right
-        wInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        wInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
         wInput.target = self
         wInput.action = #selector(wFieldChanged(_:))
         contentView.addSubview(wInput)
         wField = wInput
 
         let hLabel = NSTextField(labelWithString: "H")
-        hLabel.frame = NSRect(x: 140, y: 70, width: 15, height: 20)
-        hLabel.font = NSFont.systemFont(ofSize: 12)
+        hLabel.frame = NSRect(
+            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.sizeRowY, width: 15, height: 20
+        )
+        hLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(hLabel)
 
-        let hInput = NSTextField(frame: NSRect(x: 155, y: 68, width: 60, height: 22))
+        let hInput = NSTextField(frame: NSRect(
+            x: PositionSizeLayout.secondInputX, y: PositionSizeLayout.sizeRowY - 2,
+            width: PositionSizeLayout.inputWidth, height: 22
+        ))
         hInput.alignment = .right
-        hInput.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        hInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
         hInput.target = self
         hInput.action = #selector(hFieldChanged(_:))
         contentView.addSubview(hInput)
         hField = hInput
-
-        // Reset button
-        let resetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetPositionAndSize))
-        resetButton.frame = NSRect(x: 110, y: 20, width: 90, height: 28)
-        resetButton.bezelStyle = .rounded
-        resetButton.font = NSFont.systemFont(ofSize: 12)
-        contentView.addSubview(resetButton)
-
-        updatePositionFields()
-        updateSizeFields()
     }
 
     // MARK: Coordinate Conversion
@@ -569,7 +699,10 @@ extension AdjustmentPanelController {
             updatePositionFields()
             return
         }
-        let relative = CGPoint(x: CGFloat(value), y: globalToMonitorRelative(currentPosition, screen: screen).y)
+        let relative = CGPoint(
+            x: CGFloat(value),
+            y: globalToMonitorRelative(currentPosition, screen: screen).y
+        )
         let global = monitorRelativeToGlobal(relative, screen: screen)
         currentPosition = global
         delegate?.adjustmentPanel(self, didChangePosition: global)
@@ -582,7 +715,10 @@ extension AdjustmentPanelController {
             updatePositionFields()
             return
         }
-        let relative = CGPoint(x: globalToMonitorRelative(currentPosition, screen: screen).x, y: CGFloat(value))
+        let relative = CGPoint(
+            x: globalToMonitorRelative(currentPosition, screen: screen).x,
+            y: CGFloat(value)
+        )
         let global = monitorRelativeToGlobal(relative, screen: screen)
         currentPosition = global
         delegate?.adjustmentPanel(self, didChangePosition: global)
@@ -598,7 +734,10 @@ extension AdjustmentPanelController {
             updateSizeFields()
             return
         }
-        let clampedH = max(AppConstants.minImageHeight, min(AppConstants.maxImageHeight, CGFloat(value) / currentAspectRatio))
+        let clampedH = max(
+            AppConstants.minImageHeight,
+            min(AppConstants.maxImageHeight, CGFloat(value) / currentAspectRatio)
+        )
         let clampedW = clampedH * currentAspectRatio
         currentSize = CGSize(width: clampedW, height: clampedH)
         updateSizeFields()
@@ -611,7 +750,10 @@ extension AdjustmentPanelController {
             updateSizeFields()
             return
         }
-        let clampedH = max(AppConstants.minImageHeight, min(AppConstants.maxImageHeight, CGFloat(value)))
+        let clampedH = max(
+            AppConstants.minImageHeight,
+            min(AppConstants.maxImageHeight, CGFloat(value))
+        )
         let clampedW = clampedH * currentAspectRatio
         currentSize = CGSize(width: clampedW, height: clampedH)
         updateSizeFields()
