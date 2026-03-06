@@ -9,6 +9,7 @@ final class ImagePreviewPanel {
     private static let maxDimension: CGFloat = 256
     private static let padding: CGFloat = 8
     private static let fallbackMouseOffset: CGFloat = 20
+    private static let cornerRadius: CGFloat = 8
 
     init() {
         panel = NSPanel(
@@ -28,7 +29,7 @@ final class ImagePreviewPanel {
         let contentView = NSView()
         contentView.wantsLayer = true
         contentView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-        contentView.layer?.cornerRadius = 8
+        contentView.layer?.cornerRadius = Self.cornerRadius
         contentView.layer?.masksToBounds = true
         panel.contentView = contentView
 
