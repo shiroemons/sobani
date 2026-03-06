@@ -37,18 +37,18 @@ final class ImageManagerTests: XCTestCase {
     }
 
     @discardableResult
-    private func createTestImageFile(named name: String, in directory: URL? = nil) -> URL {
+    private func createTestImageFile(named name: String, in directory: URL? = nil) throws -> URL {
         let dir = directory ?? tempDirectory!
         let url = dir.appendingPathComponent(name)
         let data = createTestPNGData()
-        try! data.write(to: url)
+        try data.write(to: url)
         return url
     }
 
-    private func createSourceDirectory() -> URL {
+    private func createSourceDirectory() throws -> URL {
         let sourceDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTestsSource-\(UUID().uuidString)")
-        try! FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
         return sourceDir
     }
 
@@ -59,26 +59,26 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertEqual(names, [])
     }
 
-    func testRegisteredImageNames_FiltersUnsupportedExtensions() {
+    func testRegisteredImageNames_FiltersUnsupportedExtensions() throws {
         let imagesDir = tempDirectory.appendingPathComponent("images")
-        try! FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
 
-        createTestImageFile(named: "test.png", in: imagesDir)
-        createTestImageFile(named: "test.jpg", in: imagesDir)
-        try! "not an image".write(to: imagesDir.appendingPathComponent("test.txt"), atomically: true, encoding: .utf8)
-        try! "not an image".write(to: imagesDir.appendingPathComponent("test.pdf"), atomically: true, encoding: .utf8)
+        try createTestImageFile(named: "test.png", in: imagesDir)
+        try createTestImageFile(named: "test.jpg", in: imagesDir)
+        try "not an image".write(to: imagesDir.appendingPathComponent("test.txt"), atomically: true, encoding: .utf8)
+        try "not an image".write(to: imagesDir.appendingPathComponent("test.pdf"), atomically: true, encoding: .utf8)
 
         let names = imageManager.registeredImageNames()
         XCTAssertEqual(names, ["test.jpg", "test.png"])
     }
 
-    func testRegisteredImageNames_SortedAlphabetically() {
+    func testRegisteredImageNames_SortedAlphabetically() throws {
         let imagesDir = tempDirectory.appendingPathComponent("images")
-        try! FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
 
-        createTestImageFile(named: "charlie.png", in: imagesDir)
-        createTestImageFile(named: "alpha.png", in: imagesDir)
-        createTestImageFile(named: "bravo.png", in: imagesDir)
+        try createTestImageFile(named: "charlie.png", in: imagesDir)
+        try createTestImageFile(named: "alpha.png", in: imagesDir)
+        try createTestImageFile(named: "bravo.png", in: imagesDir)
 
         let names = imageManager.registeredImageNames()
         XCTAssertEqual(names, ["alpha.png", "bravo.png", "charlie.png"])
@@ -86,11 +86,11 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - registerImage Tests
 
-    func testRegisterImage_CopiesFile() {
-        let sourceDir = createSourceDirectory()
+    func testRegisterImage_CopiesFile() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "myimage.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "myimage.png", in: sourceDir)
 
         let savedName = imageManager.registerImage(from: sourceURL)
         XCTAssertEqual(savedName, "myimage.png")
@@ -99,11 +99,11 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(names.contains("myimage.png"))
     }
 
-    func testRegisterImage_UniqueNaming() {
-        let sourceDir = createSourceDirectory()
+    func testRegisterImage_UniqueNaming() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "duplicate.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "duplicate.png", in: sourceDir)
 
         let name1 = imageManager.registerImage(from: sourceURL)
         XCTAssertEqual(name1, "duplicate.png")
@@ -117,11 +117,11 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - removeRegisteredImage Tests
 
-    func testRemoveRegisteredImage_DeletesFile() {
-        let sourceDir = createSourceDirectory()
+    func testRemoveRegisteredImage_DeletesFile() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "todelete.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "todelete.png", in: sourceDir)
         imageManager.registerImage(from: sourceURL)
 
         XCTAssertTrue(imageManager.registeredImageNames().contains("todelete.png"))
@@ -133,11 +133,11 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - loadRegisteredImage Tests
 
-    func testLoadRegisteredImage_ReturnsImage() {
-        let sourceDir = createSourceDirectory()
+    func testLoadRegisteredImage_ReturnsImage() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "loadme.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "loadme.png", in: sourceDir)
         imageManager.registerImage(from: sourceURL)
 
         let image = imageManager.loadRegisteredImage(named: "loadme.png")
@@ -151,11 +151,11 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - Custom Default Tests
 
-    func testSetCustomDefault_CreatesFile() {
-        let sourceDir = createSourceDirectory()
+    func testSetCustomDefault_CreatesFile() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "default.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "default.png", in: sourceDir)
 
         XCTAssertFalse(imageManager.hasCustomDefault)
 
@@ -167,11 +167,11 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: defaultURL.path))
     }
 
-    func testResetCustomDefault_RemovesFile() {
-        let sourceDir = createSourceDirectory()
+    func testResetCustomDefault_RemovesFile() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "default.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "default.png", in: sourceDir)
         imageManager.setCustomDefault(from: sourceURL)
 
         XCTAssertTrue(imageManager.hasCustomDefault)
@@ -183,11 +183,11 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - registerImage Extension Guard Tests
 
-    func testRegisterImage_FromExternalPath_CopiesAndReturnsName() {
-        let sourceDir = createSourceDirectory()
+    func testRegisterImage_FromExternalPath_CopiesAndReturnsName() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "external.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "external.png", in: sourceDir)
 
         let savedName = imageManager.registerImage(from: sourceURL)
         XCTAssertEqual(savedName, "external.png")
@@ -196,16 +196,16 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(names.contains("external.png"))
     }
 
-    func testRegisterImage_DuplicateFromDifferentSource_GetsUniqueName() {
-        let sourceDir1 = createSourceDirectory()
-        let sourceDir2 = createSourceDirectory()
+    func testRegisterImage_DuplicateFromDifferentSource_GetsUniqueName() throws {
+        let sourceDir1 = try createSourceDirectory()
+        let sourceDir2 = try createSourceDirectory()
         defer {
             try? FileManager.default.removeItem(at: sourceDir1)
             try? FileManager.default.removeItem(at: sourceDir2)
         }
 
-        let sourceURL1 = createTestImageFile(named: "photo.png", in: sourceDir1)
-        let sourceURL2 = createTestImageFile(named: "photo.png", in: sourceDir2)
+        let sourceURL1 = try createTestImageFile(named: "photo.png", in: sourceDir1)
+        let sourceURL2 = try createTestImageFile(named: "photo.png", in: sourceDir2)
 
         let name1 = imageManager.registerImage(from: sourceURL1)
         XCTAssertEqual(name1, "photo.png")
@@ -214,19 +214,19 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertEqual(name2, "photo_1.png")
     }
 
-    func testRegisterImage_UnsupportedExtension_ReturnsNil() {
-        let sourceDir = createSourceDirectory()
+    func testRegisterImage_UnsupportedExtension_ReturnsNil() throws {
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
         // Create files with unsupported extensions
         let txtURL = sourceDir.appendingPathComponent("document.txt")
-        try! "not an image".write(to: txtURL, atomically: true, encoding: .utf8)
+        try "not an image".write(to: txtURL, atomically: true, encoding: .utf8)
 
         let pdfURL = sourceDir.appendingPathComponent("document.pdf")
-        try! "not an image".write(to: pdfURL, atomically: true, encoding: .utf8)
+        try "not an image".write(to: pdfURL, atomically: true, encoding: .utf8)
 
         let svgURL = sourceDir.appendingPathComponent("image.svg")
-        try! "<svg></svg>".write(to: svgURL, atomically: true, encoding: .utf8)
+        try "<svg></svg>".write(to: svgURL, atomically: true, encoding: .utf8)
 
         XCTAssertNil(imageManager.registerImage(from: txtURL))
         XCTAssertNil(imageManager.registerImage(from: pdfURL))
@@ -238,13 +238,13 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - Custom Default Tests
 
-    func testHasCustomDefault_Correctness() {
+    func testHasCustomDefault_Correctness() throws {
         XCTAssertFalse(imageManager.hasCustomDefault)
 
-        let sourceDir = createSourceDirectory()
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "default.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "default.png", in: sourceDir)
         imageManager.setCustomDefault(from: sourceURL)
         XCTAssertTrue(imageManager.hasCustomDefault)
 
@@ -263,11 +263,11 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertNil(imageManager.loadRegisteredImage(named: "."))
     }
 
-    func testRemoveRegisteredImage_PathTraversal_DoesNotDeleteOutsideDir() {
+    func testRemoveRegisteredImage_PathTraversal_DoesNotDeleteOutsideDir() throws {
         // imagesDir の外にファイルを作成し、パストラバーサルで削除されないことを確認
         let outsideDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTestsOutside-\(UUID().uuidString)")
-        try! FileManager.default.createDirectory(at: outsideDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: outsideDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: outsideDir) }
 
         let targetFile = outsideDir.appendingPathComponent("should_not_be_deleted.png")
@@ -280,12 +280,12 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: targetFile.path))
     }
 
-    func testLoadRegisteredImage_ValidName_ReturnsImage() {
+    func testLoadRegisteredImage_ValidName_ReturnsImage() throws {
         // 正常なファイル名は引き続き動作することを確認
-        let sourceDir = createSourceDirectory()
+        let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        let sourceURL = createTestImageFile(named: "valid.png", in: sourceDir)
+        let sourceURL = try createTestImageFile(named: "valid.png", in: sourceDir)
         imageManager.registerImage(from: sourceURL)
 
         let image = imageManager.loadRegisteredImage(named: "valid.png")

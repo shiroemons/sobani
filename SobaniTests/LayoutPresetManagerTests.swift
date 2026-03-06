@@ -165,13 +165,13 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded?.states, [])
     }
 
-    func testInvalidJSONSkipped() {
+    func testInvalidJSONSkipped() throws {
         // Write invalid JSON file directly into the layouts directory
         let layoutsDir = presetManager.layoutsDirectoryURL
         XCTAssertNotNil(layoutsDir)
 
         let invalidFile = layoutsDir!.appendingPathComponent("invalid.json")
-        try! "{ not valid json }}}".write(to: invalidFile, atomically: true, encoding: .utf8)
+        try "{ not valid json }}}".write(to: invalidFile, atomically: true, encoding: .utf8)
 
         // Also save a valid preset
         presetManager.savePreset(name: "ValidPreset", states: [makeState()])

@@ -48,17 +48,17 @@ final class WindowStateManagerTests: XCTestCase {
 
     // MARK: - Encode/Decode Tests
 
-    func testEncodeDecodeRoundTrip() {
+    func testEncodeDecodeRoundTrip() throws {
         let state = makeState()
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded, [state])
     }
 
-    func testEncodeDecodeWithFlip() {
+    func testEncodeDecodeWithFlip() throws {
         let state = makeState(isFlippedHorizontally: true)
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.isFlippedHorizontally, true)
     }
 
@@ -80,12 +80,12 @@ final class WindowStateManagerTests: XCTestCase {
         XCTAssertEqual(loaded, [])
     }
 
-    func testLoadStatesWithCorruptedJSON() {
+    func testLoadStatesWithCorruptedJSON() throws {
         guard let url = stateManager.statesFileURL else {
             XCTFail("statesFileURL is nil")
             return
         }
-        try! "{ invalid json".write(to: url, atomically: true, encoding: .utf8)
+        try "{ invalid json".write(to: url, atomically: true, encoding: .utf8)
         let loaded = stateManager.loadStates()
         XCTAssertEqual(loaded, [])
     }
@@ -200,14 +200,14 @@ final class WindowStateManagerTests: XCTestCase {
 
     // MARK: - Rotation Angle Tests
 
-    func testEncodeDecodeWithRotation() {
+    func testEncodeDecodeWithRotation() throws {
         let state = makeState(rotationAngle: 45)
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.rotationAngle, 45)
     }
 
-    func testBackwardCompatibilityWithoutRotation() {
+    func testBackwardCompatibilityWithoutRotation() throws {
         // Simulate old JSON without rotationAngle field
         let json = """
         [{
@@ -220,14 +220,14 @@ final class WindowStateManagerTests: XCTestCase {
         }]
         """
         let data = json.data(using: .utf8)!
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.rotationAngle, 0)
     }
 
-    func testEncodeDecodeWithFlipAndRotation() {
+    func testEncodeDecodeWithFlipAndRotation() throws {
         let state = makeState(isFlippedHorizontally: true, rotationAngle: 90)
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.isFlippedHorizontally, true)
         XCTAssertEqual(decoded.first?.rotationAngle, 90)
     }
@@ -324,7 +324,7 @@ final class WindowStateManagerTests: XCTestCase {
         XCTAssertEqual(adjusted.windowId, 7)
     }
 
-    func testLoadStatesNormalizesLegacyDefaultImageName() {
+    func testLoadStatesNormalizesLegacyDefaultImageName() throws {
         // Write JSON with legacy "デフォルト" imageName
         let legacyJSON = """
         [{\
@@ -338,7 +338,7 @@ final class WindowStateManagerTests: XCTestCase {
         }]
         """
         let jsonURL = tempDirectory.appendingPathComponent("window_states.json")
-        try! legacyJSON.data(using: .utf8)!.write(to: jsonURL)
+        try legacyJSON.data(using: .utf8)!.write(to: jsonURL)
 
         let states = stateManager.loadStates()
         XCTAssertEqual(states.first?.imageName, AppConstants.defaultImageName)
