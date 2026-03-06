@@ -580,6 +580,10 @@ extension AdjustmentPanelController {
             updateSizeFields()
             return
         }
+        guard currentAspectRatio > 0 else {
+            updateSizeFields()
+            return
+        }
         let clampedH = max(AppConstants.minImageHeight, min(AppConstants.maxImageHeight, CGFloat(value) / currentAspectRatio))
         let clampedW = clampedH * currentAspectRatio
         currentSize = CGSize(width: clampedW, height: clampedH)
