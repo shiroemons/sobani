@@ -15,6 +15,7 @@ final class PathSanitizerTests: XCTestCase {
         let result = PathSanitizer.safeURL(name: "../etc/passwd", in: dir)
         // Should extract only "passwd" as lastPathComponent and validate prefix
         XCTAssertNotNil(result)
+        // swiftlint:disable:next force_unwrapping
         XCTAssertTrue(result!.path.hasPrefix(dir.path + "/"))
     }
 
@@ -45,7 +46,9 @@ final class PathSanitizerTests: XCTestCase {
     func testSafeNameReplacesInvalidCharacters() {
         let result = PathSanitizer.safeName(from: "my/layout:test")
         XCTAssertNotNil(result)
+        // swiftlint:disable:next force_unwrapping
         XCTAssertFalse(result!.contains("/"))
+        // swiftlint:disable:next force_unwrapping
         XCTAssertFalse(result!.contains(":"))
     }
 
@@ -70,7 +73,9 @@ final class PathSanitizerTests: XCTestCase {
     func testSafeNameWithSpecialCharacters() {
         let result = PathSanitizer.safeName(from: "test*file?name")
         XCTAssertNotNil(result)
+        // swiftlint:disable:next force_unwrapping
         XCTAssertFalse(result!.contains("*"))
+        // swiftlint:disable:next force_unwrapping
         XCTAssertFalse(result!.contains("?"))
     }
 }

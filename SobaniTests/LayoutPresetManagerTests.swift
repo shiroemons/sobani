@@ -172,6 +172,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         let layoutsDir = presetManager.layoutsDirectoryURL
         XCTAssertNotNil(layoutsDir)
 
+        // swiftlint:disable:next force_unwrapping
         let invalidFile = layoutsDir!.appendingPathComponent("invalid.json")
         try "{ not valid json }}}".write(to: invalidFile, atomically: true, encoding: .utf8)
 
@@ -238,6 +239,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertNotNil(layoutsDir)
 
         var isDirectory: ObjCBool = false
+        // swiftlint:disable:next force_unwrapping
         let exists = FileManager.default.fileExists(atPath: layoutsDir!.path, isDirectory: &isDirectory)
         XCTAssertTrue(exists)
         XCTAssertTrue(isDirectory.boolValue)
@@ -290,6 +292,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
         let loaded = presetManager.loadPreset(named: "PropertiesTest")
         XCTAssertNotNil(loaded)
+        // swiftlint:disable:next force_unwrapping
         let loadedStates = loaded!.states
 
         XCTAssertEqual(loadedStates[0].imageName, "flipped.png")

@@ -215,6 +215,7 @@ final class ScreenRestorationManagerTests: XCTestCase {
     }
 
     func testLoadPendingWithCorruptedJSON() {
+        // swiftlint:disable:next force_unwrapping
         let url = ioManager.pendingFileURL!
         try? Data("not valid json".utf8).write(to: url, options: .atomic)
 
@@ -342,6 +343,7 @@ final class ScreenRestorationManagerTests: XCTestCase {
             }
         ]
         """
+        // swiftlint:disable:next force_unwrapping
         let url = ioManager.pendingFileURL!
         try? Data(oldFormatJSON.utf8).write(to: url, options: .atomic)
 

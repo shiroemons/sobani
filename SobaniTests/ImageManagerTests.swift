@@ -40,6 +40,7 @@ final class ImageManagerTests: XCTestCase {
 
     @discardableResult
     private func createTestImageFile(named name: String, in directory: URL? = nil) throws -> URL {
+        // swiftlint:disable:next force_unwrapping
         let dir = directory ?? tempDirectory!
         let url = dir.appendingPathComponent(name)
         let data = createTestPNGData()
