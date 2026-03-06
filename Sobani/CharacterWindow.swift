@@ -26,7 +26,8 @@ class CharacterWindow: NSObject, NSMenuDelegate {
 
     init(image: NSImage) {
         let maxHeight: CGFloat = AppConstants.defaultWindowHeight
-        let scale = maxHeight / image.size.height
+        let imageHeight = max(image.size.height, 1)
+        let scale = maxHeight / imageHeight
         let windowWidth = image.size.width * scale
         let windowHeight = maxHeight
 
@@ -94,6 +95,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     func applyImage(_ image: NSImage) {
+        guard image.size.height > 0 else { return }
         let baseHeight = imageView.frame.height
         let scale = baseHeight / image.size.height
         let baseWidth = image.size.width * scale

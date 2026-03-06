@@ -183,6 +183,7 @@ extension CharacterWindow {
     @discardableResult
     func restore(from state: WindowState) -> Bool {
         let adjusted = state.adjustedToVisibleArea()
+        guard adjusted.height > 0 else { return false }
         let tolerance = AppConstants.floatingPointTolerance
         let wasAdjusted = abs(adjusted.originX - state.originX) > tolerance
             || abs(adjusted.originY - state.originY) > tolerance
