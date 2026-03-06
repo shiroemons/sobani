@@ -112,11 +112,9 @@ final class WindowStateManagerTests: XCTestCase {
 
     // MARK: - File Path Test
 
-    func testStatesFileURL() {
-        let url = stateManager.statesFileURL
-        XCTAssertNotNil(url)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertTrue(url!.path.hasSuffix("window_states.json"))
+    func testStatesFileURL() throws {
+        let url = try XCTUnwrap(stateManager.statesFileURL)
+        XCTAssertTrue(url.path.hasSuffix("window_states.json"))
     }
 
     // MARK: - Position Visibility Tests

@@ -10,13 +10,11 @@ final class PathSanitizerTests: XCTestCase {
         XCTAssertEqual(result?.path, "/tmp/test/image.png")
     }
 
-    func testSafeURLRejectsPathTraversal() {
+    func testSafeURLRejectsPathTraversal() throws {
         let dir = URL(fileURLWithPath: "/tmp/test")
-        let result = PathSanitizer.safeURL(name: "../etc/passwd", in: dir)
+        let result = try XCTUnwrap(PathSanitizer.safeURL(name: "../etc/passwd", in: dir))
         // Should extract only "passwd" as lastPathComponent and validate prefix
-        XCTAssertNotNil(result)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertTrue(result!.path.hasPrefix(dir.path + "/"))
+        XCTAssertTrue(result.path.hasPrefix(dir.path + "/"))
     }
 
     func testSafeURLRejectsEmptyName() {
@@ -43,13 +41,10 @@ final class PathSanitizerTests: XCTestCase {
         XCTAssertEqual(PathSanitizer.safeName(from: "my layout"), "my layout")
     }
 
-    func testSafeNameReplacesInvalidCharacters() {
-        let result = PathSanitizer.safeName(from: "my/layout:test")
-        XCTAssertNotNil(result)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(result!.contains("/"))
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(result!.contains(":"))
+    func testSafeNameReplacesInvalidCharacters() throws {
+        let result = try XCTUnwrap(PathSanitizer.safeName(from: "my/layout:test"))
+        XCTAssertFalse(result.contains("/"))
+        XCTAssertFalse(result.contains(":"))
     }
 
     func testSafeNameRejectsEmpty() {
@@ -70,12 +65,9 @@ final class PathSanitizerTests: XCTestCase {
         XCTAssertNotNil(result)
     }
 
-    func testSafeNameWithSpecialCharacters() {
-        let result = PathSanitizer.safeName(from: "test*file?name")
-        XCTAssertNotNil(result)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(result!.contains("*"))
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(result!.contains("?"))
+    func testSafeNameWithSpecialCharacters() throws {
+        let result = try XCTUnwrap(PathSanitizer.safeName(from: "test*file?name"))
+        XCTAssertFalse(result.contains("*"))
+        XCTAssertFalse(result.contains("?"))
     }
 }

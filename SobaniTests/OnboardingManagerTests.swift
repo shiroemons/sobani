@@ -8,10 +8,9 @@ final class OnboardingManagerTests: XCTestCase {
     // swiftlint:disable:next implicitly_unwrapped_optional
     private var manager: OnboardingManager!
 
-    override func setUp() {
-        super.setUp()
-        // swiftlint:disable:next force_unwrapping
-        testDefaults = UserDefaults(suiteName: suiteName)!
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        testDefaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         testDefaults.removePersistentDomain(forName: suiteName)
         manager = OnboardingManager(defaults: testDefaults)
     }
@@ -61,10 +60,9 @@ final class OnboardingManagerTests: XCTestCase {
         XCTAssertNil(stored)
     }
 
-    func testDependencyInjection_customDefaults() {
+    func testDependencyInjection_customDefaults() throws {
         let otherSuite = "test-onboarding-other"
-        // swiftlint:disable:next force_unwrapping
-        let otherDefaults = UserDefaults(suiteName: otherSuite)!
+        let otherDefaults = try XCTUnwrap(UserDefaults(suiteName: otherSuite))
         otherDefaults.removePersistentDomain(forName: otherSuite)
         let otherManager = OnboardingManager(defaults: otherDefaults)
 

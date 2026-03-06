@@ -214,9 +214,8 @@ final class ScreenRestorationManagerTests: XCTestCase {
         XCTAssertTrue(loader.pendingRestorations.isEmpty)
     }
 
-    func testLoadPendingWithCorruptedJSON() {
-        // swiftlint:disable:next force_unwrapping
-        let url = ioManager.pendingFileURL!
+    func testLoadPendingWithCorruptedJSON() throws {
+        let url = try XCTUnwrap(ioManager.pendingFileURL)
         try? Data("not valid json".utf8).write(to: url, options: .atomic)
 
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
@@ -321,7 +320,7 @@ final class ScreenRestorationManagerTests: XCTestCase {
         XCTAssertNil(loader.pendingRestorations[0].preSleepScreenFrame)
     }
 
-    func testLoadPendingBackwardCompatibilityWithoutScreenFrame() {
+    func testLoadPendingBackwardCompatibilityWithoutScreenFrame() throws {
         // 古いフォーマット（screenFrame フィールドなし）のJSONを読み込めることを確認
         let oldFormatJSON = """
         [
@@ -343,9 +342,8 @@ final class ScreenRestorationManagerTests: XCTestCase {
             }
         ]
         """
-        // swiftlint:disable:next force_unwrapping
-        let url = ioManager.pendingFileURL!
-        try? Data(oldFormatJSON.utf8).write(to: url, options: .atomic)
+        let url = try XCTUnwrap(ioManager.pendingFileURL)
+        try Data(oldFormatJSON.utf8).write(to: url, options: .atomic)
 
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()

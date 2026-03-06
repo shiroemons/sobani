@@ -169,11 +169,9 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     func testInvalidJSONSkipped() throws {
         // Write invalid JSON file directly into the layouts directory
-        let layoutsDir = presetManager.layoutsDirectoryURL
-        XCTAssertNotNil(layoutsDir)
+        let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
 
-        // swiftlint:disable:next force_unwrapping
-        let invalidFile = layoutsDir!.appendingPathComponent("invalid.json")
+        let invalidFile = layoutsDir.appendingPathComponent("invalid.json")
         try "{ not valid json }}}".write(to: invalidFile, atomically: true, encoding: .utf8)
 
         // Also save a valid preset
@@ -234,13 +232,11 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Directory Tests
 
-    func testLayoutsDirectoryCreated() {
-        let layoutsDir = presetManager.layoutsDirectoryURL
-        XCTAssertNotNil(layoutsDir)
+    func testLayoutsDirectoryCreated() throws {
+        let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
 
         var isDirectory: ObjCBool = false
-        // swiftlint:disable:next force_unwrapping
-        let exists = FileManager.default.fileExists(atPath: layoutsDir!.path, isDirectory: &isDirectory)
+        let exists = FileManager.default.fileExists(atPath: layoutsDir.path, isDirectory: &isDirectory)
         XCTAssertTrue(exists)
         XCTAssertTrue(isDirectory.boolValue)
     }
@@ -263,7 +259,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded?.states, states)
     }
 
-    func testPresetStatesPreserveWindowProperties() {
+    func testPresetStatesPreserveWindowProperties() throws {
         let states = [
             makeState(
                 imageName: "flipped.png",
@@ -290,10 +286,8 @@ final class LayoutPresetManagerTests: XCTestCase {
         ]
         presetManager.savePreset(name: "PropertiesTest", states: states)
 
-        let loaded = presetManager.loadPreset(named: "PropertiesTest")
-        XCTAssertNotNil(loaded)
-        // swiftlint:disable:next force_unwrapping
-        let loadedStates = loaded!.states
+        let loaded = try XCTUnwrap(presetManager.loadPreset(named: "PropertiesTest"))
+        let loadedStates = loaded.states
 
         XCTAssertEqual(loadedStates[0].imageName, "flipped.png")
         XCTAssertTrue(loadedStates[0].isFlippedHorizontally)

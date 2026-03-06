@@ -2,16 +2,21 @@ import XCTest
 @testable import Sobani
 
 final class LanguageManagerTests: XCTestCase {
+    // LanguageManager 内部の UserDefaults キーと同一値。
+    // LanguageManager 側のキーが変更された場合にテストが失敗して気づける。
+    private static let appLanguageKey = "AppLanguage"
+    private static let appleLanguagesKey = "AppleLanguages"
+
     override func setUp() {
         super.setUp()
-        UserDefaults.standard.removeObject(forKey: "AppLanguage")
-        UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+        UserDefaults.standard.removeObject(forKey: Self.appLanguageKey)
+        UserDefaults.standard.removeObject(forKey: Self.appleLanguagesKey)
         LanguageManager.shared.updateBundle()
     }
 
     override func tearDown() {
-        UserDefaults.standard.removeObject(forKey: "AppLanguage")
-        UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+        UserDefaults.standard.removeObject(forKey: Self.appLanguageKey)
+        UserDefaults.standard.removeObject(forKey: Self.appleLanguagesKey)
         LanguageManager.shared.updateBundle()
         super.tearDown()
     }
@@ -25,20 +30,20 @@ final class LanguageManagerTests: XCTestCase {
     func testSetLanguageToJapanese() {
         LanguageManager.shared.currentLanguage = .japanese
         XCTAssertEqual(LanguageManager.shared.currentLanguage, .japanese)
-        XCTAssertEqual(UserDefaults.standard.string(forKey: "AppLanguage"), "ja")
+        XCTAssertEqual(UserDefaults.standard.string(forKey: Self.appLanguageKey), "ja")
     }
 
     func testSetLanguageToEnglish() {
         LanguageManager.shared.currentLanguage = .english
         XCTAssertEqual(LanguageManager.shared.currentLanguage, .english)
-        XCTAssertEqual(UserDefaults.standard.string(forKey: "AppLanguage"), "en")
+        XCTAssertEqual(UserDefaults.standard.string(forKey: Self.appLanguageKey), "en")
     }
 
     func testSetLanguageToSystemRemovesDefaults() {
         LanguageManager.shared.currentLanguage = .japanese
         LanguageManager.shared.currentLanguage = .system
         XCTAssertEqual(LanguageManager.shared.currentLanguage, .system)
-        XCTAssertNil(UserDefaults.standard.string(forKey: "AppLanguage"))
+        XCTAssertNil(UserDefaults.standard.string(forKey: Self.appLanguageKey))
     }
 
     func testAllLanguageCases() {
@@ -68,7 +73,7 @@ final class LanguageManagerTests: XCTestCase {
         LanguageManager.shared.currentLanguage = .system
         // システム言語に戻してもバンドルが設定されている（nil にならない）
         XCTAssertNotNil(LanguageManager.shared.currentBundle)
-        XCTAssertNil(UserDefaults.standard.string(forKey: "AppLanguage"))
+        XCTAssertNil(UserDefaults.standard.string(forKey: Self.appLanguageKey))
     }
 
     // MARK: - Notification

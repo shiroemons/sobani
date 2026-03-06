@@ -6,15 +6,14 @@ final class BackgroundRemovalManagerTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func createTestImage() -> NSImage {
+    private func createTestImage() throws -> NSImage {
         let size = NSSize(width: 100, height: 100)
-        let rep = NSBitmapImageRep(
+        let rep = try XCTUnwrap(NSBitmapImageRep(
             bitmapDataPlanes: nil, pixelsWide: 100, pixelsHigh: 100,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
             isPlanar: false, colorSpaceName: .deviceRGB,
             bytesPerRow: 0, bitsPerPixel: 0
-        // swiftlint:disable:next force_unwrapping
-        )!
+        ))
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
         NSColor.red.setFill()
@@ -27,39 +26,34 @@ final class BackgroundRemovalManagerTests: XCTestCase {
 
     // MARK: - Error Description Tests
 
-    func testCgImageConversionFailedErrorDescription() {
+    func testCgImageConversionFailedErrorDescription() throws {
         let error = BackgroundRemovalError.cgImageConversionFailed
-        XCTAssertNotNil(error.errorDescription)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(error.errorDescription!.isEmpty)
+        let description = try XCTUnwrap(error.errorDescription)
+        XCTAssertFalse(description.isEmpty)
     }
 
-    func testNoForegroundDetectedErrorDescription() {
+    func testNoForegroundDetectedErrorDescription() throws {
         let error = BackgroundRemovalError.noForegroundDetected
-        XCTAssertNotNil(error.errorDescription)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(error.errorDescription!.isEmpty)
+        let description = try XCTUnwrap(error.errorDescription)
+        XCTAssertFalse(description.isEmpty)
     }
 
-    func testMaskGenerationFailedErrorDescription() {
+    func testMaskGenerationFailedErrorDescription() throws {
         let error = BackgroundRemovalError.maskGenerationFailed
-        XCTAssertNotNil(error.errorDescription)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(error.errorDescription!.isEmpty)
+        let description = try XCTUnwrap(error.errorDescription)
+        XCTAssertFalse(description.isEmpty)
     }
 
-    func testFilterOutputFailedErrorDescription() {
+    func testFilterOutputFailedErrorDescription() throws {
         let error = BackgroundRemovalError.filterOutputFailed
-        XCTAssertNotNil(error.errorDescription)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(error.errorDescription!.isEmpty)
+        let description = try XCTUnwrap(error.errorDescription)
+        XCTAssertFalse(description.isEmpty)
     }
 
-    func testFinalImageConversionFailedErrorDescription() {
+    func testFinalImageConversionFailedErrorDescription() throws {
         let error = BackgroundRemovalError.finalImageConversionFailed
-        XCTAssertNotNil(error.errorDescription)
-        // swiftlint:disable:next force_unwrapping
-        XCTAssertFalse(error.errorDescription!.isEmpty)
+        let description = try XCTUnwrap(error.errorDescription)
+        XCTAssertFalse(description.isEmpty)
     }
 
     // MARK: - removeBackground Tests
@@ -80,9 +74,9 @@ final class BackgroundRemovalManagerTests: XCTestCase {
         waitForExpectations(timeout: 5)
     }
 
-    func testRemoveBackgroundWithValidImageDoesNotCrash() {
+    func testRemoveBackgroundWithValidImageDoesNotCrash() throws {
         let expectation = expectation(description: "Completion called")
-        let image = createTestImage()
+        let image = try createTestImage()
 
         BackgroundRemovalManager.shared.removeBackground(from: image) { _ in
             expectation.fulfill()
