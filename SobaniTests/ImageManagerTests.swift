@@ -24,18 +24,15 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func createTestPNGData() -> Data {
+    private func createTestPNGData() throws -> Data {
         let image = NSImage(size: NSSize(width: 10, height: 10))
         image.lockFocus()
         NSColor.red.setFill()
         NSRect(x: 0, y: 0, width: 10, height: 10).fill()
         image.unlockFocus()
-        guard let tiffData = image.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData),
-              let pngData = bitmap.representation(using: .png, properties: [:]) else {
-            fatalError("Failed to create test PNG data")
-        }
-        return pngData
+        let tiffData = try XCTUnwrap(image.tiffRepresentation)
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: tiffData))
+        return try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
     }
 
     @discardableResult
@@ -43,7 +40,7 @@ final class ImageManagerTests: XCTestCase {
         // swiftlint:disable:next force_unwrapping
         let dir = directory ?? tempDirectory!
         let url = dir.appendingPathComponent(name)
-        let data = createTestPNGData()
+        let data = try createTestPNGData()
         try data.write(to: url)
         return url
     }
