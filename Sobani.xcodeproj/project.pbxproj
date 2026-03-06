@@ -39,6 +39,8 @@
 		F0OB000002000000000001 /* OnboardingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OB000001000000000001 /* OnboardingManager.swift */; };
 		F0OB000004000000000001 /* OnboardingWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OB000003000000000001 /* OnboardingWindowController.swift */; };
 		F0OB000006000000000001 /* OnboardingManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OB000005000000000001 /* OnboardingManagerTests.swift */; };
+		F0LP000002000000000001 /* LayoutPresetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LP000001000000000001 /* LayoutPresetManager.swift */; };
+		F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LP000003000000000001 /* LayoutPresetManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -88,6 +90,8 @@
 		F0OB000001000000000001 /* OnboardingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingManager.swift; sourceTree = "<group>"; };
 		F0OB000003000000000001 /* OnboardingWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowController.swift; sourceTree = "<group>"; };
 		F0OB000005000000000001 /* OnboardingManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingManagerTests.swift; sourceTree = "<group>"; };
+		F0LP000001000000000001 /* LayoutPresetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetManager.swift; sourceTree = "<group>"; };
+		F0LP000003000000000001 /* LayoutPresetManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +142,7 @@
 				F0DD000001000000000001 /* DragDropUtils.swift */,
 				F0OB000001000000000001 /* OnboardingManager.swift */,
 				F0OB000003000000000001 /* OnboardingWindowController.swift */,
+				F0LP000001000000000001 /* LayoutPresetManager.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -169,6 +174,7 @@
 				F0BG000003000000000001 /* BackgroundRemovalManagerTests.swift */,
 				F0DD000003000000000001 /* DragDropUtilsTests.swift */,
 				F0OB000005000000000001 /* OnboardingManagerTests.swift */,
+				F0LP000003000000000001 /* LayoutPresetManagerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -308,6 +314,7 @@
 				F0DD000002000000000001 /* DragDropUtils.swift in Sources */,
 				F0OB000002000000000001 /* OnboardingManager.swift in Sources */,
 				F0OB000004000000000001 /* OnboardingWindowController.swift in Sources */,
+				F0LP000002000000000001 /* LayoutPresetManager.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -326,6 +333,7 @@
 				F0BG000004000000000001 /* BackgroundRemovalManagerTests.swift in Sources */,
 				F0DD000004000000000001 /* DragDropUtilsTests.swift in Sources */,
 				F0OB000006000000000001 /* OnboardingManagerTests.swift in Sources */,
+				F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

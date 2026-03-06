@@ -22,9 +22,7 @@ extension AppDelegate {
         let aboutItem = NSMenuItem(title: L("menu.about"), action: #selector(showAbout), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
-
         menu.addItem(buildUpdateMenuItem())
-
         let loginItem = NSMenuItem(
             title: L("menu.launch_at_login"),
             action: #selector(toggleLaunchAtLogin),
@@ -72,6 +70,7 @@ extension AppDelegate {
         let closeAllItem = NSMenuItem(title: L("menu.close_all"), action: #selector(closeAllWindows), keyEquivalent: "")
         closeAllItem.target = self
         menu.addItem(closeAllItem)
+        menu.addItem(buildLayoutMenuItem())
         menu.addItem(NSMenuItem.separator())
 
         let changeDefaultItem = NSMenuItem(title: L("image.default_change"), action: #selector(changeDefaultImageFromMenu), keyEquivalent: "")
@@ -86,18 +85,7 @@ extension AppDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        let languageItem = NSMenuItem(title: L("language.title"), action: nil, keyEquivalent: "")
-        let languageSubmenu = NSMenu()
-        let currentLanguage = LanguageManager.shared.currentLanguage
-        for language in Language.allCases {
-            let item = NSMenuItem(title: language.displayName, action: #selector(changeLanguage(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = language.rawValue
-            item.state = language == currentLanguage ? .on : .off
-            languageSubmenu.addItem(item)
-        }
-        languageItem.submenu = languageSubmenu
-        menu.addItem(languageItem)
+        menu.addItem(buildLanguageMenuItem())
 
         let onboardingItem = NSMenuItem(
             title: L("menu.show_onboarding"),
@@ -468,6 +456,21 @@ extension AppDelegate {
         charWindow.applyImage(defaultImage)
     }
 
+    func buildLanguageMenuItem() -> NSMenuItem {
+        let languageItem = NSMenuItem(title: L("language.title"), action: nil, keyEquivalent: "")
+        let languageSubmenu = NSMenu()
+        let currentLanguage = LanguageManager.shared.currentLanguage
+        for language in Language.allCases {
+            let item = NSMenuItem(title: language.displayName, action: #selector(changeLanguage(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = language.rawValue
+            item.state = language == currentLanguage ? .on : .off
+            languageSubmenu.addItem(item)
+        }
+        languageItem.submenu = languageSubmenu
+        return languageItem
+    }
+
     @objc func changeLanguage(_ sender: NSMenuItem) {
         guard let languageRaw = sender.representedObject as? String,
               let language = Language(rawValue: languageRaw) else { return }
@@ -542,6 +545,240 @@ extension AppDelegate {
         }
         controller.show()
         onboardingController = controller
+    }
+
+    // MARK: - Layout Preset
+
+    func applyLayout(_ preset: LayoutPreset) {
+        isApplyingLayout = true
+        areWindowsHidden = false
+
+        for charWindow in characterWindows {
+            charWindow.window.orderOut(nil)
+        }
+        characterWindows.removeAll()
+        zOrderedWindows.removeAll()
+
+        for state in preset.states {
+            let image: NSImage
+            let resolvedDisplayName: String
+
+            if state.imageName == AppConstants.defaultImageName {
+                image = ImageManager.shared.defaultImage() ?? NSImage()
+                resolvedDisplayName = AppConstants.defaultImageName
+            } else if let registered = ImageManager.shared.loadRegisteredImage(named: state.imageName) {
+                image = registered
+                resolvedDisplayName = state.imageName
+            } else {
+                image = ImageManager.shared.defaultImage() ?? NSImage()
+                resolvedDisplayName = AppConstants.defaultImageName
+            }
+
+            let charWindow = CharacterWindow(image: image)
+            charWindow.delegate = self
+            charWindow.setDisplayName(resolvedDisplayName)
+            charWindow.setWindowId(nextWindowId)
+            nextWindowId += 1
+            charWindow.restore(from: state)
+            characterWindows.append(charWindow)
+        }
+
+        zOrderedWindows = characterWindows.reversed()
+
+        isApplyingLayout = false
+        quitIfNoWindows()
+    }
+
+    func buildLayoutMenuItem() -> NSMenuItem {
+        let layoutItem = NSMenuItem(title: L("layout.title"), action: nil, keyEquivalent: "")
+        layoutItem.tag = MenuItemTag.layoutSubmenu.rawValue
+        let submenu = NSMenu()
+
+        let saveItem = NSMenuItem(
+            title: L("layout.save_current"),
+            action: #selector(saveLayoutFromMenu),
+            keyEquivalent: ""
+        )
+        saveItem.target = self
+        saveItem.tag = MenuItemTag.saveLayout.rawValue
+        saveItem.isEnabled = !characterWindows.isEmpty
+        submenu.addItem(saveItem)
+
+        let createItem = NSMenuItem(
+            title: L("layout.create_new"),
+            action: #selector(createNewLayoutFromMenu),
+            keyEquivalent: ""
+        )
+        createItem.target = self
+        createItem.tag = MenuItemTag.createLayout.rawValue
+        submenu.addItem(createItem)
+
+        let presets = LayoutPresetManager.shared.loadPresets()
+        if !presets.isEmpty {
+            submenu.addItem(NSMenuItem.separator())
+
+            let savedLabel = NSMenuItem(title: L("layout.saved"), action: nil, keyEquivalent: "")
+            savedLabel.isEnabled = false
+            submenu.addItem(savedLabel)
+
+            for preset in presets {
+                let item = NSMenuItem(
+                    title: preset.name,
+                    action: #selector(applyLayoutFromMenu(_:)),
+                    keyEquivalent: ""
+                )
+                item.target = self
+                item.representedObject = preset.name
+                submenu.addItem(item)
+            }
+
+            submenu.addItem(NSMenuItem.separator())
+
+            let updateItem = NSMenuItem(title: L("layout.update"), action: nil, keyEquivalent: "")
+            updateItem.tag = MenuItemTag.updateLayout.rawValue
+            updateItem.isEnabled = !characterWindows.isEmpty
+            let updateSubmenu = NSMenu()
+            for preset in presets {
+                let item = NSMenuItem(
+                    title: preset.name,
+                    action: #selector(updateLayoutFromMenu(_:)),
+                    keyEquivalent: ""
+                )
+                item.target = self
+                item.representedObject = preset.name
+                updateSubmenu.addItem(item)
+            }
+            updateItem.submenu = updateSubmenu
+            submenu.addItem(updateItem)
+
+            let deleteItem = NSMenuItem(title: L("layout.delete"), action: nil, keyEquivalent: "")
+            deleteItem.tag = MenuItemTag.deleteLayout.rawValue
+            let deleteSubmenu = NSMenu()
+            for preset in presets {
+                let item = NSMenuItem(
+                    title: preset.name,
+                    action: #selector(deleteLayoutFromMenu(_:)),
+                    keyEquivalent: ""
+                )
+                item.target = self
+                item.representedObject = preset.name
+                deleteSubmenu.addItem(item)
+            }
+            deleteItem.submenu = deleteSubmenu
+            submenu.addItem(deleteItem)
+        }
+
+        layoutItem.submenu = submenu
+        return layoutItem
+    }
+
+    @objc func saveLayoutFromMenu() {
+        let alert = NSAlert()
+        alert.messageText = L("layout.save_title")
+        alert.informativeText = L("layout.save_message")
+        alert.addButton(withTitle: L("layout.save_button"))
+        alert.addButton(withTitle: L("quit.cancel"))
+        alert.alertStyle = .informational
+
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        textField.placeholderString = L("layout.name_placeholder")
+        alert.accessoryView = textField
+
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+
+        if LayoutPresetManager.shared.presetExists(named: name) {
+            let overwriteAlert = NSAlert()
+            overwriteAlert.messageText = L("layout.overwrite_title")
+            overwriteAlert.informativeText = String(format: L("layout.overwrite_message"), name)
+            overwriteAlert.addButton(withTitle: L("layout.overwrite_button"))
+            overwriteAlert.addButton(withTitle: L("quit.cancel"))
+            overwriteAlert.alertStyle = .warning
+            guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
+        }
+
+        let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
+        let states = sortedWindows.map { WindowStateManager.captureState(from: $0) }
+        LayoutPresetManager.shared.savePreset(name: name, states: states)
+    }
+
+    @objc func createNewLayoutFromMenu() {
+        let alert = NSAlert()
+        alert.messageText = L("layout.create_title")
+        alert.informativeText = L("layout.create_message")
+        alert.addButton(withTitle: L("layout.create_button"))
+        alert.addButton(withTitle: L("quit.cancel"))
+        alert.alertStyle = .informational
+
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        textField.placeholderString = L("layout.name_placeholder")
+        alert.accessoryView = textField
+
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+
+        if LayoutPresetManager.shared.presetExists(named: name) {
+            let overwriteAlert = NSAlert()
+            overwriteAlert.messageText = L("layout.overwrite_title")
+            overwriteAlert.informativeText = String(format: L("layout.overwrite_message"), name)
+            overwriteAlert.addButton(withTitle: L("layout.overwrite_button"))
+            overwriteAlert.addButton(withTitle: L("quit.cancel"))
+            overwriteAlert.alertStyle = .warning
+            guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
+        }
+
+        let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+        let defaultState = WindowState(
+            imageName: AppConstants.defaultImageName,
+            originX: mainFrame.midX - AppConstants.defaultWindowHeight / 2,
+            originY: mainFrame.midY - AppConstants.defaultWindowHeight / 2,
+            width: AppConstants.defaultWindowHeight,
+            height: AppConstants.defaultWindowHeight,
+            isFlippedHorizontally: false
+        )
+        LayoutPresetManager.shared.savePreset(name: name, states: [defaultState])
+
+        if let preset = LayoutPresetManager.shared.loadPreset(named: name) {
+            applyLayout(preset)
+        }
+    }
+
+    @objc func applyLayoutFromMenu(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String,
+              let preset = LayoutPresetManager.shared.loadPreset(named: name) else { return }
+        applyLayout(preset)
+    }
+
+    @objc func updateLayoutFromMenu(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+
+        let alert = NSAlert()
+        alert.messageText = L("layout.overwrite_title")
+        alert.informativeText = String(format: L("layout.update_confirm_message"), name)
+        alert.addButton(withTitle: L("layout.overwrite_button"))
+        alert.addButton(withTitle: L("quit.cancel"))
+        alert.alertStyle = .warning
+
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
+        let states = sortedWindows.map { WindowStateManager.captureState(from: $0) }
+        LayoutPresetManager.shared.savePreset(name: name, states: states)
+    }
+
+    @objc func deleteLayoutFromMenu(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+
+        let alert = NSAlert()
+        alert.messageText = L("layout.delete_confirm_title")
+        alert.informativeText = String(format: L("layout.delete_confirm_message"), name)
+        alert.addButton(withTitle: L("layout.delete_button"))
+        alert.addButton(withTitle: L("quit.cancel"))
+        alert.alertStyle = .warning
+
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        LayoutPresetManager.shared.deletePreset(named: name)
     }
 
     @objc func resetAllRotations() {

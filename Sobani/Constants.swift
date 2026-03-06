@@ -82,4 +82,9 @@ enum MenuItemTag: Int {
     case removeBackground = 1020
     case flipContext = 1021
     case adjustPanelContext = 1022
+    case layoutSubmenu = 1023
+    case saveLayout = 1024
+    case deleteLayout = 1025
+    case updateLayout = 1026
+    case createLayout = 1027
 }
