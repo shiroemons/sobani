@@ -68,7 +68,7 @@ class DraggableImageView: NSImageView {
 
     override func scrollWheel(with event: NSEvent) {
         let delta = event.scrollingDeltaY
-        if delta == 0 { return }
+        if abs(delta) < AppConstants.floatingPointTolerance { return }
         if let handler = scrollRotationHandler {
             handler(delta)
             return

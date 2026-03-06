@@ -106,7 +106,7 @@ class RotationDialView: NSView {
 
     override func scrollWheel(with event: NSEvent) {
         let delta = event.scrollingDeltaY
-        if delta == 0 { return }
+        if abs(delta) < AppConstants.floatingPointTolerance { return }
         let newAngle = GeometryUtils.normalizeAngle(angle + delta * scrollSensitivity)
         angle = newAngle
         onAngleChanged?(angle)

@@ -51,7 +51,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         panel = newPanel
 
         languageObserver = NotificationCenter.default.addObserver(
-            forName: Notification.Name("languageDidChange"),
+            forName: .languageDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
