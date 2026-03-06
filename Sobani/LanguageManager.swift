@@ -47,7 +47,8 @@ final class LanguageManager {
         }
     }
 
-    private init() {
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
+    init() {
         // Restore AppleLanguages from saved preference on launch
         // This must happen before any UI is loaded so system strings respect the language
         if let raw = UserDefaults.standard.string(forKey: userDefaultsKey),
