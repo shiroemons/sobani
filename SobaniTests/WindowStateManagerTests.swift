@@ -127,7 +127,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        XCTAssertTrue(WindowStateManager.isPositionVisible(state))
+        XCTAssertTrue(state.isPositionVisible())
     }
 
     func testIsPositionVisibleOffScreen() {
@@ -137,7 +137,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        XCTAssertFalse(WindowStateManager.isPositionVisible(state))
+        XCTAssertFalse(state.isPositionVisible())
     }
 
     func testAdjustToVisibleAreaNoChangeWhenVisible() {
@@ -149,7 +149,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted, state)
     }
 
@@ -161,7 +161,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertNotEqual(adjusted.originX, state.originX)
         XCTAssertNotEqual(adjusted.originY, state.originY)
 
@@ -240,7 +240,7 @@ final class WindowStateManagerTests: XCTestCase {
             height: 400,
             rotationAngle: 180
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted.rotationAngle, 180)
     }
 
@@ -281,7 +281,7 @@ final class WindowStateManagerTests: XCTestCase {
             height: 400,
             opacityLevel: 0.3
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted.opacityLevel, 0.3, accuracy: 0.001)
     }
 
@@ -320,7 +320,7 @@ final class WindowStateManagerTests: XCTestCase {
             height: 400,
             windowId: 7
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted.windowId, 7)
     }
 

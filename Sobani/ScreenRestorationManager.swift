@@ -125,7 +125,7 @@ class ScreenRestorationManager {
                 return false
             } else {
                 // displayIDが不明（スリープなし切断）: 元の位置が現在可視かどうかで判定
-                return WindowStateManager.isPositionVisible(entry.originalState)
+                return entry.originalState.isPositionVisible()
             }
         }
     }
