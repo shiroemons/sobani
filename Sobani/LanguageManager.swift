@@ -24,6 +24,7 @@ final class LanguageManager {
     static let shared = LanguageManager()
 
     private let userDefaultsKey = "AppLanguage"
+    private static let appleLanguagesKey = "AppleLanguages"
     private(set) var currentBundle: Bundle?
 
     var currentLanguage: Language {
@@ -37,10 +38,10 @@ final class LanguageManager {
         set {
             if newValue == .system {
                 UserDefaults.standard.removeObject(forKey: userDefaultsKey)
-                UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+                UserDefaults.standard.removeObject(forKey: Self.appleLanguagesKey)
             } else {
                 UserDefaults.standard.set(newValue.rawValue, forKey: userDefaultsKey)
-                UserDefaults.standard.set([newValue.rawValue], forKey: "AppleLanguages")
+                UserDefaults.standard.set([newValue.rawValue], forKey: Self.appleLanguagesKey)
             }
             updateBundle()
             NotificationCenter.default.post(name: .languageDidChange, object: nil)
@@ -53,7 +54,7 @@ final class LanguageManager {
         // This must happen before any UI is loaded so system strings respect the language
         if let raw = UserDefaults.standard.string(forKey: userDefaultsKey),
            let lang = Language(rawValue: raw), lang != .system {
-            UserDefaults.standard.set([lang.rawValue], forKey: "AppleLanguages")
+            UserDefaults.standard.set([lang.rawValue], forKey: Self.appleLanguagesKey)
         }
         updateBundle()
     }
