@@ -69,27 +69,7 @@ class WindowStateManager {
     }
 
     private var appSupportURL: URL? {
-        let fm = FileManager.default
-        let appDir: URL
-        if let base = baseDirectory {
-            appDir = base
-        } else {
-            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-            appDir = appSupport.appendingPathComponent("Sobani")
-        }
-        if !fm.fileExists(atPath: appDir.path) {
-            do {
-                try fm.createDirectory(
-                    at: appDir,
-                    withIntermediateDirectories: true
-                )
-            } catch {
-                logger.error(
-                    "Failed to create app support directory: \(error.localizedDescription)"
-                )
-            }
-        }
-        return appDir
+        AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
     var statesFileURL: URL? {

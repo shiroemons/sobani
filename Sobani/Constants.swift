@@ -1,4 +1,5 @@
 import Cocoa
+import os.log
 
 /// Localization helper that supports runtime language switching via LanguageManager.
 /// Falls back to NSLocalizedString with the main bundle when no custom bundle is set.
@@ -56,6 +57,27 @@ enum GeometryUtils {
         var result = angle.truncatingRemainder(dividingBy: 360)
         if result < 0 { result += 360 }
         return result
+    }
+}
+
+enum AppSupportDirectory {
+    static func url(baseDirectory: URL?, logger: Logger) -> URL? {
+        let fm = FileManager.default
+        let appDir: URL
+        if let base = baseDirectory {
+            appDir = base
+        } else {
+            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
+            appDir = appSupport.appendingPathComponent("Sobani")
+        }
+        if !fm.fileExists(atPath: appDir.path) {
+            do {
+                try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+            } catch {
+                logger.error("Failed to create app support directory: \(error.localizedDescription)")
+            }
+        }
+        return appDir
     }
 }
 
