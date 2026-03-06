@@ -48,23 +48,17 @@ class DraggableImageView: NSImageView {
 
     override func mouseDown(with event: NSEvent) {
         onMouseDown?()
-        if event.modifierFlags.contains(.option) {
-            isDraggingAll = true
-            dragStartLocation = NSEvent.mouseLocation
-        } else {
-            isDraggingAll = false
-            window?.performDrag(with: event)
-        }
+        isDraggingAll = event.modifierFlags.contains(.option)
+        dragStartLocation = NSEvent.mouseLocation
     }
 
     override func mouseDragged(with event: NSEvent) {
-        guard isDraggingAll else { return }
         let currentLocation = NSEvent.mouseLocation
         let deltaX = currentLocation.x - dragStartLocation.x
         let deltaY = currentLocation.y - dragStartLocation.y
         dragStartLocation = currentLocation
-        let allWindows = allCharacterWindows
-        for targetWindow in allWindows {
+        let windows = isDraggingAll ? allCharacterWindows : (window.map { [$0] } ?? [])
+        for targetWindow in windows {
             var origin = targetWindow.frame.origin
             origin.x += deltaX
             origin.y += deltaY

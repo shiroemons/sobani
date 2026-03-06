@@ -30,7 +30,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         let windowWidth = image.size.width * scale
         let windowHeight = maxHeight
 
-        window = NSWindow(
+        window = UnconstrainedWindow(
             contentRect: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight),
             styleMask: [.borderless],
             backing: .buffered,
@@ -40,7 +40,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
         window.backgroundColor = .clear
         window.hasShadow = false
         window.level = .floating
-        window.isMovableByWindowBackground = true
+        window.isMovableByWindowBackground = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
         imageView = DraggableImageView(frame: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight))
