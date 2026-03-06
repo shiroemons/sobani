@@ -5,12 +5,12 @@ import ServiceManagement
 
 class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
     var characterWindows: [CharacterWindow] = []
-    var statusItem: NSStatusItem!
+    var statusItem: NSStatusItem?
     var shouldTerminate = false
     var areWindowsHidden = false
     var zOrderedWindows: [CharacterWindow] = []
-    var globalMonitor: Any?
-    var localMonitor: Any?
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
@@ -96,7 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                     self?.changeDefaultImageFromMenu()
                 }
                 controller.onFinish = { [weak self] in
-                    self?.statusItem.button?.performClick(nil)
+                    self?.statusItem?.button?.performClick(nil)
                 }
                 controller.show()
                 onboardingController = controller
