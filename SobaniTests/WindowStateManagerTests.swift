@@ -168,6 +168,7 @@ final class WindowStateManagerTests: XCTestCase {
 
         let expectedX = mainScreen.frame.midX - 150
         let expectedY = mainScreen.frame.midY - 200
+        // ピクセル位置の丸め誤差を許容するため、精度を意図的に大きく設定
         XCTAssertEqual(adjusted.originX, expectedX, accuracy: 1.0)
         XCTAssertEqual(adjusted.originY, expectedY, accuracy: 1.0)
         XCTAssertEqual(adjusted.width, 300)
@@ -257,7 +258,7 @@ final class WindowStateManagerTests: XCTestCase {
         let data = try JSONEncoder().encode([state])
         let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         let decodedOpacity = try XCTUnwrap(decoded.first?.opacityLevel)
-        XCTAssertEqual(decodedOpacity, 0.5, accuracy: 0.001)
+        XCTAssertEqual(decodedOpacity, 0.5, accuracy: AppConstants.floatingPointTolerance)
     }
 
     func testOpacityLevelBackwardCompatibility() throws {
@@ -283,7 +284,7 @@ final class WindowStateManagerTests: XCTestCase {
             opacityLevel: 0.3
         )
         let adjusted = state.adjustedToVisibleArea()
-        XCTAssertEqual(adjusted.opacityLevel, 0.3, accuracy: 0.001)
+        XCTAssertEqual(adjusted.opacityLevel, 0.3, accuracy: AppConstants.floatingPointTolerance)
     }
 
     func testFlipRotationAndOpacityCombination() throws {
@@ -291,8 +292,8 @@ final class WindowStateManagerTests: XCTestCase {
         let data = try JSONEncoder().encode([state])
         let decoded = try XCTUnwrap(JSONDecoder().decode([WindowState].self, from: data).first)
         XCTAssertTrue(decoded.isFlippedHorizontally)
-        XCTAssertEqual(decoded.rotationAngle, 90, accuracy: 0.001)
-        XCTAssertEqual(decoded.opacityLevel, 0.7, accuracy: 0.001)
+        XCTAssertEqual(decoded.rotationAngle, 90, accuracy: AppConstants.floatingPointTolerance)
+        XCTAssertEqual(decoded.opacityLevel, 0.7, accuracy: AppConstants.floatingPointTolerance)
     }
 
     // MARK: - WindowId Tests

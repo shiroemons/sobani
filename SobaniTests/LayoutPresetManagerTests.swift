@@ -313,18 +313,18 @@ final class LayoutPresetManagerTests: XCTestCase {
 
         XCTAssertEqual(loadedStates[0].imageName, "flipped.png")
         XCTAssertTrue(loadedStates[0].isFlippedHorizontally)
-        XCTAssertEqual(loadedStates[0].rotationAngle, 45, accuracy: 0.001)
-        XCTAssertEqual(loadedStates[0].opacityLevel, 0.7, accuracy: 0.001)
+        XCTAssertEqual(loadedStates[0].rotationAngle, 45, accuracy: AppConstants.floatingPointTolerance)
+        XCTAssertEqual(loadedStates[0].opacityLevel, 0.7, accuracy: AppConstants.floatingPointTolerance)
         XCTAssertEqual(loadedStates[0].windowId, 3)
-        XCTAssertEqual(loadedStates[0].originX, 150, accuracy: 0.001)
-        XCTAssertEqual(loadedStates[0].originY, 250, accuracy: 0.001)
-        XCTAssertEqual(loadedStates[0].width, 500, accuracy: 0.001)
-        XCTAssertEqual(loadedStates[0].height, 600, accuracy: 0.001)
+        XCTAssertEqual(loadedStates[0].originX, 150, accuracy: AppConstants.floatingPointTolerance)
+        XCTAssertEqual(loadedStates[0].originY, 250, accuracy: AppConstants.floatingPointTolerance)
+        XCTAssertEqual(loadedStates[0].width, 500, accuracy: AppConstants.floatingPointTolerance)
+        XCTAssertEqual(loadedStates[0].height, 600, accuracy: AppConstants.floatingPointTolerance)
 
         XCTAssertEqual(loadedStates[1].imageName, "rotated.png")
         XCTAssertFalse(loadedStates[1].isFlippedHorizontally)
-        XCTAssertEqual(loadedStates[1].rotationAngle, 180, accuracy: 0.001)
-        XCTAssertEqual(loadedStates[1].opacityLevel, 0.5, accuracy: 0.001)
+        XCTAssertEqual(loadedStates[1].rotationAngle, 180, accuracy: AppConstants.floatingPointTolerance)
+        XCTAssertEqual(loadedStates[1].opacityLevel, 0.5, accuracy: AppConstants.floatingPointTolerance)
         XCTAssertEqual(loadedStates[1].windowId, 7)
     }
 
