@@ -197,6 +197,7 @@ extension AppDelegate {
         var maxLeftWidth: CGFloat = 0
         for (index, charWindow) in orderedWindows.enumerated() {
             let leftText = "\(index + 1): \(charWindow.localizedDisplayName) (#\(charWindow.windowId))"
+            // NSString.size(withAttributes:) に必要
             // swiftlint:disable:next legacy_objc_type
             let width = (leftText as NSString).size(withAttributes: [.font: font]).width
             if width > maxLeftWidth {
@@ -702,9 +703,7 @@ extension AppDelegate {
         alert.addButton(withTitle: L("quit.cancel"))
         alert.alertStyle = .informational
 
-        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: AppConstants.layoutDialogFieldWidth, height: AppConstants.layoutDialogFieldHeight))
-        textField.placeholderString = L("layout.name_placeholder")
-        alert.accessoryView = textField
+        let textField = makeLayoutNameField(for: alert)
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -733,9 +732,7 @@ extension AppDelegate {
         alert.addButton(withTitle: L("quit.cancel"))
         alert.alertStyle = .informational
 
-        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: AppConstants.layoutDialogFieldWidth, height: AppConstants.layoutDialogFieldHeight))
-        textField.placeholderString = L("layout.name_placeholder")
-        alert.accessoryView = textField
+        let textField = makeLayoutNameField(for: alert)
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -801,6 +798,13 @@ extension AppDelegate {
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         LayoutPresetManager.shared.deletePreset(named: name)
+    }
+
+    private func makeLayoutNameField(for alert: NSAlert) -> NSTextField {
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: AppConstants.layoutDialogFieldWidth, height: AppConstants.layoutDialogFieldHeight))
+        textField.placeholderString = L("layout.name_placeholder")
+        alert.accessoryView = textField
+        return textField
     }
 
     @objc func resetAllRotations() {

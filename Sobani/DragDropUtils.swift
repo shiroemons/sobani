@@ -2,6 +2,7 @@ import Cocoa
 
 enum DragDropUtils {
     static func extractImageURLs(from draggingInfo: NSDraggingInfo) -> [URL] {
+        // NSURL はドラッグ&ドロップ API に必要
         // swiftlint:disable legacy_objc_type
         guard let items = draggingInfo.draggingPasteboard.readObjects(
             forClasses: [NSURL.self],
