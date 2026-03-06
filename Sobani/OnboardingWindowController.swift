@@ -156,20 +156,23 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         container.addSubview(desc1)
 
         // Simulated menu bar icon display
-        let iconBackground = NSView(frame: NSRect(x: (width - 36) / 2, y: 218, width: 36, height: 28))
+        let bgWidth = Self.step1IconBackgroundWidth
+        let bgHeight = Self.step1IconBackgroundHeight
+        let iconBackground = NSView(frame: NSRect(x: (width - bgWidth) / 2, y: Self.step1IconBackgroundY, width: bgWidth, height: bgHeight))
         iconBackground.wantsLayer = true
-        iconBackground.layer?.cornerRadius = 6
+        iconBackground.layer?.cornerRadius = Self.step1IconBackgroundCornerRadius
         iconBackground.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
         container.addSubview(iconBackground)
 
-        let statusIcon = makeSymbolView("person.fill", size: 18, color: .labelColor)
-        statusIcon.frame = NSRect(x: (width - 18) / 2, y: 223, width: 18, height: 18)
+        let statusSize = Self.step1StatusIconSize
+        let statusIcon = makeSymbolView("person.fill", size: statusSize, color: .labelColor)
+        statusIcon.frame = NSRect(x: (width - statusSize) / 2, y: Self.step1StatusIconY, width: statusSize, height: statusSize)
         container.addSubview(statusIcon)
 
         let hintLabel = makeDescriptionLabel(L("onboarding.step1.hint"))
-        hintLabel.frame = NSRect(x: Self.contentPadding, y: 160, width: width - Self.contentPadding * 2, height: 50)
+        hintLabel.frame = NSRect(x: Self.contentPadding, y: Self.step1HintY, width: width - Self.contentPadding * 2, height: Self.step1HintHeight)
         hintLabel.textColor = .secondaryLabelColor
-        hintLabel.font = NSFont.systemFont(ofSize: 12)
+        hintLabel.font = NSFont.systemFont(ofSize: Self.smallFontSize)
         container.addSubview(hintLabel)
     }
 
@@ -179,7 +182,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let width = container.bounds.width
 
         let titleLabel = makeTitleLabel(L("onboarding.step2.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: 390, width: width - Self.contentPadding * 2, height: 30)
+        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.step2TitleY, width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
         let symbols = ["hand.draw", "scroll", "contextualmenu.and.cursorarrow", "option"]
@@ -197,36 +200,39 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         ]
 
         let rowHeight = Self.rowHeight
-        let startY: CGFloat = 340
+        let startY = Self.step2StartY
+        let iconX = Self.step2IconX
+        let labelX = Self.step2LabelX
+        let contentWidth = width - Self.step2ContentInset
 
         for index in 0..<symbols.count {
             let rowY = startY - CGFloat(index) * rowHeight
 
-            let icon = makeSymbolView(symbols[index], size: 24, color: .controlAccentColor)
-            icon.frame.origin = CGPoint(x: 70, y: rowY)
+            let icon = makeSymbolView(symbols[index], size: Self.step2SymbolSize, color: .controlAccentColor)
+            icon.frame.origin = CGPoint(x: iconX, y: rowY)
             container.addSubview(icon)
 
             let labelField = NSTextField(labelWithString: labels[index])
-            labelField.frame = NSRect(x: 110, y: rowY + 4, width: width - 150, height: 20)
-            labelField.font = NSFont.boldSystemFont(ofSize: 13)
+            labelField.frame = NSRect(x: labelX, y: rowY + Self.step2LabelYOffset, width: contentWidth, height: 20)
+            labelField.font = NSFont.boldSystemFont(ofSize: Self.step2LabelFontSize)
             container.addSubview(labelField)
 
             let descField = NSTextField(labelWithString: descriptions[index])
-            descField.frame = NSRect(x: 110, y: rowY - 14, width: width - 150, height: 18)
-            descField.font = NSFont.systemFont(ofSize: 12)
+            descField.frame = NSRect(x: labelX, y: rowY + Self.step2DescriptionYOffset, width: contentWidth, height: 18)
+            descField.font = NSFont.systemFont(ofSize: Self.smallFontSize)
             descField.textColor = .secondaryLabelColor
             container.addSubview(descField)
 
             if let hint = hints[index], !hint.isEmpty {
                 let hintField = NSTextField(labelWithString: hint)
-                hintField.frame = NSRect(x: 110, y: rowY - 30, width: width - 150, height: 16)
-                hintField.font = NSFont.systemFont(ofSize: 11)
+                hintField.frame = NSRect(x: labelX, y: rowY + Self.step2HintYOffset, width: contentWidth, height: 16)
+                hintField.font = NSFont.systemFont(ofSize: Self.step2HintFontSize)
                 hintField.textColor = .tertiaryLabelColor
                 container.addSubview(hintField)
             }
 
             if index < symbols.count - 1 {
-                let separator = NSBox(frame: NSRect(x: 70, y: rowY - 38, width: width - 140, height: 1))
+                let separator = NSBox(frame: NSRect(x: iconX, y: rowY + Self.step2SeparatorYOffset, width: width - Self.step2SeparatorInset, height: 1))
                 separator.boxType = .separator
                 container.addSubview(separator)
             }
@@ -358,6 +364,38 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
     }
 
+}
+
+// MARK: - Step Layout Constants
+
+extension OnboardingWindowController {
+    // MARK: Step 共通
+    fileprivate static var smallFontSize: CGFloat { 12 }
+
+    // MARK: Step 1: メニューバーアイコンイラスト
+    fileprivate static var step1IconBackgroundWidth: CGFloat { 36 }
+    fileprivate static var step1IconBackgroundHeight: CGFloat { 28 }
+    fileprivate static var step1IconBackgroundY: CGFloat { 218 }
+    fileprivate static var step1IconBackgroundCornerRadius: CGFloat { 6 }
+    fileprivate static var step1StatusIconSize: CGFloat { 18 }
+    fileprivate static var step1StatusIconY: CGFloat { 223 }
+    fileprivate static var step1HintY: CGFloat { 160 }
+    fileprivate static var step1HintHeight: CGFloat { 50 }
+
+    // MARK: Step 2: 操作一覧
+    fileprivate static var step2TitleY: CGFloat { 390 }
+    fileprivate static var step2StartY: CGFloat { 340 }
+    fileprivate static var step2IconX: CGFloat { 70 }
+    fileprivate static var step2LabelX: CGFloat { 110 }
+    fileprivate static var step2LabelYOffset: CGFloat { 4 }
+    fileprivate static var step2DescriptionYOffset: CGFloat { -14 }
+    fileprivate static var step2HintYOffset: CGFloat { -30 }
+    fileprivate static var step2SeparatorYOffset: CGFloat { -38 }
+    fileprivate static var step2ContentInset: CGFloat { 150 }
+    fileprivate static var step2SeparatorInset: CGFloat { 140 }
+    fileprivate static var step2SymbolSize: CGFloat { 24 }
+    fileprivate static var step2LabelFontSize: CGFloat { 13 }
+    fileprivate static var step2HintFontSize: CGFloat { 11 }
 }
 
 // MARK: - View Helpers
