@@ -63,9 +63,10 @@ final class BackgroundRemovalManagerTests: XCTestCase {
         let emptyImage = NSImage()
 
         BackgroundRemovalManager.shared.removeBackground(from: emptyImage) { result in
-            if case .failure = result {
-                // Expected
-            } else {
+            switch result {
+            case .failure(let error):
+                XCTAssertEqual(error, .cgImageConversionFailed)
+            case .success:
                 XCTFail("Expected failure for empty image")
             }
             expectation.fulfill()
