@@ -59,7 +59,7 @@ final class ImageManager {
         guard let imagesDir = imagesDirectoryURL else { return nil }
         let ext = url.pathExtension.lowercased()
         guard Self.supportedExtensions.contains(ext) else { return nil }
-        let name = url.lastPathComponent
+        guard let name = PathSanitizer.safeName(from: url.lastPathComponent) else { return nil }
         let destURL = imagesDir.appendingPathComponent(name)
         let fm = FileManager.default
         var finalURL = destURL
