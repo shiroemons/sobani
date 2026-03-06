@@ -358,8 +358,11 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
     }
 
-    // MARK: - View Helpers
+}
 
+// MARK: - View Helpers
+
+extension OnboardingWindowController {
     private func makeSymbolView(_ symbolName: String, size: CGFloat, color: NSColor) -> NSImageView {
         let config = NSImage.SymbolConfiguration(pointSize: size, weight: .regular)
         let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
