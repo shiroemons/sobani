@@ -94,6 +94,12 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         window.makeKeyAndOrderFront(nil)
     }
 
+    deinit {
+        if let observer = windowMoveObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     func applyImage(_ image: NSImage) {
         guard image.size.height > 0 else { return }
         let baseHeight = imageView.frame.height
@@ -703,7 +709,7 @@ extension CharacterWindow {
                     alert.messageText = L("background_removal.error.title")
                     alert.informativeText = error.localizedDescription
                     alert.alertStyle = .warning
-                    alert.addButton(withTitle: "OK")
+                    alert.addButton(withTitle: L("update.ok"))
                     alert.runModal()
                 }
             }

@@ -23,6 +23,12 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         super.init()
     }
 
+    deinit {
+        if let observer = languageObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     func show(onComplete: (() -> Void)? = nil) {
         if panel != nil { return }
         self.onComplete = onComplete
