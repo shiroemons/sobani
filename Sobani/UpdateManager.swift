@@ -101,7 +101,7 @@ protocol UpdateManagerDelegate: AnyObject {
 
 // MARK: - Update Manager
 
-class UpdateManager {
+final class UpdateManager {
     static let shared = UpdateManager()
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "UpdateManager")
 
