@@ -299,6 +299,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     // MARK: - Close / Cleanup
 
     func close() {
+        onClose?()
         panel?.orderOut(nil)
         cleanup()
     }

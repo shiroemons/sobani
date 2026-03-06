@@ -29,7 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
         if savedStates.isEmpty {
             guard let image = ImageManager.shared.defaultImage() else {
-                print("Failed to load character image")
+                logger.error("Failed to load character image")
                 return
             }
             let charWindow = CharacterWindow(image: image)
