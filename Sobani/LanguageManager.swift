@@ -23,13 +23,13 @@ final class LanguageManager {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "LanguageManager")
     static let shared = LanguageManager()
 
-    private let userDefaultsKey = "AppLanguage"
+    private static let userDefaultsKey = "AppLanguage"
     private static let appleLanguagesKey = "AppleLanguages"
     private(set) var currentBundle: Bundle?
 
     var currentLanguage: Language {
         get {
-            guard let raw = UserDefaults.standard.string(forKey: userDefaultsKey),
+            guard let raw = UserDefaults.standard.string(forKey: Self.userDefaultsKey),
                   let lang = Language(rawValue: raw) else {
                 return .system
             }
@@ -37,10 +37,10 @@ final class LanguageManager {
         }
         set {
             if newValue == .system {
-                UserDefaults.standard.removeObject(forKey: userDefaultsKey)
+                UserDefaults.standard.removeObject(forKey: Self.userDefaultsKey)
                 UserDefaults.standard.removeObject(forKey: Self.appleLanguagesKey)
             } else {
-                UserDefaults.standard.set(newValue.rawValue, forKey: userDefaultsKey)
+                UserDefaults.standard.set(newValue.rawValue, forKey: Self.userDefaultsKey)
                 UserDefaults.standard.set([newValue.rawValue], forKey: Self.appleLanguagesKey)
             }
             updateBundle()
@@ -52,7 +52,7 @@ final class LanguageManager {
     init() {
         // Restore AppleLanguages from saved preference on launch
         // This must happen before any UI is loaded so system strings respect the language
-        if let raw = UserDefaults.standard.string(forKey: userDefaultsKey),
+        if let raw = UserDefaults.standard.string(forKey: Self.userDefaultsKey),
            let lang = Language(rawValue: raw), lang != .system {
             UserDefaults.standard.set([lang.rawValue], forKey: Self.appleLanguagesKey)
         }
