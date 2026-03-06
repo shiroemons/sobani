@@ -32,8 +32,11 @@ flowchart TD
 flowchart TD
     ICON[メニューバーアイコン] --> ABOUT["Sobani について..."]
     ICON --> UPDATE["更新を確認..."]
-    ICON --> LOGIN["ログイン時に起動"]
     ICON --> SEP1[---]
+    ICON --> ADD[画像を追加表示]
+    ADD --> ADD_FILE["画像を選択..."]
+    ADD --> ADD_DEFAULT["デフォルト画像"]
+    ADD --> ADD_REG["登録画像"]
     ICON --> WINDOWS[表示中: X体]
     WINDOWS --> WIN_LIST[ウィンドウ一覧<br/>Zオーダー順]
     WIN_LIST --> WIN_ACTIONS[各ウィンドウの操作]
@@ -48,31 +51,30 @@ flowchart TD
     WIN_ACTIONS --> RESET_DISP["表示をリセット"]
     WIN_ACTIONS --> CLOSE_ONE["この画像を閉じる"]
     ICON --> SEP2[---]
-    ICON --> FRONT[すべて手前に表示]
     ICON --> TOGGLE[すべて非表示 / すべて表示]
-    ICON --> RESET_ROT["すべての画像の回転をリセット"]
-    ICON --> RESET_OPA["すべての画像の透明度をリセット"]
-    ICON --> SEP3[---]
-    ICON --> ADD[画像を追加表示]
-    ADD --> ADD_FILE["画像を選択..."]
-    ADD --> ADD_DEFAULT["デフォルト画像"]
-    ADD --> ADD_REG["登録画像"]
+    ICON --> FRONT[すべて手前に表示]
     ICON --> LAYOUT[レイアウト]
-    LAYOUT --> LAYOUT_PRESETS["保存済みプリセット名"]
     LAYOUT --> LAYOUT_SAVE["現在のレイアウトを保存..."]
-    LAYOUT --> LAYOUT_OVERWRITE["上書き保存"]
     LAYOUT --> LAYOUT_NEW["新しいレイアウトを作成..."]
+    LAYOUT --> LAYOUT_PRESETS["保存済みプリセット名"]
+    LAYOUT --> LAYOUT_OVERWRITE["上書き保存"]
     LAYOUT --> LAYOUT_DELETE["削除"]
+    ICON --> SEP3[---]
+    ICON --> BULK_RESET[一括リセット]
+    BULK_RESET --> RESET_ROT["すべての画像の回転をリセット"]
+    BULK_RESET --> RESET_OPA["すべての画像の透明度をリセット"]
     ICON --> CLOSE_ALL[すべて閉じる]
     ICON --> SEP4[---]
-    ICON --> CHANGE_DEFAULT["デフォルト画像を変更..."]
-    ICON --> RESET_DEFAULT[デフォルト画像をリセット]
-    ICON --> SEP5[---]
-    ICON --> LANG["言語 / Language"]
+    ICON --> SETTINGS[設定]
+    SETTINGS --> LOGIN["ログイン時に起動"]
+    SETTINGS --> CHANGE_DEFAULT["デフォルト画像を変更..."]
+    SETTINGS --> RESET_DEFAULT[デフォルト画像をリセット]
+    SETTINGS --> LANG["言語 / Language"]
     LANG --> LANG_SYS["システム設定に従う"]
     LANG --> LANG_JA[日本語]
     LANG --> LANG_EN[English]
-    ICON --> SEP6[---]
+    ICON --> ONBOARDING["使い方ガイドを表示"]
+    ICON --> SEP5[---]
     ICON --> QUIT[終了]
 ```
 
@@ -80,7 +82,7 @@ flowchart TD
 
 - **「表示中: X体」**: ウィンドウが非表示状態のときは「非表示中: X体」に動的に変化します。
 - **「すべて非表示 / すべて表示」**: 実際にはウィンドウの表示状態に応じてどちらか一方のみ表示されます。表示中は「すべて非表示」、非表示中は「すべて表示」になります。
-- **「デフォルト画像をリセット」**: カスタムデフォルト画像が設定されている場合のみ表示されます。
+- **設定 > デフォルト画像をリセット**: カスタムデフォルト画像が設定されている場合のみ表示されます。
 - **「登録画像」**: 無効化されたセクションヘッダーで、その下に登録済みの個別画像名がメニュー項目として並びます。
 
 ### 図B: 右クリックメニュー構造
