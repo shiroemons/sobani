@@ -17,6 +17,12 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private static let dotSize: CGFloat = 8
     private static let dotSpacing: CGFloat = 12
     private static let rowHeight: CGFloat = 65
+    private static let titleY: CGFloat = 320
+    private static let descriptionY: CGFloat = 280
+    private static let iconY: CGFloat = 360
+    private static let pageIndicatorY: CGFloat = 75
+    private static let navigationButtonY: CGFloat = 35
+    private static let finishDelay: TimeInterval = 0.3
 
     init(onboardingManager: OnboardingManager = .shared) {
         self.onboardingManager = onboardingManager
@@ -138,15 +144,15 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let width = container.bounds.width
 
         let iconView = makeSymbolView("star.fill", size: Self.iconSize, color: .systemYellow)
-        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: 360)
+        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: Self.iconY)
         container.addSubview(iconView)
 
         let titleLabel = makeTitleLabel(L("onboarding.step1.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: 320, width: width - Self.contentPadding * 2, height: 30)
+        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
         let desc1 = makeDescriptionLabel(L("onboarding.step1.description1"))
-        desc1.frame = NSRect(x: Self.contentPadding, y: 280, width: width - Self.contentPadding * 2, height: 40)
+        desc1.frame = NSRect(x: Self.contentPadding, y: Self.descriptionY, width: width - Self.contentPadding * 2, height: 40)
         container.addSubview(desc1)
 
         // Simulated menu bar icon display
@@ -233,11 +239,11 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let width = container.bounds.width
 
         let iconView = makeSymbolView("party.popper", size: Self.iconSize, color: .systemOrange)
-        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: 360)
+        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: Self.iconY)
         container.addSubview(iconView)
 
         let titleLabel = makeTitleLabel(L("onboarding.step3.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: 320, width: width - Self.contentPadding * 2, height: 30)
+        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
         let descLabel = makeDescriptionLabel(L("onboarding.step3.description"))
@@ -257,7 +263,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let width = container.bounds.width
         let totalWidth = CGFloat(totalSteps) * Self.dotSize + CGFloat(totalSteps - 1) * Self.dotSpacing
         let startX = (width - totalWidth) / 2
-        let y: CGFloat = 75
+        let y: CGFloat = Self.pageIndicatorY
 
         for step in 0..<totalSteps {
             let dot = NSView(frame: NSRect(
@@ -279,7 +285,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     private func buildNavigationButtons(in container: NSView) {
         let width = container.bounds.width
-        let buttonY: CGFloat = 35
+        let buttonY: CGFloat = Self.navigationButtonY
 
         if currentStep > 0 {
             let backButton = NSButton(title: L("onboarding.button.prev"), target: self, action: #selector(prevStep))
@@ -347,7 +353,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     @objc private func finishOnboarding() {
         panel?.close()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.finishDelay) { [weak self] in
             self?.onFinish?()
         }
     }
