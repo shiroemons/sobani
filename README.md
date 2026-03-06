@@ -57,6 +57,8 @@ brew upgrade --cask sobani
 
 [Releases](https://github.com/shiroemons/sobani/releases) ページから最新の ZIP をダウンロードし、展開した `Sobani.app` を `/Applications` に移動してください。
 
+> **初回起動時の注意**: macOS の Gatekeeper により「"Sobani"は、開発元が未確認のため開けません」と表示される場合があります。その場合は `Sobani.app` を右クリック（または Control+クリック）→「開く」を選択してください。確認ダイアログで「開く」をクリックすれば起動できます。この操作は初回のみ必要です。Homebrew でインストールした場合はこの問題は発生しません。
+
 ## 必要環境
 
 - macOS 13.0（Ventura）以降
