@@ -648,10 +648,12 @@ extension CharacterWindow {
 // MARK: - CharacterWindow + Highlight Border
 
 extension CharacterWindow {
+    private static let highlightBorderWidth: CGFloat = 3.0
+
     func showHighlightBorder() {
         guard let contentView = window.contentView else { return }
         contentView.wantsLayer = true
-        contentView.layer?.borderWidth = 3.0
+        contentView.layer?.borderWidth = Self.highlightBorderWidth
         contentView.layer?.borderColor = NSColor.systemBlue.cgColor
     }
 

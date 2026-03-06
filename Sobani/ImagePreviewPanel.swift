@@ -8,6 +8,7 @@ final class ImagePreviewPanel {
     private let imageView: NSImageView
     private static let maxDimension: CGFloat = 256
     private static let padding: CGFloat = 8
+    private static let fallbackMouseOffset: CGFloat = 20
 
     init() {
         panel = NSPanel(
@@ -123,7 +124,7 @@ final class ImagePreviewPanel {
 
         // Clamp vertical position to screen bounds
         let minY = screen?.visibleFrame.minY ?? 0
-        let maxY = (screen?.visibleFrame.maxY ?? NSScreen.main?.frame.maxY ?? 900) - panelSize.height
+        let maxY = (screen?.visibleFrame.maxY ?? NSScreen.main?.frame.maxY ?? AppConstants.fallbackScreenHeight) - panelSize.height
         let clampedY = min(max(panelY, minY), maxY)
 
         return NSPoint(x: panelX, y: clampedY)
@@ -131,7 +132,7 @@ final class ImagePreviewPanel {
 
     private func fallbackPosition(panelSize: NSSize) -> NSPoint {
         let mouseLocation = NSEvent.mouseLocation
-        return NSPoint(x: mouseLocation.x + 20, y: mouseLocation.y - panelSize.height / 2)
+        return NSPoint(x: mouseLocation.x + Self.fallbackMouseOffset, y: mouseLocation.y - panelSize.height / 2)
     }
 
     private static func findMenuWindows(excluding excludedPanel: NSPanel) -> [NSWindow] {
