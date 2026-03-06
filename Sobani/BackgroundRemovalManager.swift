@@ -45,7 +45,7 @@ final class BackgroundRemovalManager {
         qos: .userInitiated
     )
 
-    private init() {}
+    init() {}
 
     func removeBackground(
         from image: NSImage,
