@@ -11,11 +11,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     var zOrderedWindows: [CharacterWindow] = []
     var globalMonitor: Any?
     var localMonitor: Any?
-    private var nextWindowId: Int = 1
+    var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
     var wakeContext = WakeRestorationContext()
     var onboardingController: OnboardingWindowController?
+    var isApplyingLayout = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
@@ -221,34 +222,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
         zOrderedWindows.removeAll()
         quitIfNoWindows()
     }
-
     func quitIfNoWindows() {
-        if characterWindows.isEmpty {
+        if characterWindows.isEmpty && !isApplyingLayout {
             shouldTerminate = true
             NSApp.terminate(nil)
         }
     }
 
-    func confirmQuit() -> Bool {
+    @objc func quitFromMenu() {
         let alert = NSAlert()
         alert.messageText = L("quit.confirm_title")
         alert.informativeText = L("quit.confirm_message")
         alert.addButton(withTitle: L("quit.button"))
         alert.addButton(withTitle: L("quit.cancel"))
         alert.alertStyle = .warning
-        return alert.runModal() == .alertFirstButtonReturn
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        shouldTerminate = true
+        NSApplication.shared.terminate(nil)
     }
 
-    @objc func quitFromMenu() {
-        if confirmQuit() {
-            shouldTerminate = true
-            NSApplication.shared.terminate(nil)
-        }
-    }
-
-    @objc func quitApp() {
-        quitFromMenu()
-    }
+    @objc func quitApp() { quitFromMenu() }
 
     @objc func toggleLaunchAtLogin() {
         do {
