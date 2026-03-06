@@ -431,13 +431,7 @@ extension AppDelegate {
 
     @objc func changeImageByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
-        let panel = NSOpenPanel()
-        panel.title = L("dialog.select_image")
-        panel.message = L("dialog.select_image_message")
-        panel.prompt = L("dialog.select")
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
+        let panel = ImageFileDialog.makeOpenPanel()
         if panel.runModal() == .OK, let url = panel.url, let newImage = NSImage(contentsOf: url) {
             let savedName = ImageManager.shared.registerImage(from: url)
             charWindow.setDisplayName(savedName ?? url.deletingPathExtension().lastPathComponent)

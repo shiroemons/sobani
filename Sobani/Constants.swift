@@ -1,5 +1,6 @@
 import Cocoa
 import os.log
+import UniformTypeIdentifiers
 
 /// Localization helper that supports runtime language switching via LanguageManager.
 /// Falls back to NSLocalizedString with the main bundle when no custom bundle is set.
@@ -161,4 +162,27 @@ enum MenuItemTag: Int {
     case deleteLayout = 1025
     case updateLayout = 1026
     case createLayout = 1027
+}
+
+enum ImageFileDialog {
+    static func makeOpenPanel(
+        title: String = L("dialog.select_image"),
+        message: String = L("dialog.select_image_message")
+    ) -> NSOpenPanel {
+        let panel = NSOpenPanel()
+        panel.title = title
+        panel.prompt = L("dialog.select")
+        panel.message = message
+        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.level = .floating
+        return panel
+    }
+}
+
+extension NSMenu {
+    func item(withMenuTag tag: MenuItemTag) -> NSMenuItem? {
+        items.first { $0.tag == tag.rawValue }
+    }
 }

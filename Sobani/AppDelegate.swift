@@ -282,13 +282,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     @objc func addNewWindowWithNewImageFromMenu() {
-        let panel = NSOpenPanel()
-        panel.title = L("dialog.select_image")
-        panel.message = L("file.select_new_image_message")
-        panel.prompt = L("dialog.select")
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
+        let panel = ImageFileDialog.makeOpenPanel(message: L("file.select_new_image_message"))
         if panel.runModal() == .OK, let url = panel.url {
             if let savedName = ImageManager.shared.registerImage(from: url) {
                 createNewWindow(imageName: savedName)

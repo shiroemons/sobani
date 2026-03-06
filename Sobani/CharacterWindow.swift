@@ -222,14 +222,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     @objc func changeImage() {
-        let panel = NSOpenPanel()
-        panel.title = L("dialog.select_image")
-        panel.message = L("dialog.select_image_message")
-        panel.prompt = L("dialog.select")
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.level = .floating
+        let panel = ImageFileDialog.makeOpenPanel()
         if panel.runModal() == .OK, let url = panel.url, let newImage = NSImage(contentsOf: url) {
             let savedName = ImageManager.shared.registerImage(from: url)
             displayName = savedName ?? url.deletingPathExtension().lastPathComponent
@@ -274,14 +267,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     @objc func addNewWindowWithNewImage(_ sender: NSMenuItem) {
-        let panel = NSOpenPanel()
-        panel.title = L("dialog.select_image")
-        panel.message = L("dialog.select_add_image_message")
-        panel.prompt = L("dialog.select")
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.level = .floating
+        let panel = ImageFileDialog.makeOpenPanel(message: L("dialog.select_add_image_message"))
         if panel.runModal() == .OK, let url = panel.url {
             delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
         }
@@ -444,7 +430,7 @@ extension CharacterWindow {
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        guard let registeredItem = menu.items.first(where: { $0.tag == MenuItemTag.changeImageSubmenu.rawValue }),
+        guard let registeredItem = menu.item(withMenuTag: .changeImageSubmenu),
               let submenu = registeredItem.submenu else { return }
 
         updateTopLevelMenuTitles(menu)
@@ -453,11 +439,11 @@ extension CharacterWindow {
         populateChangeImageSubmenu(submenu, names: names)
         populateNewWindowSubmenu(menu, names: names)
 
-        if let flipItem = menu.items.first(where: { $0.tag == MenuItemTag.flipContext.rawValue }) {
+        if let flipItem = menu.item(withMenuTag: .flipContext) {
             flipItem.state = imageView.isFlippedHorizontally ? .on : .off
         }
 
-        if let otherItem = menu.items.first(where: { $0.tag == MenuItemTag.otherSubmenu.rawValue }),
+        if let otherItem = menu.item(withMenuTag: .otherSubmenu),
            let otherSubmenu = otherItem.submenu {
             populateOtherSubmenu(otherSubmenu, names: names)
         }
@@ -505,7 +491,7 @@ extension CharacterWindow {
     }
 
     private func populateNewWindowSubmenu(_ menu: NSMenu, names: [String]) {
-        guard let newWindowItem = menu.items.first(where: { $0.tag == MenuItemTag.addNewWindowSubmenu.rawValue }),
+        guard let newWindowItem = menu.item(withMenuTag: .addNewWindowSubmenu),
               let newWindowSubmenu = newWindowItem.submenu else { return }
 
         newWindowSubmenu.removeAllItems()
