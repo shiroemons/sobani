@@ -88,14 +88,14 @@ final class ImageManager {
         guard let tiffData = image.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData),
               let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
-        let destURL = imagesDir.appendingPathComponent(name)
+        guard let destURL = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
         do {
             try pngData.write(to: destURL)
         } catch {
             logger.error("Failed to write image data: \(error.localizedDescription)")
             return nil
         }
-        return name
+        return destURL.lastPathComponent
     }
 
     func removeRegisteredImage(named name: String) {
