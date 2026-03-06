@@ -105,7 +105,7 @@ final class ScreenRestorationManager {
     func restorableEntries() -> [PendingRestoration] {
         purgeExpired()
         return pendingRestorations.filter { entry in
-            if entry.displayID != 0 {
+            if entry.displayID != AppConstants.unknownDisplayID {
                 // displayIDが既知: まずモニターIDで判定
                 let matchByID = NSScreen.screens.contains { screen in
                     (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
