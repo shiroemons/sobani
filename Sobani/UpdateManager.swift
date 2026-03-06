@@ -1,5 +1,6 @@
 import Cocoa
 import CryptoKit
+import os.log
 
 // MARK: - GitHub API Models
 
@@ -102,6 +103,7 @@ protocol UpdateManagerDelegate: AnyObject {
 
 class UpdateManager {
     static let shared = UpdateManager()
+    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "UpdateManager")
 
     weak var delegate: UpdateManagerDelegate?
 
@@ -209,7 +211,7 @@ class UpdateManager {
 
             if let error = error {
                 // 内部エラー詳細はログのみ、ユーザーには汎用メッセージを表示
-                NSLog("[UpdateManager] Check error: %@", error.localizedDescription)
+                logger.error("Check error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.setStateForTrigger(trigger, manualState: .error(code: .networkError, message: L("update.network_error")))
                 }
@@ -245,7 +247,7 @@ class UpdateManager {
                 }
             } catch {
                 // パース失敗の詳細はログのみ
-                NSLog("[UpdateManager] Parse error: %@", error.localizedDescription)
+                logger.error("Parse error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.setStateForTrigger(trigger, manualState: .error(code: .parseError, message: L("update.parse_error")))
                 }
@@ -303,9 +305,9 @@ class UpdateManager {
 
     // チェックサムファイルを取得
     private func fetchChecksum(from url: URL, assetName: String, completion: @escaping (String?) -> Void) {
-        let task = session.dataTask(with: url) { data, _, error in
+        let task = session.dataTask(with: url) { [weak self] data, _, error in
             if let error = error {
-                NSLog("[UpdateManager] Checksum fetch error: %@", error.localizedDescription)
+                self?.logger.error("Checksum fetch error: \(error.localizedDescription)")
                 completion(nil)
                 return
             }
@@ -344,7 +346,7 @@ class UpdateManager {
 
             if let error = error {
                 // 内部エラーはログのみ
-                NSLog("[UpdateManager] Download error: %@", error.localizedDescription)
+                logger.error("Download error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.state = .error(code: .downloadError, message: L("update.download_error"))
                 }
@@ -361,13 +363,13 @@ class UpdateManager {
             // チェックサム検証
             if let expected = expectedChecksum {
                 guard Self.verifySHA256(of: tempURL, expectedHex: expected) else {
-                    NSLog("[UpdateManager] Checksum mismatch for downloaded file")
+                    logger.error("Checksum mismatch for downloaded file")
                     DispatchQueue.main.async {
                         self.state = .error(code: .checksumFailed, message: L("update.checksum_failed"))
                     }
                     return
                 }
-                NSLog("[UpdateManager] Checksum verified OK")
+                logger.info("Checksum verified OK")
             }
 
             switch format {
@@ -452,7 +454,7 @@ private extension UpdateManager {
 
             replaceAndRestart(with: newAppURL)
         } catch {
-            NSLog("[UpdateManager] Install preparation error: %@", error.localizedDescription)
+            logger.error("Install preparation error: \(error.localizedDescription)")
             DispatchQueue.main.async {
                 self.state = .error(code: .zipPrepareFailed, message: L("update.prepare_failed"))
             }
@@ -514,7 +516,7 @@ private extension UpdateManager {
             // コピー先のクリーンアップは replaceAndRestart 内で app が移動された後に行う
             try? fm.removeItem(at: tempDir)
         } catch {
-            NSLog("[UpdateManager] DMG install error: %@", error.localizedDescription)
+            logger.error("DMG install error: \(error.localizedDescription)")
             DispatchQueue.main.async {
                 self.state = .error(code: .dmgPrepareFailed, message: L("update.prepare_failed"))
             }
@@ -554,7 +556,7 @@ private extension UpdateManager {
                 }
             } catch {
                 // Restore from backup
-                NSLog("[UpdateManager] Install error: %@", error.localizedDescription)
+                logger.error("Install error: \(error.localizedDescription)")
                 try? fm.removeItem(at: currentAppURL)
                 try? fm.moveItem(at: backupURL, to: currentAppURL)
 
@@ -563,7 +565,7 @@ private extension UpdateManager {
                 }
             }
         } catch {
-            NSLog("[UpdateManager] Backup error: %@", error.localizedDescription)
+            logger.error("Backup error: \(error.localizedDescription)")
             DispatchQueue.main.async {
                 self.state = .error(code: .backupFailed, message: L("update.prepare_failed"))
             }
