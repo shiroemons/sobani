@@ -131,6 +131,7 @@ final class UpdateManager {
 
     private static let lastCheckKey = "LastUpdateCheckDate"
     private static let checkInterval: TimeInterval = 24 * 60 * 60 // 24 hours
+    private static let requestTimeoutInterval: TimeInterval = 15
     // swiftlint:disable:next force_unwrapping
     private static let defaultAPIURL = URL(string: "https://api.github.com/repos/shiroemons/sobani/releases/latest")!
 
@@ -204,7 +205,7 @@ final class UpdateManager {
         var request = URLRequest(url: apiURL)
         request.setValue("application/vnd.github.v3+json", forHTTPHeaderField: "Accept")
         request.setValue("Sobani/\(currentVersion)", forHTTPHeaderField: "User-Agent")
-        request.timeoutInterval = 15
+        request.timeoutInterval = Self.requestTimeoutInterval
 
         let task = session.dataTask(with: request) { [weak self] data, _, error in
             guard let self = self else { return }
@@ -405,11 +406,15 @@ final class UpdateManager {
             "-c",
             "while kill -0 \(pid) 2>/dev/null; do sleep 0.1; done; open \"\(appPath)\""
         ]
-        try? process.run()
+        do {
+            try process.run()
+        } catch {
+            logger.error("Failed to launch restart process: \(error.localizedDescription)")
+        }
 
         // 現在のアプリを終了
         if let appDelegate = NSApp.delegate as? AppDelegate {
-            appDelegate.shouldTerminate = true
+            appDelegate.prepareShouldTerminate()
         }
         NSApp.terminate(nil)
     }
