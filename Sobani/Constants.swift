@@ -40,8 +40,23 @@ enum AppConstants {
     // Display ID
     static let unknownDisplayID: CGDirectDisplayID = 0
 
+    // Status Bar
+    static let statusBarIconSize: CGFloat = 18
+
     // Menu
     static let menuWindowMinWidth: CGFloat = 10
+    static let menuTabPadding: CGFloat = 16
+    static let layoutDialogFieldWidth: CGFloat = 260
+    static let layoutDialogFieldHeight: CGFloat = 24
+
+    // Screen Restoration (追加)
+    static let wakeRetryCountThreshold = 2
+    static let wakeRetryMaxAttempts = 10
+    static let wakeRetryInterval: TimeInterval = 3.0
+
+    // Opacity
+    static let opacityMin: CGFloat = 0.1
+    static let opacityMax: CGFloat = 1.0
 
     // Onboarding
     enum Onboarding {

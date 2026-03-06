@@ -8,7 +8,7 @@ extension AppDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "person.fill", accessibilityDescription: "Sobani")
-            button.image?.size = NSSize(width: 18, height: 18)
+            button.image?.size = NSSize(width: AppConstants.statusBarIconSize, height: AppConstants.statusBarIconSize)
         }
         let menu = NSMenu()
         menu.delegate = self
@@ -203,7 +203,7 @@ extension AppDelegate {
                 maxLeftWidth = width
             }
         }
-        let tabPosition = maxLeftWidth + 16
+        let tabPosition = maxLeftWidth + AppConstants.menuTabPadding
 
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.tabStops = [NSTextTab(textAlignment: .left, location: tabPosition)]
@@ -702,7 +702,7 @@ extension AppDelegate {
         alert.addButton(withTitle: L("quit.cancel"))
         alert.alertStyle = .informational
 
-        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: AppConstants.layoutDialogFieldWidth, height: AppConstants.layoutDialogFieldHeight))
         textField.placeholderString = L("layout.name_placeholder")
         alert.accessoryView = textField
 
@@ -733,7 +733,7 @@ extension AppDelegate {
         alert.addButton(withTitle: L("quit.cancel"))
         alert.alertStyle = .informational
 
-        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: AppConstants.layoutDialogFieldWidth, height: AppConstants.layoutDialogFieldHeight))
         textField.placeholderString = L("layout.name_placeholder")
         alert.accessoryView = textField
 

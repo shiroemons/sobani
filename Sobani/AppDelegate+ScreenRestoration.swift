@@ -125,16 +125,16 @@ extension AppDelegate {
             "attempt #\(retryNum, privacy: .public): restoredAll=\(restoredAll, privacy: .public), screens=[\(screenInfo, privacy: .public)]"
         )
 
-        if restoredAll && wakeContext.retryCount <= 2 {
+        if restoredAll && wakeContext.retryCount <= AppConstants.wakeRetryCountThreshold {
             // 全復元完了だが、macOS が後から再配置する可能性があるため追加リトライ
-            scheduleWakeRetry(interval: 3.0)
-        } else if restoredAll || wakeContext.retryCount >= 10 {
+            scheduleWakeRetry(interval: AppConstants.wakeRetryInterval)
+        } else if restoredAll || wakeContext.retryCount >= AppConstants.wakeRetryMaxAttempts {
             // 確実に全復元完了 or タイムアウト → 残りをペンディングキューに移行
             moveUnrestoredToPendingQueue()
             wakeContext.clear()
         } else {
-            // 未復元ウィンドウがある → 3秒後にリトライ
-            scheduleWakeRetry(interval: 3.0)
+            // 未復元ウィンドウがある → リトライ
+            scheduleWakeRetry(interval: AppConstants.wakeRetryInterval)
         }
     }
 

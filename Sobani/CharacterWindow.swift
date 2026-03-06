@@ -178,7 +178,7 @@ class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     func applyOpacity(_ opacity: CGFloat) {
-        let clamped = min(max(opacity, 0.1), 1.0)
+        let clamped = min(max(opacity, AppConstants.opacityMin), AppConstants.opacityMax)
         imageView.opacityLevel = clamped
         adjustmentPanelController?.updateOpacity(clamped)
     }

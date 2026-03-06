@@ -279,8 +279,8 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
         let slider = NSSlider(
             value: Double(opacity),
-            minValue: 0.1,
-            maxValue: 1.0,
+            minValue: Double(AppConstants.opacityMin),
+            maxValue: Double(AppConstants.opacityMax),
             target: self,
             action: #selector(opacitySliderChanged(_:))
         )
