@@ -2,7 +2,7 @@ import Cocoa
 
 // MARK: - Draggable Image View
 
-class DraggableImageView: NSImageView {
+final class DraggableImageView: NSImageView {
     var aspectRatio: CGFloat = 1.0
     let minHeight: CGFloat = AppConstants.minImageHeight
     let maxHeight: CGFloat = AppConstants.maxImageHeight

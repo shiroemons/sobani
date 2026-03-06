@@ -8,7 +8,7 @@ import Cocoa
 /// - `WindowState.isPositionVisible()` checks visibility on restore
 /// - `WindowState.adjustedToVisibleArea()` repositions off-screen windows
 /// - `AppDelegate+ScreenRestoration.swift` clamps positions on wake
-class UnconstrainedWindow: NSWindow {
+final class UnconstrainedWindow: NSWindow {
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
         return frameRect
     }

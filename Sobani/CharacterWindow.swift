@@ -13,7 +13,7 @@ private class RotatableContainer: NSView {
 
 // MARK: - Character Window
 
-class CharacterWindow: NSObject, NSMenuDelegate {
+final class CharacterWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
     let imageView: DraggableImageView
     weak var delegate: CharacterWindowDelegate?
