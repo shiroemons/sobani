@@ -81,6 +81,33 @@ enum AppSupportDirectory {
     }
 }
 
+enum PathSanitizer {
+    /// Returns a safe URL within the given directory, preventing path traversal.
+    /// Returns nil if the name is empty or resolves to a traversal attempt.
+    static func safeURL(name: String, in directory: URL) -> URL? {
+        let safeName = URL(fileURLWithPath: name).lastPathComponent
+        guard !safeName.isEmpty, safeName != "." else { return nil }
+        let url = directory.appendingPathComponent(safeName)
+        guard url.path.hasPrefix(directory.path + "/") else { return nil }
+        return url
+    }
+
+    /// Sanitizes a file name by replacing invalid filesystem characters and preventing path traversal.
+    /// Returns nil if the result is empty or invalid.
+    static func safeName(from name: String) -> String? {
+        let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|")
+        let sanitized = name.components(separatedBy: invalidCharacters).joined(separator: "_")
+        if sanitized.isEmpty || sanitized == "." || sanitized == ".." {
+            return nil
+        }
+        let resolved = URL(fileURLWithPath: sanitized).lastPathComponent
+        if resolved.isEmpty || resolved == "." || resolved == ".." {
+            return nil
+        }
+        return resolved
+    }
+}
+
 enum MenuItemTag: Int {
     // Phase 2 で使用
     case resetToDefault = 1001

@@ -49,11 +49,7 @@ class ImageManager {
 
     func loadRegisteredImage(named name: String) -> NSImage? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
-        // パストラバーサル防止: ファイル名のみを使用し、imagesDir の外へのアクセスを禁止
-        let safeName = URL(fileURLWithPath: name).lastPathComponent
-        guard !safeName.isEmpty, safeName != "." else { return nil }
-        let url = imagesDir.appendingPathComponent(safeName)
-        guard url.path.hasPrefix(imagesDir.path + "/") else { return nil }
+        guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
         return NSImage(contentsOf: url)
     }
 
@@ -102,11 +98,7 @@ class ImageManager {
 
     func removeRegisteredImage(named name: String) {
         guard let imagesDir = imagesDirectoryURL else { return }
-        // パストラバーサル防止: ファイル名のみを使用し、imagesDir の外の削除を禁止
-        let safeName = URL(fileURLWithPath: name).lastPathComponent
-        guard !safeName.isEmpty, safeName != "." else { return }
-        let url = imagesDir.appendingPathComponent(safeName)
-        guard url.path.hasPrefix(imagesDir.path + "/") else { return }
+        guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return }
         do {
             try FileManager.default.removeItem(at: url)
         } catch {

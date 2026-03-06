@@ -42,14 +42,7 @@ class LayoutPresetManager {
     }
 
     private func sanitizedFileName(for name: String) -> String {
-        let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|")
-        var sanitized = name.components(separatedBy: invalidCharacters).joined(separator: "_")
-        // Prevent path traversal
-        sanitized = URL(fileURLWithPath: sanitized).lastPathComponent
-        if sanitized.isEmpty || sanitized == "." || sanitized == ".." {
-            sanitized = "unnamed"
-        }
-        return sanitized
+        PathSanitizer.safeName(from: name) ?? "unnamed"
     }
 
     func savePreset(name: String, states: [WindowState]) {

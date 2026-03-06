@@ -43,6 +43,7 @@
 		F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LP000003000000000001 /* LayoutPresetManagerTests.swift */; };
 		F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UW000001000000000001 /* UnconstrainedWindow.swift */; };
 		F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0IP000001000000000001 /* ImagePreviewPanel.swift */; };
+		F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PS000003000000000001 /* PathSanitizerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -96,6 +97,7 @@
 		F0LP000003000000000001 /* LayoutPresetManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetManagerTests.swift; sourceTree = "<group>"; };
 		F0UW000001000000000001 /* UnconstrainedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnconstrainedWindow.swift; sourceTree = "<group>"; };
 		F0IP000001000000000001 /* ImagePreviewPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanel.swift; sourceTree = "<group>"; };
+		F0PS000003000000000001 /* PathSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 				F0DD000003000000000001 /* DragDropUtilsTests.swift */,
 				F0OB000005000000000001 /* OnboardingManagerTests.swift */,
 				F0LP000003000000000001 /* LayoutPresetManagerTests.swift */,
+				F0PS000003000000000001 /* PathSanitizerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -342,6 +345,7 @@
 				F0DD000004000000000001 /* DragDropUtilsTests.swift in Sources */,
 				F0OB000006000000000001 /* OnboardingManagerTests.swift in Sources */,
 				F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */,
+				F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
