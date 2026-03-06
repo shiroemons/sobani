@@ -7,6 +7,7 @@ final class OnboardingManager {
     private let defaults: UserDefaults
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "OnboardingManager")
 
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }

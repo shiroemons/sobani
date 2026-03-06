@@ -2,7 +2,9 @@ import XCTest
 @testable import Sobani
 
 final class WindowStateManagerTests: XCTestCase {
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var stateManager: WindowStateManager!
 
     override func setUp() {
@@ -48,17 +50,17 @@ final class WindowStateManagerTests: XCTestCase {
 
     // MARK: - Encode/Decode Tests
 
-    func testEncodeDecodeRoundTrip() {
+    func testEncodeDecodeRoundTrip() throws {
         let state = makeState()
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded, [state])
     }
 
-    func testEncodeDecodeWithFlip() {
+    func testEncodeDecodeWithFlip() throws {
         let state = makeState(isFlippedHorizontally: true)
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.isFlippedHorizontally, true)
     }
 
@@ -80,12 +82,12 @@ final class WindowStateManagerTests: XCTestCase {
         XCTAssertEqual(loaded, [])
     }
 
-    func testLoadStatesWithCorruptedJSON() {
+    func testLoadStatesWithCorruptedJSON() throws {
         guard let url = stateManager.statesFileURL else {
             XCTFail("statesFileURL is nil")
             return
         }
-        try! "{ invalid json".write(to: url, atomically: true, encoding: .utf8)
+        try "{ invalid json".write(to: url, atomically: true, encoding: .utf8)
         let loaded = stateManager.loadStates()
         XCTAssertEqual(loaded, [])
     }
@@ -113,6 +115,7 @@ final class WindowStateManagerTests: XCTestCase {
     func testStatesFileURL() {
         let url = stateManager.statesFileURL
         XCTAssertNotNil(url)
+        // swiftlint:disable:next force_unwrapping
         XCTAssertTrue(url!.path.hasSuffix("window_states.json"))
     }
 
@@ -127,7 +130,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        XCTAssertTrue(WindowStateManager.isPositionVisible(state))
+        XCTAssertTrue(state.isPositionVisible())
     }
 
     func testIsPositionVisibleOffScreen() {
@@ -137,7 +140,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        XCTAssertFalse(WindowStateManager.isPositionVisible(state))
+        XCTAssertFalse(state.isPositionVisible())
     }
 
     func testAdjustToVisibleAreaNoChangeWhenVisible() {
@@ -149,7 +152,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted, state)
     }
 
@@ -161,7 +164,7 @@ final class WindowStateManagerTests: XCTestCase {
             width: 300,
             height: 400
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertNotEqual(adjusted.originX, state.originX)
         XCTAssertNotEqual(adjusted.originY, state.originY)
 
@@ -200,14 +203,14 @@ final class WindowStateManagerTests: XCTestCase {
 
     // MARK: - Rotation Angle Tests
 
-    func testEncodeDecodeWithRotation() {
+    func testEncodeDecodeWithRotation() throws {
         let state = makeState(rotationAngle: 45)
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.rotationAngle, 45)
     }
 
-    func testBackwardCompatibilityWithoutRotation() {
+    func testBackwardCompatibilityWithoutRotation() throws {
         // Simulate old JSON without rotationAngle field
         let json = """
         [{
@@ -219,15 +222,15 @@ final class WindowStateManagerTests: XCTestCase {
             "isFlippedHorizontally": false
         }]
         """
-        let data = json.data(using: .utf8)!
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.rotationAngle, 0)
     }
 
-    func testEncodeDecodeWithFlipAndRotation() {
+    func testEncodeDecodeWithFlipAndRotation() throws {
         let state = makeState(isFlippedHorizontally: true, rotationAngle: 90)
-        let data = try! JSONEncoder().encode([state])
-        let decoded = try! JSONDecoder().decode([WindowState].self, from: data)
+        let data = try JSONEncoder().encode([state])
+        let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.isFlippedHorizontally, true)
         XCTAssertEqual(decoded.first?.rotationAngle, 90)
     }
@@ -240,7 +243,7 @@ final class WindowStateManagerTests: XCTestCase {
             height: 400,
             rotationAngle: 180
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted.rotationAngle, 180)
     }
 
@@ -263,7 +266,7 @@ final class WindowStateManagerTests: XCTestCase {
         let json = """
         [{"imageName":"test.png","originX":100,"originY":200,"width":300,"height":400,"isFlippedHorizontally":false,"rotationAngle":0}]
         """
-        let data = json.data(using: .utf8)!
+        let data = try XCTUnwrap(json.data(using: .utf8))
         let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.opacityLevel, 1.0, "Missing opacityLevel should default to 1.0")
     }
@@ -281,14 +284,14 @@ final class WindowStateManagerTests: XCTestCase {
             height: 400,
             opacityLevel: 0.3
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted.opacityLevel, 0.3, accuracy: 0.001)
     }
 
     func testFlipRotationAndOpacityCombination() throws {
         let state = makeState(isFlippedHorizontally: true, rotationAngle: 90, opacityLevel: 0.7)
         let data = try JSONEncoder().encode([state])
-        let decoded = try JSONDecoder().decode([WindowState].self, from: data).first!
+        let decoded = try XCTUnwrap(JSONDecoder().decode([WindowState].self, from: data).first)
         XCTAssertTrue(decoded.isFlippedHorizontally)
         XCTAssertEqual(decoded.rotationAngle, 90, accuracy: 0.001)
         XCTAssertEqual(decoded.opacityLevel, 0.7, accuracy: 0.001)
@@ -307,7 +310,7 @@ final class WindowStateManagerTests: XCTestCase {
         let json = """
         [{"imageName":"デフォルト","originX":100,"originY":200,"width":300,"height":400,"isFlippedHorizontally":false,"rotationAngle":0,"opacityLevel":1.0}]
         """
-        let data = json.data(using: .utf8)!
+        let data = try XCTUnwrap(json.data(using: .utf8))
         let decoded = try JSONDecoder().decode([WindowState].self, from: data)
         XCTAssertEqual(decoded.first?.windowId, 0, "Missing windowId should default to 0")
     }
@@ -320,11 +323,11 @@ final class WindowStateManagerTests: XCTestCase {
             height: 400,
             windowId: 7
         )
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         XCTAssertEqual(adjusted.windowId, 7)
     }
 
-    func testLoadStatesNormalizesLegacyDefaultImageName() {
+    func testLoadStatesNormalizesLegacyDefaultImageName() throws {
         // Write JSON with legacy "デフォルト" imageName
         let legacyJSON = """
         [{\
@@ -338,7 +341,8 @@ final class WindowStateManagerTests: XCTestCase {
         }]
         """
         let jsonURL = tempDirectory.appendingPathComponent("window_states.json")
-        try! legacyJSON.data(using: .utf8)!.write(to: jsonURL)
+        let jsonData = try XCTUnwrap(legacyJSON.data(using: .utf8))
+        try jsonData.write(to: jsonURL)
 
         let states = stateManager.loadStates()
         XCTAssertEqual(states.first?.imageName, AppConstants.defaultImageName)

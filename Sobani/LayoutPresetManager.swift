@@ -19,27 +19,13 @@ class LayoutPresetManager {
     )
     private let baseDirectory: URL?
 
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
     }
 
     private var appSupportURL: URL? {
-        let fm = FileManager.default
-        let appDir: URL
-        if let base = baseDirectory {
-            appDir = base
-        } else {
-            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-            appDir = appSupport.appendingPathComponent("Sobani")
-        }
-        if !fm.fileExists(atPath: appDir.path) {
-            do {
-                try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
-            } catch {
-                logger.error("Failed to create app support directory: \(error.localizedDescription)")
-            }
-        }
-        return appDir
+        AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
     var layoutsDirectoryURL: URL? {
@@ -57,14 +43,7 @@ class LayoutPresetManager {
     }
 
     private func sanitizedFileName(for name: String) -> String {
-        let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|")
-        var sanitized = name.components(separatedBy: invalidCharacters).joined(separator: "_")
-        // Prevent path traversal
-        sanitized = URL(fileURLWithPath: sanitized).lastPathComponent
-        if sanitized.isEmpty || sanitized == "." || sanitized == ".." {
-            sanitized = "unnamed"
-        }
-        return sanitized
+        PathSanitizer.safeName(from: name) ?? "unnamed"
     }
 
     func savePreset(name: String, states: [WindowState]) {

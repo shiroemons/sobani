@@ -12,27 +12,13 @@ class ImageManager {
     static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
     private let baseDirectory: URL?
 
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
     }
 
     private var appSupportURL: URL? {
-        let fm = FileManager.default
-        let appDir: URL
-        if let base = baseDirectory {
-            appDir = base
-        } else {
-            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-            appDir = appSupport.appendingPathComponent("Sobani")
-        }
-        if !fm.fileExists(atPath: appDir.path) {
-            do {
-                try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
-            } catch {
-                logger.error("Failed to create app support directory: \(error.localizedDescription)")
-            }
-        }
-        return appDir
+        AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
     var imagesDirectoryURL: URL? {
@@ -56,7 +42,7 @@ class ImageManager {
         let imageExtensions = Self.supportedExtensions
         return files
             .filter { name in
-                let ext = (name as NSString).pathExtension.lowercased()
+                let ext = URL(fileURLWithPath: name).pathExtension.lowercased()
                 return imageExtensions.contains(ext)
             }
             .sorted()
@@ -64,11 +50,7 @@ class ImageManager {
 
     func loadRegisteredImage(named name: String) -> NSImage? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
-        // パストラバーサル防止: ファイル名のみを使用し、imagesDir の外へのアクセスを禁止
-        let safeName = URL(fileURLWithPath: name).lastPathComponent
-        guard !safeName.isEmpty, safeName != "." else { return nil }
-        let url = imagesDir.appendingPathComponent(safeName)
-        guard url.path.hasPrefix(imagesDir.path + "/") else { return nil }
+        guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
         return NSImage(contentsOf: url)
     }
 
@@ -84,8 +66,9 @@ class ImageManager {
         var finalName = name
         var counter = 1
         while fm.fileExists(atPath: finalURL.path) {
-            let baseName = (name as NSString).deletingPathExtension
-            let ext = (name as NSString).pathExtension
+            let nameURL = URL(fileURLWithPath: name)
+            let baseName = nameURL.deletingPathExtension().lastPathComponent
+            let ext = nameURL.pathExtension
             finalName = "\(baseName)_\(counter).\(ext)"
             finalURL = imagesDir.appendingPathComponent(finalName)
             counter += 1
@@ -117,11 +100,7 @@ class ImageManager {
 
     func removeRegisteredImage(named name: String) {
         guard let imagesDir = imagesDirectoryURL else { return }
-        // パストラバーサル防止: ファイル名のみを使用し、imagesDir の外の削除を禁止
-        let safeName = URL(fileURLWithPath: name).lastPathComponent
-        guard !safeName.isEmpty, safeName != "." else { return }
-        let url = imagesDir.appendingPathComponent(safeName)
-        guard url.path.hasPrefix(imagesDir.path + "/") else { return }
+        guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return }
         do {
             try FileManager.default.removeItem(at: url)
         } catch {

@@ -141,6 +141,9 @@ struct AdjustmentPanelState {
 // MARK: - Adjustment Panel Controller
 
 class AdjustmentPanelController: NSObject, NSWindowDelegate {
+    private static let panelWidth: CGFloat = 220
+    private static let panelHeight: CGFloat = 460
+
     weak var delegate: AdjustmentPanelDelegate?
     var onClose: (() -> Void)?
     private var panel: NSPanel?
@@ -170,8 +173,8 @@ class AdjustmentPanelController: NSObject, NSWindowDelegate {
         currentScreen = NSScreen.screen(containing: window.frame)
         close()
 
-        let panelWidth: CGFloat = 220
-        let panelHeight: CGFloat = 460
+        let panelWidth: CGFloat = Self.panelWidth
+        let panelHeight: CGFloat = Self.panelHeight
         let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
 
         let newPanel = NSPanel(

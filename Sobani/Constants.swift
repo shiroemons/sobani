@@ -1,4 +1,5 @@
 import Cocoa
+import os.log
 
 /// Localization helper that supports runtime language switching via LanguageManager.
 /// Falls back to NSLocalizedString with the main bundle when no custom bundle is set.
@@ -33,6 +34,15 @@ enum AppConstants {
     // Floating-point comparison
     static let floatingPointTolerance: CGFloat = 0.01
 
+    // Hotkey
+    static let optionHKeyCode: UInt16 = 4
+
+    // Display ID
+    static let unknownDisplayID: CGDirectDisplayID = 0
+
+    // Menu
+    static let menuWindowMinWidth: CGFloat = 10
+
     // Onboarding
     enum Onboarding {
         static let width: CGFloat = 520
@@ -56,6 +66,54 @@ enum GeometryUtils {
         var result = angle.truncatingRemainder(dividingBy: 360)
         if result < 0 { result += 360 }
         return result
+    }
+}
+
+enum AppSupportDirectory {
+    static func url(baseDirectory: URL?, logger: Logger) -> URL? {
+        let fm = FileManager.default
+        let appDir: URL
+        if let base = baseDirectory {
+            appDir = base
+        } else {
+            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
+            appDir = appSupport.appendingPathComponent("Sobani")
+        }
+        if !fm.fileExists(atPath: appDir.path) {
+            do {
+                try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+            } catch {
+                logger.error("Failed to create app support directory: \(error.localizedDescription)")
+            }
+        }
+        return appDir
+    }
+}
+
+enum PathSanitizer {
+    /// Returns a safe URL within the given directory, preventing path traversal.
+    /// Returns nil if the name is empty or resolves to a traversal attempt.
+    static func safeURL(name: String, in directory: URL) -> URL? {
+        let safeName = URL(fileURLWithPath: name).lastPathComponent
+        guard !safeName.isEmpty, safeName != "." else { return nil }
+        let url = directory.appendingPathComponent(safeName)
+        guard url.path.hasPrefix(directory.path + "/") else { return nil }
+        return url
+    }
+
+    /// Sanitizes a file name by replacing invalid filesystem characters and preventing path traversal.
+    /// Returns nil if the result is empty or invalid.
+    static func safeName(from name: String) -> String? {
+        let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|")
+        let sanitized = name.components(separatedBy: invalidCharacters).joined(separator: "_")
+        if sanitized.isEmpty || sanitized == "." || sanitized == ".." {
+            return nil
+        }
+        let resolved = URL(fileURLWithPath: sanitized).lastPathComponent
+        if resolved.isEmpty || resolved == "." || resolved == ".." {
+            return nil
+        }
+        return resolved
     }
 }
 

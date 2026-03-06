@@ -10,6 +10,6 @@ struct WakeRestorationContext {
     var retryCount: Int = 0
 
     mutating func clear() {
-        self = WakeRestorationContext()
+        self = Self()
     }
 }

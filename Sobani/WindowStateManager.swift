@@ -52,6 +52,38 @@ struct WindowState: Codable, Equatable {
         opacityLevel = try container.decodeIfPresent(CGFloat.self, forKey: .opacityLevel) ?? 1.0
         windowId = try container.decodeIfPresent(Int.self, forKey: .windowId) ?? 0
     }
+
+    func isPositionVisible() -> Bool {
+        let windowRect = NSRect(x: originX, y: originY, width: width, height: height)
+        for screen in NSScreen.screens {
+            let intersection = windowRect.intersection(screen.frame)
+            let threshold = AppConstants.screenIntersectionThreshold
+            if !intersection.isNull && intersection.width >= threshold && intersection.height >= threshold {
+                return true
+            }
+        }
+        return false
+    }
+
+    func adjustedToVisibleArea() -> Self {
+        if isPositionVisible() {
+            return self
+        }
+        let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+        let newOriginX = mainFrame.midX - width / 2
+        let newOriginY = mainFrame.midY - height / 2
+        return Self(
+            imageName: imageName,
+            originX: newOriginX,
+            originY: newOriginY,
+            width: width,
+            height: height,
+            isFlippedHorizontally: isFlippedHorizontally,
+            rotationAngle: rotationAngle,
+            opacityLevel: opacityLevel,
+            windowId: windowId
+        )
+    }
 }
 
 // MARK: - Window State Manager
@@ -64,32 +96,13 @@ class WindowStateManager {
     )
     private let baseDirectory: URL?
 
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
     }
 
     private var appSupportURL: URL? {
-        let fm = FileManager.default
-        let appDir: URL
-        if let base = baseDirectory {
-            appDir = base
-        } else {
-            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-            appDir = appSupport.appendingPathComponent("Sobani")
-        }
-        if !fm.fileExists(atPath: appDir.path) {
-            do {
-                try fm.createDirectory(
-                    at: appDir,
-                    withIntermediateDirectories: true
-                )
-            } catch {
-                logger.error(
-                    "Failed to create app support directory: \(error.localizedDescription)"
-                )
-            }
-        }
-        return appDir
+        AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
     var statesFileURL: URL? {
@@ -162,37 +175,6 @@ class WindowStateManager {
         )
     }
 
-    static func isPositionVisible(_ state: WindowState) -> Bool {
-        let windowRect = NSRect(x: state.originX, y: state.originY, width: state.width, height: state.height)
-        for screen in NSScreen.screens {
-            let intersection = windowRect.intersection(screen.frame)
-            let threshold = AppConstants.screenIntersectionThreshold
-            if !intersection.isNull && intersection.width >= threshold && intersection.height >= threshold {
-                return true
-            }
-        }
-        return false
-    }
-
-    static func adjustToVisibleArea(_ state: WindowState) -> WindowState {
-        if isPositionVisible(state) {
-            return state
-        }
-        let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
-        let newOriginX = mainFrame.midX - state.width / 2
-        let newOriginY = mainFrame.midY - state.height / 2
-        return WindowState(
-            imageName: state.imageName,
-            originX: newOriginX,
-            originY: newOriginY,
-            width: state.width,
-            height: state.height,
-            isFlippedHorizontally: state.isFlippedHorizontally,
-            rotationAngle: state.rotationAngle,
-            opacityLevel: state.opacityLevel,
-            windowId: state.windowId
-        )
-    }
 }
 
 // MARK: - CharacterWindow Restore Extension
@@ -200,7 +182,7 @@ class WindowStateManager {
 extension CharacterWindow {
     @discardableResult
     func restore(from state: WindowState) -> Bool {
-        let adjusted = WindowStateManager.adjustToVisibleArea(state)
+        let adjusted = state.adjustedToVisibleArea()
         let tolerance = AppConstants.floatingPointTolerance
         let wasAdjusted = abs(adjusted.originX - state.originX) > tolerance
             || abs(adjusted.originY - state.originY) > tolerance

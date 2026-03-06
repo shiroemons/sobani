@@ -2,7 +2,9 @@ import XCTest
 @testable import Sobani
 
 final class LayoutPresetManagerTests: XCTestCase {
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var presetManager: LayoutPresetManager!
 
     override func setUp() {
@@ -165,13 +167,14 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded?.states, [])
     }
 
-    func testInvalidJSONSkipped() {
+    func testInvalidJSONSkipped() throws {
         // Write invalid JSON file directly into the layouts directory
         let layoutsDir = presetManager.layoutsDirectoryURL
         XCTAssertNotNil(layoutsDir)
 
+        // swiftlint:disable:next force_unwrapping
         let invalidFile = layoutsDir!.appendingPathComponent("invalid.json")
-        try! "{ not valid json }}}".write(to: invalidFile, atomically: true, encoding: .utf8)
+        try "{ not valid json }}}".write(to: invalidFile, atomically: true, encoding: .utf8)
 
         // Also save a valid preset
         presetManager.savePreset(name: "ValidPreset", states: [makeState()])
@@ -236,6 +239,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertNotNil(layoutsDir)
 
         var isDirectory: ObjCBool = false
+        // swiftlint:disable:next force_unwrapping
         let exists = FileManager.default.fileExists(atPath: layoutsDir!.path, isDirectory: &isDirectory)
         XCTAssertTrue(exists)
         XCTAssertTrue(isDirectory.boolValue)
@@ -288,6 +292,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
         let loaded = presetManager.loadPreset(named: "PropertiesTest")
         XCTAssertNotNil(loaded)
+        // swiftlint:disable:next force_unwrapping
         let loadedStates = loaded!.states
 
         XCTAssertEqual(loadedStates[0].imageName, "flipped.png")

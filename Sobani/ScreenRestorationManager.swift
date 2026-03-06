@@ -69,23 +69,7 @@ class ScreenRestorationManager {
     }
 
     var pendingFileURL: URL? {
-        let fm = FileManager.default
-        let appDir: URL
-        if let base = baseDirectory {
-            appDir = base
-        } else {
-            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-            appDir = appSupport.appendingPathComponent("Sobani")
-        }
-        if !fm.fileExists(atPath: appDir.path) {
-            do {
-                try fm.createDirectory(
-                    at: appDir, withIntermediateDirectories: true)
-            } catch {
-                logger.error(
-                    "Failed to create app support directory: \(error.localizedDescription)")
-            }
-        }
+        guard let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger) else { return nil }
         return appDir.appendingPathComponent("pending_restorations.json")
     }
 
@@ -141,7 +125,7 @@ class ScreenRestorationManager {
                 return false
             } else {
                 // displayIDが不明（スリープなし切断）: 元の位置が現在可視かどうかで判定
-                return WindowStateManager.isPositionVisible(entry.originalState)
+                return entry.originalState.isPositionVisible()
             }
         }
     }

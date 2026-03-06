@@ -6,17 +6,17 @@ import UniformTypeIdentifiers
 extension AppDelegate {
     func setupStatusBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        if let button = statusItem.button {
+        if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "person.fill", accessibilityDescription: "Sobani")
             button.image?.size = NSSize(width: 18, height: 18)
         }
         let menu = NSMenu()
         menu.delegate = self
-        statusItem.menu = menu
+        statusItem?.menu = menu
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        guard menu === statusItem.menu else { return }
+        guard menu === statusItem?.menu else { return }
         menu.removeAllItems()
 
         let aboutItem = NSMenuItem(title: L("menu.about"), action: #selector(showAbout), keyEquivalent: "")
@@ -197,6 +197,7 @@ extension AppDelegate {
         var maxLeftWidth: CGFloat = 0
         for (index, charWindow) in orderedWindows.enumerated() {
             let leftText = "\(index + 1): \(charWindow.localizedDisplayName) (#\(charWindow.windowId))"
+            // swiftlint:disable:next legacy_objc_type
             let width = (leftText as NSString).size(withAttributes: [.font: font]).width
             if width > maxLeftWidth {
                 maxLeftWidth = width
@@ -396,25 +397,25 @@ extension AppDelegate {
     @objc func moveWindowToFrontByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowToFront(charWindow)
-        statusItem.menu?.cancelTracking()
+        statusItem?.menu?.cancelTracking()
     }
 
     @objc func moveWindowForwardByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowForward(charWindow)
-        statusItem.menu?.cancelTracking()
+        statusItem?.menu?.cancelTracking()
     }
 
     @objc func moveWindowBackwardByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowBackward(charWindow)
-        statusItem.menu?.cancelTracking()
+        statusItem?.menu?.cancelTracking()
     }
 
     @objc func moveWindowToBackByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         moveWindowToBack(charWindow)
-        statusItem.menu?.cancelTracking()
+        statusItem?.menu?.cancelTracking()
     }
 
     @objc func closeWindowByWindowNumber(_ sender: NSMenuItem) {
@@ -515,7 +516,7 @@ extension AppDelegate {
         }
 
         // Window highlight border (for character windows submenu)
-        guard menu !== statusItem.menu else { return }
+        guard menu !== statusItem?.menu else { return }
         for charWindow in characterWindows {
             charWindow.hideHighlightBorder()
         }
@@ -526,7 +527,7 @@ extension AppDelegate {
 
     func menuDidClose(_ menu: NSMenu) {
         ImagePreviewPanel.shared.hide()
-        guard menu === statusItem.menu else { return }
+        guard menu === statusItem?.menu else { return }
         for charWindow in characterWindows {
             charWindow.hideHighlightBorder()
         }

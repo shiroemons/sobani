@@ -2,8 +2,11 @@ import XCTest
 @testable import Sobani
 
 final class ScreenRestorationManagerTests: XCTestCase {
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var manager: ScreenRestorationManager!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var ioManager: ScreenRestorationManager!
 
     override func setUp() {
@@ -212,6 +215,7 @@ final class ScreenRestorationManagerTests: XCTestCase {
     }
 
     func testLoadPendingWithCorruptedJSON() {
+        // swiftlint:disable:next force_unwrapping
         let url = ioManager.pendingFileURL!
         try? Data("not valid json".utf8).write(to: url, options: .atomic)
 
@@ -339,6 +343,7 @@ final class ScreenRestorationManagerTests: XCTestCase {
             }
         ]
         """
+        // swiftlint:disable:next force_unwrapping
         let url = ioManager.pendingFileURL!
         try? Data(oldFormatJSON.utf8).write(to: url, options: .atomic)
 

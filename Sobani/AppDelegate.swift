@@ -5,12 +5,12 @@ import ServiceManagement
 
 class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
     var characterWindows: [CharacterWindow] = []
-    var statusItem: NSStatusItem!
+    var statusItem: NSStatusItem?
     var shouldTerminate = false
     var areWindowsHidden = false
     var zOrderedWindows: [CharacterWindow] = []
-    var globalMonitor: Any?
-    var localMonitor: Any?
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
@@ -58,11 +58,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                 charWindow.setWindowId(state.windowId)
                 let wasAdjusted = charWindow.restore(from: state)
                 if wasAdjusted {
-                    let adjusted = WindowStateManager.adjustToVisibleArea(state)
+                    let adjusted = state.adjustedToVisibleArea()
                     screenRestorationManager.addPending(
                         windowId: state.windowId,
                         originalState: state,
-                        displayID: 0,
+                        displayID: AppConstants.unknownDisplayID,
                         adjustedOriginX: adjusted.originX,
                         adjustedOriginY: adjusted.originY
                     )
@@ -96,7 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                     self?.changeDefaultImageFromMenu()
                 }
                 controller.onFinish = { [weak self] in
-                    self?.statusItem.button?.performClick(nil)
+                    self?.statusItem?.button?.performClick(nil)
                 }
                 controller.show()
                 onboardingController = controller
@@ -139,14 +139,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
     func setupHotkeyMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 4 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
+            if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
                 DispatchQueue.main.async {
                     self?.toggleAllWindowsVisibility()
                 }
             }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 4 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
+            if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
                 DispatchQueue.main.async {
                     self?.toggleAllWindowsVisibility()
                 }

@@ -3,11 +3,14 @@ import XCTest
 
 final class OnboardingManagerTests: XCTestCase {
     private let suiteName = "test-onboarding"
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var testDefaults: UserDefaults!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var manager: OnboardingManager!
 
     override func setUp() {
         super.setUp()
+        // swiftlint:disable:next force_unwrapping
         testDefaults = UserDefaults(suiteName: suiteName)!
         testDefaults.removePersistentDomain(forName: suiteName)
         manager = OnboardingManager(defaults: testDefaults)
@@ -60,6 +63,7 @@ final class OnboardingManagerTests: XCTestCase {
 
     func testDependencyInjection_customDefaults() {
         let otherSuite = "test-onboarding-other"
+        // swiftlint:disable:next force_unwrapping
         let otherDefaults = UserDefaults(suiteName: otherSuite)!
         otherDefaults.removePersistentDomain(forName: otherSuite)
         let otherManager = OnboardingManager(defaults: otherDefaults)

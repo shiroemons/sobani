@@ -32,7 +32,7 @@ enum BackgroundRemovalError: LocalizedError {
 // MARK: - Background Removal Manager
 
 @available(macOS 14.0, *)
-class BackgroundRemovalManager {
+final class BackgroundRemovalManager {
     static let shared = BackgroundRemovalManager()
 
     private let logger = Logger(
@@ -45,7 +45,7 @@ class BackgroundRemovalManager {
         qos: .userInitiated
     )
 
-    init() {}
+    private init() {}
 
     func removeBackground(
         from image: NSImage,
