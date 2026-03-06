@@ -2,8 +2,11 @@ import XCTest
 @testable import Sobani
 
 final class ScreenRestorationManagerTests: XCTestCase {
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var manager: ScreenRestorationManager!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var ioManager: ScreenRestorationManager!
 
     override func setUp() {

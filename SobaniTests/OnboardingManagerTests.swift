@@ -3,7 +3,9 @@ import XCTest
 
 final class OnboardingManagerTests: XCTestCase {
     private let suiteName = "test-onboarding"
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var testDefaults: UserDefaults!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var manager: OnboardingManager!
 
     override func setUp() {

@@ -2,7 +2,9 @@ import XCTest
 @testable import Sobani
 
 final class WindowStateManagerTests: XCTestCase {
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var stateManager: WindowStateManager!
 
     override func setUp() {

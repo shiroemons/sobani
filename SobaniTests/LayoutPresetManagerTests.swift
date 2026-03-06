@@ -2,7 +2,9 @@ import XCTest
 @testable import Sobani
 
 final class LayoutPresetManagerTests: XCTestCase {
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     var presetManager: LayoutPresetManager!
 
     override func setUp() {
