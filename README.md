@@ -388,6 +388,13 @@ log show --predicate 'subsystem == "com.shiroemons.Sobani"' --level debug --last
 - [アーキテクチャ](docs/guide/architecture.md) — コンポーネント関係、ライフサイクル、ウィンドウ構造
 - [データフロー](docs/guide/data-flow.md) — ウィンドウ状態の保存・復元、画像管理のデータの流れ
 
+## SNSで共有
+
+Sobaniを使っている様子をぜひSNSでシェアしてください！
+
+- **#SobaniApp** — アプリの感想やスクリーンショットに
+- **#デスクトップアクスタ** — あなたのデスクトップを見せてください
+
 ## ライセンス
 
 本プロジェクトのソースコードは [MIT License](LICENSE) のもとで公開されています。
