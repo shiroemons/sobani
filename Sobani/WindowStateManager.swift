@@ -65,14 +65,14 @@ struct WindowState: Codable, Equatable {
         return false
     }
 
-    func adjustedToVisibleArea() -> WindowState {
+    func adjustedToVisibleArea() -> Self {
         if isPositionVisible() {
             return self
         }
         let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
         let newOriginX = mainFrame.midX - width / 2
         let newOriginY = mainFrame.midY - height / 2
-        return WindowState(
+        return Self(
             imageName: imageName,
             originX: newOriginX,
             originY: newOriginY,

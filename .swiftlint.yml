@@ -37,6 +37,17 @@ opt_in_rules:
   - first_where
   - sorted_first_last
   - contains_over_first_not_nil
+  - prefer_self_in_static_references
+  - explicit_init
+  - toggle_bool
+  - unowned_variable_capture
+  - weak_delegate
+  - overridden_super_call
+  - prohibited_super_call
+  - redundant_type_annotation
+  - fatal_error_message
+  - discouraged_none_name
+  - file_name_no_space
 
 identifier_name:
   excluded:

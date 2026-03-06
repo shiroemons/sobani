@@ -77,7 +77,7 @@ class DraggableImageView: NSImageView {
         if event.modifierFlags.contains(.option) {
             let allWindows = allCharacterWindows
             for targetWindow in allWindows {
-                guard let targetImageView = targetWindow.contentView?.subviews.first as? DraggableImageView else { continue }
+                guard let targetImageView = targetWindow.contentView?.subviews.first as? Self else { continue }
                 resizeWindow(targetWindow, imageView: targetImageView, scaleFactor: scaleFactor)
             }
         } else {
