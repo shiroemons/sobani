@@ -19,6 +19,7 @@ class LayoutPresetManager {
     )
     private let baseDirectory: URL?
 
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
     }
