@@ -4,11 +4,11 @@ import os.log
 
 // MARK: - App Delegate
 
-class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AppDelegate")
     var characterWindows: [CharacterWindow] = []
     var statusItem: NSStatusItem?
-    var shouldTerminate = false
+    private var shouldTerminate = false
     var areWindowsHidden = false
     var zOrderedWindows: [CharacterWindow] = []
     private var globalMonitor: Any?
@@ -244,6 +244,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
     }
 
     @objc func quitApp() { quitFromMenu() }
+
+    func prepareShouldTerminate() {
+        shouldTerminate = true
+    }
 
     @objc func toggleLaunchAtLogin() {
         do {
