@@ -17,7 +17,8 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 │   └── bar.jpg
 ├── default.png                  # カスタムデフォルト画像（任意）
 ├── window_states.json           # ウィンドウ状態（自動生成）
-└── pending_restorations.json    # 画面復元待ちキュー（自動生成・一時的）
+├── pending_restorations.json    # 画面復元待ちキュー（自動生成・一時的）
+└── layouts/                     # レイアウトプリセット（プリセットごとに1つのJSONファイル）
 ```
 
 | ファイル / ディレクトリ | 管理クラス | 説明 |
@@ -26,6 +27,7 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `default.png` | `ImageManager` | カスタムデフォルト画像。存在しない場合は内蔵の `character` アセットを使用 |
 | `window_states.json` | `WindowStateManager` | 終了時にウィンドウの位置・サイズ・状態を保存し、次回起動時に復元する |
 | `pending_restorations.json` | `ScreenRestorationManager` | モニター切断・スリープ後の復元待ちキュー。復元完了後は削除される |
+| `layouts/` | `LayoutPresetManager` | レイアウトプリセット。プリセットごとに1つのJSONファイルを保持する |
 
 ---
 
@@ -146,6 +148,48 @@ flowchart LR
 | `registeredImageNames()` | 登録済み画像名をソート済みリストで返す。メニューへの画像名表示に使用 |
 | `setCustomDefault(from:)` | 指定 URL のファイルを `default.png` としてコピーする |
 | `resetCustomDefault()` | `default.png` を削除して内蔵画像に戻す |
+
+---
+
+## レイアウトプリセットの保存・読み込み
+
+`LayoutPresetManager` はシングルトンとして動作し、ウィンドウ配置のプリセットを `layouts/` ディレクトリにJSON形式で永続化します。
+
+### 保存フロー
+
+1. ユーザーがメニューバー →「レイアウト」→「現在のレイアウトを保存...」を選択
+2. `AppDelegate` が全ウィンドウの `WindowState` を取得
+3. `LayoutPresetManager.savePreset(name:states:)` でJSON形式で保存
+4. 保存先: `~/Library/Application Support/Sobani/layouts/{name}.json`
+
+### 読み込みフロー
+
+1. ユーザーがメニューバー →「レイアウト」→ プリセット名を選択
+2. `LayoutPresetManager.loadPreset(named:)` でJSONを読み込み
+3. `AppDelegate.applyLayout(_:)` で既存ウィンドウをすべて閉じ、プリセットのウィンドウ状態を復元
+
+### データ構造
+
+`LayoutPreset` 構造体のフィールドは以下のとおりです。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `name` | `String` | プリセット名 |
+| `createdAt` | `Date` | 作成日時（ISO 8601 形式でエンコード） |
+| `states` | `[WindowState]` | 保存時の全ウィンドウ状態 |
+
+- ファイル名はプリセット名をサニタイズした文字列 + `.json`
+- サニタイズではパストラバーサル防止と禁止文字（`/\:*?"<>|`）の置換を行う
+
+### 主な操作
+
+| メソッド | 説明 |
+|---|---|
+| `savePreset(name:states:)` | プリセットを JSON にエンコードし `layouts/` にアトミック書き込み |
+| `loadPresets()` | `layouts/` 内の全 JSON を読み込み、作成日時の降順でソートして返す |
+| `loadPreset(named:)` | 指定名のプリセットを1件読み込む |
+| `deletePreset(named:)` | 指定名のプリセットファイルを削除する |
+| `presetExists(named:)` | 指定名のプリセットが存在するか確認する |
 
 ---
 

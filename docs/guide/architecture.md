@@ -67,6 +67,15 @@ classDiagram
         +toggle()
         +status: SMAppServiceStatus
     }
+    class LayoutPresetManager {
+        +shared: LayoutPresetManager
+        +savePreset()
+        +loadPreset()
+        +deletePreset()
+    }
+    class UnconstrainedWindow {
+        +constrainFrameRect()
+    }
 
     AppDelegate --> CharacterWindow : manages
     AppDelegate ..|> CharacterWindowDelegate
@@ -82,6 +91,8 @@ classDiagram
     AppDelegate --> ScreenRestorationManager : owns
     AppDelegate --> LanguageManager : uses
     AppDelegate --> LaunchAtLoginManager : uses
+    AppDelegate --> LayoutPresetManager : uses
+    CharacterWindow --> UnconstrainedWindow : uses
 ```
 
 `AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
@@ -104,6 +115,9 @@ classDiagram
 | `ScreenRestorationManager.swift` | 復元待ちキューの管理（シングルトンではなく `AppDelegate` が所有）。`PendingRestoration` 構造体も同ファイルに定義 |
 | `LanguageManager.swift` | ランタイム言語切り替え（シングルトン） |
 | `Constants.swift` | `AppConstants`、`GeometryUtils`、`MenuItemTag`、`L()` ヘルパー |
+| `LayoutPresetManager.swift` | レイアウトプリセットの保存・読み込み・削除を管理するシングルトン。`layouts/` ディレクトリにプリセットごとのJSONファイルを保存 |
+| `UnconstrainedWindow.swift` | `NSWindow` サブクラス。`constrainFrameRect` をオーバーライドし画面端制約を無効化。透過PNG画像のメニューバー越え配置を実現 |
+| `DragDropUtils.swift` | ドラッグ＆ドロップ操作のユーティリティ。ペーストボードから対応画像URLを抽出 |
 | `WakeRestorationContext.swift` | スリープ/復帰時の復元コンテキスト |
 
 ## シングルトン一覧
@@ -115,6 +129,7 @@ classDiagram
 | `UpdateManager.shared` | GitHub Releases を利用した自動アップデートの確認・適用 |
 | `LaunchAtLoginManager.shared` | `SMAppService` を通じたログイン時自動起動の切り替え |
 | `LanguageManager.shared` | 日本語・英語・システム言語のランタイム切り替え |
+| `LayoutPresetManager.shared` | レイアウトプリセットの保存・読み込み・削除（`layouts/` ディレクトリ） |
 
 `ScreenRestorationManager` はシングルトンではなく、`AppDelegate` が所有するインスタンスです。
 
