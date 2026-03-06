@@ -42,7 +42,7 @@ class ImageManager {
         let imageExtensions = Self.supportedExtensions
         return files
             .filter { name in
-                let ext = (name as NSString).pathExtension.lowercased()
+                let ext = URL(fileURLWithPath: name).pathExtension.lowercased()
                 return imageExtensions.contains(ext)
             }
             .sorted()
@@ -66,8 +66,9 @@ class ImageManager {
         var finalName = name
         var counter = 1
         while fm.fileExists(atPath: finalURL.path) {
-            let baseName = (name as NSString).deletingPathExtension
-            let ext = (name as NSString).pathExtension
+            let nameURL = URL(fileURLWithPath: name)
+            let baseName = nameURL.deletingPathExtension().lastPathComponent
+            let ext = nameURL.pathExtension
             finalName = "\(baseName)_\(counter).\(ext)"
             finalURL = imagesDir.appendingPathComponent(finalName)
             counter += 1

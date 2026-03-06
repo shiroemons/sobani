@@ -689,7 +689,7 @@ extension CharacterWindow {
                 self.isRemovingBackground = false
                 switch result {
                 case .success(let newImage):
-                    let baseName = (self.displayName as NSString).deletingPathExtension
+                    let baseName = URL(fileURLWithPath: self.displayName).deletingPathExtension().lastPathComponent
                     let newName = "\(baseName)_nobg.png"
                     ImageManager.shared.registerImage(newImage, name: newName)
                     self.displayName = newName

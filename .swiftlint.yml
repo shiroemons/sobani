@@ -48,6 +48,7 @@ opt_in_rules:
   - fatal_error_message
   - discouraged_none_name
   - file_name_no_space
+  - legacy_objc_type
 
 identifier_name:
   excluded:

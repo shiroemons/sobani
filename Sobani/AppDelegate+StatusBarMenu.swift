@@ -197,6 +197,7 @@ extension AppDelegate {
         var maxLeftWidth: CGFloat = 0
         for (index, charWindow) in orderedWindows.enumerated() {
             let leftText = "\(index + 1): \(charWindow.localizedDisplayName) (#\(charWindow.windowId))"
+            // swiftlint:disable:next legacy_objc_type
             let width = (leftText as NSString).size(withAttributes: [.font: font]).width
             if width > maxLeftWidth {
                 maxLeftWidth = width

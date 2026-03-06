@@ -2,10 +2,12 @@ import Cocoa
 
 enum DragDropUtils {
     static func extractImageURLs(from draggingInfo: NSDraggingInfo) -> [URL] {
+        // swiftlint:disable legacy_objc_type
         guard let items = draggingInfo.draggingPasteboard.readObjects(
             forClasses: [NSURL.self],
             options: [.urlReadingFileURLsOnly: true]
         ) as? [URL] else { return [] }
+        // swiftlint:enable legacy_objc_type
         return items.filter { isSupportedImageURL($0) }
     }
 
