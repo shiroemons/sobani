@@ -1,9 +1,11 @@
 import Cocoa
 import ServiceManagement
+import os.log
 
 // MARK: - App Delegate
 
 class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
+    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AppDelegate")
     var characterWindows: [CharacterWindow] = []
     var statusItem: NSStatusItem?
     var shouldTerminate = false

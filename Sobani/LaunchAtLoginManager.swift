@@ -1,7 +1,9 @@
 import ServiceManagement
+import os.log
 
 final class LaunchAtLoginManager {
     static let shared = LaunchAtLoginManager()
+    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "LaunchAtLoginManager")
     private init() {}
 
     var isEnabled: Bool {

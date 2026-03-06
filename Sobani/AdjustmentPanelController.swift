@@ -140,7 +140,7 @@ struct AdjustmentPanelState {
 
 // MARK: - Adjustment Panel Controller
 
-class AdjustmentPanelController: NSObject, NSWindowDelegate {
+final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     private static let panelWidth: CGFloat = 220
     private static let panelHeight: CGFloat = 460
 

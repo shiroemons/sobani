@@ -53,7 +53,7 @@ struct PendingRestoration: Codable {
 
 // MARK: - Screen Restoration Manager
 
-class ScreenRestorationManager {
+final class ScreenRestorationManager {
     private let logger = Logger(
         subsystem: "com.shiroemons.Sobani",
         category: "ScreenRestorationManager"

@@ -88,7 +88,7 @@ struct WindowState: Codable, Equatable {
 
 // MARK: - Window State Manager
 
-class WindowStateManager {
+final class WindowStateManager {
     static let shared = WindowStateManager()
     private let logger = Logger(
         subsystem: "com.shiroemons.Sobani",

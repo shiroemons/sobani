@@ -11,7 +11,7 @@ struct LayoutPreset: Codable, Equatable {
 
 // MARK: - Layout Preset Manager
 
-class LayoutPresetManager {
+final class LayoutPresetManager {
     static let shared = LayoutPresetManager()
     private let logger = Logger(
         subsystem: "com.shiroemons.Sobani",

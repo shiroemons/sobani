@@ -1,4 +1,5 @@
 import Foundation
+import os.log
 
 extension Notification.Name {
     static let languageDidChange = Notification.Name("languageDidChange")
@@ -18,7 +19,8 @@ enum Language: String, CaseIterable {
     }
 }
 
-class LanguageManager {
+final class LanguageManager {
+    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "LanguageManager")
     static let shared = LanguageManager()
 
     private let userDefaultsKey = "AppLanguage"

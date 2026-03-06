@@ -1,7 +1,7 @@
 import Cocoa
 import os.log
 
-class ImagePreviewPanel {
+final class ImagePreviewPanel {
     static let shared = ImagePreviewPanel()
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "ImagePreviewPanel")
     private let panel: NSPanel
