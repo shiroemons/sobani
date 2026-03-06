@@ -140,7 +140,7 @@ class ImagePreviewPanel {
             window !== excludedPanel
                 && window.isVisible
                 && window.level.rawValue >= menuLevel
-                && window.frame.width > 10
+                && window.frame.width > AppConstants.menuWindowMinWidth
         }
     }
 }

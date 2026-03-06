@@ -87,7 +87,7 @@ extension AppDelegate {
         let savedCount = wakeContext.states.count
         screenRestorationLog.info("[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows")
         for (wid, origin) in wakeContext.windowOrigins {
-            let did = wakeContext.displayIDs[wid] ?? 0
+            let did = wakeContext.displayIDs[wid] ?? AppConstants.unknownDisplayID
             let sFrame = wakeContext.screenFrames[did]
             let sFrameDesc = sFrame.debugDescription
             let originDesc = NSStringFromPoint(origin)
@@ -171,7 +171,7 @@ extension AppDelegate {
                 screenRestorationLog.debug("\(detailMsg, privacy: .public)")
             } else {
                 restoredAll = false
-                let displayIDValue = savedDisplayID ?? 0
+                let displayIDValue = savedDisplayID ?? AppConstants.unknownDisplayID
                 screenRestorationLog.error(
                     "restore #\(charWindow.windowId, privacy: .public): screen not found (displayID=\(displayIDValue, privacy: .public))"
                 )
@@ -211,7 +211,7 @@ extension AppDelegate {
             }
             screenRestorationManager.addPending(
                 windowId: windowId, originalState: savedState,
-                displayID: savedDisplayID ?? 0,
+                displayID: savedDisplayID ?? AppConstants.unknownDisplayID,
                 adjustedOriginX: adjusted.originX, adjustedOriginY: adjusted.originY,
                 preSleepScreenFrame: screenFrame
             )
@@ -237,7 +237,7 @@ extension AppDelegate {
             screenRestorationManager.addPending(
                 windowId: charWindow.windowId,
                 originalState: currentState,
-                displayID: 0,
+                displayID: AppConstants.unknownDisplayID,
                 adjustedOriginX: adjusted.originX,
                 adjustedOriginY: adjusted.originY
             )
@@ -294,7 +294,7 @@ extension AppDelegate {
     /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
     private func findTargetScreenForPending(_ entry: PendingRestoration) -> NSScreen? {
         // ① displayID 完全一致
-        if entry.displayID != 0, let screen = NSScreen.screen(withDisplayID: entry.displayID) {
+        if entry.displayID != AppConstants.unknownDisplayID, let screen = NSScreen.screen(withDisplayID: entry.displayID) {
             return screen
         }
         // ② ジオメトリベースのフォールバック
@@ -302,7 +302,7 @@ extension AppDelegate {
             return NSScreen.screen(matchingFrame: savedFrame, tolerance: AppConstants.screenMatchTolerance)
         }
         // ③ displayID: 0（スリープなし切断）の場合、元の位置が含まれるスクリーンを返す
-        if entry.displayID == 0 {
+        if entry.displayID == AppConstants.unknownDisplayID {
             let originalRect = NSRect(
                 x: entry.originalState.originX, y: entry.originalState.originY,
                 width: entry.originalState.width, height: entry.originalState.height

@@ -34,6 +34,15 @@ enum AppConstants {
     // Floating-point comparison
     static let floatingPointTolerance: CGFloat = 0.01
 
+    // Hotkey
+    static let optionHKeyCode: UInt16 = 4
+
+    // Display ID
+    static let unknownDisplayID: CGDirectDisplayID = 0
+
+    // Menu
+    static let menuWindowMinWidth: CGFloat = 10
+
     // Onboarding
     enum Onboarding {
         static let width: CGFloat = 520

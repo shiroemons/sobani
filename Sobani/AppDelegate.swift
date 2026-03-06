@@ -62,7 +62,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
                     screenRestorationManager.addPending(
                         windowId: state.windowId,
                         originalState: state,
-                        displayID: 0,
+                        displayID: AppConstants.unknownDisplayID,
                         adjustedOriginX: adjusted.originX,
                         adjustedOriginY: adjusted.originY
                     )
@@ -139,14 +139,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSM
 
     func setupHotkeyMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 4 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
+            if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
                 DispatchQueue.main.async {
                     self?.toggleAllWindowsVisibility()
                 }
             }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 4 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
+            if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
                 DispatchQueue.main.async {
                     self?.toggleAllWindowsVisibility()
                 }
