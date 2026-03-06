@@ -48,6 +48,15 @@ final class LayoutPresetManagerTests: XCTestCase {
         )
     }
 
+    private func writePreset(
+        name: String, originX: CGFloat, createdAt: Date,
+        encoder: JSONEncoder, directory: URL
+    ) throws {
+        let preset = LayoutPreset(name: name, createdAt: createdAt, states: [makeState(originX: originX)])
+        let data = try encoder.encode(preset)
+        try data.write(to: directory.appendingPathComponent("\(name).json"), options: .atomic)
+    }
+
     // MARK: - Save and Load Tests
 
     func testSaveAndLoadPresetRoundTrip() {
@@ -74,12 +83,25 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertTrue(names.contains("Preset3"))
     }
 
-    func testLoadPresetsOrderedByCreatedAtDescending() {
+    func testLoadPresetsOrderedByCreatedAtDescending() throws {
+        // Save all presets first, then overwrite JSON to control createdAt
         presetManager.savePreset(name: "OldPreset", states: [makeState(originX: 1)])
-        sleep(1)
         presetManager.savePreset(name: "MiddlePreset", states: [makeState(originX: 2)])
-        sleep(1)
         presetManager.savePreset(name: "NewPreset", states: [makeState(originX: 3)])
+
+        // Overwrite createdAt with controlled dates
+        let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        encoder.dateEncodingStrategy = .iso8601
+        let now = Date()
+
+        try writePreset(name: "OldPreset", originX: 1, createdAt: now.addingTimeInterval(-200),
+                       encoder: encoder, directory: layoutsDir)
+        try writePreset(name: "MiddlePreset", originX: 2, createdAt: now.addingTimeInterval(-100),
+                       encoder: encoder, directory: layoutsDir)
+        try writePreset(name: "NewPreset", originX: 3, createdAt: now,
+                       encoder: encoder, directory: layoutsDir)
 
         let all = presetManager.loadPresets()
         XCTAssertEqual(all.count, 3)
