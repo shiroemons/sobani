@@ -457,6 +457,7 @@ extension CharacterWindow {
 
     private func populateChangeImageSubmenu(_ submenu: NSMenu, names: [String]) {
         submenu.removeAllItems()
+        submenu.delegate = self
         submenu.autoenablesItems = false
 
         let changeItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImage), keyEquivalent: "o")
@@ -500,6 +501,7 @@ extension CharacterWindow {
               let newWindowSubmenu = newWindowItem.submenu else { return }
 
         newWindowSubmenu.removeAllItems()
+        newWindowSubmenu.delegate = self
         let selectImageItem = NSMenuItem(title: L("image.select"), action: #selector(addNewWindowWithNewImage(_:)), keyEquivalent: "")
         selectImageItem.target = self
         newWindowSubmenu.addItem(selectImageItem)
@@ -522,6 +524,30 @@ extension CharacterWindow {
         }
     }
 
+    // MARK: - Menu Highlight (Image Preview)
+
+    func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
+        if let item = item, let name = item.representedObject as? String,
+           item.action == #selector(selectRegisteredImage(_:))
+            || item.action == #selector(addNewWindowWithImage(_:))
+            || item.action == #selector(deleteRegisteredImage(_:)) {
+            if let image = ImageManager.shared.loadRegisteredImage(named: name) {
+                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
+            }
+        } else if let item = item,
+                  item.action == #selector(addNewWindow)
+                    || item.action == #selector(resetToDefault) {
+            if let image = ImageManager.shared.defaultImage() {
+                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
+            }
+        } else {
+            ImagePreviewPanel.shared.hide()
+        }
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        ImagePreviewPanel.shared.hide()
+    }
 }
 
 // MARK: - CharacterWindow + Other Submenu
@@ -556,6 +582,7 @@ extension CharacterWindow {
 
         let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
         let deleteSubmenu = NSMenu()
+        deleteSubmenu.delegate = self
         for name in names {
             let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
             item.target = self

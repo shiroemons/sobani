@@ -158,6 +158,7 @@ extension AppDelegate {
     func buildNewWindowMenuItem() -> NSMenuItem {
         let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
         let submenu = NSMenu()
+        submenu.delegate = self
 
         let selectImageItem = NSMenuItem(title: L("image.select"), action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
         selectImageItem.target = self
@@ -307,6 +308,7 @@ extension AppDelegate {
 
     func buildChangeImageSubmenuForWindow(charWindow: CharacterWindow) -> NSMenu {
         let changeSubmenu = NSMenu()
+        changeSubmenu.delegate = self
         changeSubmenu.autoenablesItems = false
         let windowNumber = charWindow.window.windowNumber
 
@@ -495,6 +497,24 @@ extension AppDelegate {
     // MARK: - Menu Highlight
 
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
+        // Image preview for registered image items
+        if let item = item, let name = item.representedObject as? String,
+           item.action == #selector(addNewWindowWithImageFromMenu(_:))
+            || item.action == #selector(selectRegisteredImageByWindowNumber(_:)) {
+            if let image = ImageManager.shared.loadRegisteredImage(named: name) {
+                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
+            }
+        } else if let item = item,
+                  item.action == #selector(addNewWindowFromMenu)
+                    || item.action == #selector(resetToDefaultByWindowNumber(_:)) {
+            if let image = ImageManager.shared.defaultImage() {
+                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
+            }
+        } else {
+            ImagePreviewPanel.shared.hide()
+        }
+
+        // Window highlight border (for character windows submenu)
         guard menu !== statusItem.menu else { return }
         for charWindow in characterWindows {
             charWindow.hideHighlightBorder()
@@ -505,6 +525,7 @@ extension AppDelegate {
     }
 
     func menuDidClose(_ menu: NSMenu) {
+        ImagePreviewPanel.shared.hide()
         guard menu === statusItem.menu else { return }
         for charWindow in characterWindows {
             charWindow.hideHighlightBorder()

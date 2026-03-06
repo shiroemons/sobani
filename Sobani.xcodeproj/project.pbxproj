@@ -42,6 +42,7 @@
 		F0LP000002000000000001 /* LayoutPresetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LP000001000000000001 /* LayoutPresetManager.swift */; };
 		F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LP000003000000000001 /* LayoutPresetManagerTests.swift */; };
 		F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UW000001000000000001 /* UnconstrainedWindow.swift */; };
+		F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0IP000001000000000001 /* ImagePreviewPanel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +95,7 @@
 		F0LP000001000000000001 /* LayoutPresetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetManager.swift; sourceTree = "<group>"; };
 		F0LP000003000000000001 /* LayoutPresetManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetManagerTests.swift; sourceTree = "<group>"; };
 		F0UW000001000000000001 /* UnconstrainedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnconstrainedWindow.swift; sourceTree = "<group>"; };
+		F0IP000001000000000001 /* ImagePreviewPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +148,7 @@
 				F0OB000003000000000001 /* OnboardingWindowController.swift */,
 				F0LP000001000000000001 /* LayoutPresetManager.swift */,
 				F0UW000001000000000001 /* UnconstrainedWindow.swift */,
+				F0IP000001000000000001 /* ImagePreviewPanel.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -319,6 +322,7 @@
 				F0OB000004000000000001 /* OnboardingWindowController.swift in Sources */,
 				F0LP000002000000000001 /* LayoutPresetManager.swift in Sources */,
 				F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */,
+				F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
