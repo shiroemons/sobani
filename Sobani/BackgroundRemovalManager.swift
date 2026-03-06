@@ -6,7 +6,7 @@ import Vision
 // MARK: - Background Removal Error
 
 @available(macOS 14.0, *)
-enum BackgroundRemovalError: LocalizedError {
+enum BackgroundRemovalError: LocalizedError, Equatable {
     case cgImageConversionFailed
     case noForegroundDetected
     case maskGenerationFailed
