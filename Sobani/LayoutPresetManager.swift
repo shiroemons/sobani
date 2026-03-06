@@ -46,16 +46,20 @@ final class LayoutPresetManager {
         PathSanitizer.safeName(from: name) ?? "unnamed"
     }
 
+    private func presetFileURL(for name: String) -> URL? {
+        guard let layoutsDir = layoutsDirectoryURL else { return nil }
+        let fileName = sanitizedFileName(for: name) + ".json"
+        return layoutsDir.appendingPathComponent(fileName)
+    }
+
     func savePreset(name: String, states: [WindowState]) {
-        guard let layoutsDir = layoutsDirectoryURL else { return }
+        guard let url = presetFileURL(for: name) else { return }
         let preset = LayoutPreset(name: name, createdAt: Date(), states: states)
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         encoder.dateEncodingStrategy = .iso8601
         do {
             let data = try encoder.encode(preset)
-            let fileName = sanitizedFileName(for: name) + ".json"
-            let url = layoutsDir.appendingPathComponent(fileName)
             try data.write(to: url, options: .atomic)
         } catch {
             logger.error("Failed to save layout preset: \(error.localizedDescription)")
@@ -83,9 +87,7 @@ final class LayoutPresetManager {
     }
 
     func loadPreset(named name: String) -> LayoutPreset? {
-        guard let layoutsDir = layoutsDirectoryURL else { return nil }
-        let fileName = sanitizedFileName(for: name) + ".json"
-        let url = layoutsDir.appendingPathComponent(fileName)
+        guard let url = presetFileURL(for: name) else { return nil }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         do {
@@ -98,9 +100,7 @@ final class LayoutPresetManager {
     }
 
     func deletePreset(named name: String) {
-        guard let layoutsDir = layoutsDirectoryURL else { return }
-        let fileName = sanitizedFileName(for: name) + ".json"
-        let url = layoutsDir.appendingPathComponent(fileName)
+        guard let url = presetFileURL(for: name) else { return }
         do {
             try FileManager.default.removeItem(at: url)
         } catch {
@@ -109,9 +109,7 @@ final class LayoutPresetManager {
     }
 
     func presetExists(named name: String) -> Bool {
-        guard let layoutsDir = layoutsDirectoryURL else { return false }
-        let fileName = sanitizedFileName(for: name) + ".json"
-        let url = layoutsDir.appendingPathComponent(fileName)
+        guard let url = presetFileURL(for: name) else { return false }
         return FileManager.default.fileExists(atPath: url.path)
     }
 }
