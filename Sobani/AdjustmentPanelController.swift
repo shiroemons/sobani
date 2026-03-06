@@ -26,6 +26,15 @@ protocol AdjustmentPanelDelegate: AnyObject {
 // MARK: - Rotation Dial View
 
 final class RotationDialView: NSView {
+    private static let outerPadding: CGFloat = 4
+    private static let tickInnerOffset: CGFloat = 6
+    private static let tickOuterOffset: CGFloat = 1
+    private static let indicatorInset: CGFloat = 8
+    private static let centerDotSize: CGFloat = 4
+    private static let outerLineWidth: CGFloat = 1.5
+    private static let tickLineWidth: CGFloat = 1
+    private static let indicatorLineWidth: CGFloat = 2
+
     private let scrollSensitivity: CGFloat = AppConstants.dialScrollSensitivity
     var angle: CGFloat = 0 {
         didSet { needsDisplay = true }
@@ -40,21 +49,21 @@ final class RotationDialView: NSView {
         guard let context = NSGraphicsContext.current?.cgContext else { return }
 
         let center = CGPoint(x: bounds.midX, y: bounds.midY)
-        let radius = min(bounds.width, bounds.height) / 2 - 4
+        let radius = min(bounds.width, bounds.height) / 2 - Self.outerPadding
 
         // Outer circle
         context.setStrokeColor(NSColor.separatorColor.cgColor)
-        context.setLineWidth(1.5)
+        context.setLineWidth(Self.outerLineWidth)
         context.addArc(center: center, radius: radius, startAngle: 0, endAngle: .pi * 2, clockwise: false)
         context.strokePath()
 
         // Tick marks every 45 degrees
         context.setStrokeColor(NSColor.tertiaryLabelColor.cgColor)
-        context.setLineWidth(1)
+        context.setLineWidth(Self.tickLineWidth)
         for tick in 0..<8 {
             let tickAngle = CGFloat(tick) * .pi / 4
-            let innerRadius = radius - 6
-            let outerRadius = radius - 1
+            let innerRadius = radius - Self.tickInnerOffset
+            let outerRadius = radius - Self.tickOuterOffset
             let startPoint = CGPoint(
                 x: center.x + innerRadius * cos(tickAngle),
                 y: center.y + innerRadius * sin(tickAngle)
@@ -71,17 +80,17 @@ final class RotationDialView: NSView {
         // Indicator line (0° = top, clockwise)
         let drawRadians = (90 - angle) * .pi / 180
         let indicatorEnd = CGPoint(
-            x: center.x + (radius - 8) * cos(drawRadians),
-            y: center.y + (radius - 8) * sin(drawRadians)
+            x: center.x + (radius - Self.indicatorInset) * cos(drawRadians),
+            y: center.y + (radius - Self.indicatorInset) * sin(drawRadians)
         )
         context.setStrokeColor(NSColor.controlAccentColor.cgColor)
-        context.setLineWidth(2)
+        context.setLineWidth(Self.indicatorLineWidth)
         context.move(to: center)
         context.addLine(to: indicatorEnd)
         context.strokePath()
 
         // Center dot
-        let dotSize: CGFloat = 4
+        let dotSize: CGFloat = Self.centerDotSize
         context.setFillColor(NSColor.controlAccentColor.cgColor)
         context.fillEllipse(in: CGRect(
             x: center.x - dotSize / 2,
@@ -145,6 +154,9 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220
     private static let panelHeight: CGFloat = 460
+    private static let rotationSectionOffsetY: CGFloat = 300
+    private static let opacitySectionOffsetY: CGFloat = 180
+    private static let panelGap: CGFloat = 8
 
     weak var delegate: AdjustmentPanelDelegate?
     var onClose: (() -> Void)?
@@ -197,25 +209,25 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         // Position near the target window
         let windowFrame = window.frame
         let panelOrigin = NSPoint(
-            x: windowFrame.maxX + 8,
+            x: windowFrame.maxX + Self.panelGap,
             y: windowFrame.midY - panelHeight / 2
         )
         newPanel.setFrameOrigin(panelOrigin)
 
         let contentView = NSView(frame: panelRect)
 
-        let rotationOffsetY: CGFloat = 300
+        let rotationOffsetY: CGFloat = Self.rotationSectionOffsetY
         setupRotationSection(in: contentView, angle: state.angle, offsetY: rotationOffsetY)
 
         // Separator between rotation and opacity
-        let separator1 = NSBox(frame: NSRect(x: 10, y: 300, width: 200, height: 1))
+        let separator1 = NSBox(frame: NSRect(x: 10, y: Self.rotationSectionOffsetY, width: 200, height: 1))
         separator1.boxType = .separator
         contentView.addSubview(separator1)
 
-        setupOpacitySection(in: contentView, opacity: state.opacity, offsetY: 180)
+        setupOpacitySection(in: contentView, opacity: state.opacity, offsetY: Self.opacitySectionOffsetY)
 
         // Separator between opacity and position/size
-        let separator2 = NSBox(frame: NSRect(x: 10, y: 180, width: 200, height: 1))
+        let separator2 = NSBox(frame: NSRect(x: 10, y: Self.opacitySectionOffsetY, width: 200, height: 1))
         separator2.boxType = .separator
         contentView.addSubview(separator2)
 
