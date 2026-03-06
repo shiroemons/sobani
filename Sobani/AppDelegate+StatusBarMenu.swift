@@ -19,20 +19,16 @@ extension AppDelegate {
         guard menu === statusItem?.menu else { return }
         menu.removeAllItems()
 
+        // About & Update
         let aboutItem = NSMenuItem(title: L("menu.about"), action: #selector(showAbout), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
         menu.addItem(buildUpdateMenuItem())
-        let loginItem = NSMenuItem(
-            title: L("menu.launch_at_login"),
-            action: #selector(toggleLaunchAtLogin),
-            keyEquivalent: ""
-        )
-        loginItem.target = self
-        loginItem.state = LaunchAtLoginManager.shared.isEnabled ? .on : .off
-        menu.addItem(loginItem)
 
         menu.addItem(NSMenuItem.separator())
+
+        // 画像を追加表示 & 表示中
+        menu.addItem(buildNewWindowMenuItem())
 
         let countItem = NSMenuItem(
             title: areWindowsHidden
@@ -48,12 +44,10 @@ extension AppDelegate {
             countItem.isEnabled = false
         }
         menu.addItem(countItem)
+
         menu.addItem(NSMenuItem.separator())
 
-        let bringFrontItem = NSMenuItem(title: L("window.bring_to_front"), action: #selector(bringAllToFront), keyEquivalent: "f")
-        bringFrontItem.target = self
-        menu.addItem(bringFrontItem)
-
+        // 操作グループ
         let toggleTitle = areWindowsHidden ? L("window.show_all") : L("window.hide_all")
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleAllWindowsVisibility), keyEquivalent: "h")
         toggleItem.keyEquivalentModifierMask = [.option]
@@ -61,31 +55,25 @@ extension AppDelegate {
         toggleItem.isEnabled = !characterWindows.isEmpty
         menu.addItem(toggleItem)
 
-        menu.addItem(buildResetRotationMenuItem())
-        menu.addItem(buildResetOpacityMenuItem())
+        let bringFrontItem = NSMenuItem(title: L("window.bring_to_front"), action: #selector(bringAllToFront), keyEquivalent: "f")
+        bringFrontItem.target = self
+        menu.addItem(bringFrontItem)
+
+        menu.addItem(buildLayoutMenuItem())
+
         menu.addItem(NSMenuItem.separator())
 
-        menu.addItem(buildNewWindowMenuItem())
+        // リセット & 閉じる
+        menu.addItem(buildBulkResetMenuItem())
 
         let closeAllItem = NSMenuItem(title: L("menu.close_all"), action: #selector(closeAllWindows), keyEquivalent: "")
         closeAllItem.target = self
         menu.addItem(closeAllItem)
-        menu.addItem(buildLayoutMenuItem())
-        menu.addItem(NSMenuItem.separator())
-
-        let changeDefaultItem = NSMenuItem(title: L("image.default_change"), action: #selector(changeDefaultImageFromMenu), keyEquivalent: "")
-        changeDefaultItem.target = self
-        menu.addItem(changeDefaultItem)
-
-        if ImageManager.shared.hasCustomDefault {
-            let resetDefaultItem = NSMenuItem(title: L("image.default_reset_action"), action: #selector(resetDefaultImage), keyEquivalent: "")
-            resetDefaultItem.target = self
-            menu.addItem(resetDefaultItem)
-        }
 
         menu.addItem(NSMenuItem.separator())
 
-        menu.addItem(buildLanguageMenuItem())
+        // 設定 & ガイド
+        menu.addItem(buildSettingsMenuItem())
 
         let onboardingItem = NSMenuItem(
             title: L("menu.show_onboarding"),
@@ -152,6 +140,23 @@ extension AppDelegate {
         )
         item.target = self
         item.isEnabled = hasOpacity
+        return item
+    }
+
+    func buildBulkResetMenuItem() -> NSMenuItem {
+        let item = NSMenuItem(title: L("menu.bulk_reset"), action: nil, keyEquivalent: "")
+        item.tag = MenuItemTag.bulkResetSubmenu.rawValue
+        let submenu = NSMenu()
+
+        let rotationItem = buildResetRotationMenuItem()
+        submenu.addItem(rotationItem)
+
+        let opacityItem = buildResetOpacityMenuItem()
+        submenu.addItem(opacityItem)
+
+        item.submenu = submenu
+        // 両方 disabled なら親も disabled
+        item.isEnabled = rotationItem.isEnabled || opacityItem.isEnabled
         return item
     }
 
@@ -467,6 +472,48 @@ extension AppDelegate {
         }
         languageItem.submenu = languageSubmenu
         return languageItem
+    }
+
+    func buildSettingsMenuItem() -> NSMenuItem {
+        let item = NSMenuItem(title: L("menu.settings"), action: nil, keyEquivalent: "")
+        item.tag = MenuItemTag.settingsSubmenu.rawValue
+        let submenu = NSMenu()
+
+        let loginItem = NSMenuItem(
+            title: L("menu.launch_at_login"),
+            action: #selector(toggleLaunchAtLogin),
+            keyEquivalent: ""
+        )
+        loginItem.target = self
+        loginItem.state = LaunchAtLoginManager.shared.isEnabled ? .on : .off
+        submenu.addItem(loginItem)
+
+        submenu.addItem(NSMenuItem.separator())
+
+        let changeDefaultItem = NSMenuItem(
+            title: L("image.default_change"),
+            action: #selector(changeDefaultImageFromMenu),
+            keyEquivalent: ""
+        )
+        changeDefaultItem.target = self
+        submenu.addItem(changeDefaultItem)
+
+        if ImageManager.shared.hasCustomDefault {
+            let resetDefaultItem = NSMenuItem(
+                title: L("image.default_reset_action"),
+                action: #selector(resetDefaultImage),
+                keyEquivalent: ""
+            )
+            resetDefaultItem.target = self
+            submenu.addItem(resetDefaultItem)
+        }
+
+        submenu.addItem(NSMenuItem.separator())
+
+        submenu.addItem(buildLanguageMenuItem())
+
+        item.submenu = submenu
+        return item
     }
 
     @objc func changeLanguage(_ sender: NSMenuItem) {

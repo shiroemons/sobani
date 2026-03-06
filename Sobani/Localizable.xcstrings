@@ -81,6 +81,22 @@
         }
       }
     },
+    "menu.bulk_reset": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一括リセット"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset All"
+          }
+        }
+      }
+    },
     "menu.launch_at_login": {
       "localizations": {
         "ja": {
@@ -2525,6 +2541,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Update \"%@\" with the current layout?"
+          }
+        }
+      }
+    },
+    "menu.settings": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
           }
         }
       }
