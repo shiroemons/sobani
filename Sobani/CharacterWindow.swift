@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 // Rotation expands the window beyond the image bounds.
 // Always delegate hit testing to imageView so the entire window area remains interactive.
-private class RotatableContainer: NSView {
+private final class RotatableContainer: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? {
         return subviews.first ?? super.hitTest(point)
     }

@@ -1,4 +1,5 @@
 import Cocoa
+import os.log
 
 // MARK: - Adjustment Panel Delegate
 
@@ -24,7 +25,7 @@ protocol AdjustmentPanelDelegate: AnyObject {
 
 // MARK: - Rotation Dial View
 
-class RotationDialView: NSView {
+final class RotationDialView: NSView {
     private let scrollSensitivity: CGFloat = AppConstants.dialScrollSensitivity
     var angle: CGFloat = 0 {
         didSet { needsDisplay = true }
@@ -141,6 +142,7 @@ struct AdjustmentPanelState {
 // MARK: - Adjustment Panel Controller
 
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
+    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220
     private static let panelHeight: CGFloat = 460
 
