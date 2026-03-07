@@ -193,6 +193,29 @@ import Testing
 
     // MARK: - Edge Case Tests
 
+    /// 空文字名のプリセット保存が"unnamed"フォールバックで動作することを検証
+    @Test func savePreset_EmptyName_UsesUnnamedFallback() {
+        let states = [makeState(imageName: "test.png")]
+        presetManager.savePreset(name: "", states: states)
+
+        // sanitizedFileName returns "unnamed" for empty string
+        let loaded = presetManager.loadPreset(named: "")
+        #expect(loaded != nil)
+        #expect(loaded?.name == "")
+        #expect(loaded?.states == states)
+    }
+
+    /// ドット名のプリセットが"unnamed"フォールバックで安全に保存されることを検証
+    @Test func savePreset_DotName_UsesUnnamedFallback() {
+        let states = [makeState(imageName: "dot.png")]
+        presetManager.savePreset(name: ".", states: states)
+
+        let loaded = presetManager.loadPreset(named: ".")
+        #expect(loaded != nil)
+        #expect(loaded?.name == ".")
+        #expect(loaded?.states == states)
+    }
+
     /// 空のWindowState配列を持つプリセットが正しく保存・読み込みされることを検証
     @Test func emptyStatesArray() {
         presetManager.savePreset(name: "EmptyPreset", states: [])
