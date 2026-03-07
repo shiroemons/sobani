@@ -467,6 +467,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.Sobani;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -490,6 +491,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.Sobani;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -506,6 +508,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.SobaniTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sobani.app/Contents/MacOS/Sobani";
 			};
@@ -523,6 +526,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.SobaniTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sobani.app/Contents/MacOS/Sobani";
 			};
