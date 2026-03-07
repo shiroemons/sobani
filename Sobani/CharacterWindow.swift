@@ -13,6 +13,7 @@ private final class RotatableContainer: NSView {
 
 // MARK: - Character Window
 
+@MainActor
 final class CharacterWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
     let imageView: DraggableImageView

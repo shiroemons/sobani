@@ -25,6 +25,7 @@ protocol AdjustmentPanelDelegate: AnyObject {
 
 // MARK: - Rotation Dial View
 
+@MainActor
 final class RotationDialView: NSView {
     private static let outerPadding: CGFloat = 4
     private static let tickInnerOffset: CGFloat = 6
@@ -203,6 +204,7 @@ private enum PositionSizeLayout {
 
 // MARK: - Adjustment Panel Controller
 
+@MainActor
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220

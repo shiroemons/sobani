@@ -159,7 +159,7 @@ final class WindowStateManager {
         return states
     }
 
-    static func captureState(from charWindow: CharacterWindow) -> WindowState {
+    @MainActor static func captureState(from charWindow: CharacterWindow) -> WindowState {
         let windowCenter = NSPoint(x: charWindow.window.frame.midX, y: charWindow.window.frame.midY)
         let baseWidth = charWindow.imageView.frame.width
         let baseHeight = charWindow.imageView.frame.height

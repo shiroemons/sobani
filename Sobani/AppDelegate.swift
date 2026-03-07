@@ -4,6 +4,7 @@ import os.log
 
 // MARK: - App Delegate
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AppDelegate")
     var characterWindows: [CharacterWindow] = []

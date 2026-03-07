@@ -1,6 +1,7 @@
 import Cocoa
 import os.log
 
+@MainActor
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private var panel: NSPanel?
     private var contentContainer: NSView?

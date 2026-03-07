@@ -403,7 +403,7 @@ final class UpdateManager {
     // MARK: - Restart App
 
     // 独立した子プロセスで終了を待ってから再起動
-    private func restartApp(at appURL: URL) {
+    @MainActor private func restartApp(at appURL: URL) {
         let pid = ProcessInfo.processInfo.processIdentifier
         let appPath = appURL.path
 
