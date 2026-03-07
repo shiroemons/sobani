@@ -33,59 +33,22 @@ struct BackgroundRemovalManagerTests {
 
     // MARK: - Error Description Tests
 
-    /// CGImage変換失敗エラーの説明文が空でなくローカライズ済みであることを検証
-    @Test func cgImageConversionFailedErrorDescription() throws {
+    /// 全エラーケースの説明文が空でなくローカライズ済みであることを検証
+    @Test func errorDescription_AllCasesNonEmptyAndLocalized() throws {
         guard #available(macOS 14.0, *) else { return }
-        let error = BackgroundRemovalError.cgImageConversionFailed
-        let description = try #require(error.errorDescription)
-        #expect(!description.isEmpty)
-        // ローカライズキーがそのまま返されていないことを確認
-        #expect(!description.hasPrefix("background_removal.error."),
-                "errorDescription should be a localized string, not the key itself")
-    }
-
-    /// 前景未検出エラーの説明文が空でなくローカライズ済みであることを検証
-    @Test func noForegroundDetectedErrorDescription() throws {
-        guard #available(macOS 14.0, *) else { return }
-        let error = BackgroundRemovalError.noForegroundDetected
-        let description = try #require(error.errorDescription)
-        #expect(!description.isEmpty)
-        // ローカライズキーがそのまま返されていないことを確認
-        #expect(!description.hasPrefix("background_removal.error."),
-                "errorDescription should be a localized string, not the key itself")
-    }
-
-    /// マスク生成失敗エラーの説明文が空でなくローカライズ済みであることを検証
-    @Test func maskGenerationFailedErrorDescription() throws {
-        guard #available(macOS 14.0, *) else { return }
-        let error = BackgroundRemovalError.maskGenerationFailed
-        let description = try #require(error.errorDescription)
-        #expect(!description.isEmpty)
-        // ローカライズキーがそのまま返されていないことを確認
-        #expect(!description.hasPrefix("background_removal.error."),
-                "errorDescription should be a localized string, not the key itself")
-    }
-
-    /// フィルタ出力失敗エラーの説明文が空でなくローカライズ済みであることを検証
-    @Test func filterOutputFailedErrorDescription() throws {
-        guard #available(macOS 14.0, *) else { return }
-        let error = BackgroundRemovalError.filterOutputFailed
-        let description = try #require(error.errorDescription)
-        #expect(!description.isEmpty)
-        // ローカライズキーがそのまま返されていないことを確認
-        #expect(!description.hasPrefix("background_removal.error."),
-                "errorDescription should be a localized string, not the key itself")
-    }
-
-    /// 最終画像変換失敗エラーの説明文が空でなくローカライズ済みであることを検証
-    @Test func finalImageConversionFailedErrorDescription() throws {
-        guard #available(macOS 14.0, *) else { return }
-        let error = BackgroundRemovalError.finalImageConversionFailed
-        let description = try #require(error.errorDescription)
-        #expect(!description.isEmpty)
-        // ローカライズキーがそのまま返されていないことを確認
-        #expect(!description.hasPrefix("background_removal.error."),
-                "errorDescription should be a localized string, not the key itself")
+        let allErrors: [BackgroundRemovalError] = [
+            .cgImageConversionFailed,
+            .noForegroundDetected,
+            .maskGenerationFailed,
+            .filterOutputFailed,
+            .finalImageConversionFailed,
+        ]
+        for error in allErrors {
+            let description = try #require(error.errorDescription)
+            #expect(!description.isEmpty)
+            #expect(!description.hasPrefix("background_removal.error."),
+                    "errorDescription should be a localized string, not the key itself: \(error)")
+        }
     }
 
     // MARK: - removeBackground Tests
@@ -118,5 +81,18 @@ struct BackgroundRemovalManagerTests {
                 continuation.resume(returning: result)
             }
         }
+    }
+
+    /// removeBackgroundの完了コールバックがメインスレッドで呼ばれることを検証
+    @Test func removeBackground_CompletionOnMainThread() async {
+        guard #available(macOS 14.0, *) else { return }
+        let emptyImage = NSImage()
+
+        let isMainThread: Bool = await withCheckedContinuation { continuation in
+            BackgroundRemovalManager.shared.removeBackground(from: emptyImage) { _ in
+                continuation.resume(returning: Thread.isMainThread)
+            }
+        }
+        #expect(isMainThread, "Completion should be called on main thread")
     }
 }

@@ -160,4 +160,29 @@ import os.log
         let menu = NSMenu()
         #expect(menu.item(withMenuTag: .quit) == nil)
     }
+
+    // MARK: - L() ローカライズヘルパーテスト
+
+    /// L()が空でない文字列を返すことを検証
+    @Test func localizeHelper_ReturnsNonEmptyString() {
+        let result = L("dialog.select")
+        #expect(!result.isEmpty)
+    }
+
+    /// L()に空キーを渡した場合に空文字列が返されることを検証
+    @Test func localizeHelper_HandlesEmptyKey() {
+        let result = L("")
+        #expect(result.isEmpty)
+    }
+
+    /// makeOpenPanelの5つのUTTypeが全て含まれていることを検証
+    @MainActor @Test func imageFileDialog_AllContentTypesPresent() {
+        let panel = ImageFileDialog.makeOpenPanel()
+        let types = panel.allowedContentTypes
+        #expect(types.contains(.png))
+        #expect(types.contains(.jpeg))
+        #expect(types.contains(.gif))
+        #expect(types.contains(.tiff))
+        #expect(types.contains(.heic))
+    }
 }

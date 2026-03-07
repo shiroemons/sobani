@@ -87,4 +87,29 @@ import Testing
         #expect(!result.contains("?"))
         #expect(result == "test_file_name")
     }
+
+    /// 日本語ファイル名が正しく処理されることを検証
+    @Test func safeNameWithUnicodeCharacters() {
+        let result = PathSanitizer.safeName(from: "テスト画像")
+        #expect(result == "テスト画像")
+    }
+
+    /// 空白のみの名前が有効な文字として処理されることを検証
+    @Test func safeNameWithWhitespaceOnly() {
+        let result = PathSanitizer.safeName(from: "   ")
+        #expect(result != nil)
+    }
+
+    /// 無効文字のみで構成された名前がアンダースコアに置換されることを検証
+    @Test func safeNameWithOnlyInvalidCharacters() {
+        let result = PathSanitizer.safeName(from: "///:::")
+        #expect(result != nil)
+        #expect(result == "______")
+    }
+
+    /// ドットドットのsafeURLがnilを返すことを検証
+    @Test func safeURLWithDoubleDot() {
+        let dir = URL(fileURLWithPath: "/tmp/test")
+        #expect(PathSanitizer.safeURL(name: "..", in: dir) == nil)
+    }
 }
