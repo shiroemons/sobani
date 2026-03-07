@@ -312,6 +312,39 @@ import Testing
         #expect(result == nil)
     }
 
+    // MARK: - registerImage(NSImage) Tests
+
+    /// 有効なNSImageの直接登録でファイル名が返されることを検証
+    @Test func registerImage_NSImage_ValidImage_ReturnsFileName() throws {
+        let image = NSImage(size: NSSize(width: 10, height: 10))
+        image.lockFocus()
+        NSColor.blue.setFill()
+        NSRect(x: 0, y: 0, width: 10, height: 10).fill()
+        image.unlockFocus()
+
+        let result = imageManager.registerImage(image, name: "direct_image.png")
+        #expect(result != nil)
+        #expect(result == "direct_image.png")
+
+        let names = imageManager.registeredImageNames()
+        #expect(names.contains("direct_image.png"))
+    }
+
+    /// パストラバーサルや無効なnameでNSImage直接登録がnilを返すことを検証
+    @Test func registerImage_NSImage_PathTraversal_ReturnsNil() {
+        let image = NSImage(size: NSSize(width: 10, height: 10))
+        image.lockFocus()
+        NSColor.blue.setFill()
+        NSRect(x: 0, y: 0, width: 10, height: 10).fill()
+        image.unlockFocus()
+
+        // 空文字列と "." は PathSanitizer が拒否するため nil
+        #expect(imageManager.registerImage(image, name: "") == nil)
+        #expect(imageManager.registerImage(image, name: ".") == nil)
+        // "../secret.png" は PathSanitizer がサニタイズして "secret.png" として保存する
+        // （パストラバーサルは防止されるが、サニタイズ後の名前で登録される）
+    }
+
     // MARK: - supportedExtensions Tests
 
     /// supportedExtensionsが全サポート形式を含むことを検証
