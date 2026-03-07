@@ -94,30 +94,33 @@ import Testing
 
     // MARK: - purgeExpired
 
-    /// タイムアウト超過のエントリがパージされることを検証
-    @Test func purgeExpiredRemovesOldEntries() {
+    /// タイムアウト境界値でエントリの保持・パージが正しく動作することを検証
+    @Test(arguments: [
+        (0.0, true),
+        (299.0, true),
+        (300.0, true),
+        (301.0, false),
+        (600.0, false)
+    ])
+    func purgeExpiredBoundary(elapsed: Double, shouldKeep: Bool) {
         let baseDate = Date()
         manager.currentDate = { baseDate }
-        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(
+            windowId: 1,
+            originalState: makeState(),
+            displayID: 0,
+            adjustedOriginX: 50,
+            adjustedOriginY: 60
+        )
 
-        // Advance time past timeout
-        manager.currentDate = { baseDate.addingTimeInterval(301) }
+        manager.currentDate = { baseDate.addingTimeInterval(elapsed) }
         manager.purgeExpired()
 
-        #expect(manager.pendingRestorations.isEmpty)
-    }
-
-    /// タイムアウト内のエントリが保持されることを検証
-    @Test func purgeExpiredKeepsRecentEntries() {
-        let baseDate = Date()
-        manager.currentDate = { baseDate }
-        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
-
-        // Advance time but stay within timeout
-        manager.currentDate = { baseDate.addingTimeInterval(299) }
-        manager.purgeExpired()
-
-        #expect(manager.pendingRestorations.count == 1)
+        if shouldKeep {
+            #expect(manager.pendingRestorations.count == 1)
+        } else {
+            #expect(manager.pendingRestorations.isEmpty)
+        }
     }
 
     // MARK: - restorableEntries
