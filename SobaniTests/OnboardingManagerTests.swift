@@ -45,6 +45,15 @@ import Testing
         #expect(!manager.shouldShowOnboarding)
     }
 
+    /// 将来バージョンで完了済みの場合に表示不要と判定されることを検証
+    @Test func shouldShowOnboarding_futureVersion() {
+        testDefaults.set(
+            AppConstants.Onboarding.currentVersion + 1,
+            forKey: AppConstants.Onboarding.completedVersionKey
+        )
+        #expect(!manager.shouldShowOnboarding)
+    }
+
     /// 完了マークで正しいバージョン番号が保存されることを検証
     @Test func markCompleted_setsCorrectVersion() {
         manager.markCompleted()
