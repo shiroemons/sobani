@@ -219,27 +219,31 @@ import Testing
         #expect(name2 == "photo_1.png")
     }
 
-    /// サポート外の拡張子でnilが返され登録されないことを検証
-    @Test func registerImage_UnsupportedExtension_ReturnsNil() throws {
+    /// サポート対象の拡張子で画像が正常に登録されることを検証
+    @Test(arguments: ["png", "jpg", "jpeg", "gif", "tiff", "heic"])
+    func registerImage_SupportedExtension_Succeeds(ext: String) throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        // Create files with unsupported extensions
-        let txtURL = sourceDir.appendingPathComponent("document.txt")
-        try "not an image".write(to: txtURL, atomically: true, encoding: .utf8)
+        let data = try createTestPNGData()
+        let url = sourceDir.appendingPathComponent("testimage.\(ext)")
+        try data.write(to: url)
 
-        let pdfURL = sourceDir.appendingPathComponent("document.pdf")
-        try "not an image".write(to: pdfURL, atomically: true, encoding: .utf8)
+        let result = imageManager.registerImage(from: url)
+        #expect(result != nil, "拡張子 .\(ext) の登録が成功すべき")
+        #expect(result == "testimage.\(ext)")
+    }
 
-        let svgURL = sourceDir.appendingPathComponent("image.svg")
-        try "<svg></svg>".write(to: svgURL, atomically: true, encoding: .utf8)
+    /// サポート外の拡張子でnilが返されることを検証
+    @Test(arguments: ["txt", "pdf", "svg", "bmp", "webp"])
+    func registerImage_UnsupportedExtension_ReturnsNil(ext: String) throws {
+        let sourceDir = try createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
 
-        #expect(imageManager.registerImage(from: txtURL) == nil)
-        #expect(imageManager.registerImage(from: pdfURL) == nil)
-        #expect(imageManager.registerImage(from: svgURL) == nil)
+        let url = sourceDir.appendingPathComponent("document.\(ext)")
+        try "not an image".write(to: url, atomically: true, encoding: .utf8)
 
-        // Verify nothing was registered
-        #expect(imageManager.registeredImageNames() == [])
+        #expect(imageManager.registerImage(from: url) == nil, "拡張子 .\(ext) の登録は拒否すべき")
     }
 
     // MARK: - Custom Default Tests
