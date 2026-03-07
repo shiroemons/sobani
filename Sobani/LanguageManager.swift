@@ -25,11 +25,12 @@ final class LanguageManager {
 
     private static let userDefaultsKey = "AppLanguage"
     private static let appleLanguagesKey = "AppleLanguages"
+    private let defaults: UserDefaults
     private(set) var currentBundle: Bundle?
 
     var currentLanguage: Language {
         get {
-            guard let raw = UserDefaults.standard.string(forKey: Self.userDefaultsKey),
+            guard let raw = defaults.string(forKey: Self.userDefaultsKey),
                   let lang = Language(rawValue: raw) else {
                 return .system
             }
@@ -37,11 +38,11 @@ final class LanguageManager {
         }
         set {
             if newValue == .system {
-                UserDefaults.standard.removeObject(forKey: Self.userDefaultsKey)
-                UserDefaults.standard.removeObject(forKey: Self.appleLanguagesKey)
+                defaults.removeObject(forKey: Self.userDefaultsKey)
+                defaults.removeObject(forKey: Self.appleLanguagesKey)
             } else {
-                UserDefaults.standard.set(newValue.rawValue, forKey: Self.userDefaultsKey)
-                UserDefaults.standard.set([newValue.rawValue], forKey: Self.appleLanguagesKey)
+                defaults.set(newValue.rawValue, forKey: Self.userDefaultsKey)
+                defaults.set([newValue.rawValue], forKey: Self.appleLanguagesKey)
             }
             updateBundle()
             NotificationCenter.default.post(name: .languageDidChange, object: nil)
@@ -49,12 +50,13 @@ final class LanguageManager {
     }
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
-    init() {
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         // Restore AppleLanguages from saved preference on launch
         // This must happen before any UI is loaded so system strings respect the language
-        if let raw = UserDefaults.standard.string(forKey: Self.userDefaultsKey),
+        if let raw = defaults.string(forKey: Self.userDefaultsKey),
            let lang = Language(rawValue: raw), lang != .system {
-            UserDefaults.standard.set([lang.rawValue], forKey: Self.appleLanguagesKey)
+            defaults.set([lang.rawValue], forKey: Self.appleLanguagesKey)
         }
         updateBundle()
     }
