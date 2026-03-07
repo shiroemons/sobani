@@ -95,6 +95,7 @@ enum UpdateErrorCode: String, CaseIterable, Sendable {
 
 // MARK: - Update Manager Delegate
 
+@MainActor
 protocol UpdateManagerDelegate: AnyObject {
     func updateManager(_ manager: UpdateManager, didChangeState state: UpdateState)
 }

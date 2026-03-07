@@ -4,6 +4,7 @@ import os.log
 // MARK: - Adjustment Panel Delegate
 
 /// 調整パネルでの変更を CharacterWindow に通知するプロトコル
+@MainActor
 protocol AdjustmentPanelDelegate: AnyObject {
     /// 回転角度が変更された
     func rotationPanel(_ panel: AdjustmentPanelController, didChangeAngle angle: CGFloat)

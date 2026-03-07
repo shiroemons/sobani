@@ -364,6 +364,7 @@ extension CharacterWindow: AdjustmentPanelDelegate {
 // MARK: - Character Window Delegate
 
 /// CharacterWindow からのイベントを AppDelegate に通知するプロトコル
+@MainActor
 protocol CharacterWindowDelegate: AnyObject {
     /// 新しいウィンドウの作成を要求する
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
