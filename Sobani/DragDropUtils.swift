@@ -1,5 +1,6 @@
 import Cocoa
 
+@MainActor
 enum DragDropUtils {
     static func extractImageURLs(from draggingInfo: NSDraggingInfo) -> [URL] {
         // NSURL はドラッグ&ドロップ API に必要
