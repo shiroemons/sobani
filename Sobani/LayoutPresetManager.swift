@@ -112,4 +112,30 @@ final class LayoutPresetManager {
         guard let url = presetFileURL(for: name) else { return false }
         return FileManager.default.fileExists(atPath: url.path)
     }
+
+    func renamePreset(from oldName: String, to newName: String) -> Bool {
+        guard let oldPreset = loadPreset(named: oldName) else {
+            logger.error("Failed to rename layout preset: '\(oldName)' not found")
+            return false
+        }
+        guard let newURL = presetFileURL(for: newName) else { return false }
+        let renamedPreset = LayoutPreset(name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        encoder.dateEncodingStrategy = .iso8601
+        do {
+            let data = try encoder.encode(renamedPreset)
+            try data.write(to: newURL, options: .atomic)
+        } catch {
+            logger.error("Failed to save renamed layout preset: \(error.localizedDescription)")
+            return false
+        }
+        // Only delete old file if sanitized file names differ
+        let oldFileName = sanitizedFileName(for: oldName)
+        let newFileName = sanitizedFileName(for: newName)
+        if oldFileName != newFileName {
+            deletePreset(named: oldName)
+        }
+        return true
+    }
 }

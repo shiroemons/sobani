@@ -164,6 +164,7 @@ enum MenuItemTag: Int {
     case createLayout = 1027
     case settingsSubmenu = 1028
     case bulkResetSubmenu = 1029
+    case renameLayout = 1030
 }
 
 enum ImageFileDialog {
