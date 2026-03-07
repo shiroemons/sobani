@@ -21,16 +21,11 @@ import Testing
         #expect(result.path.hasPrefix(dir.path + "/"))
     }
 
-    /// 空文字列でnilが返されることを検証
-    @Test func safeURLRejectsEmptyName() {
+    /// safeURLが無効な名前でnilを返すことを検証
+    @Test(arguments: ["", ".", ".."])
+    func safeURLRejectsInvalidName(name: String) {
         let dir = URL(fileURLWithPath: "/tmp/test")
-        #expect(PathSanitizer.safeURL(name: "", in: dir) == nil)
-    }
-
-    /// ドット1つでnilが返されることを検証
-    @Test func safeURLRejectsDot() {
-        let dir = URL(fileURLWithPath: "/tmp/test")
-        #expect(PathSanitizer.safeURL(name: ".", in: dir) == nil)
+        #expect(PathSanitizer.safeURL(name: name, in: dir) == nil)
     }
 
     /// サブディレクトリ指定でlastPathComponentのみが使用されることを検証
@@ -57,19 +52,10 @@ import Testing
         #expect(result == "my_layout_test")
     }
 
-    /// 空文字列でnilが返されることを検証
-    @Test func safeNameRejectsEmpty() {
-        #expect(PathSanitizer.safeName(from: "") == nil)
-    }
-
-    /// ドット1つでnilが返されることを検証
-    @Test func safeNameRejectsDot() {
-        #expect(PathSanitizer.safeName(from: ".") == nil)
-    }
-
-    /// ドット2つでnilが返されることを検証
-    @Test func safeNameRejectsDoubleDot() {
-        #expect(PathSanitizer.safeName(from: "..") == nil)
+    /// safeNameが無効な名前でnilを返すことを検証
+    @Test(arguments: ["", ".", ".."])
+    func safeNameRejectsInvalidName(name: String) {
+        #expect(PathSanitizer.safeName(from: name) == nil)
     }
 
     /// パストラバーサル文字列が無害化されパス区切り文字を含まないことを検証
@@ -107,9 +93,4 @@ import Testing
         #expect(result == "______")
     }
 
-    /// ドットドットのsafeURLがnilを返すことを検証
-    @Test func safeURLWithDoubleDot() {
-        let dir = URL(fileURLWithPath: "/tmp/test")
-        #expect(PathSanitizer.safeURL(name: "..", in: dir) == nil)
-    }
 }
