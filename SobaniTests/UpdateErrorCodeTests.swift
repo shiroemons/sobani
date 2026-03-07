@@ -34,14 +34,7 @@ import Testing
 
     /// すべてのエラーコードが一意のrawValueを持つことを検証
     @Test func updateErrorCode_AllCodesAreUnique() {
-        let allCodes: [UpdateErrorCode] = [
-            .networkError, .fetchError, .parseError,
-            .downloadError, .fileNotFound, .checksumFailed,
-            .zipExtractFailed, .zipAppNotFound, .zipPrepareFailed,
-            .dmgMountFailed, .dmgAppNotFound, .dmgPrepareFailed,
-            .locationError, .backupFailed, .installFailed
-        ]
-        let rawValues = allCodes.map { $0.rawValue }
+        let rawValues = UpdateErrorCode.allCases.map { $0.rawValue }
         #expect(rawValues.count == Set(rawValues).count, "All error codes must have unique raw values")
     }
 
@@ -58,37 +51,14 @@ import Testing
         }
     }
 
-    // MARK: - TroubleshootingKey Tests
+    // MARK: - TroubleshootingKey Parameterized Tests
 
-    /// すべてのエラーコードが空でないトラブルシューティングキーを持つことを検証
-    @Test func troubleshootingKey_allCodesReturnNonEmptyKey() {
-        let allCodes: [UpdateErrorCode] = [
-            .networkError, .fetchError, .parseError,
-            .downloadError, .fileNotFound, .checksumFailed,
-            .zipExtractFailed, .zipAppNotFound, .zipPrepareFailed,
-            .dmgMountFailed, .dmgAppNotFound, .dmgPrepareFailed,
-            .locationError, .backupFailed, .installFailed
-        ]
-
-        for code in allCodes {
-            #expect(!code.troubleshootingKey.isEmpty, "\(code) should have a non-empty troubleshootingKey")
-        }
-    }
-
-    /// トラブルシューティングキーにエラーコードのrawValueが含まれることを検証
-    @Test func troubleshootingKey_containsErrorCode() {
-        let allCodes: [UpdateErrorCode] = [
-            .networkError, .fetchError, .parseError,
-            .downloadError, .fileNotFound, .checksumFailed,
-            .zipExtractFailed, .zipAppNotFound, .zipPrepareFailed,
-            .dmgMountFailed, .dmgAppNotFound, .dmgPrepareFailed,
-            .locationError, .backupFailed, .installFailed
-        ]
-
-        for code in allCodes {
-            #expect(code.troubleshootingKey.contains(code.rawValue),
-                    "\(code).troubleshootingKey should contain \(code.rawValue)")
-        }
+    /// すべてのエラーコードが空でないトラブルシューティングキーを持ち、rawValueを含むことを検証
+    @Test(arguments: UpdateErrorCode.allCases)
+    func troubleshootingKey_NonEmptyAndContainsCode(code: UpdateErrorCode) {
+        #expect(!code.troubleshootingKey.isEmpty, "\(code) should have a non-empty troubleshootingKey")
+        #expect(code.troubleshootingKey.contains(code.rawValue),
+                "\(code).troubleshootingKey should contain \(code.rawValue)")
     }
 
     /// 各フェーズの代表的なトラブルシューティングキーが正しい値であることを検証
@@ -102,16 +72,7 @@ import Testing
 
     /// すべてのトラブルシューティングキーが一意であることを検証
     @Test func troubleshootingKey_allCodesHaveUniqueKeys() {
-        let allCodes: [UpdateErrorCode] = [
-            .networkError, .fetchError, .parseError,
-            .downloadError, .fileNotFound, .checksumFailed,
-            .zipExtractFailed, .zipAppNotFound, .zipPrepareFailed,
-            .dmgMountFailed, .dmgAppNotFound, .dmgPrepareFailed,
-            .locationError, .backupFailed, .installFailed
-        ]
-
-        let keys = allCodes.map { $0.troubleshootingKey }
-        let uniqueKeys = Set(keys)
-        #expect(keys.count == uniqueKeys.count, "All troubleshootingKeys should be unique")
+        let keys = UpdateErrorCode.allCases.map { $0.troubleshootingKey }
+        #expect(keys.count == Set(keys).count, "All troubleshootingKeys should be unique")
     }
 }

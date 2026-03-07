@@ -4,57 +4,24 @@ import Testing
 
 /// サポート対象の画像フォーマット判定を検証するテスト
 @Suite struct DragDropUtilsTests {
-    // MARK: - isSupportedImageURL Tests
+    // MARK: - isSupportedImageURL Parameterized Tests
 
-    /// PNG形式がサポート対象と判定されることを検証
-    @Test func isSupportedImageURL_PNG() {
-        let url = URL(fileURLWithPath: "/tmp/test.png")
-        #expect(DragDropUtils.isSupportedImageURL(url))
+    /// サポート対象の各拡張子がtrueを返すことを検証
+    @Test(arguments: ["png", "jpg", "jpeg", "gif", "tiff", "heic"])
+    func isSupportedImageURL_SupportedFormats(ext: String) {
+        #expect(DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.\(ext)")))
     }
 
-    /// JPEG形式がサポート対象と判定されることを検証
-    @Test func isSupportedImageURL_JPEG() {
-        let url = URL(fileURLWithPath: "/tmp/test.jpeg")
-        #expect(DragDropUtils.isSupportedImageURL(url))
-    }
-
-    /// JPG形式がサポート対象と判定されることを検証
-    @Test func isSupportedImageURL_JPG() {
-        let url = URL(fileURLWithPath: "/tmp/test.jpg")
-        #expect(DragDropUtils.isSupportedImageURL(url))
-    }
-
-    /// GIF形式がサポート対象と判定されることを検証
-    @Test func isSupportedImageURL_GIF() {
-        let url = URL(fileURLWithPath: "/tmp/test.gif")
-        #expect(DragDropUtils.isSupportedImageURL(url))
-    }
-
-    /// TIFF形式がサポート対象と判定されることを検証
-    @Test func isSupportedImageURL_TIFF() {
-        let url = URL(fileURLWithPath: "/tmp/test.tiff")
-        #expect(DragDropUtils.isSupportedImageURL(url))
-    }
-
-    /// HEIC形式がサポート対象と判定されることを検証
-    @Test func isSupportedImageURL_HEIC() {
-        let url = URL(fileURLWithPath: "/tmp/test.heic")
-        #expect(DragDropUtils.isSupportedImageURL(url))
-    }
-
-    /// 非サポート形式(txt, pdf, svg, bmp)が拒否されることを検証
-    @Test func isSupportedImageURL_UnsupportedFormat() {
-        #expect(!DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.txt")))
-        #expect(!DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.pdf")))
-        #expect(!DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.svg")))
-        #expect(!DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.bmp")))
+    /// 非サポート形式がfalseを返すことを検証
+    @Test(arguments: ["txt", "pdf", "svg", "bmp"])
+    func isSupportedImageURL_UnsupportedFormats(ext: String) {
+        #expect(!DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.\(ext)")))
     }
 
     /// 拡張子の大文字小文字を区別しないことを検証
-    @Test func isSupportedImageURL_CaseInsensitive() {
-        #expect(DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.PNG")))
-        #expect(DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.Jpeg")))
-        #expect(DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.HEIC")))
+    @Test(arguments: ["PNG", "Jpeg", "HEIC"])
+    func isSupportedImageURL_CaseInsensitive(ext: String) {
+        #expect(DragDropUtils.isSupportedImageURL(URL(fileURLWithPath: "/tmp/test.\(ext)")))
     }
 
     // MARK: - filterSupportedImages Tests

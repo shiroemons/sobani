@@ -44,6 +44,7 @@
 		F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UW000001000000000001 /* UnconstrainedWindow.swift */; };
 		F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0IP000001000000000001 /* ImagePreviewPanel.swift */; };
 		F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PS000003000000000001 /* PathSanitizerTests.swift */; };
+		E1F2A3B4C5D6E7F8A9B0C1D2 /* WakeRestorationContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */; };
 		F0CT000002000000000001 /* ConstantsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CT000001000000000001 /* ConstantsTests.swift */; };
 		F0UM000002000000000001 /* UpdateManagerExtendedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */; };
 		F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LR000001000000000001 /* LayoutPresetRenameTests.swift */; };
@@ -102,6 +103,7 @@
 		F0UW000001000000000001 /* UnconstrainedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnconstrainedWindow.swift; sourceTree = "<group>"; };
 		F0IP000001000000000001 /* ImagePreviewPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanel.swift; sourceTree = "<group>"; };
 		F0PS000003000000000001 /* PathSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizerTests.swift; sourceTree = "<group>"; };
+		D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContextTests.swift; sourceTree = "<group>"; };
 		F0CT000001000000000001 /* ConstantsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConstantsTests.swift; sourceTree = "<group>"; };
 		F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerExtendedTests.swift; sourceTree = "<group>"; };
 		F0LR000001000000000001 /* LayoutPresetRenameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetRenameTests.swift; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
 				F0OB000005000000000001 /* OnboardingManagerTests.swift */,
 				F0LP000003000000000001 /* LayoutPresetManagerTests.swift */,
 				F0PS000003000000000001 /* PathSanitizerTests.swift */,
+				D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */,
 				F0CT000001000000000001 /* ConstantsTests.swift */,
 				F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */,
 				F0LR000001000000000001 /* LayoutPresetRenameTests.swift */,
@@ -358,6 +361,7 @@
 				F0OB000006000000000001 /* OnboardingManagerTests.swift in Sources */,
 				F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */,
 				F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */,
+				E1F2A3B4C5D6E7F8A9B0C1D2 /* WakeRestorationContextTests.swift in Sources */,
 				F0CT000002000000000001 /* ConstantsTests.swift in Sources */,
 				F0UM000002000000000001 /* UpdateManagerExtendedTests.swift in Sources */,
 				F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */,

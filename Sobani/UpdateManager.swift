@@ -50,7 +50,7 @@ enum UpdateAssetFormat {
 
 // MARK: - Update Error Code
 
-enum UpdateErrorCode: String {
+enum UpdateErrorCode: String, CaseIterable {
     // Check phase
     case networkError       = "U-101"
     case fetchError         = "U-102"
@@ -128,6 +128,7 @@ final class UpdateManager {
     private let currentVersion: String
     private let apiURL: URL
     private var checkTimer: Timer?
+    private let defaults: UserDefaults
 
     private static let lastCheckKey = "LastUpdateCheckDate"
     private static let checkInterval: TimeInterval = 24 * 60 * 60 // 24 hours
@@ -137,13 +138,15 @@ final class UpdateManager {
 
     init(
         currentVersion: String? = nil,
-        apiURL: URL? = nil
+        apiURL: URL? = nil,
+        defaults: UserDefaults = .standard
     ) {
         self.currentVersion = currentVersion
             ?? Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
             ?? "0"
         self.apiURL = apiURL
             ?? Self.defaultAPIURL
+        self.defaults = defaults
     }
 
     deinit {
@@ -171,8 +174,8 @@ final class UpdateManager {
         )
     }
 
-    @objc private func handleWake() {
-        let lastCheck = UserDefaults.standard.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
+    @objc func handleWake() {
+        let lastCheck = defaults.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
         if Date().timeIntervalSince(lastCheck) >= Self.checkInterval {
             checkForUpdate(trigger: .automatic)
         }

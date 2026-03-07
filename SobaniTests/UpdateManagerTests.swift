@@ -6,55 +6,32 @@ import CryptoKit
 /// バージョン比較ロジック、GitHubリリースJSONパース、チェックトリガー、SHA-256チェックサム検証、アセット選択を検証するテスト
 @Suite struct UpdateManagerTests {
 
-    // MARK: - isNewer Tests
+    // MARK: - isNewer Parameterized Tests
 
-    /// 同一バージョンでfalseを返すことを検証
-    @Test func isNewer_SameVersion_ReturnsFalse() {
-        #expect(!UpdateManager.isNewer("202602.2", than: "202602.2"))
-    }
-
-    /// パッチ番号が大きいバージョンでtrueを返すことを検証
-    @Test func isNewer_PatchLarger_ReturnsTrue() {
-        #expect(UpdateManager.isNewer("202602.3", than: "202602.2"))
-    }
-
-    /// パッチ番号が小さいバージョンでfalseを返すことを検証
-    @Test func isNewer_PatchSmaller_ReturnsFalse() {
-        #expect(!UpdateManager.isNewer("202602.1", than: "202602.2"))
-    }
-
-    /// 月が新しいバージョンでtrueを返すことを検証
-    @Test func isNewer_MonthNewer_ReturnsTrue() {
-        #expect(UpdateManager.isNewer("202603.0", than: "202602.2"))
-    }
-
-    /// 月が古いバージョンでfalseを返すことを検証
-    @Test func isNewer_MonthOlder_ReturnsFalse() {
-        #expect(!UpdateManager.isNewer("202601.5", than: "202602.2"))
-    }
-
-    /// 2桁パッチ番号の数値比較が正しいことを検証(10 > 2)
-    @Test func isNewer_TwoDigitPatch_ReturnsTrue() {
-        // 202602.10 > 202602.2 (numeric comparison, not string)
-        #expect(UpdateManager.isNewer("202602.10", than: "202602.2"))
-    }
-
-    /// 2桁パッチ番号の数値比較が正しいことを検証(2 < 10)
-    @Test func isNewer_TwoDigitPatch_ReturnsFalse() {
-        #expect(!UpdateManager.isNewer("202602.2", than: "202602.10"))
+    /// バージョン比較ロジックをパラメタライズドテストで検証
+    @Test(arguments: [
+        ("202602.3", "202602.2", true),
+        ("202602.1", "202602.2", false),
+        ("202602.2", "202602.2", false),
+        ("202603.0", "202602.2", true),
+        ("202601.5", "202602.2", false),
+        ("202602.10", "202602.2", true),
+        ("202602.2", "202602.10", false),
+        ("202701.0", "202612.5", true),
+    ])
+    func isNewer_VersionComparisons(newer: String, older: String, expected: Bool) {
+        #expect(UpdateManager.isNewer(newer, than: older) == expected)
     }
 
     /// 不正なバージョン形式でfalseを返すことを検証
-    @Test func isNewer_InvalidFormat_ReturnsFalse() {
-        #expect(!UpdateManager.isNewer("invalid", than: "202602.2"))
-        #expect(!UpdateManager.isNewer("202602.2", than: "invalid"))
-        #expect(!UpdateManager.isNewer("", than: ""))
-        #expect(!UpdateManager.isNewer("v202602.3", than: "202602.2"))
-    }
-
-    /// 年をまたぐバージョン比較が正しいことを検証
-    @Test func isNewer_YearChange_ReturnsTrue() {
-        #expect(UpdateManager.isNewer("202701.0", than: "202612.5"))
+    @Test(arguments: [
+        ("invalid", "202602.2"),
+        ("202602.2", "invalid"),
+        ("", ""),
+        ("v202602.3", "202602.2"),
+    ])
+    func isNewer_InvalidFormats(newer: String, older: String) {
+        #expect(!UpdateManager.isNewer(newer, than: older))
     }
 
     // MARK: - GitHubRelease JSON Parsing Tests
@@ -370,6 +347,44 @@ import CryptoKit
         case .zip: break // OK
         case .dmg: Issue.record("Expected .zip")
         }
+    }
+
+    // MARK: - handleWake Tests
+
+    /// 最終チェックからcheckInterval経過後のhandleWakeでチェックが実行されることを検証
+    @Test func handleWake_IntervalElapsed_TriggersCheck() throws {
+        let suiteName = "handleWake_elapsed_\(UUID().uuidString)"
+        let testDefaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+        testDefaults.set(Date.distantPast, forKey: "LastUpdateCheckDate")
+
+        let manager = UpdateManager(currentVersion: "202602.4", defaults: testDefaults)
+        manager.handleWake()
+        #expect(manager.lastCheckTrigger == .automatic)
+    }
+
+    /// 最終チェックからcheckInterval未経過のhandleWakeでチェックがスキップされることを検証
+    @Test func handleWake_IntervalNotElapsed_SkipsCheck() throws {
+        let suiteName = "handleWake_not_elapsed_\(UUID().uuidString)"
+        let testDefaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+        testDefaults.set(Date(), forKey: "LastUpdateCheckDate")
+
+        let manager = UpdateManager(currentVersion: "202602.4", defaults: testDefaults)
+        manager.handleWake()
+        // lastCheckTrigger stays at default .automatic, state stays .idle (no check triggered)
+        #expect(manager.lastCheckTrigger == .automatic)
+    }
+
+    /// 最終チェック未記録のhandleWakeでチェックが実行されることを検証
+    @Test func handleWake_NoLastCheck_TriggersCheck() throws {
+        let suiteName = "handleWake_no_last_\(UUID().uuidString)"
+        let testDefaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+        let manager = UpdateManager(currentVersion: "202602.4", defaults: testDefaults)
+        manager.handleWake()
+        #expect(manager.lastCheckTrigger == .automatic)
     }
 
 }

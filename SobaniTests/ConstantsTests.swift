@@ -42,50 +42,19 @@ import os.log
 
     /// 全タグのrawValueが一意であることを検証
     @Test func menuItemTag_AllValuesUnique() {
-        let allTags: [MenuItemTag] = [
-            .resetToDefault, .defaultImage, .changeDefaultImage, .resetDefaultImage,
-            .addImage, .showCount, .flipHorizontal, .adjust,
-            .moveToFront, .moveToBack, .close, .launchAtLogin,
-            .checkForUpdates, .quit, .changeImageSubmenu, .addNewWindowSubmenu,
-            .otherSubmenu, .showOnboarding, .removeBackground,
-            .flipContext, .adjustPanelContext, .layoutSubmenu,
-            .saveLayout, .deleteLayout, .updateLayout, .createLayout,
-            .settingsSubmenu, .bulkResetSubmenu, .renameLayout
-        ]
-        let rawValues = allTags.map { $0.rawValue }
+        let rawValues = MenuItemTag.allCases.map { $0.rawValue }
         #expect(rawValues.count == Set(rawValues).count, "MenuItemTag に重複するrawValueがあります")
     }
 
     /// 全タグ値が1001以上であることを検証
-    @Test func menuItemTag_AllValuesAboveMinimum() {
-        let allTags: [MenuItemTag] = [
-            .resetToDefault, .defaultImage, .changeDefaultImage, .resetDefaultImage,
-            .addImage, .showCount, .flipHorizontal, .adjust,
-            .moveToFront, .moveToBack, .close, .launchAtLogin,
-            .checkForUpdates, .quit, .changeImageSubmenu, .addNewWindowSubmenu,
-            .otherSubmenu, .showOnboarding, .removeBackground,
-            .flipContext, .adjustPanelContext, .layoutSubmenu,
-            .saveLayout, .deleteLayout, .updateLayout, .createLayout,
-            .settingsSubmenu, .bulkResetSubmenu, .renameLayout
-        ]
-        for tag in allTags {
-            #expect(tag.rawValue >= 1001, "\(tag) のrawValue \(tag.rawValue) が 1001 未満です")
-        }
+    @Test(arguments: MenuItemTag.allCases)
+    func menuItemTag_AllValuesAboveMinimum(tag: MenuItemTag) {
+        #expect(tag.rawValue >= 1001, "\(tag) のrawValue \(tag.rawValue) が 1001 未満です")
     }
 
     /// MenuItemTagのケース数が想定通りであることを検証
     @Test func menuItemTag_CaseCount() {
-        let allTags: [MenuItemTag] = [
-            .resetToDefault, .defaultImage, .changeDefaultImage, .resetDefaultImage,
-            .addImage, .showCount, .flipHorizontal, .adjust,
-            .moveToFront, .moveToBack, .close, .launchAtLogin,
-            .checkForUpdates, .quit, .changeImageSubmenu, .addNewWindowSubmenu,
-            .otherSubmenu, .showOnboarding, .removeBackground,
-            .flipContext, .adjustPanelContext, .layoutSubmenu,
-            .saveLayout, .deleteLayout, .updateLayout, .createLayout,
-            .settingsSubmenu, .bulkResetSubmenu, .renameLayout
-        ]
-        #expect(allTags.count == 29)
+        #expect(MenuItemTag.allCases.count == 29)
     }
 
     // MARK: - AppSupportDirectory テスト

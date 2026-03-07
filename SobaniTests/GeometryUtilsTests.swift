@@ -4,40 +4,28 @@ import Testing
 /// 回転バウンディングボックス計算と角度正規化の正確性を検証するテスト
 @Suite struct GeometryUtilsTests {
 
-    // MARK: - rotatedBoundingBox Tests
+    // MARK: - rotatedBoundingBox Parameterized Tests
 
-    /// 0度回転でサイズが変わらないことを検証
-    @Test func rotatedBoundingBox_ZeroDegrees() {
-        let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 50, angleDegrees: 0)
-        #expect(abs(size.width - 100) < AppConstants.floatingPointTolerance)
-        #expect(abs(size.height - 50) < AppConstants.floatingPointTolerance)
-    }
-
-    /// 90度回転で幅と高さが入れ替わることを検証
-    @Test func rotatedBoundingBox_90Degrees() {
-        let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 50, angleDegrees: 90)
-        #expect(abs(size.width - 50) < AppConstants.floatingPointTolerance)
-        #expect(abs(size.height - 100) < AppConstants.floatingPointTolerance)
-    }
-
-    /// 180度回転でサイズが元に戻ることを検証
-    @Test func rotatedBoundingBox_180Degrees() {
-        let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 50, angleDegrees: 180)
-        #expect(abs(size.width - 100) < AppConstants.floatingPointTolerance)
-        #expect(abs(size.height - 50) < AppConstants.floatingPointTolerance)
-    }
-
-    /// 270度回転で幅と高さが入れ替わることを検証
-    @Test func rotatedBoundingBox_270Degrees() {
-        let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 50, angleDegrees: 270)
-        #expect(abs(size.width - 50) < AppConstants.floatingPointTolerance)
-        #expect(abs(size.height - 100) < AppConstants.floatingPointTolerance)
+    /// 基本角度(0, 90, 180, 270度)でバウンディングボックスが正しいことを検証
+    @Test(arguments: [
+        (0.0, 100.0, 50.0, 100.0, 50.0),
+        (90.0, 100.0, 50.0, 50.0, 100.0),
+        (180.0, 100.0, 50.0, 100.0, 50.0),
+        (270.0, 100.0, 50.0, 50.0, 100.0),
+    ])
+    func rotatedBoundingBox_BasicAngles(
+        angle: Double, width: Double, height: Double, expectedWidth: Double, expectedHeight: Double
+    ) {
+        let size = GeometryUtils.rotatedBoundingBox(
+            width: CGFloat(width), height: CGFloat(height), angleDegrees: CGFloat(angle)
+        )
+        #expect(abs(size.width - CGFloat(expectedWidth)) < AppConstants.floatingPointTolerance)
+        #expect(abs(size.height - CGFloat(expectedHeight)) < AppConstants.floatingPointTolerance)
     }
 
     /// 正方形の45度回転で対角線長のバウンディングボックスになることを検証
     @Test func rotatedBoundingBox_45Degrees() {
         let size = GeometryUtils.rotatedBoundingBox(width: 100, height: 100, angleDegrees: 45)
-        // 正方形を45度回転: 対角線の長さ = 100 * sqrt(2) ≈ 141.42
         let expected = 100 * sqrt(2.0)
         #expect(abs(size.width - expected) < AppConstants.floatingPointTolerance)
         #expect(abs(size.height - expected) < AppConstants.floatingPointTolerance)
@@ -46,7 +34,6 @@ import Testing
     /// 非正方形の45度回転でバウンディングボックスが正しく計算されることを検証
     @Test func rotatedBoundingBox_45Degrees_NonSquare() {
         let size = GeometryUtils.rotatedBoundingBox(width: 200, height: 100, angleDegrees: 45)
-        // 200x100を45°回転: |200*cos45°|+|100*sin45°| = 141.42+70.71 = 212.13
         #expect(abs(size.width - 212.13) < AppConstants.floatingPointTolerance)
         #expect(abs(size.height - 212.13) < AppConstants.floatingPointTolerance)
     }
@@ -59,32 +46,19 @@ import Testing
         #expect(abs(positive.height - negative.height) < AppConstants.floatingPointTolerance)
     }
 
-    // MARK: - normalizeAngle Tests
+    // MARK: - normalizeAngle Parameterized Tests
 
-    /// 0-359度の範囲内の角度がそのまま返されることを検証
-    @Test func normalizeAngle_AlreadyNormalized() {
-        #expect(abs(GeometryUtils.normalizeAngle(45) - 45) < AppConstants.floatingPointTolerance)
-        #expect(abs(GeometryUtils.normalizeAngle(0) - 0) < AppConstants.floatingPointTolerance)
-        #expect(abs(GeometryUtils.normalizeAngle(359) - 359) < AppConstants.floatingPointTolerance)
-    }
-
-    /// 負の角度が0-359度の範囲に正規化されることを検証
-    @Test func normalizeAngle_Negative() {
-        #expect(abs(GeometryUtils.normalizeAngle(-90) - 270) < AppConstants.floatingPointTolerance)
-        #expect(abs(GeometryUtils.normalizeAngle(-360) - 0) < AppConstants.floatingPointTolerance)
-        #expect(abs(GeometryUtils.normalizeAngle(-1) - 359) < AppConstants.floatingPointTolerance)
-    }
-
-    /// 360度以上の角度が0-359度の範囲に正規化されることを検証
-    @Test func normalizeAngle_Overflow() {
-        #expect(abs(GeometryUtils.normalizeAngle(360) - 0) < AppConstants.floatingPointTolerance)
-        #expect(abs(GeometryUtils.normalizeAngle(450) - 90) < AppConstants.floatingPointTolerance)
-        #expect(abs(GeometryUtils.normalizeAngle(720) - 0) < AppConstants.floatingPointTolerance)
-    }
-
-    /// 大きな負の角度が正しく正規化されることを検証
-    @Test func normalizeAngle_LargeNegative() {
-        #expect(abs(GeometryUtils.normalizeAngle(-720) - 0) < AppConstants.floatingPointTolerance)
-        #expect(abs(GeometryUtils.normalizeAngle(-270) - 90) < AppConstants.floatingPointTolerance)
+    /// 各種角度が正しく0-359度の範囲に正規化されることを検証
+    @Test(arguments: [
+        (0.0, 0.0), (45.0, 45.0), (359.0, 359.0),
+        (-90.0, 270.0), (-360.0, 0.0), (-1.0, 359.0),
+        (360.0, 0.0), (450.0, 90.0), (720.0, 0.0),
+        (-720.0, 0.0), (-270.0, 90.0),
+    ])
+    func normalizeAngle_MultipleAngles(input: Double, expected: Double) {
+        #expect(
+            abs(GeometryUtils.normalizeAngle(CGFloat(input)) - CGFloat(expected))
+                < AppConstants.floatingPointTolerance
+        )
     }
 }
