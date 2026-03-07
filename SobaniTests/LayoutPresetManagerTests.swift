@@ -1,6 +1,7 @@
 import XCTest
 @testable import Sobani
 
+/// レイアウトプリセットの保存・読み込み・削除・リネーム、ファイル名サニタイズ、エッジケース、Codable/Equatable準拠を検証するテスト
 final class LayoutPresetManagerTests: XCTestCase {
     // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
@@ -59,6 +60,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Save and Load Tests
 
+    /// プリセットの保存と読み込みのラウンドトリップが正しく動作することを検証
     func testSaveAndLoadPresetRoundTrip() {
         let states = [makeState(imageName: "image1.png"), makeState(imageName: "image2.png")]
         presetManager.savePreset(name: "TestPreset", states: states)
@@ -69,6 +71,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded?.states, states)
     }
 
+    /// 複数プリセットがすべて読み込まれることを検証
     func testLoadPresetsReturnsAllPresets() {
         presetManager.savePreset(name: "Preset1", states: [makeState(originX: 1)])
         presetManager.savePreset(name: "Preset2", states: [makeState(originX: 2)])
@@ -83,6 +86,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertTrue(names.contains("Preset3"))
     }
 
+    /// プリセットがcreatedAtの降順でソートされることを検証
     func testLoadPresetsOrderedByCreatedAtDescending() throws {
         // Save all presets first, then overwrite JSON to control createdAt
         presetManager.savePreset(name: "OldPreset", states: [makeState(originX: 1)])
@@ -110,6 +114,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(all[2].name, "OldPreset")
     }
 
+    /// 同名プリセットの上書き保存が正しく動作することを検証
     func testOverwritePreset() {
         let firstStates = [makeState(imageName: "first.png")]
         presetManager.savePreset(name: "MyPreset", states: firstStates)
@@ -125,6 +130,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Delete Tests
 
+    /// プリセットの削除が正しく動作することを検証
     func testDeletePreset() {
         presetManager.savePreset(name: "ToDelete", states: [makeState()])
         XCTAssertNotNil(presetManager.loadPreset(named: "ToDelete"))
@@ -133,6 +139,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertNil(presetManager.loadPreset(named: "ToDelete"))
     }
 
+    /// 存在しないプリセットの削除でクラッシュしないことを検証
     func testDeleteNonExistentPreset() {
         // Should not crash
         presetManager.deletePreset(named: "NonExistent")
@@ -141,17 +148,20 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - presetExists Tests
 
+    /// 存在するプリセットに対してtrueが返されることを検証
     func testPresetExistsTrue() {
         presetManager.savePreset(name: "Exists", states: [makeState()])
         XCTAssertTrue(presetManager.presetExists(named: "Exists"))
     }
 
+    /// 存在しないプリセットに対してfalseが返されることを検証
     func testPresetExistsFalse() {
         XCTAssertFalse(presetManager.presetExists(named: "DoesNotExist"))
     }
 
     // MARK: - Sanitized File Name Tests
 
+    /// 特殊文字を含むプリセット名の保存と読み込みが正しく動作することを検証
     func testSanitizedFileNameSpecialCharacters() {
         let specialName = "test/\\:*?\"<>|name"
         let states = [makeState(imageName: "special.png")]
@@ -163,7 +173,8 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded?.states, states)
     }
 
-    func testSanitizedFileNamePathTraversal() {
+    /// パストラバーサルを含む名前でlayoutsディレクトリ外に保存されないことを検証
+    func testSanitizedFileNamePathTraversal() throws {
         let dangerousName = "../../../etc/passwd"
         let states = [makeState(imageName: "safe.png")]
         presetManager.savePreset(name: dangerousName, states: states)
@@ -176,10 +187,22 @@ final class LayoutPresetManagerTests: XCTestCase {
         // Verify the file was saved inside the layouts directory, not at a traversed path
         let layoutsDir = presetManager.layoutsDirectoryURL
         XCTAssertNotNil(layoutsDir)
+
+        // ファイルがlayoutsディレクトリ内に保存されたことを検証
+        let layoutsDirUnwrapped = try XCTUnwrap(presetManager.layoutsDirectoryURL)
+        let resolvedLayoutsDir = layoutsDirUnwrapped.standardizedFileURL.path
+        let files = try FileManager.default.contentsOfDirectory(at: layoutsDirUnwrapped, includingPropertiesForKeys: nil)
+        let jsonFiles = files.filter { $0.pathExtension == "json" }
+        XCTAssertFalse(jsonFiles.isEmpty, "Preset file should exist in layouts directory")
+        for file in jsonFiles {
+            XCTAssertTrue(file.standardizedFileURL.path.hasPrefix(resolvedLayoutsDir),
+                          "Preset file must be inside layouts directory: \(file.path)")
+        }
     }
 
     // MARK: - Edge Case Tests
 
+    /// 空のWindowState配列を持つプリセットが正しく保存・読み込みされることを検証
     func testEmptyStatesArray() {
         presetManager.savePreset(name: "EmptyPreset", states: [])
 
@@ -189,6 +212,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded?.states, [])
     }
 
+    /// 不正なJSONファイルがスキップされ有効なプリセットのみ読み込まれることを検証
     func testInvalidJSONSkipped() throws {
         // Write invalid JSON file directly into the layouts directory
         let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
@@ -204,6 +228,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertTrue(all.contains(where: { $0.name == "ValidPreset" }))
     }
 
+    /// Unicode(日本語)プリセット名の保存と読み込みが正しく動作することを検証
     func testUnicodePresetName() {
         let japaneseName = "お気に入りレイアウト"
         let states = [makeState(imageName: "character.png")]
@@ -217,6 +242,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - LayoutPreset Codable/Equatable Tests
 
+    /// LayoutPresetのCodableエンコード・デコードが正しく動作することを検証
     func testLayoutPresetCodable() throws {
         let states = [makeState(imageName: "test.png", originX: 50, originY: 60)]
         let preset = LayoutPreset(name: "CodableTest", createdAt: Date(), states: states)
@@ -229,6 +255,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(decoded, preset)
     }
 
+    /// LayoutPresetのEquatable比較が正しく動作することを検証
     func testLayoutPresetEquatable() {
         let date = Date()
         let states = [makeState(imageName: "eq.png")]
@@ -247,6 +274,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Load Non-Existent Tests
 
+    /// 存在しないプリセットの読み込みでnilが返されることを検証
     func testLoadPresetNonExistent() {
         let loaded = presetManager.loadPreset(named: "NeverSaved")
         XCTAssertNil(loaded)
@@ -254,6 +282,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Directory Tests
 
+    /// layoutsディレクトリが自動作成されることを検証
     func testLayoutsDirectoryCreated() throws {
         let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
 
@@ -265,6 +294,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Multiple States Tests
 
+    /// 複数WindowStateを持つプリセットが正しく保存・読み込みされることを検証
     func testMultipleStatesInPreset() {
         let states = [
             makeState(imageName: "img1.png", originX: 10, originY: 20, windowId: 1),
@@ -281,6 +311,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded?.states, states)
     }
 
+    /// WindowStateの全プロパティ(反転・回転・透過率・位置・サイズ)が保持されることを検証
     func testPresetStatesPreserveWindowProperties() throws {
         let states = [
             makeState(
@@ -330,6 +361,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Delete Then Exists Tests
 
+    /// 削除後にpresetExistsがfalseを返すことを検証
     func testDeleteThenPresetExistsFalse() {
         presetManager.savePreset(name: "WillBeDeleted", states: [makeState()])
         XCTAssertTrue(presetManager.presetExists(named: "WillBeDeleted"))
@@ -340,6 +372,7 @@ final class LayoutPresetManagerTests: XCTestCase {
 
     // MARK: - Rename Tests
 
+    /// プリセットのリネームが正しく動作しcreatedAtが保持されることを検証
     func testRenamePresetSuccess() throws {
         let states = [makeState(imageName: "rename.png", originX: 42)]
         presetManager.savePreset(name: "OldName", states: states)
@@ -356,11 +389,13 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(renamed.createdAt, oldPreset.createdAt)
     }
 
+    /// 存在しないプリセットのリネームでfalseが返されることを検証
     func testRenameNonExistentPreset() {
         let result = presetManager.renamePreset(from: "DoesNotExist", to: "NewName")
         XCTAssertFalse(result)
     }
 
+    /// 同名へのリネームが成功し内容が保持されることを検証
     func testRenameSameName() throws {
         let states = [makeState(imageName: "same.png")]
         presetManager.savePreset(name: "SameName", states: states)
@@ -373,6 +408,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(loaded.states, states)
     }
 
+    /// リネームで既存プリセットが上書きされることを検証
     func testRenameOverwritesExisting() throws {
         presetManager.savePreset(name: "Source", states: [makeState(originX: 100)])
         presetManager.savePreset(name: "Target", states: [makeState(originX: 200)])
@@ -385,6 +421,7 @@ final class LayoutPresetManagerTests: XCTestCase {
         XCTAssertEqual(target.states, [makeState(originX: 100)])
     }
 
+    /// Unicode文字を含む名前へのリネームが正しく動作することを検証
     func testRenameWithSpecialCharacters() throws {
         let states = [makeState(imageName: "special.png")]
         presetManager.savePreset(name: "Normal", states: states)
