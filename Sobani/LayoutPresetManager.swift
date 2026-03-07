@@ -11,6 +11,7 @@ struct LayoutPreset: Codable, Equatable, Sendable {
 
 // MARK: - Layout Preset Manager
 
+@MainActor
 final class LayoutPresetManager {
     static let shared = LayoutPresetManager()
     private let logger = Logger(

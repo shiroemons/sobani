@@ -3,6 +3,7 @@ import os.log
 
 // MARK: - Image Manager
 
+@MainActor
 final class ImageManager {
     private let logger = Logger(
         subsystem: "com.shiroemons.Sobani",

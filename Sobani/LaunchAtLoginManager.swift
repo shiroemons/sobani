@@ -1,6 +1,7 @@
 import ServiceManagement
 import os.log
 
+@MainActor
 final class LaunchAtLoginManager {
     static let shared = LaunchAtLoginManager()
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "LaunchAtLoginManager")

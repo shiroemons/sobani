@@ -10,7 +10,7 @@ enum Language: String, CaseIterable, Sendable {
     case japanese = "ja"
     case english = "en"
 
-    var displayName: String {
+    @MainActor var displayName: String {
         switch self {
         case .system: return L("language.system")
         case .japanese: return "日本語"
@@ -19,6 +19,7 @@ enum Language: String, CaseIterable, Sendable {
     }
 }
 
+@MainActor
 final class LanguageManager {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "LanguageManager")
     static let shared = LanguageManager()

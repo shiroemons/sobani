@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 /// Localization helper that supports runtime language switching via LanguageManager.
 /// Falls back to NSLocalizedString with the main bundle when no custom bundle is set.
+@MainActor
 func L(_ key: String) -> String {
     if let bundle = LanguageManager.shared.currentBundle {
         return NSLocalizedString(key, bundle: bundle, comment: "")
@@ -167,6 +168,7 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case renameLayout = 1030
 }
 
+@MainActor
 enum ImageFileDialog {
     static func makeOpenPanel(
         title: String = L("dialog.select_image"),

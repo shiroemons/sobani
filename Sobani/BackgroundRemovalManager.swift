@@ -13,7 +13,7 @@ enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
     case filterOutputFailed
     case finalImageConversionFailed
 
-    var errorDescription: String? {
+    @MainActor var errorDescription: String? {
         switch self {
         case .cgImageConversionFailed:
             return L("background_removal.error.conversion_failed")
@@ -32,7 +32,7 @@ enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
 // MARK: - Background Removal Manager
 
 @available(macOS 14.0, *)
-final class BackgroundRemovalManager {
+final class BackgroundRemovalManager: @unchecked Sendable {
     static let shared = BackgroundRemovalManager()
 
     private let logger = Logger(

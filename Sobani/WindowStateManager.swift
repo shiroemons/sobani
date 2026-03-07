@@ -88,6 +88,7 @@ struct WindowState: Codable, Equatable, Sendable {
 
 // MARK: - Window State Manager
 
+@MainActor
 final class WindowStateManager {
     static let shared = WindowStateManager()
     private let logger = Logger(

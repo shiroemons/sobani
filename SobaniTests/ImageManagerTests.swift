@@ -5,7 +5,7 @@ import Testing
 @preconcurrency @testable import Sobani
 
 /// 画像の登録・読み込み・削除、カスタムデフォルト画像の管理、サポート形式のフィルタリング、パストラバーサル防止を検証するテスト
-@Suite struct ImageManagerTests {
+@Suite @MainActor struct ImageManagerTests {
     let tempDirectory: URL
     let imageManager: ImageManager
 

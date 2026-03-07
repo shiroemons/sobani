@@ -6,7 +6,7 @@ import Testing
 
 /// 背景除去エラーの説明文と、空画像・有効画像に対するremoveBackgroundの動作を検証するテスト（macOS 14.0以上）
 @Suite(.enabled(if: ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 14))
-struct BackgroundRemovalManagerTests {
+@MainActor struct BackgroundRemovalManagerTests {
 
     // MARK: - Helpers
 

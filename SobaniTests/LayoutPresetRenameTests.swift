@@ -3,7 +3,7 @@ import Testing
 @preconcurrency @testable import Sobani
 
 /// レイアウトプリセットのリネーム機能を検証するテスト
-@Suite struct LayoutPresetRenameTests {
+@Suite @MainActor struct LayoutPresetRenameTests {
     let tempDirectory: URL
     let presetManager: LayoutPresetManager
 

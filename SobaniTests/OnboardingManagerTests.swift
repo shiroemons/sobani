@@ -3,7 +3,7 @@ import Testing
 @preconcurrency @testable import Sobani
 
 /// オンボーディングの表示判定、完了マーク、リセット、バージョン管理、DI対応を検証するテスト
-@Suite struct OnboardingManagerTests {
+@Suite @MainActor struct OnboardingManagerTests {
     private let testDefaults: UserDefaults
     private let manager: OnboardingManager
     private let suiteName: String
