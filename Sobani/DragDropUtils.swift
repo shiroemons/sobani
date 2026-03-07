@@ -9,7 +9,11 @@ enum DragDropUtils {
             options: [.urlReadingFileURLsOnly: true]
         ) as? [URL] else { return [] }
         // swiftlint:enable legacy_objc_type
-        return items.filter { isSupportedImageURL($0) }
+        return filterSupportedImages(items)
+    }
+
+    static func filterSupportedImages(_ urls: [URL]) -> [URL] {
+        urls.filter { isSupportedImageURL($0) }
     }
 
     static func isSupportedImageURL(_ url: URL) -> Bool {

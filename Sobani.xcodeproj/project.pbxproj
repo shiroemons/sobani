@@ -44,6 +44,9 @@
 		F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UW000001000000000001 /* UnconstrainedWindow.swift */; };
 		F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0IP000001000000000001 /* ImagePreviewPanel.swift */; };
 		F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PS000003000000000001 /* PathSanitizerTests.swift */; };
+		F0CT000002000000000001 /* ConstantsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CT000001000000000001 /* ConstantsTests.swift */; };
+		F0UM000002000000000001 /* UpdateManagerExtendedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */; };
+		F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LR000001000000000001 /* LayoutPresetRenameTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +101,9 @@
 		F0UW000001000000000001 /* UnconstrainedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnconstrainedWindow.swift; sourceTree = "<group>"; };
 		F0IP000001000000000001 /* ImagePreviewPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanel.swift; sourceTree = "<group>"; };
 		F0PS000003000000000001 /* PathSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizerTests.swift; sourceTree = "<group>"; };
+		F0CT000001000000000001 /* ConstantsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConstantsTests.swift; sourceTree = "<group>"; };
+		F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerExtendedTests.swift; sourceTree = "<group>"; };
+		F0LR000001000000000001 /* LayoutPresetRenameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetRenameTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -184,6 +190,9 @@
 				F0OB000005000000000001 /* OnboardingManagerTests.swift */,
 				F0LP000003000000000001 /* LayoutPresetManagerTests.swift */,
 				F0PS000003000000000001 /* PathSanitizerTests.swift */,
+				F0CT000001000000000001 /* ConstantsTests.swift */,
+				F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */,
+				F0LR000001000000000001 /* LayoutPresetRenameTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -346,6 +355,9 @@
 				F0OB000006000000000001 /* OnboardingManagerTests.swift in Sources */,
 				F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */,
 				F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */,
+				F0CT000002000000000001 /* ConstantsTests.swift in Sources */,
+				F0UM000002000000000001 /* UpdateManagerExtendedTests.swift in Sources */,
+				F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

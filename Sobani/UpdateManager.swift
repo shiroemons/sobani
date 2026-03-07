@@ -192,7 +192,7 @@ final class UpdateManager {
     // MARK: - Check for Update
 
     /// 手動トリガーのときだけ `manualState` を設定し、それ以外は `.idle` にする
-    private func setStateForTrigger(_ trigger: CheckTrigger, manualState: UpdateState) {
+    func setStateForTrigger(_ trigger: CheckTrigger, manualState: UpdateState) {
         state = trigger == .manual ? manualState : .idle
     }
 
@@ -317,25 +317,7 @@ final class UpdateManager {
                 completion(nil)
                 return
             }
-            // 形式: "<sha256hex>  <filename>" (複数行対応)
-            // ダウンロード対象のアセット名と一致する行からチェックサムを取得
-            let lines = text.components(separatedBy: .newlines)
-            let matchedChecksum = lines
-                .compactMap { line -> String? in
-                    let parts = line.split(separator: " ", omittingEmptySubsequences: true)
-                    guard parts.count >= 2, String(parts[1]) == assetName else { return nil }
-                    return String(parts[0])
-                }
-                .first
-            // アセット名で一致しない場合は最初の行にフォールバック
-            let checksum = matchedChecksum ?? lines
-                .compactMap { line -> String? in
-                    let parts = line.split(separator: " ", omittingEmptySubsequences: true)
-                    guard parts.count >= 1 else { return nil }
-                    return String(parts[0])
-                }
-                .first
-            completion(checksum)
+            completion(Self.parseChecksumLine(text, forAsset: assetName))
         }
         task.resume()
     }
@@ -390,6 +372,27 @@ final class UpdateManager {
         let digest = SHA256.hash(data: data)
         let hexString = digest.map { String(format: "%02x", $0) }.joined()
         return hexString == expectedHex.lowercased()
+    }
+
+    /// チェックサムテキストから指定アセット名のチェックサムを解析して返す
+    /// 形式: "<sha256hex>  <filename>" (複数行対応)
+    static func parseChecksumLine(_ text: String, forAsset assetName: String) -> String? {
+        guard !text.isEmpty else { return nil }
+        let lines = text.components(separatedBy: .newlines)
+        let matchedChecksum = lines
+            .compactMap { line -> String? in
+                let parts = line.split(separator: " ", omittingEmptySubsequences: true)
+                guard parts.count >= 2, String(parts[1]) == assetName else { return nil }
+                return String(parts[0])
+            }
+            .first
+        return matchedChecksum ?? lines
+            .compactMap { line -> String? in
+                let parts = line.split(separator: " ", omittingEmptySubsequences: true)
+                guard parts.count >= 1 else { return nil }
+                return String(parts[0])
+            }
+            .first
     }
 
     // MARK: - Restart App
