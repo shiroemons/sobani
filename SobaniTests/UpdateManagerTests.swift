@@ -1,65 +1,43 @@
-import XCTest
+import Foundation
+import Testing
 import CryptoKit
-@testable import Sobani
+@preconcurrency @testable import Sobani
 
 /// バージョン比較ロジック、GitHubリリースJSONパース、チェックトリガー、SHA-256チェックサム検証、アセット選択を検証するテスト
-final class UpdateManagerTests: XCTestCase {
+struct UpdateManagerTests {
 
-    // MARK: - isNewer Tests
+    // MARK: - isNewer Parameterized Tests
 
-    /// 同一バージョンでfalseを返すことを検証
-    func testIsNewer_SameVersion_ReturnsFalse() {
-        XCTAssertFalse(UpdateManager.isNewer("202602.2", than: "202602.2"))
-    }
-
-    /// パッチ番号が大きいバージョンでtrueを返すことを検証
-    func testIsNewer_PatchLarger_ReturnsTrue() {
-        XCTAssertTrue(UpdateManager.isNewer("202602.3", than: "202602.2"))
-    }
-
-    /// パッチ番号が小さいバージョンでfalseを返すことを検証
-    func testIsNewer_PatchSmaller_ReturnsFalse() {
-        XCTAssertFalse(UpdateManager.isNewer("202602.1", than: "202602.2"))
-    }
-
-    /// 月が新しいバージョンでtrueを返すことを検証
-    func testIsNewer_MonthNewer_ReturnsTrue() {
-        XCTAssertTrue(UpdateManager.isNewer("202603.0", than: "202602.2"))
-    }
-
-    /// 月が古いバージョンでfalseを返すことを検証
-    func testIsNewer_MonthOlder_ReturnsFalse() {
-        XCTAssertFalse(UpdateManager.isNewer("202601.5", than: "202602.2"))
-    }
-
-    /// 2桁パッチ番号の数値比較が正しいことを検証(10 > 2)
-    func testIsNewer_TwoDigitPatch_ReturnsTrue() {
-        // 202602.10 > 202602.2 (numeric comparison, not string)
-        XCTAssertTrue(UpdateManager.isNewer("202602.10", than: "202602.2"))
-    }
-
-    /// 2桁パッチ番号の数値比較が正しいことを検証(2 < 10)
-    func testIsNewer_TwoDigitPatch_ReturnsFalse() {
-        XCTAssertFalse(UpdateManager.isNewer("202602.2", than: "202602.10"))
+    /// バージョン比較ロジックをパラメタライズドテストで検証
+    @Test(arguments: [
+        ("202602.3", "202602.2", true),
+        ("202602.1", "202602.2", false),
+        ("202602.2", "202602.2", false),
+        ("202603.0", "202602.2", true),
+        ("202601.5", "202602.2", false),
+        ("202602.10", "202602.2", true),
+        ("202602.2", "202602.10", false),
+        ("202701.0", "202612.5", true),
+    ])
+    func isNewer_VersionComparisons(newer: String, older: String, expected: Bool) {
+        #expect(UpdateManager.isNewer(newer, than: older) == expected)
     }
 
     /// 不正なバージョン形式でfalseを返すことを検証
-    func testIsNewer_InvalidFormat_ReturnsFalse() {
-        XCTAssertFalse(UpdateManager.isNewer("invalid", than: "202602.2"))
-        XCTAssertFalse(UpdateManager.isNewer("202602.2", than: "invalid"))
-        XCTAssertFalse(UpdateManager.isNewer("", than: ""))
-        XCTAssertFalse(UpdateManager.isNewer("v202602.3", than: "202602.2"))
-    }
-
-    /// 年をまたぐバージョン比較が正しいことを検証
-    func testIsNewer_YearChange_ReturnsTrue() {
-        XCTAssertTrue(UpdateManager.isNewer("202701.0", than: "202612.5"))
+    @Test(arguments: [
+        ("invalid", "202602.2"),
+        ("202602.2", "invalid"),
+        ("", ""),
+        ("v202602.3", "202602.2"),
+    ])
+    func isNewer_InvalidFormats(newer: String, older: String) {
+        #expect(!UpdateManager.isNewer(newer, than: older))
     }
 
     // MARK: - GitHubRelease JSON Parsing Tests
 
     /// GitHubリリースJSONが正しくデコードされることを検証
-    func testGitHubRelease_DecodesCorrectly() throws {
+    @Test func gitHubRelease_DecodesCorrectly() throws {
         let json = Data("""
         {
             "tag_name": "v202602.3",
@@ -73,17 +51,17 @@ final class UpdateManagerTests: XCTestCase {
         """.utf8)
 
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-        XCTAssertEqual(release.tagName, "v202602.3")
-        XCTAssertEqual(release.assets.count, 1)
-        XCTAssertEqual(release.assets[0].name, "Sobani-202602.3-universal.zip")
-        XCTAssertEqual(
-            release.assets[0].browserDownloadURL,
-            "https://github.com/shiroemons/sobani/releases/download/v202602.3/Sobani-202602.3-universal.zip"
+        #expect(release.tagName == "v202602.3")
+        #expect(release.assets.count == 1)
+        #expect(release.assets[0].name == "Sobani-202602.3-universal.zip")
+        #expect(
+            release.assets[0].browserDownloadURL
+                == "https://github.com/shiroemons/sobani/releases/download/v202602.3/Sobani-202602.3-universal.zip"
         )
     }
 
     /// アセットが空のリリースJSONが正しくデコードされることを検証
-    func testGitHubRelease_EmptyAssets() throws {
+    @Test func gitHubRelease_EmptyAssets() throws {
         let json = Data("""
         {
             "tag_name": "v202602.3",
@@ -92,12 +70,12 @@ final class UpdateManagerTests: XCTestCase {
         """.utf8)
 
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-        XCTAssertEqual(release.tagName, "v202602.3")
-        XCTAssertTrue(release.assets.isEmpty)
+        #expect(release.tagName == "v202602.3")
+        #expect(release.assets.isEmpty)
     }
 
     /// 複数アセットを持つリリースJSONが正しくデコードされることを検証
-    func testGitHubRelease_MultipleAssets() throws {
+    @Test func gitHubRelease_MultipleAssets() throws {
         let json = Data("""
         {
             "tag_name": "v202602.3",
@@ -115,60 +93,60 @@ final class UpdateManagerTests: XCTestCase {
         """.utf8)
 
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-        XCTAssertEqual(release.assets.count, 2)
-        XCTAssertEqual(release.assets[0].name, "Sobani-202602.3-universal.zip")
-        XCTAssertEqual(release.assets[1].name, "checksums.txt")
+        #expect(release.assets.count == 2)
+        #expect(release.assets[0].name == "Sobani-202602.3-universal.zip")
+        #expect(release.assets[1].name == "checksums.txt")
     }
 
     // MARK: - CheckTrigger Tests
 
     /// チェックトリガーのデフォルトがautomaticであることを検証
-    func testCheckTrigger_DefaultIsAutomatic() {
+    @Test func checkTrigger_DefaultIsAutomatic() {
         let manager = UpdateManager(currentVersion: "202602.4")
-        XCTAssertEqual(manager.lastCheckTrigger, .automatic)
+        #expect(manager.lastCheckTrigger == .automatic)
     }
 
     /// 手動トリガーが正しく設定されることを検証
-    func testCheckTrigger_ManualTriggerIsSet() {
+    @Test func checkTrigger_ManualTriggerIsSet() {
         let manager = UpdateManager(currentVersion: "202602.4")
         manager.checkForUpdate(trigger: .manual)
-        XCTAssertEqual(manager.lastCheckTrigger, .manual)
+        #expect(manager.lastCheckTrigger == .manual)
     }
 
     /// 起動時トリガーが正しく設定されることを検証
-    func testCheckTrigger_StartupTriggerIsSet() {
+    @Test func checkTrigger_StartupTriggerIsSet() {
         let manager = UpdateManager(currentVersion: "202602.4")
         manager.checkForUpdate(trigger: .startup)
-        XCTAssertEqual(manager.lastCheckTrigger, .startup)
+        #expect(manager.lastCheckTrigger == .startup)
     }
 
     /// 自動トリガーが正しく設定されることを検証
-    func testCheckTrigger_AutomaticTriggerIsSet() {
+    @Test func checkTrigger_AutomaticTriggerIsSet() {
         let manager = UpdateManager(currentVersion: "202602.4")
         manager.checkForUpdate(trigger: .automatic)
-        XCTAssertEqual(manager.lastCheckTrigger, .automatic)
+        #expect(manager.lastCheckTrigger == .automatic)
     }
 
     // MARK: - [M-2] Version Comparison with count >= 2
 
     /// 3コンポーネント形式(X.Y.Z)のバージョン比較が先頭2要素で動作することを検証
-    func testIsNewer_ThreeComponentVersion_WorksCorrectly() {
+    @Test func isNewer_ThreeComponentVersion_WorksCorrectly() {
         // count >= 2 に緩和されたことで、将来的な X.Y.Z 形式にも対応できることを確認
         // 先頭 2 コンポーネントで比較する
-        XCTAssertTrue(UpdateManager.isNewer("202603.0.1", than: "202602.9.9"))
-        XCTAssertFalse(UpdateManager.isNewer("202602.0.1", than: "202602.9.9"))
+        #expect(UpdateManager.isNewer("202603.0.1", than: "202602.9.9"))
+        #expect(!UpdateManager.isNewer("202602.0.1", than: "202602.9.9"))
     }
 
     /// 1コンポーネントのバージョンがfalseを返すことを検証
-    func testIsNewer_SingleComponentVersion_ReturnsFalse() {
+    @Test func isNewer_SingleComponentVersion_ReturnsFalse() {
         // 1 コンポーネントは引き続き false
-        XCTAssertFalse(UpdateManager.isNewer("202603", than: "202602"))
+        #expect(!UpdateManager.isNewer("202603", than: "202602"))
     }
 
     // MARK: - [C-2] SHA-256 Checksum Verification
 
     /// 正しいSHA-256ハッシュで検証が成功することを検証
-    func testVerifySHA256_ValidHash_ReturnsTrue() throws {
+    @Test func verifySHA256_ValidHash_ReturnsTrue() throws {
         let data = Data("hello world".utf8)
         let tempURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("sobani_test_\(UUID().uuidString).bin")
@@ -178,197 +156,148 @@ final class UpdateManagerTests: XCTestCase {
         // 正確なハッシュを計算して検証
         let digest = SHA256.hash(data: data)
         let actualHex = digest.map { String(format: "%02x", $0) }.joined()
-        XCTAssertTrue(UpdateManager.verifySHA256(of: tempURL, expectedHex: actualHex))
+        #expect(UpdateManager.verifySHA256(of: tempURL, expectedHex: actualHex))
     }
 
     /// 不正なSHA-256ハッシュで検証が失敗することを検証
-    func testVerifySHA256_InvalidHash_ReturnsFalse() throws {
+    @Test func verifySHA256_InvalidHash_ReturnsFalse() throws {
         let data = Data("hello world".utf8)
         let tempURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("sobani_test_\(UUID().uuidString).bin")
         try data.write(to: tempURL)
         defer { try? FileManager.default.removeItem(at: tempURL) }
 
-        XCTAssertFalse(UpdateManager.verifySHA256(of: tempURL, expectedHex: "0000000000000000000000000000000000000000000000000000000000000000"))
+        #expect(!UpdateManager.verifySHA256(of: tempURL, expectedHex: "0000000000000000000000000000000000000000000000000000000000000000"))
     }
 
     /// 存在しないファイルのチェックサム検証がfalseを返すことを検証
-    func testVerifySHA256_NonexistentFile_ReturnsFalse() {
+    @Test func verifySHA256_NonexistentFile_ReturnsFalse() {
         let nonexistentURL = URL(fileURLWithPath: "/tmp/nonexistent_sobani_test.bin")
-        XCTAssertFalse(UpdateManager.verifySHA256(of: nonexistentURL, expectedHex: "abc123"))
+        #expect(!UpdateManager.verifySHA256(of: nonexistentURL, expectedHex: "abc123"))
     }
 
-    // MARK: - DMG Asset Selection Tests
+    // MARK: - selectAsset Direct Tests
 
     /// DMGとZIPの両方がある場合にDMGが優先選択されることを検証
-    func testAssetSelection_DMGPreferredOverZIP() throws {
+    @Test func selectAsset_DMGPreferredOverZIP() throws {
         let json = Data("""
         {
             "tag_name": "v202602.23",
             "assets": [
-                {
-                    "name": "Sobani-universal.zip",
-                    "browser_download_url": "https://example.com/zip"
-                },
-                {
-                    "name": "Sobani-universal.dmg",
-                    "browser_download_url": "https://example.com/dmg"
-                },
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://example.com/checksums"
-                }
+                {"name": "Sobani-universal.zip", "browser_download_url": "https://example.com/zip"},
+                {"name": "Sobani-universal.dmg", "browser_download_url": "https://example.com/dmg"},
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-
-        // DMG を優先して選択
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        XCTAssertNotNil(assetResult)
-        XCTAssertEqual(assetResult?.asset.name, "Sobani-universal.dmg")
-        if case .dmg = assetResult?.format {
-            // OK
-        } else {
-            XCTFail("Expected .dmg format")
-        }
+        let result = try #require(UpdateManager.selectAsset(from: release))
+        #expect(result.asset.name == "Sobani-universal.dmg")
+        #expect(result.format == .dmg)
     }
 
     /// DMGがない場合にZIPがフォールバックとして選択されることを検証
-    func testAssetSelection_ZIPFallbackWhenNoDMG() throws {
+    @Test func selectAsset_ZIPFallbackWhenNoDMG() throws {
         let json = Data("""
         {
             "tag_name": "v202602.21",
             "assets": [
-                {
-                    "name": "Sobani-universal.zip",
-                    "browser_download_url": "https://example.com/zip"
-                },
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://example.com/checksums"
-                }
+                {"name": "Sobani-universal.zip", "browser_download_url": "https://example.com/zip"},
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        XCTAssertNotNil(assetResult)
-        XCTAssertEqual(assetResult?.asset.name, "Sobani-universal.zip")
-        if case .zip = assetResult?.format {
-            // OK
-        } else {
-            XCTFail("Expected .zip format")
-        }
+        let result = try #require(UpdateManager.selectAsset(from: release))
+        #expect(result.asset.name == "Sobani-universal.zip")
+        #expect(result.format == .zip)
     }
 
     /// DMGもZIPもない場合にnilが返されることを検証
-    func testAssetSelection_NoMatchingAsset() throws {
+    @Test func selectAsset_NoMatchReturnsNil() throws {
         let json = Data("""
         {
             "tag_name": "v202602.23",
             "assets": [
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://example.com/checksums"
-                }
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        XCTAssertNil(assetResult)
+        #expect(UpdateManager.selectAsset(from: release) == nil)
     }
 
     /// DMGのみのリリースでDMGが正しく選択されることを検証
-    func testAssetSelection_DMGOnlyRelease() throws {
+    @Test func selectAsset_DMGOnlyRelease() throws {
         let json = Data("""
         {
             "tag_name": "v202602.22",
             "assets": [
-                {
-                    "name": "Sobani-universal.dmg",
-                    "browser_download_url": "https://github.com/shiroemons/sobani/releases/download/v202602.22/Sobani-universal.dmg"
-                },
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://github.com/shiroemons/sobani/releases/download/v202602.22/checksums.txt"
-                }
+                {"name": "Sobani-universal.dmg", "browser_download_url": "https://example.com/dmg"},
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-        XCTAssertEqual(release.assets.count, 2)
-        XCTAssertEqual(release.assets[0].name, "Sobani-universal.dmg")
-
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        XCTAssertNotNil(assetResult)
-        XCTAssertEqual(assetResult?.asset.name, "Sobani-universal.dmg")
-        XCTAssertEqual(
-            assetResult?.asset.browserDownloadURL,
-            "https://github.com/shiroemons/sobani/releases/download/v202602.22/Sobani-universal.dmg"
-        )
-        if case .dmg = assetResult?.format {
-            // OK
-        } else {
-            XCTFail("Expected .dmg format")
-        }
+        let result = try #require(UpdateManager.selectAsset(from: release))
+        #expect(result.asset.name == "Sobani-universal.dmg")
+        #expect(result.format == .dmg)
     }
 
     // MARK: - UpdateAssetFormat Tests
 
     /// UpdateAssetFormatのenum caseが正しく区別されることを検証
-    func testUpdateAssetFormat_EnumCases() {
+    @Test func updateAssetFormat_EnumCases() {
         let dmg: UpdateAssetFormat = .dmg
         let zip: UpdateAssetFormat = .zip
 
         switch dmg {
         case .dmg: break // OK
-        case .zip: XCTFail("Expected .dmg")
+        case .zip: Issue.record("Expected .dmg")
         }
 
         switch zip {
         case .zip: break // OK
-        case .dmg: XCTFail("Expected .zip")
+        case .dmg: Issue.record("Expected .zip")
         }
+    }
+
+    // MARK: - handleWake Tests
+
+    /// 最終チェックからcheckInterval経過後のhandleWakeでチェックが実行されることを検証
+    @Test func handleWake_IntervalElapsed_TriggersCheck() throws {
+        let suiteName = "handleWake_elapsed_\(UUID().uuidString)"
+        let testDefaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+        testDefaults.set(Date.distantPast, forKey: "LastUpdateCheckDate")
+
+        let manager = UpdateManager(currentVersion: "202602.4", defaults: testDefaults)
+        manager.handleWake()
+        #expect(manager.lastCheckTrigger == .automatic)
+    }
+
+    /// 最終チェックからcheckInterval未経過のhandleWakeでチェックがスキップされることを検証
+    @Test func handleWake_IntervalNotElapsed_SkipsCheck() throws {
+        let suiteName = "handleWake_not_elapsed_\(UUID().uuidString)"
+        let testDefaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+        testDefaults.set(Date(), forKey: "LastUpdateCheckDate")
+
+        let manager = UpdateManager(currentVersion: "202602.4", defaults: testDefaults)
+        manager.handleWake()
+        // lastCheckTrigger stays at default .automatic, state stays .idle (no check triggered)
+        #expect(manager.lastCheckTrigger == .automatic)
+    }
+
+    /// 最終チェック未記録のhandleWakeでチェックが実行されることを検証
+    @Test func handleWake_NoLastCheck_TriggersCheck() throws {
+        let suiteName = "handleWake_no_last_\(UUID().uuidString)"
+        let testDefaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+        let manager = UpdateManager(currentVersion: "202602.4", defaults: testDefaults)
+        manager.handleWake()
+        #expect(manager.lastCheckTrigger == .automatic)
     }
 
 }

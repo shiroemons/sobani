@@ -1,26 +1,17 @@
-import XCTest
-@testable import Sobani
+import Foundation
+import Testing
+@preconcurrency @testable import Sobani
 
 /// レイアウトプリセットの保存・読み込み・削除・リネーム、ファイル名サニタイズ、エッジケース、Codable/Equatable準拠を検証するテスト
-final class LayoutPresetManagerTests: XCTestCase {
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var tempDirectory: URL!
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var presetManager: LayoutPresetManager!
+@Suite struct LayoutPresetManagerTests {
+    let tempDirectory: URL
+    let presetManager: LayoutPresetManager
 
-    override func setUp() {
-        super.setUp()
+    init() throws {
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
         presetManager = LayoutPresetManager(baseDirectory: tempDirectory)
-    }
-
-    override func tearDown() {
-        try? FileManager.default.removeItem(at: tempDirectory)
-        presetManager = nil
-        tempDirectory = nil
-        super.tearDown()
     }
 
     // MARK: - Helpers
@@ -61,40 +52,40 @@ final class LayoutPresetManagerTests: XCTestCase {
     // MARK: - Save and Load Tests
 
     /// プリセットの保存と読み込みのラウンドトリップが正しく動作することを検証
-    func testSaveAndLoadPresetRoundTrip() {
+    @Test func saveAndLoadPresetRoundTrip() {
         let states = [makeState(imageName: "image1.png"), makeState(imageName: "image2.png")]
         presetManager.savePreset(name: "TestPreset", states: states)
 
         let loaded = presetManager.loadPreset(named: "TestPreset")
-        XCTAssertNotNil(loaded)
-        XCTAssertEqual(loaded?.name, "TestPreset")
-        XCTAssertEqual(loaded?.states, states)
+        #expect(loaded != nil)
+        #expect(loaded?.name == "TestPreset")
+        #expect(loaded?.states == states)
     }
 
     /// 複数プリセットがすべて読み込まれることを検証
-    func testLoadPresetsReturnsAllPresets() {
+    @Test func loadPresetsReturnsAllPresets() {
         presetManager.savePreset(name: "Preset1", states: [makeState(originX: 1)])
         presetManager.savePreset(name: "Preset2", states: [makeState(originX: 2)])
         presetManager.savePreset(name: "Preset3", states: [makeState(originX: 3)])
 
         let all = presetManager.loadPresets()
-        XCTAssertEqual(all.count, 3)
+        #expect(all.count == 3)
 
         let names = Set(all.map { $0.name })
-        XCTAssertTrue(names.contains("Preset1"))
-        XCTAssertTrue(names.contains("Preset2"))
-        XCTAssertTrue(names.contains("Preset3"))
+        #expect(names.contains("Preset1"))
+        #expect(names.contains("Preset2"))
+        #expect(names.contains("Preset3"))
     }
 
     /// プリセットがcreatedAtの降順でソートされることを検証
-    func testLoadPresetsOrderedByCreatedAtDescending() throws {
+    @Test func loadPresetsOrderedByCreatedAtDescending() throws {
         // Save all presets first, then overwrite JSON to control createdAt
         presetManager.savePreset(name: "OldPreset", states: [makeState(originX: 1)])
         presetManager.savePreset(name: "MiddlePreset", states: [makeState(originX: 2)])
         presetManager.savePreset(name: "NewPreset", states: [makeState(originX: 3)])
 
         // Overwrite createdAt with controlled dates
-        let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
+        let layoutsDir = try #require(presetManager.layoutsDirectoryURL)
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         encoder.dateEncodingStrategy = .iso8601
@@ -108,114 +99,137 @@ final class LayoutPresetManagerTests: XCTestCase {
                        encoder: encoder, directory: layoutsDir)
 
         let all = presetManager.loadPresets()
-        XCTAssertEqual(all.count, 3)
-        XCTAssertEqual(all[0].name, "NewPreset")
-        XCTAssertEqual(all[1].name, "MiddlePreset")
-        XCTAssertEqual(all[2].name, "OldPreset")
+        #expect(all.count == 3)
+        #expect(all[0].name == "NewPreset")
+        #expect(all[1].name == "MiddlePreset")
+        #expect(all[2].name == "OldPreset")
     }
 
     /// 同名プリセットの上書き保存が正しく動作することを検証
-    func testOverwritePreset() {
+    @Test func overwritePreset() {
         let firstStates = [makeState(imageName: "first.png")]
         presetManager.savePreset(name: "MyPreset", states: firstStates)
-        XCTAssertEqual(presetManager.loadPreset(named: "MyPreset")?.states, firstStates)
+        #expect(presetManager.loadPreset(named: "MyPreset")?.states == firstStates)
 
         let secondStates = [makeState(imageName: "second.png"), makeState(imageName: "third.png")]
         presetManager.savePreset(name: "MyPreset", states: secondStates)
 
         let loaded = presetManager.loadPreset(named: "MyPreset")
-        XCTAssertEqual(loaded?.states, secondStates)
-        XCTAssertEqual(loaded?.states.count, 2)
+        #expect(loaded?.states == secondStates)
+        #expect(loaded?.states.count == 2)
     }
 
     // MARK: - Delete Tests
 
     /// プリセットの削除が正しく動作することを検証
-    func testDeletePreset() {
+    @Test func deletePreset() {
         presetManager.savePreset(name: "ToDelete", states: [makeState()])
-        XCTAssertNotNil(presetManager.loadPreset(named: "ToDelete"))
+        #expect(presetManager.loadPreset(named: "ToDelete") != nil)
 
         presetManager.deletePreset(named: "ToDelete")
-        XCTAssertNil(presetManager.loadPreset(named: "ToDelete"))
+        #expect(presetManager.loadPreset(named: "ToDelete") == nil)
     }
 
     /// 存在しないプリセットの削除でクラッシュしないことを検証
-    func testDeleteNonExistentPreset() {
+    @Test func deleteNonExistentPreset() {
         // Should not crash
         presetManager.deletePreset(named: "NonExistent")
-        XCTAssertEqual(presetManager.loadPresets().count, 0)
+        #expect(presetManager.loadPresets().isEmpty)
     }
 
     // MARK: - presetExists Tests
 
     /// 存在するプリセットに対してtrueが返されることを検証
-    func testPresetExistsTrue() {
+    @Test func presetExistsTrue() {
         presetManager.savePreset(name: "Exists", states: [makeState()])
-        XCTAssertTrue(presetManager.presetExists(named: "Exists"))
+        #expect(presetManager.presetExists(named: "Exists"))
     }
 
     /// 存在しないプリセットに対してfalseが返されることを検証
-    func testPresetExistsFalse() {
-        XCTAssertFalse(presetManager.presetExists(named: "DoesNotExist"))
+    @Test func presetExistsFalse() {
+        #expect(!presetManager.presetExists(named: "DoesNotExist"))
     }
 
     // MARK: - Sanitized File Name Tests
 
     /// 特殊文字を含むプリセット名の保存と読み込みが正しく動作することを検証
-    func testSanitizedFileNameSpecialCharacters() {
+    @Test func sanitizedFileNameSpecialCharacters() {
         let specialName = "test/\\:*?\"<>|name"
         let states = [makeState(imageName: "special.png")]
         presetManager.savePreset(name: specialName, states: states)
 
         let loaded = presetManager.loadPreset(named: specialName)
-        XCTAssertNotNil(loaded)
-        XCTAssertEqual(loaded?.name, specialName)
-        XCTAssertEqual(loaded?.states, states)
+        #expect(loaded != nil)
+        #expect(loaded?.name == specialName)
+        #expect(loaded?.states == states)
     }
 
     /// パストラバーサルを含む名前でlayoutsディレクトリ外に保存されないことを検証
-    func testSanitizedFileNamePathTraversal() throws {
+    @Test func sanitizedFileNamePathTraversal() throws {
         let dangerousName = "../../../etc/passwd"
         let states = [makeState(imageName: "safe.png")]
         presetManager.savePreset(name: dangerousName, states: states)
 
         let loaded = presetManager.loadPreset(named: dangerousName)
-        XCTAssertNotNil(loaded)
-        XCTAssertEqual(loaded?.name, dangerousName)
-        XCTAssertEqual(loaded?.states, states)
+        #expect(loaded != nil)
+        #expect(loaded?.name == dangerousName)
+        #expect(loaded?.states == states)
 
         // Verify the file was saved inside the layouts directory, not at a traversed path
         let layoutsDir = presetManager.layoutsDirectoryURL
-        XCTAssertNotNil(layoutsDir)
+        #expect(layoutsDir != nil)
 
         // ファイルがlayoutsディレクトリ内に保存されたことを検証
-        let layoutsDirUnwrapped = try XCTUnwrap(presetManager.layoutsDirectoryURL)
+        let layoutsDirUnwrapped = try #require(presetManager.layoutsDirectoryURL)
         let resolvedLayoutsDir = layoutsDirUnwrapped.standardizedFileURL.path
         let files = try FileManager.default.contentsOfDirectory(at: layoutsDirUnwrapped, includingPropertiesForKeys: nil)
         let jsonFiles = files.filter { $0.pathExtension == "json" }
-        XCTAssertFalse(jsonFiles.isEmpty, "Preset file should exist in layouts directory")
+        #expect(!jsonFiles.isEmpty, "Preset file should exist in layouts directory")
         for file in jsonFiles {
-            XCTAssertTrue(file.standardizedFileURL.path.hasPrefix(resolvedLayoutsDir),
-                          "Preset file must be inside layouts directory: \(file.path)")
+            #expect(file.standardizedFileURL.path.hasPrefix(resolvedLayoutsDir),
+                    "Preset file must be inside layouts directory: \(file.path)")
         }
     }
 
     // MARK: - Edge Case Tests
 
+    /// 空文字名のプリセット保存が"unnamed"フォールバックで動作することを検証
+    @Test func savePreset_EmptyName_UsesUnnamedFallback() {
+        let states = [makeState(imageName: "test.png")]
+        presetManager.savePreset(name: "", states: states)
+
+        // sanitizedFileName returns "unnamed" for empty string
+        let loaded = presetManager.loadPreset(named: "")
+        #expect(loaded != nil)
+        #expect(loaded?.name == "")
+        #expect(loaded?.states == states)
+    }
+
+    /// ドット名のプリセットが"unnamed"フォールバックで安全に保存されることを検証
+    @Test func savePreset_DotName_UsesUnnamedFallback() {
+        let states = [makeState(imageName: "dot.png")]
+        presetManager.savePreset(name: ".", states: states)
+
+        let loaded = presetManager.loadPreset(named: ".")
+        #expect(loaded != nil)
+        #expect(loaded?.name == ".")
+        #expect(loaded?.states == states)
+    }
+
     /// 空のWindowState配列を持つプリセットが正しく保存・読み込みされることを検証
-    func testEmptyStatesArray() {
+    @Test func emptyStatesArray() {
         presetManager.savePreset(name: "EmptyPreset", states: [])
 
         let loaded = presetManager.loadPreset(named: "EmptyPreset")
-        XCTAssertNotNil(loaded)
-        XCTAssertEqual(loaded?.name, "EmptyPreset")
-        XCTAssertEqual(loaded?.states, [])
+        #expect(loaded != nil)
+        #expect(loaded?.name == "EmptyPreset")
+        #expect(loaded?.states == [])
     }
 
     /// 不正なJSONファイルがスキップされ有効なプリセットのみ読み込まれることを検証
-    func testInvalidJSONSkipped() throws {
+    @Test func invalidJSONSkipped() throws {
         // Write invalid JSON file directly into the layouts directory
-        let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
+        let layoutsDir = try #require(presetManager.layoutsDirectoryURL)
 
         let invalidFile = layoutsDir.appendingPathComponent("invalid.json")
         try "{ not valid json }}}".write(to: invalidFile, atomically: true, encoding: .utf8)
@@ -225,25 +239,25 @@ final class LayoutPresetManagerTests: XCTestCase {
 
         let all = presetManager.loadPresets()
         // Should load at least the valid preset without crashing
-        XCTAssertTrue(all.contains(where: { $0.name == "ValidPreset" }))
+        #expect(all.contains(where: { $0.name == "ValidPreset" }))
     }
 
     /// Unicode(日本語)プリセット名の保存と読み込みが正しく動作することを検証
-    func testUnicodePresetName() {
+    @Test func unicodePresetName() {
         let japaneseName = "お気に入りレイアウト"
         let states = [makeState(imageName: "character.png")]
         presetManager.savePreset(name: japaneseName, states: states)
 
         let loaded = presetManager.loadPreset(named: japaneseName)
-        XCTAssertNotNil(loaded)
-        XCTAssertEqual(loaded?.name, japaneseName)
-        XCTAssertEqual(loaded?.states, states)
+        #expect(loaded != nil)
+        #expect(loaded?.name == japaneseName)
+        #expect(loaded?.states == states)
     }
 
     // MARK: - LayoutPreset Codable/Equatable Tests
 
     /// LayoutPresetのCodableエンコード・デコードが正しく動作することを検証
-    func testLayoutPresetCodable() throws {
+    @Test func layoutPresetCodable() throws {
         let states = [makeState(imageName: "test.png", originX: 50, originY: 60)]
         let preset = LayoutPreset(name: "CodableTest", createdAt: Date(), states: states)
 
@@ -252,44 +266,44 @@ final class LayoutPresetManagerTests: XCTestCase {
         let decoder = JSONDecoder()
         let decoded = try decoder.decode(LayoutPreset.self, from: data)
 
-        XCTAssertEqual(decoded, preset)
+        #expect(decoded == preset)
     }
 
     /// LayoutPresetのEquatable比較が正しく動作することを検証
-    func testLayoutPresetEquatable() {
+    @Test func layoutPresetEquatable() {
         let date = Date()
         let states = [makeState(imageName: "eq.png")]
 
         let preset1 = LayoutPreset(name: "Same", createdAt: date, states: states)
         let preset2 = LayoutPreset(name: "Same", createdAt: date, states: states)
-        XCTAssertEqual(preset1, preset2)
+        #expect(preset1 == preset2)
 
         let preset3 = LayoutPreset(name: "Different", createdAt: date, states: states)
-        XCTAssertNotEqual(preset1, preset3)
+        #expect(preset1 != preset3)
 
         let differentStates = [makeState(imageName: "other.png")]
         let preset4 = LayoutPreset(name: "Same", createdAt: date, states: differentStates)
-        XCTAssertNotEqual(preset1, preset4)
+        #expect(preset1 != preset4)
     }
 
     // MARK: - Load Non-Existent Tests
 
     /// 存在しないプリセットの読み込みでnilが返されることを検証
-    func testLoadPresetNonExistent() {
+    @Test func loadPresetNonExistent() {
         let loaded = presetManager.loadPreset(named: "NeverSaved")
-        XCTAssertNil(loaded)
+        #expect(loaded == nil)
     }
 
     // MARK: - Directory Tests
 
     /// layoutsディレクトリが自動作成されることを検証
-    func testLayoutsDirectoryCreated() throws {
-        let layoutsDir = try XCTUnwrap(presetManager.layoutsDirectoryURL)
+    @Test func layoutsDirectoryCreated() throws {
+        let layoutsDir = try #require(presetManager.layoutsDirectoryURL)
 
         var isDirectory: ObjCBool = false
         let exists = FileManager.default.fileExists(atPath: layoutsDir.path, isDirectory: &isDirectory)
-        XCTAssertTrue(exists)
-        XCTAssertTrue(isDirectory.boolValue)
+        #expect(exists)
+        #expect(isDirectory.boolValue)
     }
 
 }

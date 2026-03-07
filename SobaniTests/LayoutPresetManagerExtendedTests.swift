@@ -1,26 +1,17 @@
-import XCTest
-@testable import Sobani
+import Foundation
+import Testing
+@preconcurrency @testable import Sobani
 
 /// レイアウトプリセットの複数WindowState保存・プロパティ保持・削除後の存在確認を検証するテスト
-final class LayoutPresetManagerExtendedTests: XCTestCase {
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var tempDirectory: URL!
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var presetManager: LayoutPresetManager!
+@Suite struct LayoutPresetManagerExtendedTests {
+    let tempDirectory: URL
+    let presetManager: LayoutPresetManager
 
-    override func setUp() {
-        super.setUp()
+    init() throws {
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
         presetManager = LayoutPresetManager(baseDirectory: tempDirectory)
-    }
-
-    override func tearDown() {
-        try? FileManager.default.removeItem(at: tempDirectory)
-        presetManager = nil
-        tempDirectory = nil
-        super.tearDown()
     }
 
     // MARK: - Helpers
@@ -52,7 +43,7 @@ final class LayoutPresetManagerExtendedTests: XCTestCase {
     // MARK: - Multiple States Tests
 
     /// 複数WindowStateを持つプリセットが正しく保存・読み込みされることを検証
-    func testMultipleStatesInPreset() {
+    @Test func multipleStatesInPreset() {
         let states = [
             makeState(imageName: "img1.png", originX: 10, originY: 20, windowId: 1),
             makeState(imageName: "img2.png", originX: 30, originY: 40, windowId: 2),
@@ -63,13 +54,13 @@ final class LayoutPresetManagerExtendedTests: XCTestCase {
         presetManager.savePreset(name: "FiveWindows", states: states)
 
         let loaded = presetManager.loadPreset(named: "FiveWindows")
-        XCTAssertNotNil(loaded)
-        XCTAssertEqual(loaded?.states.count, 5)
-        XCTAssertEqual(loaded?.states, states)
+        #expect(loaded != nil)
+        #expect(loaded?.states.count == 5)
+        #expect(loaded?.states == states)
     }
 
     /// WindowStateの全プロパティ(反転・回転・透過率・位置・サイズ)が保持されることを検証
-    func testPresetStatesPreserveWindowProperties() throws {
+    @Test func presetStatesPreserveWindowProperties() throws {
         let states = [
             makeState(
                 imageName: "flipped.png",
@@ -96,35 +87,35 @@ final class LayoutPresetManagerExtendedTests: XCTestCase {
         ]
         presetManager.savePreset(name: "PropertiesTest", states: states)
 
-        let loaded = try XCTUnwrap(presetManager.loadPreset(named: "PropertiesTest"))
+        let loaded = try #require(presetManager.loadPreset(named: "PropertiesTest"))
         let loadedStates = loaded.states
 
-        XCTAssertEqual(loadedStates[0].imageName, "flipped.png")
-        XCTAssertTrue(loadedStates[0].isFlippedHorizontally)
-        XCTAssertEqual(loadedStates[0].rotationAngle, 45, accuracy: AppConstants.floatingPointTolerance)
-        XCTAssertEqual(loadedStates[0].opacityLevel, 0.7, accuracy: AppConstants.floatingPointTolerance)
-        XCTAssertEqual(loadedStates[0].windowId, 3)
-        XCTAssertEqual(loadedStates[0].originX, 150, accuracy: AppConstants.floatingPointTolerance)
-        XCTAssertEqual(loadedStates[0].originY, 250, accuracy: AppConstants.floatingPointTolerance)
-        XCTAssertEqual(loadedStates[0].width, 500, accuracy: AppConstants.floatingPointTolerance)
-        XCTAssertEqual(loadedStates[0].height, 600, accuracy: AppConstants.floatingPointTolerance)
+        #expect(loadedStates[0].imageName == "flipped.png")
+        #expect(loadedStates[0].isFlippedHorizontally)
+        #expect(abs(loadedStates[0].rotationAngle - 45) < AppConstants.floatingPointTolerance)
+        #expect(abs(loadedStates[0].opacityLevel - 0.7) < AppConstants.floatingPointTolerance)
+        #expect(loadedStates[0].windowId == 3)
+        #expect(abs(loadedStates[0].originX - 150) < AppConstants.floatingPointTolerance)
+        #expect(abs(loadedStates[0].originY - 250) < AppConstants.floatingPointTolerance)
+        #expect(abs(loadedStates[0].width - 500) < AppConstants.floatingPointTolerance)
+        #expect(abs(loadedStates[0].height - 600) < AppConstants.floatingPointTolerance)
 
-        XCTAssertEqual(loadedStates[1].imageName, "rotated.png")
-        XCTAssertFalse(loadedStates[1].isFlippedHorizontally)
-        XCTAssertEqual(loadedStates[1].rotationAngle, 180, accuracy: AppConstants.floatingPointTolerance)
-        XCTAssertEqual(loadedStates[1].opacityLevel, 0.5, accuracy: AppConstants.floatingPointTolerance)
-        XCTAssertEqual(loadedStates[1].windowId, 7)
+        #expect(loadedStates[1].imageName == "rotated.png")
+        #expect(!loadedStates[1].isFlippedHorizontally)
+        #expect(abs(loadedStates[1].rotationAngle - 180) < AppConstants.floatingPointTolerance)
+        #expect(abs(loadedStates[1].opacityLevel - 0.5) < AppConstants.floatingPointTolerance)
+        #expect(loadedStates[1].windowId == 7)
     }
 
     // MARK: - Delete Then Exists Tests
 
     /// 削除後にpresetExistsがfalseを返すことを検証
-    func testDeleteThenPresetExistsFalse() {
+    @Test func deleteThenPresetExistsFalse() {
         presetManager.savePreset(name: "WillBeDeleted", states: [makeState()])
-        XCTAssertTrue(presetManager.presetExists(named: "WillBeDeleted"))
+        #expect(presetManager.presetExists(named: "WillBeDeleted"))
 
         presetManager.deletePreset(named: "WillBeDeleted")
-        XCTAssertFalse(presetManager.presetExists(named: "WillBeDeleted"))
+        #expect(!presetManager.presetExists(named: "WillBeDeleted"))
     }
 
 }

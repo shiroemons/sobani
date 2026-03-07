@@ -50,7 +50,7 @@ enum UpdateAssetFormat {
 
 // MARK: - Update Error Code
 
-enum UpdateErrorCode: String {
+enum UpdateErrorCode: String, CaseIterable {
     // Check phase
     case networkError       = "U-101"
     case fetchError         = "U-102"
@@ -118,16 +118,12 @@ final class UpdateManager {
         }
     }
 
-    private lazy var session: URLSession = {
-        let config = URLSessionConfiguration.default
-        // TLS 1.3 を最低バージョンとして強制
-        config.tlsMinimumSupportedProtocolVersion = .TLSv13
-        return URLSession(configuration: config)
-    }()
+    private let session: URLSession
 
     private let currentVersion: String
     private let apiURL: URL
     private var checkTimer: Timer?
+    private let defaults: UserDefaults
 
     private static let lastCheckKey = "LastUpdateCheckDate"
     private static let checkInterval: TimeInterval = 24 * 60 * 60 // 24 hours
@@ -137,13 +133,22 @@ final class UpdateManager {
 
     init(
         currentVersion: String? = nil,
-        apiURL: URL? = nil
+        apiURL: URL? = nil,
+        session: URLSession? = nil,
+        defaults: UserDefaults = .standard
     ) {
         self.currentVersion = currentVersion
             ?? Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
             ?? "0"
         self.apiURL = apiURL
             ?? Self.defaultAPIURL
+        self.session = session ?? {
+            let config = URLSessionConfiguration.default
+            // TLS 1.3 を最低バージョンとして強制
+            config.tlsMinimumSupportedProtocolVersion = .TLSv13
+            return URLSession(configuration: config)
+        }()
+        self.defaults = defaults
     }
 
     deinit {
@@ -171,8 +176,8 @@ final class UpdateManager {
         )
     }
 
-    @objc private func handleWake() {
-        let lastCheck = UserDefaults.standard.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
+    @objc func handleWake() {
+        let lastCheck = defaults.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
         if Date().timeIntervalSince(lastCheck) >= Self.checkInterval {
             checkForUpdate(trigger: .automatic)
         }
@@ -180,7 +185,7 @@ final class UpdateManager {
 
     // MARK: - Asset Selection
 
-    private static func selectAsset(from release: GitHubRelease) -> (asset: GitHubAsset, format: UpdateAssetFormat)? {
+    static func selectAsset(from release: GitHubRelease) -> (asset: GitHubAsset, format: UpdateAssetFormat)? {
         if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
             return (dmg, .dmg)
         } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
