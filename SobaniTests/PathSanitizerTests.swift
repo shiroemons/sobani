@@ -1,89 +1,90 @@
-import XCTest
-@testable import Sobani
+import Foundation
+import Testing
+@preconcurrency @testable import Sobani
 
 /// safeURLとsafeNameによるパストラバーサル防止、無効文字の置換、エッジケースの処理を検証するテスト
-final class PathSanitizerTests: XCTestCase {
+@Suite struct PathSanitizerTests {
     // MARK: - safeURL tests
 
     /// 正常なファイル名で正しいURLが生成されることを検証
-    func testSafeURLWithValidName() {
+    @Test func safeURLWithValidName() {
         let dir = URL(fileURLWithPath: "/tmp/test")
         let result = PathSanitizer.safeURL(name: "image.png", in: dir)
-        XCTAssertEqual(result?.path, "/tmp/test/image.png")
+        #expect(result?.path == "/tmp/test/image.png")
     }
 
     /// パストラバーサルがディレクトリ内に制限されることを検証
-    func testSafeURLRejectsPathTraversal() throws {
+    @Test func safeURLRejectsPathTraversal() throws {
         let dir = URL(fileURLWithPath: "/tmp/test")
-        let result = try XCTUnwrap(PathSanitizer.safeURL(name: "../etc/passwd", in: dir))
+        let result = try #require(PathSanitizer.safeURL(name: "../etc/passwd", in: dir))
         // Should extract only "passwd" as lastPathComponent and validate prefix
-        XCTAssertTrue(result.path.hasPrefix(dir.path + "/"))
+        #expect(result.path.hasPrefix(dir.path + "/"))
     }
 
     /// 空文字列でnilが返されることを検証
-    func testSafeURLRejectsEmptyName() {
+    @Test func safeURLRejectsEmptyName() {
         let dir = URL(fileURLWithPath: "/tmp/test")
-        XCTAssertNil(PathSanitizer.safeURL(name: "", in: dir))
+        #expect(PathSanitizer.safeURL(name: "", in: dir) == nil)
     }
 
     /// ドット1つでnilが返されることを検証
-    func testSafeURLRejectsDot() {
+    @Test func safeURLRejectsDot() {
         let dir = URL(fileURLWithPath: "/tmp/test")
-        XCTAssertNil(PathSanitizer.safeURL(name: ".", in: dir))
+        #expect(PathSanitizer.safeURL(name: ".", in: dir) == nil)
     }
 
     /// サブディレクトリ指定でlastPathComponentのみが使用されることを検証
-    func testSafeURLWithSubdirectoryAttempt() {
+    @Test func safeURLWithSubdirectoryAttempt() {
         let dir = URL(fileURLWithPath: "/tmp/test")
         let result = PathSanitizer.safeURL(name: "subdir/file.png", in: dir)
         // lastPathComponent extracts "file.png"
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result?.lastPathComponent, "file.png")
+        #expect(result != nil)
+        #expect(result?.lastPathComponent == "file.png")
     }
 
     // MARK: - safeName tests
 
     /// 正常な名前がそのまま返されることを検証
-    func testSafeNameWithValidName() {
-        XCTAssertEqual(PathSanitizer.safeName(from: "my layout"), "my layout")
+    @Test func safeNameWithValidName() {
+        #expect(PathSanitizer.safeName(from: "my layout") == "my layout")
     }
 
     /// 無効文字(/、:)がアンダースコアに置換されることを検証
-    func testSafeNameReplacesInvalidCharacters() throws {
-        let result = try XCTUnwrap(PathSanitizer.safeName(from: "my/layout:test"))
-        XCTAssertFalse(result.contains("/"))
-        XCTAssertFalse(result.contains(":"))
-        XCTAssertEqual(result, "my_layout_test")
+    @Test func safeNameReplacesInvalidCharacters() throws {
+        let result = try #require(PathSanitizer.safeName(from: "my/layout:test"))
+        #expect(!result.contains("/"))
+        #expect(!result.contains(":"))
+        #expect(result == "my_layout_test")
     }
 
     /// 空文字列でnilが返されることを検証
-    func testSafeNameRejectsEmpty() {
-        XCTAssertNil(PathSanitizer.safeName(from: ""))
+    @Test func safeNameRejectsEmpty() {
+        #expect(PathSanitizer.safeName(from: "") == nil)
     }
 
     /// ドット1つでnilが返されることを検証
-    func testSafeNameRejectsDot() {
-        XCTAssertNil(PathSanitizer.safeName(from: "."))
+    @Test func safeNameRejectsDot() {
+        #expect(PathSanitizer.safeName(from: ".") == nil)
     }
 
     /// ドット2つでnilが返されることを検証
-    func testSafeNameRejectsDoubleDot() {
-        XCTAssertNil(PathSanitizer.safeName(from: ".."))
+    @Test func safeNameRejectsDoubleDot() {
+        #expect(PathSanitizer.safeName(from: "..") == nil)
     }
 
     /// パストラバーサル文字列が無害化されパス区切り文字を含まないことを検証
-    func testSafeNameWithPathTraversalAttempt() throws {
-        let result = try XCTUnwrap(PathSanitizer.safeName(from: "../../../etc"))
+    @Test func safeNameWithPathTraversalAttempt() throws {
+        let result = try #require(PathSanitizer.safeName(from: "../../../etc"))
         // パス区切り文字が除去されていることを確認
-        XCTAssertFalse(result.contains("/"))
-        XCTAssertFalse(result.contains("\\"))
+        #expect(!result.contains("/"))
+        #expect(!result.contains("\\"))
     }
 
     /// 特殊文字(*, ?)がアンダースコアに置換されることを検証
-    func testSafeNameWithSpecialCharacters() throws {
-        let result = try XCTUnwrap(PathSanitizer.safeName(from: "test*file?name"))
-        XCTAssertFalse(result.contains("*"))
-        XCTAssertFalse(result.contains("?"))
-        XCTAssertEqual(result, "test_file_name")
+    @Test func safeNameWithSpecialCharacters() throws {
+        let result = try #require(PathSanitizer.safeName(from: "test*file?name"))
+        #expect(!result.contains("*"))
+        #expect(!result.contains("?"))
+        #expect(result == "test_file_name")
     }
 }
