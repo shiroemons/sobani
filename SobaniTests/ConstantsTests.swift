@@ -57,6 +57,40 @@ import os.log
         #expect(MenuItemTag.allCases.count == 29)
     }
 
+    // MARK: - Screen Restoration / Wake Retry 定数検証
+
+    /// Screen Restoration定数の正値と整合性を検証
+    @Test func appConstants_ScreenRestoration() {
+        #expect(AppConstants.screenMatchTolerance > 0)
+        #expect(AppConstants.screenIntersectionThreshold > 0)
+        #expect(AppConstants.wakeInitialDelay > 0)
+    }
+
+    /// Wake Retry定数の整合性を検証（threshold < maxAttempts）
+    @Test func appConstants_WakeRetryRelationship() {
+        #expect(AppConstants.wakeRetryCountThreshold < AppConstants.wakeRetryMaxAttempts)
+        #expect(AppConstants.wakeRetryCountThreshold >= 0)
+        #expect(AppConstants.wakeRetryMaxAttempts > 0)
+        #expect(AppConstants.wakeRetryInterval > 0)
+    }
+
+    /// Fallback定数の正値を検証
+    @Test func appConstants_FallbackValues() {
+        #expect(AppConstants.fallbackScreenSize.width > 0)
+        #expect(AppConstants.fallbackScreenSize.height > 0)
+        #expect(AppConstants.fallbackScreenHeight > 0)
+    }
+
+    /// 浮動小数点許容誤差・UI定数の正値を検証
+    @Test func appConstants_MiscPositiveValues() {
+        #expect(AppConstants.floatingPointTolerance > 0)
+        #expect(AppConstants.statusBarIconSize > 0)
+        #expect(AppConstants.menuWindowMinWidth > 0)
+        #expect(AppConstants.menuTabPadding > 0)
+        #expect(AppConstants.layoutDialogFieldWidth > 0)
+        #expect(AppConstants.layoutDialogFieldHeight > 0)
+    }
+
     // MARK: - AppSupportDirectory テスト
 
     /// カスタムbaseDirectoryが指定された場合にそのパスが返されることを検証
