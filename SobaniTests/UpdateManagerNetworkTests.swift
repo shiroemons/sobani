@@ -5,17 +5,25 @@ import Testing
 /// checkForUpdateのネットワーク関連テストを検証するテスト
 @Suite(.serialized) struct UpdateManagerNetworkTests {
 
+    init() {
+        MockURLProtocol.requestHandler = nil
+    }
+
     /// メインRunLoopを回しながら条件が満たされるまで待機するヘルパー
     private func waitForState(
         of manager: UpdateManager,
         timeout: TimeInterval = 3.0,
         predicate: (UpdateState) -> Bool
     ) {
+        // 前テストの pending DispatchQueue.main.async コールバックをフラッシュ
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
             RunLoop.main.run(until: Date().addingTimeInterval(0.05))
             if predicate(manager.state) { return }
         }
+        Issue.record("waitForState timed out after \(timeout)s. Current state: \(manager.state)")
     }
 
     /// ネットワークエラー時にerror stateが設定されることを検証
