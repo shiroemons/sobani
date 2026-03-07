@@ -4,7 +4,7 @@ import os.log
 
 // MARK: - GitHub API Models
 
-struct GitHubRelease: Decodable {
+struct GitHubRelease: Decodable, Sendable {
     let tagName: String
     let assets: [GitHubAsset]
     enum CodingKeys: String, CodingKey {
@@ -13,7 +13,7 @@ struct GitHubRelease: Decodable {
     }
 }
 
-struct GitHubAsset: Decodable {
+struct GitHubAsset: Decodable, Sendable {
     let name: String
     let browserDownloadURL: String
     enum CodingKeys: String, CodingKey {
@@ -24,7 +24,7 @@ struct GitHubAsset: Decodable {
 
 // MARK: - Update State
 
-enum UpdateState {
+enum UpdateState: Sendable {
     case idle
     case checking
     case available(version: String, downloadURL: URL, checksumURL: URL?, format: UpdateAssetFormat)
@@ -35,7 +35,7 @@ enum UpdateState {
 
 // MARK: - Check Trigger
 
-enum CheckTrigger: Equatable {
+enum CheckTrigger: Equatable, Sendable {
     case manual    // メニューバーからの手動チェック → 全結果でダイアログ
     case startup   // 起動時チェック → 更新ありのみダイアログ
     case automatic // 周期/スリープ復帰 → ダイアログなし
@@ -43,14 +43,14 @@ enum CheckTrigger: Equatable {
 
 // MARK: - Update Asset Format
 
-enum UpdateAssetFormat {
+enum UpdateAssetFormat: Sendable {
     case dmg
     case zip
 }
 
 // MARK: - Update Error Code
 
-enum UpdateErrorCode: String, CaseIterable {
+enum UpdateErrorCode: String, CaseIterable, Sendable {
     // Check phase
     case networkError       = "U-101"
     case fetchError         = "U-102"

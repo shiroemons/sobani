@@ -3,7 +3,7 @@ import os.log
 
 // MARK: - Window State
 
-struct WindowState: Codable, Equatable {
+struct WindowState: Codable, Equatable, Sendable {
     var imageName: String
     let originX: CGFloat
     let originY: CGFloat

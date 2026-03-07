@@ -5,7 +5,7 @@ extension Notification.Name {
     static let languageDidChange = Notification.Name("languageDidChange")
 }
 
-enum Language: String, CaseIterable {
+enum Language: String, CaseIterable, Sendable {
     case system = "system"
     case japanese = "ja"
     case english = "en"

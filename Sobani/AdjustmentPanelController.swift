@@ -140,7 +140,7 @@ final class RotationDialView: NSView {
 
 // MARK: - Adjustment Panel State
 
-struct AdjustmentPanelState {
+struct AdjustmentPanelState: Sendable {
     let angle: CGFloat
     let opacity: CGFloat
     let position: CGPoint

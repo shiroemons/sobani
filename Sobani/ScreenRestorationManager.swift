@@ -3,7 +3,7 @@ import os.log
 
 // MARK: - Pending Restoration
 
-struct PendingRestoration: Codable {
+struct PendingRestoration: Codable, Sendable {
     let windowId: Int
     let originalState: WindowState
     let displayID: CGDirectDisplayID

@@ -134,7 +134,7 @@ enum PathSanitizer {
     }
 }
 
-enum MenuItemTag: Int, CaseIterable {
+enum MenuItemTag: Int, CaseIterable, Sendable {
     // Phase 2 で使用
     case resetToDefault = 1001
     case defaultImage = 1002
