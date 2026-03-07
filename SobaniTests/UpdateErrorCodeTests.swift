@@ -1,10 +1,12 @@
 import XCTest
 @testable import Sobani
 
+/// エラーコードのrawValue一貫性、一意性、トラブルシューティングキーの正確性を検証するテスト
 final class UpdateErrorCodeTests: XCTestCase {
 
     // MARK: - Raw Value Tests
 
+    /// 各エラーコードのrawValueが仕様通りの文字列であることを検証
     func testUpdateErrorCode_RawValues() {
         // Check phase
         XCTAssertEqual(UpdateErrorCode.networkError.rawValue, "U-101")
@@ -30,6 +32,7 @@ final class UpdateErrorCodeTests: XCTestCase {
 
     // MARK: - Uniqueness Test
 
+    /// すべてのエラーコードが一意のrawValueを持つことを検証
     func testUpdateErrorCode_AllCodesAreUnique() {
         let allCodes: [UpdateErrorCode] = [
             .networkError, .fetchError, .parseError,
@@ -44,6 +47,7 @@ final class UpdateErrorCodeTests: XCTestCase {
 
     // MARK: - Pattern Matching Test
 
+    /// UpdateState.errorのパターンマッチングでコードとメッセージが取得できることを検証
     func testUpdateState_ErrorPatternMatching() {
         let state = UpdateState.error(code: .networkError, message: "test message")
         if case .error(let code, let message) = state {
@@ -56,6 +60,7 @@ final class UpdateErrorCodeTests: XCTestCase {
 
     // MARK: - TroubleshootingKey Tests
 
+    /// すべてのエラーコードが空でないトラブルシューティングキーを持つことを検証
     func testTroubleshootingKey_allCodesReturnNonEmptyKey() {
         let allCodes: [UpdateErrorCode] = [
             .networkError, .fetchError, .parseError,
@@ -70,6 +75,7 @@ final class UpdateErrorCodeTests: XCTestCase {
         }
     }
 
+    /// トラブルシューティングキーにエラーコードのrawValueが含まれることを検証
     func testTroubleshootingKey_containsErrorCode() {
         let allCodes: [UpdateErrorCode] = [
             .networkError, .fetchError, .parseError,
@@ -85,6 +91,7 @@ final class UpdateErrorCodeTests: XCTestCase {
         }
     }
 
+    /// 各フェーズの代表的なトラブルシューティングキーが正しい値であることを検証
     func testTroubleshootingKey_specificValues() {
         XCTAssertEqual(UpdateErrorCode.networkError.troubleshootingKey, "update.hint.U-101")
         XCTAssertEqual(UpdateErrorCode.downloadError.troubleshootingKey, "update.hint.U-201")
@@ -93,6 +100,7 @@ final class UpdateErrorCodeTests: XCTestCase {
         XCTAssertEqual(UpdateErrorCode.locationError.troubleshootingKey, "update.hint.U-501")
     }
 
+    /// すべてのトラブルシューティングキーが一意であることを検証
     func testTroubleshootingKey_allCodesHaveUniqueKeys() {
         let allCodes: [UpdateErrorCode] = [
             .networkError, .fetchError, .parseError,

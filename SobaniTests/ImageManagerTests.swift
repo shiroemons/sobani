@@ -1,6 +1,7 @@
 import XCTest
 @testable import Sobani
 
+/// 画像の登録・読み込み・削除、カスタムデフォルト画像の管理、サポート形式のフィルタリング、パストラバーサル防止を検証するテスト
 final class ImageManagerTests: XCTestCase {
     // swiftlint:disable:next implicitly_unwrapped_optional
     var tempDirectory: URL!
@@ -53,11 +54,13 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - registeredImageNames Tests
 
+    /// 空ディレクトリで空配列が返されることを検証
     func testRegisteredImageNames_EmptyDirectory() {
         let names = imageManager.registeredImageNames()
         XCTAssertEqual(names, [])
     }
 
+    /// サポート外の拡張子がフィルタリングされることを検証
     func testRegisteredImageNames_FiltersUnsupportedExtensions() throws {
         let imagesDir = tempDirectory.appendingPathComponent("images")
         try FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
@@ -71,6 +74,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertEqual(names, ["test.jpg", "test.png"])
     }
 
+    /// 画像名がアルファベット順にソートされることを検証
     func testRegisteredImageNames_SortedAlphabetically() throws {
         let imagesDir = tempDirectory.appendingPathComponent("images")
         try FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
@@ -85,6 +89,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - registerImage Tests
 
+    /// 画像ファイルがimagesディレクトリにコピーされることを検証
     func testRegisterImage_CopiesFile() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -98,6 +103,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(names.contains("myimage.png"))
     }
 
+    /// 重複ファイル名に連番サフィックスが付与されることを検証
     func testRegisterImage_UniqueNaming() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -116,6 +122,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - removeRegisteredImage Tests
 
+    /// 登録済み画像が正しく削除されることを検証
     func testRemoveRegisteredImage_DeletesFile() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -132,6 +139,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - loadRegisteredImage Tests
 
+    /// 登録済み画像が正しく読み込まれることを検証
     func testLoadRegisteredImage_ReturnsImage() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -143,6 +151,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertNotNil(image)
     }
 
+    /// 存在しない画像名でnilが返されることを検証
     func testLoadRegisteredImage_NonExistent_ReturnsNil() {
         let image = imageManager.loadRegisteredImage(named: "nonexistent.png")
         XCTAssertNil(image)
@@ -150,6 +159,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - Custom Default Tests
 
+    /// カスタムデフォルト画像が正しく設定されることを検証
     func testSetCustomDefault_CreatesFile() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -166,6 +176,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: defaultURL.path))
     }
 
+    /// カスタムデフォルト画像がリセットされることを検証
     func testResetCustomDefault_RemovesFile() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -182,6 +193,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - registerImage Extension Guard Tests
 
+    /// 外部パスからの画像登録でコピーと名前返却が正しく動作することを検証
     func testRegisterImage_FromExternalPath_CopiesAndReturnsName() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -195,6 +207,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(names.contains("external.png"))
     }
 
+    /// 異なるソースからの同名画像に一意な名前が付与されることを検証
     func testRegisterImage_DuplicateFromDifferentSource_GetsUniqueName() throws {
         let sourceDir1 = try createSourceDirectory()
         let sourceDir2 = try createSourceDirectory()
@@ -213,6 +226,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertEqual(name2, "photo_1.png")
     }
 
+    /// サポート外の拡張子でnilが返され登録されないことを検証
     func testRegisterImage_UnsupportedExtension_ReturnsNil() throws {
         let sourceDir = try createSourceDirectory()
         defer { try? FileManager.default.removeItem(at: sourceDir) }
@@ -237,6 +251,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - Custom Default Tests
 
+    /// hasCustomDefaultの状態遷移が正しいことを検証
     func testHasCustomDefault_Correctness() throws {
         XCTAssertFalse(imageManager.hasCustomDefault)
 
@@ -253,6 +268,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - [H-3] Path Traversal Prevention Tests
 
+    /// パストラバーサルを含む画像名でnilが返されることを検証
     func testLoadRegisteredImage_PathTraversal_ReturnsNil() {
         // "../" を含む名前では nil を返すことを確認
         XCTAssertNil(imageManager.loadRegisteredImage(named: "../secret.png"))
@@ -262,6 +278,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertNil(imageManager.loadRegisteredImage(named: "."))
     }
 
+    /// パストラバーサルでimagesディレクトリ外のファイルが削除されないことを検証
     func testRemoveRegisteredImage_PathTraversal_DoesNotDeleteOutsideDir() throws {
         // imagesDir の外にファイルを作成し、パストラバーサルで削除されないことを確認
         let outsideDir = FileManager.default.temporaryDirectory
@@ -279,6 +296,7 @@ final class ImageManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: targetFile.path))
     }
 
+    /// パストラバーサル防止後も正常なファイル名で画像が読み込めることを検証
     func testLoadRegisteredImage_ValidName_ReturnsImage() throws {
         // 正常なファイル名は引き続き動作することを確認
         let sourceDir = try createSourceDirectory()
@@ -293,6 +311,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - Copy Failure Tests
 
+    /// 存在しないソースからの登録でnilが返されることを検証
     func testRegisterImage_CopyFailure_ReturnsNil() {
         // 存在しないソースからのコピーは nil を返すことを確認
         let nonexistentURL = URL(fileURLWithPath: "/tmp/nonexistent_sobani_test.png")
@@ -302,6 +321,7 @@ final class ImageManagerTests: XCTestCase {
 
     // MARK: - supportedExtensions Tests
 
+    /// supportedExtensionsが全サポート形式を含むことを検証
     func testSupportedExtensions_containsAllFormats() {
         let expected = Set(["png", "jpg", "jpeg", "gif", "tiff", "heic"])
         XCTAssertEqual(Set(ImageManager.supportedExtensions), expected)
