@@ -1,26 +1,17 @@
-import XCTest
-@testable import Sobani
+import Foundation
+import Testing
+@preconcurrency @testable import Sobani
 
 /// レイアウトプリセットのリネーム機能を検証するテスト
-final class LayoutPresetRenameTests: XCTestCase {
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var tempDirectory: URL!
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var presetManager: LayoutPresetManager!
+@Suite struct LayoutPresetRenameTests {
+    let tempDirectory: URL
+    let presetManager: LayoutPresetManager
 
-    override func setUp() {
-        super.setUp()
+    init() throws {
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
         presetManager = LayoutPresetManager(baseDirectory: tempDirectory)
-    }
-
-    override func tearDown() {
-        try? FileManager.default.removeItem(at: tempDirectory)
-        presetManager = nil
-        tempDirectory = nil
-        super.tearDown()
     }
 
     private func makeState(
@@ -43,64 +34,64 @@ final class LayoutPresetRenameTests: XCTestCase {
     // MARK: - Rename Tests
 
     /// プリセットのリネームが正しく動作しcreatedAtが保持されることを検証
-    func testRenamePresetSuccess() throws {
+    @Test func renamePresetSuccess() throws {
         let states = [makeState(imageName: "rename.png", originX: 42)]
         presetManager.savePreset(name: "OldName", states: states)
 
-        let oldPreset = try XCTUnwrap(presetManager.loadPreset(named: "OldName"))
+        let oldPreset = try #require(presetManager.loadPreset(named: "OldName"))
         let result = presetManager.renamePreset(from: "OldName", to: "NewName")
 
-        XCTAssertTrue(result)
-        XCTAssertNil(presetManager.loadPreset(named: "OldName"))
+        #expect(result)
+        #expect(presetManager.loadPreset(named: "OldName") == nil)
 
-        let renamed = try XCTUnwrap(presetManager.loadPreset(named: "NewName"))
-        XCTAssertEqual(renamed.name, "NewName")
-        XCTAssertEqual(renamed.states, states)
-        XCTAssertEqual(renamed.createdAt, oldPreset.createdAt)
+        let renamed = try #require(presetManager.loadPreset(named: "NewName"))
+        #expect(renamed.name == "NewName")
+        #expect(renamed.states == states)
+        #expect(renamed.createdAt == oldPreset.createdAt)
     }
 
     /// 存在しないプリセットのリネームでfalseが返されることを検証
-    func testRenameNonExistentPreset() {
+    @Test func renameNonExistentPreset() {
         let result = presetManager.renamePreset(from: "DoesNotExist", to: "NewName")
-        XCTAssertFalse(result)
+        #expect(!result)
     }
 
     /// 同名へのリネームが成功し内容が保持されることを検証
-    func testRenameSameName() throws {
+    @Test func renameSameName() throws {
         let states = [makeState(imageName: "same.png")]
         presetManager.savePreset(name: "SameName", states: states)
 
         let result = presetManager.renamePreset(from: "SameName", to: "SameName")
-        XCTAssertTrue(result)
+        #expect(result)
 
-        let loaded = try XCTUnwrap(presetManager.loadPreset(named: "SameName"))
-        XCTAssertEqual(loaded.name, "SameName")
-        XCTAssertEqual(loaded.states, states)
+        let loaded = try #require(presetManager.loadPreset(named: "SameName"))
+        #expect(loaded.name == "SameName")
+        #expect(loaded.states == states)
     }
 
     /// リネームで既存プリセットが上書きされることを検証
-    func testRenameOverwritesExisting() throws {
+    @Test func renameOverwritesExisting() throws {
         presetManager.savePreset(name: "Source", states: [makeState(originX: 100)])
         presetManager.savePreset(name: "Target", states: [makeState(originX: 200)])
 
         let result = presetManager.renamePreset(from: "Source", to: "Target")
-        XCTAssertTrue(result)
+        #expect(result)
 
-        XCTAssertNil(presetManager.loadPreset(named: "Source"))
-        let target = try XCTUnwrap(presetManager.loadPreset(named: "Target"))
-        XCTAssertEqual(target.states, [makeState(originX: 100)])
+        #expect(presetManager.loadPreset(named: "Source") == nil)
+        let target = try #require(presetManager.loadPreset(named: "Target"))
+        #expect(target.states == [makeState(originX: 100)])
     }
 
     /// Unicode文字を含む名前へのリネームが正しく動作することを検証
-    func testRenameWithSpecialCharacters() throws {
+    @Test func renameWithSpecialCharacters() throws {
         let states = [makeState(imageName: "special.png")]
         presetManager.savePreset(name: "Normal", states: states)
 
         let result = presetManager.renamePreset(from: "Normal", to: "特殊文字レイアウト")
-        XCTAssertTrue(result)
+        #expect(result)
 
-        XCTAssertNil(presetManager.loadPreset(named: "Normal"))
-        let renamed = try XCTUnwrap(presetManager.loadPreset(named: "特殊文字レイアウト"))
-        XCTAssertEqual(renamed.states, states)
+        #expect(presetManager.loadPreset(named: "Normal") == nil)
+        let renamed = try #require(presetManager.loadPreset(named: "特殊文字レイアウト"))
+        #expect(renamed.states == states)
     }
 }

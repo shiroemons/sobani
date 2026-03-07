@@ -1,30 +1,20 @@
-import XCTest
-@testable import Sobani
+import CoreGraphics
+import Foundation
+import Testing
+@preconcurrency @testable import Sobani
 
 /// 保留中のウィンドウ復元エントリの追加・削除・期限切れパージ、JSON永続化のラウンドトリップ、後方互換性、スリープ前画面フレームを検証するテスト
-final class ScreenRestorationManagerTests: XCTestCase {
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var manager: ScreenRestorationManager!
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var tempDirectory: URL!
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    var ioManager: ScreenRestorationManager!
+@Suite struct ScreenRestorationManagerTests {
+    let manager: ScreenRestorationManager
+    let tempDirectory: URL
+    let ioManager: ScreenRestorationManager
 
-    override func setUp() {
-        super.setUp()
+    init() throws {
         manager = ScreenRestorationManager(timeout: 300)
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
         ioManager = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
-    }
-
-    override func tearDown() {
-        try? FileManager.default.removeItem(at: tempDirectory)
-        ioManager = nil
-        tempDirectory = nil
-        manager = nil
-        super.tearDown()
     }
 
     private func makeState(windowId: Int = 1, originX: CGFloat = 100, originY: CGFloat = 200) -> WindowState {
@@ -42,70 +32,70 @@ final class ScreenRestorationManagerTests: XCTestCase {
     // MARK: - addPending
 
     /// 保留エントリが正しく追加されることを検証
-    func testAddPending() {
+    @Test func addPending() {
         let state = makeState()
         manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
-        XCTAssertEqual(manager.pendingRestorations.count, 1)
-        XCTAssertEqual(manager.pendingRestorations[0].windowId, 1)
-        XCTAssertEqual(manager.pendingRestorations[0].originalState, state)
-        XCTAssertEqual(manager.pendingRestorations[0].adjustedOriginX, 50)
-        XCTAssertEqual(manager.pendingRestorations[0].adjustedOriginY, 60)
+        #expect(manager.pendingRestorations.count == 1)
+        #expect(manager.pendingRestorations[0].windowId == 1)
+        #expect(manager.pendingRestorations[0].originalState == state)
+        #expect(manager.pendingRestorations[0].adjustedOriginX == 50)
+        #expect(manager.pendingRestorations[0].adjustedOriginY == 60)
     }
 
     /// 同じwindowIdのエントリが上書きされることを検証
-    func testAddPendingOverwritesSameWindowId() {
+    @Test func addPendingOverwritesSameWindowId() {
         let state1 = makeState(windowId: 1, originX: 100)
         let state2 = makeState(windowId: 1, originX: 999)
         manager.addPending(windowId: 1, originalState: state1, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
         manager.addPending(windowId: 1, originalState: state2, displayID: 0, adjustedOriginX: 70, adjustedOriginY: 80)
-        XCTAssertEqual(manager.pendingRestorations.count, 1)
-        XCTAssertEqual(manager.pendingRestorations[0].originalState.originX, 999)
+        #expect(manager.pendingRestorations.count == 1)
+        #expect(manager.pendingRestorations[0].originalState.originX == 999)
     }
 
     // MARK: - removePending
 
     /// 保留エントリが正しく削除されることを検証
-    func testRemovePending() {
+    @Test func removePending() {
         let state = makeState()
         manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
         manager.removePending(windowId: 1)
-        XCTAssertTrue(manager.pendingRestorations.isEmpty)
+        #expect(manager.pendingRestorations.isEmpty)
     }
 
     /// 存在しないwindowIdの削除でクラッシュしないことを検証
-    func testRemovePendingNonExistentDoesNotCrash() {
+    @Test func removePendingNonExistentDoesNotCrash() {
         manager.removePending(windowId: 999)
-        XCTAssertTrue(manager.pendingRestorations.isEmpty)
+        #expect(manager.pendingRestorations.isEmpty)
     }
 
     // MARK: - hasPending
 
     /// 空の場合にhasPendingがfalseを返すことを検証
-    func testHasPendingWhenEmpty() {
-        XCTAssertFalse(manager.hasPending)
+    @Test func hasPendingWhenEmpty() {
+        #expect(!manager.hasPending)
     }
 
     /// エントリがある場合にhasPendingがtrueを返すことを検証
-    func testHasPendingWhenNotEmpty() {
+    @Test func hasPendingWhenNotEmpty() {
         let state = makeState()
         manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
-        XCTAssertTrue(manager.hasPending)
+        #expect(manager.hasPending)
     }
 
     // MARK: - clearAll
 
     /// 全エントリがクリアされることを検証
-    func testClearAll() {
+    @Test func clearAll() {
         manager.addPending(windowId: 1, originalState: makeState(windowId: 1), displayID: 0, adjustedOriginX: 10, adjustedOriginY: 20)
         manager.addPending(windowId: 2, originalState: makeState(windowId: 2), displayID: 0, adjustedOriginX: 30, adjustedOriginY: 40)
         manager.clearAll()
-        XCTAssertTrue(manager.pendingRestorations.isEmpty)
+        #expect(manager.pendingRestorations.isEmpty)
     }
 
     // MARK: - purgeExpired
 
     /// タイムアウト超過のエントリがパージされることを検証
-    func testPurgeExpiredRemovesOldEntries() {
+    @Test func purgeExpiredRemovesOldEntries() {
         let baseDate = Date()
         manager.currentDate = { baseDate }
         manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
@@ -114,11 +104,11 @@ final class ScreenRestorationManagerTests: XCTestCase {
         manager.currentDate = { baseDate.addingTimeInterval(301) }
         manager.purgeExpired()
 
-        XCTAssertTrue(manager.pendingRestorations.isEmpty)
+        #expect(manager.pendingRestorations.isEmpty)
     }
 
     /// タイムアウト内のエントリが保持されることを検証
-    func testPurgeExpiredKeepsRecentEntries() {
+    @Test func purgeExpiredKeepsRecentEntries() {
         let baseDate = Date()
         manager.currentDate = { baseDate }
         manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
@@ -127,13 +117,13 @@ final class ScreenRestorationManagerTests: XCTestCase {
         manager.currentDate = { baseDate.addingTimeInterval(299) }
         manager.purgeExpired()
 
-        XCTAssertEqual(manager.pendingRestorations.count, 1)
+        #expect(manager.pendingRestorations.count == 1)
     }
 
     // MARK: - restorableEntries
 
     /// 一致するスクリーンがない場合に空配列が返されることを検証
-    func testRestorableEntriesReturnsEmptyWhenNoMatchingScreen() {
+    @Test func restorableEntriesReturnsEmptyWhenNoMatchingScreen() {
         // displayID: 999999 は実際のモニターに対応しないため、接続中スクリーンに一致しない
         let state1 = makeState(windowId: 1, originX: 100)
         let state2 = makeState(windowId: 2, originX: 200)
@@ -143,11 +133,11 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let results = manager.restorableEntries()
 
         // displayID: 999999 は実スクリーンと一致しないため空になる
-        XCTAssertTrue(results.isEmpty)
+        #expect(results.isEmpty)
     }
 
     /// restorableEntriesが期限切れエントリをパージすることを検証
-    func testRestorableEntriesCallsPurgeExpired() {
+    @Test func restorableEntriesCallsPurgeExpired() {
         let baseDate = Date()
         manager.currentDate = { baseDate }
         manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
@@ -156,23 +146,23 @@ final class ScreenRestorationManagerTests: XCTestCase {
         manager.currentDate = { baseDate.addingTimeInterval(301) }
         let results = manager.restorableEntries()
 
-        XCTAssertTrue(results.isEmpty)
-        XCTAssertTrue(manager.pendingRestorations.isEmpty)
+        #expect(results.isEmpty)
+        #expect(manager.pendingRestorations.isEmpty)
     }
 
     /// 実スクリーンに存在しないdisplayIDで空が返されることを検証
-    func testRestorableEntriesWithKnownDisplayIDNotMatching() {
+    @Test func restorableEntriesWithKnownDisplayIDNotMatching() {
         // displayID が非0で実スクリーンに存在しない場合は空
         let state = makeState(windowId: 1, originX: 100, originY: 200)
         manager.addPending(windowId: 1, originalState: state, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
 
         let results = manager.restorableEntries()
 
-        XCTAssertTrue(results.isEmpty)
+        #expect(results.isEmpty)
     }
 
     /// displayID 0かつ画面外位置で復元対象にならないことを検証
-    func testRestorableEntriesWithZeroDisplayIDAndInvisiblePosition() {
+    @Test func restorableEntriesWithZeroDisplayIDAndInvisiblePosition() {
         // displayID: 0（スリープなし切断）かつ画面外の位置 → 空（元の位置がまだ不可視）
         let state = makeState(windowId: 1, originX: -99999, originY: -99999)
         manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
@@ -180,20 +170,20 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let results = manager.restorableEntries()
 
         // 元の位置が不可視のため、復元対象にならない
-        XCTAssertTrue(results.isEmpty)
+        #expect(results.isEmpty)
     }
 
     // MARK: - Persistence
 
     /// 保留ファイルのURLがpending_restorations.jsonであることを検証
-    func testPendingFileURL() {
+    @Test func pendingFileURL() {
         let url = ioManager.pendingFileURL
-        XCTAssertNotNil(url)
-        XCTAssertEqual(url?.lastPathComponent, "pending_restorations.json")
+        #expect(url != nil)
+        #expect(url?.lastPathComponent == "pending_restorations.json")
     }
 
     /// 保存と読み込みのラウンドトリップが正しく動作することを検証
-    func testSaveAndLoadRoundTrip() {
+    @Test func saveAndLoadRoundTrip() {
         let state = makeState(windowId: 1, originX: 100, originY: 200)
         ioManager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 50, adjustedOriginY: 60)
         ioManager.savePending()
@@ -201,17 +191,17 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
 
-        XCTAssertEqual(loader.pendingRestorations.count, 1)
+        #expect(loader.pendingRestorations.count == 1)
         let entry = loader.pendingRestorations[0]
-        XCTAssertEqual(entry.windowId, 1)
-        XCTAssertEqual(entry.originalState, state)
-        XCTAssertEqual(entry.displayID, 42)
-        XCTAssertEqual(entry.adjustedOriginX, 50)
-        XCTAssertEqual(entry.adjustedOriginY, 60)
+        #expect(entry.windowId == 1)
+        #expect(entry.originalState == state)
+        #expect(entry.displayID == 42)
+        #expect(entry.adjustedOriginX == 50)
+        #expect(entry.adjustedOriginY == 60)
     }
 
     /// 複数エントリの保存と読み込みが正しく動作することを検証
-    func testSaveAndLoadMultipleEntries() {
+    @Test func saveAndLoadMultipleEntries() {
         let state1 = makeState(windowId: 1, originX: 100)
         let state2 = makeState(windowId: 2, originX: 200)
         ioManager.addPending(windowId: 1, originalState: state1, displayID: 10, adjustedOriginX: 10, adjustedOriginY: 20)
@@ -221,29 +211,29 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
 
-        XCTAssertEqual(loader.pendingRestorations.count, 2)
+        #expect(loader.pendingRestorations.count == 2)
     }
 
     /// ファイル未存在時に空キューで読み込めることを検証
-    func testLoadPendingWhenFileDoesNotExist() {
+    @Test func loadPendingWhenFileDoesNotExist() {
         // ファイルなしでクラッシュせず、空キューになる
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-        XCTAssertTrue(loader.pendingRestorations.isEmpty)
+        #expect(loader.pendingRestorations.isEmpty)
     }
 
     /// 破損JSONで空キューが返されクラッシュしないことを検証
-    func testLoadPendingWithCorruptedJSON() throws {
-        let url = try XCTUnwrap(ioManager.pendingFileURL)
-        try? Data("not valid json".utf8).write(to: url, options: .atomic)
+    @Test func loadPendingWithCorruptedJSON() throws {
+        let url = try #require(ioManager.pendingFileURL)
+        try Data("not valid json".utf8).write(to: url, options: .atomic)
 
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-        XCTAssertTrue(loader.pendingRestorations.isEmpty)
+        #expect(loader.pendingRestorations.isEmpty)
     }
 
     /// 読み込み時に期限切れエントリがパージされることを検証
-    func testLoadPendingPurgesExpiredEntries() {
+    @Test func loadPendingPurgesExpiredEntries() {
         let baseDate = Date()
         ioManager.currentDate = { baseDate }
         let state = makeState(windowId: 1)
@@ -255,11 +245,11 @@ final class ScreenRestorationManagerTests: XCTestCase {
         loader.currentDate = { baseDate.addingTimeInterval(301) }
         loader.loadPending()
 
-        XCTAssertTrue(loader.pendingRestorations.isEmpty)
+        #expect(loader.pendingRestorations.isEmpty)
     }
 
     /// 起動時のaddPendingが読み込み済みエントリを上書きすることを検証
-    func testStartupEntryOverwritesLoadedEntry() {
+    @Test func startupEntryOverwritesLoadedEntry() {
         // 起動時のaddPendingが読み込んだエントリを上書きする
         let stateOld = makeState(windowId: 1, originX: 100)
         ioManager.addPending(windowId: 1, originalState: stateOld, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
@@ -272,21 +262,21 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let stateNew = makeState(windowId: 1, originX: 999)
         loader.addPending(windowId: 1, originalState: stateNew, displayID: 0, adjustedOriginX: 70, adjustedOriginY: 80)
 
-        XCTAssertEqual(loader.pendingRestorations.count, 1)
-        XCTAssertEqual(loader.pendingRestorations[0].originalState.originX, 999)
+        #expect(loader.pendingRestorations.count == 1)
+        #expect(loader.pendingRestorations[0].originalState.originX == 999)
     }
 
     /// 空キューの保存で空ファイルが生成されることを検証
-    func testSaveEmptyQueueProducesEmptyFile() {
+    @Test func saveEmptyQueueProducesEmptyFile() {
         ioManager.savePending()
 
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-        XCTAssertTrue(loader.pendingRestorations.isEmpty)
+        #expect(loader.pendingRestorations.isEmpty)
     }
 
     /// displayIDが保存・読み込みで保持されることを検証
-    func testDisplayIDPreservedAcrossSaveLoad() {
+    @Test func displayIDPreservedAcrossSaveLoad() {
         let displayID: CGDirectDisplayID = 1234567890
         let state = makeState(windowId: 1)
         ioManager.addPending(windowId: 1, originalState: state, displayID: displayID, adjustedOriginX: 0, adjustedOriginY: 0)
@@ -295,32 +285,32 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
 
-        XCTAssertEqual(loader.pendingRestorations[0].displayID, displayID)
+        #expect(loader.pendingRestorations[0].displayID == displayID)
     }
 
     // MARK: - preSleepScreenFrame
 
     /// スリープ前画面フレーム付きでエントリが追加されることを検証
-    func testAddPendingWithScreenFrame() {
+    @Test func addPendingWithScreenFrame() {
         let state = makeState()
         let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
         manager.addPending(windowId: 1, originalState: state, displayID: 42,
                           adjustedOriginX: 50, adjustedOriginY: 60,
                           preSleepScreenFrame: frame)
-        XCTAssertEqual(manager.pendingRestorations.count, 1)
-        XCTAssertEqual(manager.pendingRestorations[0].preSleepScreenFrame, frame)
+        #expect(manager.pendingRestorations.count == 1)
+        #expect(manager.pendingRestorations[0].preSleepScreenFrame == frame)
     }
 
     /// スリープ前画面フレーム省略時にnilがデフォルトになることを検証
-    func testAddPendingWithoutScreenFrameDefaultsToNil() {
+    @Test func addPendingWithoutScreenFrameDefaultsToNil() {
         let state = makeState()
         manager.addPending(windowId: 1, originalState: state, displayID: 42,
                           adjustedOriginX: 50, adjustedOriginY: 60)
-        XCTAssertNil(manager.pendingRestorations[0].preSleepScreenFrame)
+        #expect(manager.pendingRestorations[0].preSleepScreenFrame == nil)
     }
 
     /// スリープ前画面フレームが保存・読み込みで保持されることを検証
-    func testScreenFramePreservedAcrossSaveLoad() {
+    @Test func screenFramePreservedAcrossSaveLoad() {
         let state = makeState(windowId: 1)
         let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
         ioManager.addPending(windowId: 1, originalState: state, displayID: 42,
@@ -331,11 +321,11 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
 
-        XCTAssertEqual(loader.pendingRestorations[0].preSleepScreenFrame, frame)
+        #expect(loader.pendingRestorations[0].preSleepScreenFrame == frame)
     }
 
     /// nilのスリープ前画面フレームが保存・読み込みで保持されることを検証
-    func testNilScreenFramePreservedAcrossSaveLoad() {
+    @Test func nilScreenFramePreservedAcrossSaveLoad() {
         let state = makeState(windowId: 1)
         ioManager.addPending(windowId: 1, originalState: state, displayID: 42,
                             adjustedOriginX: 0, adjustedOriginY: 0)
@@ -344,11 +334,11 @@ final class ScreenRestorationManagerTests: XCTestCase {
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
 
-        XCTAssertNil(loader.pendingRestorations[0].preSleepScreenFrame)
+        #expect(loader.pendingRestorations[0].preSleepScreenFrame == nil)
     }
 
     /// screenFrameフィールドなしの旧フォーマットJSONが読み込めることを検証
-    func testLoadPendingBackwardCompatibilityWithoutScreenFrame() throws {
+    @Test func loadPendingBackwardCompatibilityWithoutScreenFrame() throws {
         // 古いフォーマット（screenFrame フィールドなし）のJSONを読み込めることを確認
         let oldFormatJSON = """
         [
@@ -370,13 +360,13 @@ final class ScreenRestorationManagerTests: XCTestCase {
             }
         ]
         """
-        let url = try XCTUnwrap(ioManager.pendingFileURL)
+        let url = try #require(ioManager.pendingFileURL)
         try Data(oldFormatJSON.utf8).write(to: url, options: .atomic)
 
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
 
-        XCTAssertEqual(loader.pendingRestorations.count, 1)
-        XCTAssertNil(loader.pendingRestorations[0].preSleepScreenFrame)
+        #expect(loader.pendingRestorations.count == 1)
+        #expect(loader.pendingRestorations[0].preSleepScreenFrame == nil)
     }
 }
