@@ -118,12 +118,7 @@ final class UpdateManager {
         }
     }
 
-    private lazy var session: URLSession = {
-        let config = URLSessionConfiguration.default
-        // TLS 1.3 を最低バージョンとして強制
-        config.tlsMinimumSupportedProtocolVersion = .TLSv13
-        return URLSession(configuration: config)
-    }()
+    private let session: URLSession
 
     private let currentVersion: String
     private let apiURL: URL
@@ -139,6 +134,7 @@ final class UpdateManager {
     init(
         currentVersion: String? = nil,
         apiURL: URL? = nil,
+        session: URLSession? = nil,
         defaults: UserDefaults = .standard
     ) {
         self.currentVersion = currentVersion
@@ -146,6 +142,12 @@ final class UpdateManager {
             ?? "0"
         self.apiURL = apiURL
             ?? Self.defaultAPIURL
+        self.session = session ?? {
+            let config = URLSessionConfiguration.default
+            // TLS 1.3 を最低バージョンとして強制
+            config.tlsMinimumSupportedProtocolVersion = .TLSv13
+            return URLSession(configuration: config)
+        }()
         self.defaults = defaults
     }
 
@@ -183,7 +185,7 @@ final class UpdateManager {
 
     // MARK: - Asset Selection
 
-    private static func selectAsset(from release: GitHubRelease) -> (asset: GitHubAsset, format: UpdateAssetFormat)? {
+    static func selectAsset(from release: GitHubRelease) -> (asset: GitHubAsset, format: UpdateAssetFormat)? {
         if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
             return (dmg, .dmg)
         } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {

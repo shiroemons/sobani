@@ -4,7 +4,7 @@ import CryptoKit
 @preconcurrency @testable import Sobani
 
 /// バージョン比較ロジック、GitHubリリースJSONパース、チェックトリガー、SHA-256チェックサム検証、アセット選択を検証するテスト
-@Suite struct UpdateManagerTests {
+struct UpdateManagerTests {
 
     // MARK: - isNewer Parameterized Tests
 
@@ -176,159 +176,72 @@ import CryptoKit
         #expect(!UpdateManager.verifySHA256(of: nonexistentURL, expectedHex: "abc123"))
     }
 
-    // MARK: - DMG Asset Selection Tests
+    // MARK: - selectAsset Direct Tests
 
     /// DMGとZIPの両方がある場合にDMGが優先選択されることを検証
-    @Test func assetSelection_DMGPreferredOverZIP() throws {
+    @Test func selectAsset_DMGPreferredOverZIP() throws {
         let json = Data("""
         {
             "tag_name": "v202602.23",
             "assets": [
-                {
-                    "name": "Sobani-universal.zip",
-                    "browser_download_url": "https://example.com/zip"
-                },
-                {
-                    "name": "Sobani-universal.dmg",
-                    "browser_download_url": "https://example.com/dmg"
-                },
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://example.com/checksums"
-                }
+                {"name": "Sobani-universal.zip", "browser_download_url": "https://example.com/zip"},
+                {"name": "Sobani-universal.dmg", "browser_download_url": "https://example.com/dmg"},
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-
-        // DMG を優先して選択
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        #expect(assetResult != nil)
-        #expect(assetResult?.asset.name == "Sobani-universal.dmg")
-        if case .dmg = assetResult?.format {
-            // OK
-        } else {
-            Issue.record("Expected .dmg format")
-        }
+        let result = try #require(UpdateManager.selectAsset(from: release))
+        #expect(result.asset.name == "Sobani-universal.dmg")
+        #expect(result.format == .dmg)
     }
 
     /// DMGがない場合にZIPがフォールバックとして選択されることを検証
-    @Test func assetSelection_ZIPFallbackWhenNoDMG() throws {
+    @Test func selectAsset_ZIPFallbackWhenNoDMG() throws {
         let json = Data("""
         {
             "tag_name": "v202602.21",
             "assets": [
-                {
-                    "name": "Sobani-universal.zip",
-                    "browser_download_url": "https://example.com/zip"
-                },
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://example.com/checksums"
-                }
+                {"name": "Sobani-universal.zip", "browser_download_url": "https://example.com/zip"},
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        #expect(assetResult != nil)
-        #expect(assetResult?.asset.name == "Sobani-universal.zip")
-        if case .zip = assetResult?.format {
-            // OK
-        } else {
-            Issue.record("Expected .zip format")
-        }
+        let result = try #require(UpdateManager.selectAsset(from: release))
+        #expect(result.asset.name == "Sobani-universal.zip")
+        #expect(result.format == .zip)
     }
 
     /// DMGもZIPもない場合にnilが返されることを検証
-    @Test func assetSelection_NoMatchingAsset() throws {
+    @Test func selectAsset_NoMatchReturnsNil() throws {
         let json = Data("""
         {
             "tag_name": "v202602.23",
             "assets": [
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://example.com/checksums"
-                }
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        #expect(assetResult == nil)
+        #expect(UpdateManager.selectAsset(from: release) == nil)
     }
 
     /// DMGのみのリリースでDMGが正しく選択されることを検証
-    @Test func assetSelection_DMGOnlyRelease() throws {
+    @Test func selectAsset_DMGOnlyRelease() throws {
         let json = Data("""
         {
             "tag_name": "v202602.22",
             "assets": [
-                {
-                    "name": "Sobani-universal.dmg",
-                    "browser_download_url": "https://github.com/shiroemons/sobani/releases/download/v202602.22/Sobani-universal.dmg"
-                },
-                {
-                    "name": "checksums.txt",
-                    "browser_download_url": "https://github.com/shiroemons/sobani/releases/download/v202602.22/checksums.txt"
-                }
+                {"name": "Sobani-universal.dmg", "browser_download_url": "https://example.com/dmg"},
+                {"name": "checksums.txt", "browser_download_url": "https://example.com/checksums"}
             ]
         }
         """.utf8)
-
         let release = try JSONDecoder().decode(GitHubRelease.self, from: json)
-        #expect(release.assets.count == 2)
-        #expect(release.assets[0].name == "Sobani-universal.dmg")
-
-        let assetResult: (asset: GitHubAsset, format: UpdateAssetFormat)? = {
-            if let dmg = release.assets.first(where: { $0.name.hasSuffix(".dmg") }) {
-                return (dmg, .dmg)
-            } else if let zip = release.assets.first(where: { $0.name.hasSuffix(".zip") }) {
-                return (zip, .zip)
-            }
-            return nil
-        }()
-
-        #expect(assetResult != nil)
-        #expect(assetResult?.asset.name == "Sobani-universal.dmg")
-        #expect(
-            assetResult?.asset.browserDownloadURL
-                == "https://github.com/shiroemons/sobani/releases/download/v202602.22/Sobani-universal.dmg"
-        )
-        if case .dmg = assetResult?.format {
-            // OK
-        } else {
-            Issue.record("Expected .dmg format")
-        }
+        let result = try #require(UpdateManager.selectAsset(from: release))
+        #expect(result.asset.name == "Sobani-universal.dmg")
+        #expect(result.format == .dmg)
     }
 
     // MARK: - UpdateAssetFormat Tests
