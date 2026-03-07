@@ -698,38 +698,22 @@ extension AppDelegate {
 
             submenu.addItem(NSMenuItem.separator())
 
-            let updateItem = NSMenuItem(title: L("layout.update"), action: nil, keyEquivalent: "")
-            updateItem.tag = MenuItemTag.updateLayout.rawValue
+            let updateItem = buildLayoutPresetSubmenu(
+                title: L("layout.update"), tag: .updateLayout,
+                action: #selector(updateLayoutFromMenu(_:)), presets: presets
+            )
             updateItem.isEnabled = !characterWindows.isEmpty
-            let updateSubmenu = NSMenu()
-            for preset in presets {
-                let item = NSMenuItem(
-                    title: preset.name,
-                    action: #selector(updateLayoutFromMenu(_:)),
-                    keyEquivalent: ""
-                )
-                item.target = self
-                item.representedObject = preset.name
-                updateSubmenu.addItem(item)
-            }
-            updateItem.submenu = updateSubmenu
             submenu.addItem(updateItem)
 
-            let deleteItem = NSMenuItem(title: L("layout.delete"), action: nil, keyEquivalent: "")
-            deleteItem.tag = MenuItemTag.deleteLayout.rawValue
-            let deleteSubmenu = NSMenu()
-            for preset in presets {
-                let item = NSMenuItem(
-                    title: preset.name,
-                    action: #selector(deleteLayoutFromMenu(_:)),
-                    keyEquivalent: ""
-                )
-                item.target = self
-                item.representedObject = preset.name
-                deleteSubmenu.addItem(item)
-            }
-            deleteItem.submenu = deleteSubmenu
-            submenu.addItem(deleteItem)
+            submenu.addItem(buildLayoutPresetSubmenu(
+                title: L("layout.rename"), tag: .renameLayout,
+                action: #selector(renameLayoutFromMenu(_:)), presets: presets
+            ))
+
+            submenu.addItem(buildLayoutPresetSubmenu(
+                title: L("layout.delete"), tag: .deleteLayout,
+                action: #selector(deleteLayoutFromMenu(_:)), presets: presets
+            ))
         }
 
         layoutItem.submenu = submenu
@@ -839,6 +823,53 @@ extension AppDelegate {
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         LayoutPresetManager.shared.deletePreset(named: name)
+    }
+
+    @objc func renameLayoutFromMenu(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+
+        let alert = NSAlert()
+        alert.messageText = L("layout.rename_title")
+        alert.informativeText = L("layout.rename_message")
+        alert.addButton(withTitle: L("layout.rename_button"))
+        alert.addButton(withTitle: L("quit.cancel"))
+        alert.alertStyle = .informational
+
+        let textField = makeLayoutNameField(for: alert)
+        textField.stringValue = name
+
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        let newName = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !newName.isEmpty else { return }
+        guard newName != name else { return }
+
+        if LayoutPresetManager.shared.presetExists(named: newName) {
+            let overwriteAlert = NSAlert()
+            overwriteAlert.messageText = L("layout.overwrite_title")
+            overwriteAlert.informativeText = String(format: L("layout.overwrite_message"), newName)
+            overwriteAlert.addButton(withTitle: L("layout.overwrite_button"))
+            overwriteAlert.addButton(withTitle: L("quit.cancel"))
+            overwriteAlert.alertStyle = .warning
+            guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
+        }
+
+        _ = LayoutPresetManager.shared.renamePreset(from: name, to: newName)
+    }
+
+    private func buildLayoutPresetSubmenu(
+        title: String, tag: MenuItemTag, action: Selector, presets: [LayoutPreset]
+    ) -> NSMenuItem {
+        let menuItem = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        menuItem.tag = tag.rawValue
+        let sub = NSMenu()
+        for preset in presets {
+            let item = NSMenuItem(title: preset.name, action: action, keyEquivalent: "")
+            item.target = self
+            item.representedObject = preset.name
+            sub.addItem(item)
+        }
+        menuItem.submenu = sub
+        return menuItem
     }
 
     private func makeLayoutNameField(for alert: NSAlert) -> NSTextField {
