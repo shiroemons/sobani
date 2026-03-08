@@ -185,4 +185,127 @@ struct ImagePreviewPanelTests {
         #expect(abs(result.x - 10) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - (-50)) < AppConstants.floatingPointTolerance)
     }
+
+    // MARK: - calculatePanelFrames Tests
+
+    /// 正方形画像のパネルフレーム計算を検証
+    @Test("正方形画像のパネルフレーム計算")
+    func calculatePanelFramesSquare() {
+        let result = ImagePreviewPanel.calculatePanelFrames(
+            imageSize: NSSize(width: 200, height: 200), maxDimension: 256, padding: 8
+        )
+        // 200 <= 256 なのでそのまま
+        #expect(abs(result.panelSize.width - 216) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.panelSize.height - 216) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.origin.x - 8) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.origin.y - 8) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.size.width - 200) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.size.height - 200) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 横長画像のアスペクト比維持を検証
+    @Test("横長画像のアスペクト比維持")
+    func calculatePanelFramesLandscape() {
+        let result = ImagePreviewPanel.calculatePanelFrames(
+            imageSize: NSSize(width: 512, height: 256), maxDimension: 256, padding: 10
+        )
+        // 512 > 256 → scale = 0.5 → 256x128
+        #expect(abs(result.panelSize.width - 276) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.panelSize.height - 148) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.size.width - 256) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.size.height - 128) < AppConstants.floatingPointTolerance)
+    }
+
+    /// maxDimension より小さい画像はそのまま使用されることを検証
+    @Test("maxDimension より小さい画像")
+    func calculatePanelFramesSmallImage() {
+        let result = ImagePreviewPanel.calculatePanelFrames(
+            imageSize: NSSize(width: 50, height: 30), maxDimension: 256, padding: 5
+        )
+        // 50 <= 256 なのでそのまま
+        #expect(abs(result.panelSize.width - 60) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.panelSize.height - 40) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.size.width - 50) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.imageFrame.size.height - 30) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - filterMenuWindowFrames Tests
+
+    /// レベルとサイズでフィルタリングされることを検証
+    @Test("レベルとサイズでフィルタリング")
+    func filterMenuWindowFramesBasic() {
+        let frames: [(frame: NSRect, level: Int)] = [
+            (frame: NSRect(x: 0, y: 0, width: 200, height: 300), level: 100),
+            (frame: NSRect(x: 100, y: 0, width: 50, height: 300), level: 100),  // 幅不足
+            (frame: NSRect(x: 200, y: 0, width: 200, height: 300), level: 50),   // レベル不足
+            (frame: NSRect(x: 300, y: 0, width: 200, height: 300), level: 150),
+        ]
+        let result = ImagePreviewPanel.filterMenuWindowFrames(frames: frames, menuLevel: 100, minWidth: 60)
+        #expect(result.count == 2)
+        #expect(abs(result[0].origin.x - 0) < AppConstants.floatingPointTolerance)
+        #expect(abs(result[1].origin.x - 300) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 空配列を渡すと空配列が返されることを検証
+    @Test("空配列→空配列")
+    func filterMenuWindowFramesEmpty() {
+        let result = ImagePreviewPanel.filterMenuWindowFrames(
+            frames: [], menuLevel: 100, minWidth: 60
+        )
+        #expect(result.isEmpty)
+    }
+
+    /// すべてフィルタアウトされる場合を検証
+    @Test("すべてフィルタアウト")
+    func filterMenuWindowFramesAllFiltered() {
+        let frames: [(frame: NSRect, level: Int)] = [
+            (frame: NSRect(x: 0, y: 0, width: 10, height: 300), level: 100),  // 幅不足
+            (frame: NSRect(x: 0, y: 0, width: 200, height: 300), level: 10),  // レベル不足
+        ]
+        let result = ImagePreviewPanel.filterMenuWindowFrames(frames: frames, menuLevel: 100, minWidth: 60)
+        #expect(result.isEmpty)
+    }
+
+    // MARK: - menuWindowBounds Tests
+
+    /// 空配列で nil が返されることを検証
+    @Test("空配列→nil")
+    func menuWindowBoundsEmpty() {
+        let result = ImagePreviewPanel.menuWindowBounds(frames: [])
+        #expect(result == nil)
+    }
+
+    /// 1フレームの境界計算を検証
+    @Test("1フレームの境界計算")
+    func menuWindowBoundsSingleFrame() throws {
+        let frames = [NSRect(x: 100, y: 200, width: 300, height: 400)]
+        let result = try #require(ImagePreviewPanel.menuWindowBounds(frames: frames))
+        #expect(abs(result.rightmostX - 400) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.leftmostX - 100) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 複数フレームの最大右端と最小左端を検証
+    @Test("複数フレームの境界計算")
+    func menuWindowBoundsMultipleFrames() throws {
+        let frames = [
+            NSRect(x: 50, y: 0, width: 200, height: 100),   // minX=50, maxX=250
+            NSRect(x: 100, y: 0, width: 400, height: 100),  // minX=100, maxX=500
+            NSRect(x: 30, y: 0, width: 100, height: 100),   // minX=30, maxX=130
+        ]
+        let result = try #require(ImagePreviewPanel.menuWindowBounds(frames: frames))
+        #expect(abs(result.rightmostX - 500) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.leftmostX - 30) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 重複するフレームの境界計算を検証
+    @Test("重複するフレームの境界計算")
+    func menuWindowBoundsOverlappingFrames() throws {
+        let frames = [
+            NSRect(x: 100, y: 0, width: 200, height: 100),  // minX=100, maxX=300
+            NSRect(x: 100, y: 0, width: 200, height: 100),  // 同一フレーム
+        ]
+        let result = try #require(ImagePreviewPanel.menuWindowBounds(frames: frames))
+        #expect(abs(result.rightmostX - 300) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.leftmostX - 100) < AppConstants.floatingPointTolerance)
+    }
 }

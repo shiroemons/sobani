@@ -40,26 +40,19 @@ final class ImagePreviewPanel {
     }
 
     func show(image: NSImage, relativeTo menuItem: NSMenuItem, ofMenu menu: NSMenu) {
-        let previewSize = scaledSize(for: image)
-        let totalWidth = previewSize.width + Self.padding * 2
-        let totalHeight = previewSize.height + Self.padding * 2
+        let (panelSize, imageFrame) = Self.calculatePanelFrames(imageSize: image.size)
 
         imageView.image = image
-        imageView.frame = NSRect(
-            x: Self.padding,
-            y: Self.padding,
-            width: previewSize.width,
-            height: previewSize.height
-        )
+        imageView.frame = imageFrame
 
         let panelOrigin = calculatePosition(
             menuItem: menuItem,
             menu: menu,
-            panelSize: NSSize(width: totalWidth, height: totalHeight)
+            panelSize: panelSize
         )
 
         panel.setFrame(
-            NSRect(origin: panelOrigin, size: NSSize(width: totalWidth, height: totalHeight)),
+            NSRect(origin: panelOrigin, size: panelSize),
             display: true
         )
         panel.orderFront(nil)
@@ -127,6 +120,42 @@ final class ImagePreviewPanel {
         return NSPoint(x: mouseLocation.x + offset, y: mouseLocation.y - panelSize.height / 2)
     }
 
+    /// 画像サイズからパネルサイズと画像フレームを計算
+    nonisolated static func calculatePanelFrames(
+        imageSize: NSSize, maxDimension: CGFloat = AppConstants.previewMaxDimension, padding: CGFloat = 8
+    ) -> (panelSize: NSSize, imageFrame: NSRect) {
+        let previewSize = scaledSize(for: imageSize, maxDimension: maxDimension)
+        let panelSize = NSSize(
+            width: previewSize.width + padding * 2,
+            height: previewSize.height + padding * 2
+        )
+        let imageFrame = NSRect(
+            x: padding,
+            y: padding,
+            width: previewSize.width,
+            height: previewSize.height
+        )
+        return (panelSize, imageFrame)
+    }
+
+    /// ウィンドウフレーム情報からメニューウィンドウをフィルタリング
+    nonisolated static func filterMenuWindowFrames(
+        frames: [(frame: NSRect, level: Int)], menuLevel: Int, minWidth: CGFloat = AppConstants.menuWindowMinWidth
+    ) -> [NSRect] {
+        return frames
+            .filter { $0.level >= menuLevel && $0.frame.width > minWidth }
+            .map { $0.frame }
+    }
+
+    /// メニューウィンドウフレーム群の境界（右端最大値と左端最小値）を計算
+    nonisolated static func menuWindowBounds(frames: [NSRect]) -> (rightmostX: CGFloat, leftmostX: CGFloat)? {
+        guard let rightmostX = frames.map({ $0.maxX }).max(),
+              let leftmostX = frames.map({ $0.minX }).min() else {
+            return nil
+        }
+        return (rightmostX, leftmostX)
+    }
+
     // MARK: - Private
 
     private func scaledSize(for image: NSImage) -> NSSize {
@@ -135,24 +164,21 @@ final class ImagePreviewPanel {
 
     private func calculatePosition(menuItem: NSMenuItem, menu: NSMenu, panelSize: NSSize) -> NSPoint {
         let menuWindows = Self.findMenuWindows(excluding: panel)
+        let windowFrames = menuWindows.map { $0.frame }
 
-        guard !menuWindows.isEmpty else {
+        guard let bounds = Self.menuWindowBounds(frames: windowFrames) else {
             let mouseLocation = NSEvent.mouseLocation
             return Self.fallbackPosition(mouseLocation: mouseLocation, panelSize: panelSize)
         }
 
-        // Find the bounding rect of all menu windows (parent + submenus)
-        let rightmostX = menuWindows.map { $0.frame.maxX }.max() ?? 0
-        let leftmostX = menuWindows.map { $0.frame.minX }.min() ?? 0
-
         let mouseY = NSEvent.mouseLocation.y
 
         let screen = NSScreen.screens.first(where: {
-            $0.frame.contains(NSPoint(x: rightmostX, y: mouseY))
+            $0.frame.contains(NSPoint(x: bounds.rightmostX, y: mouseY))
         }) ?? NSScreen.main
 
         return Self.calculatePanelPosition(
-            rightmostX: rightmostX, leftmostX: leftmostX,
+            rightmostX: bounds.rightmostX, leftmostX: bounds.leftmostX,
             mouseY: mouseY, panelSize: panelSize,
             screenFrame: screen?.frame, visibleFrame: screen?.visibleFrame
         )
