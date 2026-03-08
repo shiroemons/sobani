@@ -516,6 +516,28 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         return CGSize(width: clampedW, height: clampedH)
     }
 
+    // MARK: - Testable Static Methods
+
+    nonisolated static func generateMonitorPopupTitles(screenSizes: [(width: Int, height: Int)]) -> [String] {
+        return screenSizes.enumerated().map { index, size in
+            "\(index + 1): \(size.width)×\(size.height)"
+        }
+    }
+
+    nonisolated static func formatResolutionLabel(width: Int, height: Int) -> String {
+        return "\(width)×\(height)"
+    }
+
+    nonisolated static func updatedRelativePosition(
+        newAxisValue: CGFloat, currentRelative: CGPoint, isXField: Bool
+    ) -> CGPoint {
+        if isXField {
+            return CGPoint(x: newAxisValue, y: currentRelative.y)
+        } else {
+            return CGPoint(x: currentRelative.x, y: newAxisValue)
+        }
+    }
+
 }
 
 // MARK: - Position & Size Section
@@ -689,10 +711,11 @@ extension AdjustmentPanelController {
         guard let popup = monitorPopup else { return }
         popup.removeAllItems()
         let screens = NSScreen.screens
-        for (index, screen) in screens.enumerated() {
-            let title = "\(index + 1): \(Int(screen.frame.width))×\(Int(screen.frame.height))"
+        let screenSizes = screens.map { (width: Int($0.frame.width), height: Int($0.frame.height)) }
+        let titles = Self.generateMonitorPopupTitles(screenSizes: screenSizes)
+        for (index, title) in titles.enumerated() {
             popup.addItem(withTitle: title)
-            popup.lastItem?.representedObject = screen
+            popup.lastItem?.representedObject = screens[index]
         }
         if let current = currentScreen, let idx = screens.firstIndex(of: current) {
             popup.selectItem(at: idx)
@@ -704,7 +727,9 @@ extension AdjustmentPanelController {
             resolutionLabel?.stringValue = ""
             return
         }
-        resolutionLabel?.stringValue = "\(Int(screen.frame.width))×\(Int(screen.frame.height))"
+        resolutionLabel?.stringValue = Self.formatResolutionLabel(
+            width: Int(screen.frame.width), height: Int(screen.frame.height)
+        )
     }
 
     @objc private func monitorPopupChanged(_ sender: NSPopUpButton) {
@@ -724,9 +749,9 @@ extension AdjustmentPanelController {
             updatePositionFields()
             return
         }
-        let relative = CGPoint(
-            x: CGFloat(value),
-            y: globalToMonitorRelative(currentPosition, screen: screen).y
+        let currentRelative = globalToMonitorRelative(currentPosition, screen: screen)
+        let relative = Self.updatedRelativePosition(
+            newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: true
         )
         let global = monitorRelativeToGlobal(relative, screen: screen)
         currentPosition = global
@@ -740,9 +765,9 @@ extension AdjustmentPanelController {
             updatePositionFields()
             return
         }
-        let relative = CGPoint(
-            x: globalToMonitorRelative(currentPosition, screen: screen).x,
-            y: CGFloat(value)
+        let currentRelative = globalToMonitorRelative(currentPosition, screen: screen)
+        let relative = Self.updatedRelativePosition(
+            newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: false
         )
         let global = monitorRelativeToGlobal(relative, screen: screen)
         currentPosition = global

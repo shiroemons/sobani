@@ -168,6 +168,86 @@ import Testing
 
     // MARK: - AdjustmentPanelState Tests
 
+    // MARK: - generateMonitorPopupTitles Tests
+
+    /// 空配列で空配列を返すことを検証
+    @Test func generateMonitorPopupTitles_empty() {
+        let result = AdjustmentPanelController.generateMonitorPopupTitles(screenSizes: [])
+        #expect(result.isEmpty)
+    }
+
+    /// 1画面で正しいタイトルを生成することを検証
+    @Test func generateMonitorPopupTitles_singleScreen() {
+        let result = AdjustmentPanelController.generateMonitorPopupTitles(
+            screenSizes: [(width: 1920, height: 1080)]
+        )
+        #expect(result == ["1: 1920×1080"])
+    }
+
+    /// 複数画面で正しいインデックスとサイズのタイトルを生成することを検証
+    @Test func generateMonitorPopupTitles_multipleScreens() {
+        let result = AdjustmentPanelController.generateMonitorPopupTitles(
+            screenSizes: [(width: 1920, height: 1080), (width: 2560, height: 1440)]
+        )
+        #expect(result == ["1: 1920×1080", "2: 2560×1440"])
+    }
+
+    // MARK: - formatResolutionLabel Tests
+
+    /// 一般的な解像度のフォーマットを検証
+    @Test func formatResolutionLabel_commonResolution() {
+        let result = AdjustmentPanelController.formatResolutionLabel(width: 1920, height: 1080)
+        #expect(result == "1920×1080")
+    }
+
+    /// 大きな数値の解像度のフォーマットを検証
+    @Test func formatResolutionLabel_largeResolution() {
+        let result = AdjustmentPanelController.formatResolutionLabel(width: 5120, height: 2880)
+        #expect(result == "5120×2880")
+    }
+
+    // MARK: - updatedRelativePosition Tests
+
+    /// isXField=true で x が更新されることを検証
+    @Test func updatedRelativePosition_updateX() {
+        let current = CGPoint(x: 100, y: 200)
+        let result = AdjustmentPanelController.updatedRelativePosition(
+            newAxisValue: 300, currentRelative: current, isXField: true
+        )
+        #expect(abs(result.x - 300) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - 200) < AppConstants.floatingPointTolerance)
+    }
+
+    /// isXField=false で y が更新されることを検証
+    @Test func updatedRelativePosition_updateY() {
+        let current = CGPoint(x: 100, y: 200)
+        let result = AdjustmentPanelController.updatedRelativePosition(
+            newAxisValue: 500, currentRelative: current, isXField: false
+        )
+        #expect(abs(result.x - 100) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - 500) < AppConstants.floatingPointTolerance)
+    }
+
+    /// isXField=true で y 軸が変更されないことを検証
+    @Test func updatedRelativePosition_xFieldPreservesY() {
+        let current = CGPoint(x: 50, y: 75)
+        let result = AdjustmentPanelController.updatedRelativePosition(
+            newAxisValue: 999, currentRelative: current, isXField: true
+        )
+        #expect(abs(result.y - 75) < AppConstants.floatingPointTolerance)
+    }
+
+    /// isXField=false で x 軸が変更されないことを検証
+    @Test func updatedRelativePosition_yFieldPreservesX() {
+        let current = CGPoint(x: 50, y: 75)
+        let result = AdjustmentPanelController.updatedRelativePosition(
+            newAxisValue: 999, currentRelative: current, isXField: false
+        )
+        #expect(abs(result.x - 50) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - AdjustmentPanelState Tests
+
     /// AdjustmentPanelState の初期化を検証
     @Test func adjustmentPanelState_initialization() {
         let state = AdjustmentPanelState(
