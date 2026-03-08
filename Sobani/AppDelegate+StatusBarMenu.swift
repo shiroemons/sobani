@@ -120,7 +120,7 @@ extension AppDelegate {
     }
 
     func buildResetRotationMenuItem() -> NSMenuItem {
-        let hasRotation = characterWindows.contains { abs($0.imageView.rotationAngle) > AppConstants.floatingPointTolerance }
+        let hasRotation = MenuStateUtils.hasRotation(angles: characterWindows.map(\.imageView.rotationAngle))
         let item = NSMenuItem(
             title: L("adjust.reset_all_rotation"),
             action: #selector(resetAllRotations),
@@ -132,7 +132,7 @@ extension AppDelegate {
     }
 
     func buildResetOpacityMenuItem() -> NSMenuItem {
-        let hasOpacity = characterWindows.contains { abs($0.imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance }
+        let hasOpacity = MenuStateUtils.hasNonDefaultOpacity(opacities: characterWindows.map(\.imageView.opacityLevel))
         let item = NSMenuItem(
             title: L("adjust.reset_all_opacity"),
             action: #selector(resetAllOpacity),
@@ -156,7 +156,7 @@ extension AppDelegate {
 
         item.submenu = submenu
         // 両方 disabled なら親も disabled
-        item.isEnabled = rotationItem.isEnabled || opacityItem.isEnabled
+        item.isEnabled = MenuStateUtils.isBulkResetEnabled(hasRotation: rotationItem.isEnabled, hasOpacity: opacityItem.isEnabled)
         return item
     }
 
@@ -243,7 +243,7 @@ extension AppDelegate {
         let windowNumber = charWindow.window.windowNumber
         let index = orderedWindows.firstIndex(where: { $0 === charWindow }) ?? 0
         let count = orderedWindows.count
-        let canReorder = !areWindowsHidden && count > 1
+        let canReorder = MenuStateUtils.canReorder(areWindowsHidden: areWindowsHidden, windowCount: count)
 
         buildLayerOrderItems(into: submenu, windowNumber: windowNumber, index: index, count: count, canReorder: canReorder)
 
@@ -274,13 +274,13 @@ extension AppDelegate {
         let resetRotationItem = NSMenuItem(title: L("adjust.reset_rotation"), action: #selector(resetRotationByWindowNumber(_:)), keyEquivalent: "")
         resetRotationItem.target = self
         resetRotationItem.tag = windowNumber
-        resetRotationItem.isEnabled = abs(charWindow.imageView.rotationAngle) > AppConstants.floatingPointTolerance
+        resetRotationItem.isEnabled = MenuStateUtils.isRotationResetEnabled(angle: charWindow.imageView.rotationAngle)
         submenu.addItem(resetRotationItem)
 
         let resetOpacityItem = NSMenuItem(title: L("adjust.reset_opacity"), action: #selector(resetOpacityByWindowNumber(_:)), keyEquivalent: "")
         resetOpacityItem.target = self
         resetOpacityItem.tag = windowNumber
-        resetOpacityItem.isEnabled = abs(charWindow.imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance
+        resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(opacity: charWindow.imageView.opacityLevel)
         submenu.addItem(resetOpacityItem)
 
         submenu.addItem(NSMenuItem.separator())
@@ -353,25 +353,25 @@ extension AppDelegate {
         let toFrontItem = NSMenuItem(title: L("window.move_to_front"), action: #selector(moveWindowToFrontByWindowNumber(_:)), keyEquivalent: "")
         toFrontItem.target = self
         toFrontItem.tag = windowNumber
-        toFrontItem.isEnabled = canReorder && index > 0
+        toFrontItem.isEnabled = MenuStateUtils.canMoveForward(index: index, count: count, canReorder: canReorder)
         menu.addItem(toFrontItem)
 
         let forwardItem = NSMenuItem(title: L("window.move_forward"), action: #selector(moveWindowForwardByWindowNumber(_:)), keyEquivalent: "")
         forwardItem.target = self
         forwardItem.tag = windowNumber
-        forwardItem.isEnabled = canReorder && index > 0
+        forwardItem.isEnabled = MenuStateUtils.canMoveForward(index: index, count: count, canReorder: canReorder)
         menu.addItem(forwardItem)
 
         let backwardItem = NSMenuItem(title: L("window.move_backward"), action: #selector(moveWindowBackwardByWindowNumber(_:)), keyEquivalent: "")
         backwardItem.target = self
         backwardItem.tag = windowNumber
-        backwardItem.isEnabled = canReorder && index < count - 1
+        backwardItem.isEnabled = MenuStateUtils.canMoveBackward(index: index, count: count, canReorder: canReorder)
         menu.addItem(backwardItem)
 
         let toBackItem = NSMenuItem(title: L("window.move_to_back"), action: #selector(moveWindowToBackByWindowNumber(_:)), keyEquivalent: "")
         toBackItem.target = self
         toBackItem.tag = windowNumber
-        toBackItem.isEnabled = canReorder && index < count - 1
+        toBackItem.isEnabled = MenuStateUtils.canMoveBackward(index: index, count: count, canReorder: canReorder)
         menu.addItem(toBackItem)
     }
 
