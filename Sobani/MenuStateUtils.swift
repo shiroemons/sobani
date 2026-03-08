@@ -41,4 +41,34 @@ enum MenuStateUtils {
     static func canReorder(areWindowsHidden: Bool, windowCount: Int) -> Bool {
         !areWindowsHidden && windowCount > 1
     }
+
+    // MARK: - Text Formatting
+
+    /// 「表示中: X体」テキストを生成する
+    static func formatWindowCountText(
+        count: Int,
+        isHidden: Bool,
+        showingFormat: String,
+        showingLabel: String,
+        hiddenLabel: String
+    ) -> String {
+        let base = String(format: showingFormat, "\(count)")
+        if isHidden {
+            return base.replacingOccurrences(of: showingLabel, with: hiddenLabel)
+        }
+        return base
+    }
+
+    /// ウィンドウ情報テキストを生成する（左側テキストと右側テキスト）
+    static func buildWindowInfoText(
+        index: Int,
+        displayName: String,
+        windowId: Int,
+        imageSize: (width: Int, height: Int),
+        screenName: String
+    ) -> (leftText: String, rightText: String) {
+        let leftText = "\(index + 1): \(displayName) (#\(windowId))"
+        let rightText = "[\(imageSize.width)\u{00d7}\(imageSize.height)] \(screenName)"
+        return (leftText, rightText)
+    }
 }

@@ -30,11 +30,15 @@ extension AppDelegate {
         // 画像を追加表示 & 表示中
         menu.addItem(buildNewWindowMenuItem())
 
+        let countTitle = MenuStateUtils.formatWindowCountText(
+            count: characterWindows.count,
+            isHidden: areWindowsHidden,
+            showingFormat: L("status.showing_count"),
+            showingLabel: L("status.showing"),
+            hiddenLabel: L("status.hidden")
+        )
         let countItem = NSMenuItem(
-            title: areWindowsHidden
-                ? String(format: L("status.showing_count"), "\(characterWindows.count)")
-                    .replacingOccurrences(of: L("status.showing"), with: L("status.hidden"))
-                : String(format: L("status.showing_count"), "\(characterWindows.count)"),
+            title: countTitle,
             action: nil,
             keyEquivalent: ""
         )
@@ -199,15 +203,16 @@ extension AppDelegate {
 
         let font = NSFont.menuFont(ofSize: 0)
 
-        var maxLeftWidth: CGFloat = 0
-        for (index, charWindow) in orderedWindows.enumerated() {
-            let leftText = "\(index + 1): \(charWindow.localizedDisplayName) (#\(charWindow.windowId))"
-            // NSString.size(withAttributes:) に必要
+        let maxLeftWidth: CGFloat = orderedWindows.enumerated().reduce(0) { maxWidth, pair in
+            let info = MenuStateUtils.buildWindowInfoText(
+                index: pair.offset, displayName: pair.element.localizedDisplayName,
+                windowId: pair.element.windowId,
+                imageSize: (Int(pair.element.imageView.frame.width), Int(pair.element.imageView.frame.height)),
+                screenName: ""
+            )
             // swiftlint:disable:next legacy_objc_type
-            let width = (leftText as NSString).size(withAttributes: [.font: font]).width
-            if width > maxLeftWidth {
-                maxLeftWidth = width
-            }
+            let width = (info.leftText as NSString).size(withAttributes: [.font: font]).width
+            return max(maxWidth, width)
         }
         let tabPosition = maxLeftWidth + AppConstants.menuTabPadding
 
@@ -215,20 +220,21 @@ extension AppDelegate {
         paragraphStyle.tabStops = [NSTextTab(textAlignment: .left, location: tabPosition)]
 
         for (index, charWindow) in orderedWindows.enumerated() {
-            let imageWidth = Int(charWindow.imageView.frame.width)
-            let imageHeight = Int(charWindow.imageView.frame.height)
-            let rawScreenName = charWindow.window.screen?.localizedName ?? ""
-            let screenName = rawScreenName.isEmpty ? L("image.unknown") : rawScreenName
-            let leftText = "\(index + 1): \(charWindow.localizedDisplayName) (#\(charWindow.windowId))"
-            let rightText = "[\(imageWidth)\u{00d7}\(imageHeight)] \(screenName)"
-            let fullText = "\(leftText)\t\(rightText)"
+            let rawName = charWindow.window.screen?.localizedName ?? ""
+            let info = MenuStateUtils.buildWindowInfoText(
+                index: index, displayName: charWindow.localizedDisplayName,
+                windowId: charWindow.windowId,
+                imageSize: (Int(charWindow.imageView.frame.width), Int(charWindow.imageView.frame.height)),
+                screenName: rawName.isEmpty ? L("image.unknown") : rawName
+            )
+            let fullText = "\(info.leftText)\t\(info.rightText)"
 
             let attributedTitle = NSAttributedString(
                 string: fullText,
                 attributes: [.font: font, .paragraphStyle: paragraphStyle]
             )
 
-            let item = NSMenuItem(title: leftText, action: nil, keyEquivalent: "")
+            let item = NSMenuItem(title: info.leftText, action: nil, keyEquivalent: "")
             item.attributedTitle = attributedTitle
             item.representedObject = charWindow
             item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows)

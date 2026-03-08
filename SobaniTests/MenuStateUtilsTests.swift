@@ -194,4 +194,108 @@ struct MenuStateUtilsTests {
     func canReorderTwoWindows() {
         #expect(MenuStateUtils.canReorder(areWindowsHidden: false, windowCount: 2))
     }
+
+    // MARK: - formatWindowCountText Tests
+
+    @Test("formatWindowCountText: 非表示でない場合、showingFormatを使用")
+    func formatWindowCountTextShowing() {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 3,
+            isHidden: false,
+            showingFormat: "表示中: %@体",
+            showingLabel: "表示中",
+            hiddenLabel: "非表示"
+        )
+        #expect(result == "表示中: 3体")
+    }
+
+    @Test("formatWindowCountText: 非表示の場合、hiddenLabelで置換")
+    func formatWindowCountTextHidden() {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 3,
+            isHidden: true,
+            showingFormat: "表示中: %@体",
+            showingLabel: "表示中",
+            hiddenLabel: "非表示"
+        )
+        #expect(result == "非表示: 3体")
+    }
+
+    @Test("formatWindowCountText: count=0の場合")
+    func formatWindowCountTextZero() {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 0,
+            isHidden: false,
+            showingFormat: "表示中: %@体",
+            showingLabel: "表示中",
+            hiddenLabel: "非表示"
+        )
+        #expect(result == "表示中: 0体")
+    }
+
+    @Test("formatWindowCountText: count=5の場合")
+    func formatWindowCountTextFive() {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 5,
+            isHidden: false,
+            showingFormat: "Showing: %@ windows",
+            showingLabel: "Showing",
+            hiddenLabel: "Hidden"
+        )
+        #expect(result == "Showing: 5 windows")
+    }
+
+    // MARK: - buildWindowInfoText Tests
+
+    @Test("buildWindowInfoText: 基本的なテキスト生成")
+    func buildWindowInfoTextBasic() {
+        let info = MenuStateUtils.buildWindowInfoText(
+            index: 0,
+            displayName: "character",
+            windowId: 1,
+            imageSize: (1920, 1080),
+            screenName: "Built-in Display"
+        )
+        #expect(info.leftText == "1: character (#1)")
+        #expect(info.rightText == "[1920\u{00d7}1080] Built-in Display")
+    }
+
+    @Test("buildWindowInfoText: 異なるパラメータでの生成")
+    func buildWindowInfoTextDifferent() {
+        let info = MenuStateUtils.buildWindowInfoText(
+            index: 2,
+            displayName: "zundamon",
+            windowId: 5,
+            imageSize: (800, 600),
+            screenName: "外部ディスプレイ"
+        )
+        #expect(info.leftText == "3: zundamon (#5)")
+        #expect(info.rightText == "[800\u{00d7}600] 外部ディスプレイ")
+    }
+
+    @Test("buildWindowInfoText: 特殊文字を含むdisplayName")
+    func buildWindowInfoTextSpecialChars() {
+        let info = MenuStateUtils.buildWindowInfoText(
+            index: 0,
+            displayName: "キャラ (2024)",
+            windowId: 1,
+            imageSize: (500, 500),
+            screenName: "画面1"
+        )
+        #expect(info.leftText == "1: キャラ (2024) (#1)")
+        #expect(info.rightText == "[500\u{00d7}500] 画面1")
+    }
+
+    @Test("buildWindowInfoText: 大きなwindowId")
+    func buildWindowInfoTextLargeId() {
+        let info = MenuStateUtils.buildWindowInfoText(
+            index: 99,
+            displayName: "test",
+            windowId: 9999,
+            imageSize: (3840, 2160),
+            screenName: "Monitor"
+        )
+        #expect(info.leftText == "100: test (#9999)")
+        #expect(info.rightText == "[3840\u{00d7}2160] Monitor")
+    }
 }
