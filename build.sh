@@ -12,6 +12,7 @@
 #   APPLE_TEAM_ID     - Apple Developer Team ID (公証用)
 
 set -e
+set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$SCRIPT_DIR"
@@ -55,8 +56,7 @@ xcodebuild \
     CODE_SIGNING_REQUIRED=NO \
     CODE_SIGNING_ALLOWED=NO \
     "${ARCH_ARGS[@]}" \
-    build \
-    2>&1 | tail -5
+    build
 
 # .appを探してプロジェクトフォルダにコピー
 APP_PATH=$(find "$BUILD_DIR" -name "$APP_NAME.app" -type d | head -1)

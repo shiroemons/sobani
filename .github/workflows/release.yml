@@ -50,6 +50,16 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "📌 Tag: $TAG, Version: $VERSION"
 
+      - name: Xcode バージョン選択
+        run: |
+          ls /Applications/ | grep Xcode
+          XCODE_PATH=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE_PATH" ]; then
+            sudo xcode-select -s "$XCODE_PATH"
+          fi
+          xcodebuild -version
+          swift --version
+
       - name: ユニバーサルビルド・署名・公証
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
