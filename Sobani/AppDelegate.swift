@@ -44,15 +44,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
                 let image: NSImage
                 let resolvedDisplayName: String
 
-                if state.imageName == AppConstants.defaultImageName {
+                let registeredImage = ImageManager.shared.loadRegisteredImage(named: state.imageName)
+                let resolved = Self.resolveImageName(
+                    state.imageName,
+                    defaultImageName: AppConstants.defaultImageName,
+                    registeredImageExists: registeredImage != nil
+                )
+                resolvedDisplayName = resolved.resolvedName
+                if resolved.isDefault {
                     image = ImageManager.shared.defaultImage() ?? NSImage()
-                    resolvedDisplayName = AppConstants.defaultImageName
-                } else if let registered = ImageManager.shared.loadRegisteredImage(named: state.imageName) {
-                    image = registered
-                    resolvedDisplayName = state.imageName
                 } else {
-                    image = ImageManager.shared.defaultImage() ?? NSImage()
-                    resolvedDisplayName = AppConstants.defaultImageName
+                    image = registeredImage ?? NSImage()
                 }
 
                 let charWindow = CharacterWindow(image: image)
@@ -74,15 +76,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
             }
 
             // Legacy states (windowId == 0) get new IDs assigned
-            let maxExistingId = characterWindows.map(\.windowId).max() ?? 0
-            nextWindowId = maxExistingId + 1
-            for charWindow in characterWindows where charWindow.windowId == 0 {
-                charWindow.setWindowId(nextWindowId)
-                nextWindowId += 1
+            let migrationResult = Self.migrateWindowIds(
+                existingIds: characterWindows.map(\.windowId),
+                legacyId: 0
+            )
+            for assignment in migrationResult.assignments {
+                characterWindows[assignment.oldIndex].setWindowId(assignment.newId)
             }
-            // Ensure nextWindowId is always beyond the max assigned ID
-            let finalMaxId = characterWindows.map(\.windowId).max() ?? 0
-            nextWindowId = finalMaxId + 1
+            nextWindowId = migrationResult.nextId
         }
 
         zOrderedWindows = characterWindows.reversed()
