@@ -4,9 +4,9 @@ import UniformTypeIdentifiers
 
 /// Localization helper that supports runtime language switching via LanguageManager.
 /// Falls back to NSLocalizedString with the main bundle when no custom bundle is set.
-@MainActor
+/// スレッドセーフ: 任意のスレッドから呼び出し可能。
 func L(_ key: String) -> String {
-    if let bundle = LanguageManager.shared.currentBundle {
+    if let bundle = sharedLocalizationBundle {
         return NSLocalizedString(key, bundle: bundle, comment: "")
     }
     return NSLocalizedString(key, comment: "")

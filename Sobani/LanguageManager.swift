@@ -5,12 +5,17 @@ extension Notification.Name {
     static let languageDidChange = Notification.Name("languageDidChange")
 }
 
+/// スレッドセーフなバンドル参照。任意のスレッドから読み取り可能。
+/// 書き込みは @MainActor (LanguageManager.updateBundle()) からのみ行われる。
+/// Bundle は不変オブジェクトであり、参照の代入は64bitでアトミックなため安全。
+nonisolated(unsafe) var sharedLocalizationBundle: Bundle?
+
 enum Language: String, CaseIterable, Sendable {
     case system = "system"
     case japanese = "ja"
     case english = "en"
 
-    @MainActor var displayName: String {
+    var displayName: String {
         switch self {
         case .system: return L("language.system")
         case .japanese: return "日本語"
@@ -82,8 +87,10 @@ final class LanguageManager {
         if let path = Bundle.main.path(forResource: langCode, ofType: "lproj"),
            let bundle = Bundle(path: path) {
             currentBundle = bundle
+            sharedLocalizationBundle = bundle
         } else {
             currentBundle = nil
+            sharedLocalizationBundle = nil
         }
     }
 }
