@@ -27,10 +27,9 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 
     init(image: NSImage) {
         let maxHeight: CGFloat = AppConstants.defaultWindowHeight
-        let imageHeight = max(image.size.height, 1)
-        let scale = maxHeight / imageHeight
-        let windowWidth = image.size.width * scale
-        let windowHeight = maxHeight
+        let windowSize = Self.calculateWindowSize(imageSize: image.size, maxHeight: maxHeight)
+        let windowWidth = windowSize.width
+        let windowHeight = windowSize.height
 
         window = UnconstrainedWindow(
             contentRect: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight),
@@ -104,11 +103,10 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     func applyImage(_ image: NSImage) {
         guard image.size.height > 0 else { return }
         let baseHeight = imageView.frame.height
-        let scale = baseHeight / image.size.height
-        let baseWidth = image.size.width * scale
+        let dims = Self.calculateImageDimensions(baseHeight: baseHeight, imageSize: image.size)
         imageView.image = image
-        imageView.aspectRatio = baseWidth / baseHeight
-        imageView.frame.size = NSSize(width: baseWidth, height: baseHeight)
+        imageView.aspectRatio = dims.aspectRatio
+        imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
         adjustWindowForRotation()
     }
 
@@ -601,7 +599,7 @@ extension CharacterWindow {
 // MARK: - CharacterWindow + Menu Title Update
 
 extension CharacterWindow {
-    private static let menuTitleMap: [Int: String] = [
+    nonisolated(unsafe) private static let menuTitleMap: [Int: String] = [
         MenuItemTag.changeImageSubmenu.rawValue: "image.change",
         MenuItemTag.flipContext.rawValue: "adjust.flip",
         MenuItemTag.adjustPanelContext.rawValue: "adjust.open",
@@ -612,15 +610,16 @@ extension CharacterWindow {
     ]
 
     var localizedDisplayName: String {
-        if displayName == AppConstants.defaultImageName {
-            return L("image.default_display")
-        }
-        return displayName
+        return Self.formatLocalizedDisplayName(
+            displayName: displayName,
+            defaultName: AppConstants.defaultImageName,
+            localizedDefault: L("image.default_display")
+        )
     }
 
     func updateTopLevelMenuTitles(_ menu: NSMenu) {
         for item in menu.items {
-            if let key = Self.menuTitleMap[item.tag] {
+            if let key = Self.menuTitleLocalizationKey(forTag: item.tag) {
                 item.title = L(key)
             }
         }
@@ -669,6 +668,49 @@ extension CharacterWindow {
             x: round(centerX - bbSize.width / 2),
             y: round(centerY - bbSize.height / 2)
         )
+    }
+
+    /// 画像サイズからウィンドウサイズを計算（maxHeight以下にアスペクト比維持で縮小）
+    nonisolated static func calculateWindowSize(imageSize: NSSize, maxHeight: CGFloat) -> NSSize {
+        let imageHeight = max(imageSize.height, 1)
+        let scale = maxHeight / imageHeight
+        let windowWidth = imageSize.width * scale
+        return NSSize(width: windowWidth, height: maxHeight)
+    }
+
+    /// baseHeightに基づいてアスペクト比を維持した画像寸法を計算
+    nonisolated static func calculateImageDimensions(
+        baseHeight: CGFloat, imageSize: NSSize
+    ) -> (width: CGFloat, aspectRatio: CGFloat) {
+        let scale = baseHeight / imageSize.height
+        let baseWidth = imageSize.width * scale
+        let aspectRatio = baseWidth / baseHeight
+        return (width: baseWidth, aspectRatio: aspectRatio)
+    }
+
+    /// 表示名のローカライズ処理（デフォルト名と一致する場合はローカライズ名を返す）
+    nonisolated static func formatLocalizedDisplayName(
+        displayName: String, defaultName: String, localizedDefault: String
+    ) -> String {
+        if displayName == defaultName {
+            return localizedDefault
+        }
+        return displayName
+    }
+
+    /// CGImageAlphaInfoが透明情報を持つかどうかを判定
+    nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
+        switch alphaInfo {
+        case .first, .last, .premultipliedFirst, .premultipliedLast:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// メニュータグに対応するローカライズキーを返す（該当なしならnil）
+    nonisolated static func menuTitleLocalizationKey(forTag tag: Int) -> String? {
+        return menuTitleMap[tag]
     }
 }
 
@@ -750,7 +792,7 @@ extension CharacterWindow {
             return false
         }
         let alphaInfo = cgImage.alphaInfo
-        if alphaInfo == .none || alphaInfo == .noneSkipFirst || alphaInfo == .noneSkipLast {
+        if !Self.isAlphaInfoTransparent(alphaInfo) {
             return false
         }
         let width = cgImage.width

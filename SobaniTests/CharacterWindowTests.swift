@@ -90,4 +90,155 @@ struct CharacterWindowTests {
         #expect(abs(recoveredWindowOrigin.x - originalWindowFrame.origin.x) <= 1.0)
         #expect(abs(recoveredWindowOrigin.y - originalWindowFrame.origin.y) <= 1.0)
     }
+
+    // MARK: - calculateWindowSize Tests
+
+    @Test("画像がmaxHeight以下の場合はスケールアップされる")
+    func calculateWindowSizeBelowMax() {
+        let imageSize = NSSize(width: 200, height: 300)
+        let maxHeight: CGFloat = 600
+        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
+        // アスペクト比維持: 200/300 * 600 = 400
+        #expect(abs(result.width - 400) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("画像がmaxHeight超過の場合はmaxHeightに縮小される")
+    func calculateWindowSizeAboveMax() {
+        let imageSize = NSSize(width: 400, height: 1200)
+        let maxHeight: CGFloat = 600
+        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
+        // アスペクト比維持: 400/1200 * 600 = 200
+        #expect(abs(result.width - 200) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("正方形画像のウィンドウサイズ計算")
+    func calculateWindowSizeSquare() {
+        let imageSize = NSSize(width: 500, height: 500)
+        let maxHeight: CGFloat = 600
+        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - 600) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("横長画像のウィンドウサイズ計算")
+    func calculateWindowSizeLandscape() {
+        let imageSize = NSSize(width: 1000, height: 500)
+        let maxHeight: CGFloat = 600
+        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
+        // アスペクト比維持: 1000/500 * 600 = 1200
+        #expect(abs(result.width - 1200) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - calculateImageDimensions Tests
+
+    @Test("正方形画像のアスペクト比")
+    func calculateImageDimensionsSquare() {
+        let result = CharacterWindow.calculateImageDimensions(
+            baseHeight: 600, imageSize: NSSize(width: 500, height: 500)
+        )
+        #expect(abs(result.aspectRatio - 1.0) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - 600) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("横長画像の幅計算")
+    func calculateImageDimensionsLandscape() {
+        let result = CharacterWindow.calculateImageDimensions(
+            baseHeight: 300, imageSize: NSSize(width: 800, height: 400)
+        )
+        // scale = 300/400 = 0.75, width = 800 * 0.75 = 600
+        #expect(abs(result.width - 600) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.aspectRatio - 2.0) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("縦長画像の幅計算")
+    func calculateImageDimensionsPortrait() {
+        let result = CharacterWindow.calculateImageDimensions(
+            baseHeight: 600, imageSize: NSSize(width: 200, height: 800)
+        )
+        // scale = 600/800 = 0.75, width = 200 * 0.75 = 150
+        #expect(abs(result.width - 150) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.aspectRatio - 0.25) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - formatLocalizedDisplayName Tests
+
+    @Test("デフォルト名と一致する場合はローカライズ名を返す")
+    func formatLocalizedDisplayNameDefault() {
+        let result = CharacterWindow.formatLocalizedDisplayName(
+            displayName: "default", defaultName: "default", localizedDefault: "デフォルト"
+        )
+        #expect(result == "デフォルト")
+    }
+
+    @Test("デフォルト名と不一致の場合はそのまま返す")
+    func formatLocalizedDisplayNameCustom() {
+        let result = CharacterWindow.formatLocalizedDisplayName(
+            displayName: "my_image", defaultName: "default", localizedDefault: "デフォルト"
+        )
+        #expect(result == "my_image")
+    }
+
+    @Test("空文字列の場合はそのまま返す")
+    func formatLocalizedDisplayNameEmpty() {
+        let result = CharacterWindow.formatLocalizedDisplayName(
+            displayName: "", defaultName: "default", localizedDefault: "デフォルト"
+        )
+        #expect(result == "")
+    }
+
+    // MARK: - isAlphaInfoTransparent Tests
+
+    @Test("premultipliedLast は透明")
+    func isAlphaInfoTransparentPremultipliedLast() {
+        #expect(CharacterWindow.isAlphaInfoTransparent(.premultipliedLast) == true)
+    }
+
+    @Test("premultipliedFirst は透明")
+    func isAlphaInfoTransparentPremultipliedFirst() {
+        #expect(CharacterWindow.isAlphaInfoTransparent(.premultipliedFirst) == true)
+    }
+
+    @Test("first は透明")
+    func isAlphaInfoTransparentFirst() {
+        #expect(CharacterWindow.isAlphaInfoTransparent(.first) == true)
+    }
+
+    @Test("last は透明")
+    func isAlphaInfoTransparentLast() {
+        #expect(CharacterWindow.isAlphaInfoTransparent(.last) == true)
+    }
+
+    @Test("none は不透明")
+    func isAlphaInfoTransparentNone() {
+        #expect(CharacterWindow.isAlphaInfoTransparent(.none) == false)
+    }
+
+    @Test("noneSkipLast は不透明")
+    func isAlphaInfoTransparentNoneSkipLast() {
+        #expect(CharacterWindow.isAlphaInfoTransparent(.noneSkipLast) == false)
+    }
+
+    // MARK: - menuTitleLocalizationKey Tests
+
+    @Test("有効なタグで対応するキーを返す")
+    func menuTitleLocalizationKeyValid() {
+        let result = CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.quit.rawValue)
+        #expect(result == "menu.quit")
+    }
+
+    @Test("無効なタグでnilを返す")
+    func menuTitleLocalizationKeyInvalid() {
+        let result = CharacterWindow.menuTitleLocalizationKey(forTag: 9999)
+        #expect(result == nil)
+    }
+
+    @Test("複数のタグで正しいキーが返る")
+    func menuTitleLocalizationKeyMultiple() {
+        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.changeImageSubmenu.rawValue) == "image.change")
+        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.flipContext.rawValue) == "adjust.flip")
+        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.close.rawValue) == "menu.close_image")
+    }
 }
