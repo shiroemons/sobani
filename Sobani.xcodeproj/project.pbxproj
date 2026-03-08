@@ -50,6 +50,7 @@
 		F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LR000001000000000001 /* LayoutPresetRenameTests.swift */; };
 		F0LE000002000000000001 /* LayoutPresetManagerExtendedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */; };
 		F0UN000002000000000001 /* UpdateManagerNetworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */; };
+		AD1234560000000000000002 /* AdjustmentPanelControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1234560000000000000001 /* AdjustmentPanelControllerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -110,6 +111,7 @@
 		F0LR000001000000000001 /* LayoutPresetRenameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetRenameTests.swift; sourceTree = "<group>"; };
 		F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetManagerExtendedTests.swift; sourceTree = "<group>"; };
 		F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerNetworkTests.swift; sourceTree = "<group>"; };
+		AD1234560000000000000001 /* AdjustmentPanelControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustmentPanelControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +204,7 @@
 				F0LR000001000000000001 /* LayoutPresetRenameTests.swift */,
 				F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */,
 				F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */,
+				AD1234560000000000000001 /* AdjustmentPanelControllerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -370,6 +373,7 @@
 				F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */,
 				F0LE000002000000000001 /* LayoutPresetManagerExtendedTests.swift in Sources */,
 				F0UN000002000000000001 /* UpdateManagerNetworkTests.swift in Sources */,
+				AD1234560000000000000002 /* AdjustmentPanelControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

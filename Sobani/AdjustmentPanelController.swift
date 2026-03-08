@@ -325,7 +325,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
             x: RotationLayout.angleFieldX, y: RotationLayout.angleFieldRelativeY + offsetY,
             width: RotationLayout.angleFieldWidth, height: 22
         ))
-        field.stringValue = formatAngle(angle)
+        field.stringValue = Self.formatAngle(angle)
         field.alignment = .right
         field.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
         field.target = self
@@ -360,7 +360,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         opacitySectionLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(opacitySectionLabel)
 
-        let percentLabel = NSTextField(labelWithString: formatOpacity(opacity))
+        let percentLabel = NSTextField(labelWithString: Self.formatOpacity(opacity))
         percentLabel.frame = NSRect(
             x: OpacityLayout.percentLabelX, y: OpacityLayout.labelRelativeY + offsetY, width: 50, height: 20
         )
@@ -434,41 +434,41 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     func updateAngle(_ angle: CGFloat) {
         currentAngle = angle
         dialView?.angle = angle
-        textField?.stringValue = formatAngle(angle)
+        textField?.stringValue = Self.formatAngle(angle)
     }
 
     func updateOpacity(_ opacity: CGFloat) {
         currentOpacity = opacity
         opacitySlider?.doubleValue = Double(opacity)
-        opacityLabel?.stringValue = formatOpacity(opacity)
+        opacityLabel?.stringValue = Self.formatOpacity(opacity)
     }
 
     // MARK: - Rotation Handlers
 
     private func angleChanged(_ newAngle: CGFloat) {
         currentAngle = newAngle
-        textField?.stringValue = formatAngle(newAngle)
+        textField?.stringValue = Self.formatAngle(newAngle)
         delegate?.rotationPanel(self, didChangeAngle: newAngle)
     }
 
     @objc private func textFieldChanged(_ sender: NSTextField) {
         let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
         guard var degrees = Double(text) else {
-            sender.stringValue = formatAngle(currentAngle)
+            sender.stringValue = Self.formatAngle(currentAngle)
             return
         }
         degrees = GeometryUtils.normalizeAngle(degrees)
         let angle = CGFloat(degrees)
         currentAngle = angle
         dialView?.angle = angle
-        sender.stringValue = formatAngle(angle)
+        sender.stringValue = Self.formatAngle(angle)
         delegate?.rotationPanel(self, didChangeAngle: angle)
     }
 
     @objc private func resetAngle() {
         currentAngle = 0
         dialView?.angle = 0
-        textField?.stringValue = formatAngle(0)
+        textField?.stringValue = Self.formatAngle(0)
         delegate?.rotationPanelDidReset(self)
     }
 
@@ -477,20 +477,20 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     @objc private func opacitySliderChanged(_ sender: NSSlider) {
         let opacity = CGFloat(sender.doubleValue)
         currentOpacity = opacity
-        opacityLabel?.stringValue = formatOpacity(opacity)
+        opacityLabel?.stringValue = Self.formatOpacity(opacity)
         delegate?.adjustmentPanel(self, didChangeOpacity: opacity)
     }
 
     @objc private func resetOpacity() {
         currentOpacity = 1.0
         opacitySlider?.doubleValue = 1.0
-        opacityLabel?.stringValue = formatOpacity(1.0)
+        opacityLabel?.stringValue = Self.formatOpacity(1.0)
         delegate?.adjustmentPanelDidResetOpacity(self)
     }
 
     // MARK: - Formatting Helpers
 
-    private func formatAngle(_ angle: CGFloat) -> String {
+    static func formatAngle(_ angle: CGFloat) -> String {
         let rounded = angle.rounded()
         if abs(angle - rounded) < AppConstants.floatingPointTolerance {
             return String(format: "%.0f", rounded)
@@ -498,8 +498,38 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         return String(format: "%.1f", angle)
     }
 
-    private func formatOpacity(_ opacity: CGFloat) -> String {
+    static func formatOpacity(_ opacity: CGFloat) -> String {
         return "\(Int(round(opacity * 100)))%"
+    }
+
+    // MARK: - Coordinate Conversion
+
+    static func globalToMonitorRelative(_ point: CGPoint, screenOrigin: CGPoint) -> CGPoint {
+        return CGPoint(x: point.x - screenOrigin.x, y: point.y - screenOrigin.y)
+    }
+
+    static func monitorRelativeToGlobal(_ point: CGPoint, screenOrigin: CGPoint) -> CGPoint {
+        return CGPoint(x: point.x + screenOrigin.x, y: point.y + screenOrigin.y)
+    }
+
+    // MARK: - Size Clamping
+
+    static func clampedSize(newValue: CGFloat, aspectRatio: CGFloat, isWidth: Bool) -> CGSize? {
+        guard newValue > 0, aspectRatio > 0 else { return nil }
+        let clampedH: CGFloat
+        if isWidth {
+            clampedH = max(
+                AppConstants.minImageHeight,
+                min(AppConstants.maxImageHeight, newValue / aspectRatio)
+            )
+        } else {
+            clampedH = max(
+                AppConstants.minImageHeight,
+                min(AppConstants.maxImageHeight, newValue)
+            )
+        }
+        let clampedW = clampedH * aspectRatio
+        return CGSize(width: clampedW, height: clampedH)
     }
 
 }
@@ -654,11 +684,11 @@ extension AdjustmentPanelController {
     // MARK: Coordinate Conversion
 
     private func globalToMonitorRelative(_ point: CGPoint, screen: NSScreen) -> CGPoint {
-        return CGPoint(x: point.x - screen.frame.origin.x, y: point.y - screen.frame.origin.y)
+        return Self.globalToMonitorRelative(point, screenOrigin: screen.frame.origin)
     }
 
     private func monitorRelativeToGlobal(_ point: CGPoint, screen: NSScreen) -> CGPoint {
-        return CGPoint(x: point.x + screen.frame.origin.x, y: point.y + screen.frame.origin.y)
+        return Self.monitorRelativeToGlobal(point, screenOrigin: screen.frame.origin)
     }
 
     // MARK: Monitor Popup
@@ -729,36 +759,24 @@ extension AdjustmentPanelController {
 
     @objc private func wFieldChanged(_ sender: NSTextField) {
         let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text), value > 0 else {
+        guard let value = Double(text),
+              let size = Self.clampedSize(newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: true) else {
             updateSizeFields()
             return
         }
-        guard currentAspectRatio > 0 else {
-            updateSizeFields()
-            return
-        }
-        let clampedH = max(
-            AppConstants.minImageHeight,
-            min(AppConstants.maxImageHeight, CGFloat(value) / currentAspectRatio)
-        )
-        let clampedW = clampedH * currentAspectRatio
-        currentSize = CGSize(width: clampedW, height: clampedH)
+        currentSize = size
         updateSizeFields()
         delegate?.adjustmentPanel(self, didChangeSize: currentSize)
     }
 
     @objc private func hFieldChanged(_ sender: NSTextField) {
         let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text), value > 0 else {
+        guard let value = Double(text),
+              let size = Self.clampedSize(newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: false) else {
             updateSizeFields()
             return
         }
-        let clampedH = max(
-            AppConstants.minImageHeight,
-            min(AppConstants.maxImageHeight, CGFloat(value))
-        )
-        let clampedW = clampedH * currentAspectRatio
-        currentSize = CGSize(width: clampedW, height: clampedH)
+        currentSize = size
         updateSizeFields()
         delegate?.adjustmentPanel(self, didChangeSize: currentSize)
     }
