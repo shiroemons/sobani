@@ -270,17 +270,13 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     private func buildPageIndicator(in container: NSView) {
         let width = container.bounds.width
-        let totalWidth = CGFloat(totalSteps) * Self.dotSize + CGFloat(totalSteps - 1) * Self.dotSpacing
-        let startX = (width - totalWidth) / 2
+        let frames = Self.pageIndicatorDotFrames(
+            totalSteps: totalSteps, containerWidth: width, dotSize: Self.dotSize, dotSpacing: Self.dotSpacing
+        )
         let y: CGFloat = Self.pageIndicatorY
 
-        for step in 0..<totalSteps {
-            let dot = NSView(frame: NSRect(
-                x: startX + CGFloat(step) * (Self.dotSize + Self.dotSpacing),
-                y: y,
-                width: Self.dotSize,
-                height: Self.dotSize
-            ))
+        for (step, frame) in frames.enumerated() {
+            let dot = NSView(frame: NSRect(x: frame.origin.x, y: y, width: frame.width, height: frame.height))
             dot.wantsLayer = true
             dot.layer?.cornerRadius = Self.dotSize / 2
             dot.layer?.backgroundColor = step == currentStep
@@ -295,15 +291,16 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private func buildNavigationButtons(in container: NSView) {
         let width = container.bounds.width
         let buttonY: CGFloat = Self.navigationButtonY
+        let config = Self.navigationButtonConfig(currentStep: currentStep, totalSteps: totalSteps)
 
-        if currentStep > 0 {
+        if config.showBack {
             let backButton = NSButton(title: L("onboarding.button.prev"), target: self, action: #selector(prevStep))
             backButton.frame = NSRect(x: 20, y: buttonY, width: 80, height: 32)
             backButton.bezelStyle = .rounded
             container.addSubview(backButton)
         }
 
-        if currentStep < totalSteps - 1 {
+        if config.showSkip {
             let skipButton = NSButton(title: L("onboarding.button.skip"), target: self, action: #selector(skipOnboarding))
             skipButton.frame = NSRect(x: (width - 80) / 2, y: buttonY, width: 80, height: 32)
             skipButton.bezelStyle = .rounded
@@ -321,19 +318,25 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             skipHint.isBordered = false
             skipHint.drawsBackground = false
             container.addSubview(skipHint)
+        }
 
+        if config.showNext {
             let nextButton = NSButton(title: L("onboarding.button.next"), target: self, action: #selector(nextStep))
             nextButton.frame = NSRect(x: width - 100, y: buttonY, width: 80, height: 32)
             nextButton.bezelStyle = .rounded
             nextButton.keyEquivalent = "\r"
             container.addSubview(nextButton)
-        } else {
+        }
+
+        if config.showStart {
             let startButton = NSButton(title: L("onboarding.button.start"), target: self, action: #selector(finishOnboarding))
             startButton.frame = NSRect(x: (width - 110) / 2, y: buttonY, width: 110, height: 32)
             startButton.bezelStyle = .rounded
             startButton.keyEquivalent = "\r"
             container.addSubview(startButton)
+        }
 
+        if config.showClose {
             let closeButton = NSButton(title: L("onboarding.button.close"), target: self, action: #selector(skipOnboarding))
             closeButton.frame = NSRect(x: width - 100, y: buttonY, width: 80, height: 32)
             closeButton.bezelStyle = .rounded
@@ -432,5 +435,47 @@ extension OnboardingWindowController {
         label.isBordered = false
         label.drawsBackground = false
         return label
+    }
+}
+
+// MARK: - Testable Static Methods
+
+extension OnboardingWindowController {
+    struct NavigationButtonConfig {
+        let showBack: Bool
+        let showSkip: Bool
+        let showNext: Bool
+        let showStart: Bool
+        let showClose: Bool
+    }
+
+    nonisolated static func navigationButtonConfig(
+        currentStep: Int, totalSteps: Int
+    ) -> NavigationButtonConfig {
+        let isFirstStep = currentStep == 0
+        let isLastStep = currentStep >= totalSteps - 1
+        return NavigationButtonConfig(
+            showBack: !isFirstStep,
+            showSkip: !isLastStep,
+            showNext: !isLastStep,
+            showStart: isLastStep,
+            showClose: isLastStep
+        )
+    }
+
+    nonisolated static func pageIndicatorDotFrames(
+        totalSteps: Int, containerWidth: CGFloat, dotSize: CGFloat, dotSpacing: CGFloat
+    ) -> [CGRect] {
+        guard totalSteps > 0 else { return [] }
+        let totalWidth = CGFloat(totalSteps) * dotSize + CGFloat(totalSteps - 1) * dotSpacing
+        let startX = (containerWidth - totalWidth) / 2
+        return (0..<totalSteps).map { step in
+            CGRect(
+                x: startX + CGFloat(step) * (dotSize + dotSpacing),
+                y: 0,
+                width: dotSize,
+                height: dotSize
+            )
+        }
     }
 }

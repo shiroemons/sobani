@@ -58,9 +58,11 @@
 		F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CW000001000000000001 /* CharacterWindowTests.swift */; };
 		F0AD000002000000000001 /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AD000001000000000001 /* AppDelegateTests.swift */; };
 		F0MS000002000000000001 /* MenuStateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MS000001000000000001 /* MenuStateUtils.swift */; };
+		F0AT000002000000000001 /* AppDelegate+TestableLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */; };
 		F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MS000003000000000001 /* MenuStateUtilsTests.swift */; };
 		F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000001000000000001 /* ScreenRestorationUtils.swift */; };
 		F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */; };
+		F0OW000002000000000001 /* OnboardingWindowControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,7 +133,9 @@
 		F0MS000001000000000001 /* MenuStateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStateUtils.swift; sourceTree = "<group>"; };
 		F0MS000003000000000001 /* MenuStateUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStateUtilsTests.swift; sourceTree = "<group>"; };
 		F0SR000001000000000001 /* ScreenRestorationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtils.swift; sourceTree = "<group>"; };
+		F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+TestableLogic.swift"; sourceTree = "<group>"; };
 		F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtilsTests.swift; sourceTree = "<group>"; };
+		F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +192,7 @@
 				F0ZO000001000000000001 /* ZOrderUtils.swift */,
 				F0MS000001000000000001 /* MenuStateUtils.swift */,
 				F0SR000001000000000001 /* ScreenRestorationUtils.swift */,
+				F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -235,6 +240,7 @@
 				F0AD000001000000000001 /* AppDelegateTests.swift */,
 				F0MS000003000000000001 /* MenuStateUtilsTests.swift */,
 				F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */,
+				F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -380,6 +386,7 @@
 				F0ZO000002000000000001 /* ZOrderUtils.swift in Sources */,
 				F0MS000002000000000001 /* MenuStateUtils.swift in Sources */,
 				F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */,
+				F0AT000002000000000001 /* AppDelegate+TestableLogic.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -414,6 +421,7 @@
 				F0AD000002000000000001 /* AppDelegateTests.swift in Sources */,
 				F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */,
 				F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */,
+				F0OW000002000000000001 /* OnboardingWindowControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
