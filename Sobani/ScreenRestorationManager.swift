@@ -3,7 +3,7 @@ import os.log
 
 // MARK: - Pending Restoration
 
-struct PendingRestoration: Codable {
+struct PendingRestoration: Codable, Sendable {
     let windowId: Int
     let originalState: WindowState
     let displayID: CGDirectDisplayID
@@ -53,6 +53,7 @@ struct PendingRestoration: Codable {
 
 // MARK: - Screen Restoration Manager
 
+@MainActor
 final class ScreenRestorationManager {
     private let logger = Logger(
         subsystem: "com.shiroemons.Sobani",
@@ -61,7 +62,7 @@ final class ScreenRestorationManager {
     private(set) var pendingRestorations: [PendingRestoration] = []
     private let timeout: TimeInterval
     private let baseDirectory: URL?
-    var currentDate: () -> Date = { Date() }
+    var currentDate: @Sendable () -> Date = { Date() }
 
     init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
         self.timeout = timeout

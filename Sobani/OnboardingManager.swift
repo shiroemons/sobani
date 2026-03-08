@@ -1,6 +1,7 @@
 import Foundation
 import os.log
 
+@MainActor
 final class OnboardingManager {
     static let shared = OnboardingManager()
 

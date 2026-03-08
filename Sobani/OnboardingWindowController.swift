@@ -1,6 +1,7 @@
 import Cocoa
 import os.log
 
+@MainActor
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private var panel: NSPanel?
     private var contentContainer: NSView?
@@ -10,7 +11,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private var onComplete: (() -> Void)?
     var onAddImage: (() -> Void)?
     var onFinish: (() -> Void)?
-    private var languageObserver: NSObjectProtocol?
+    nonisolated(unsafe) private var languageObserver: NSObjectProtocol?
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "OnboardingWindowController")
     private static let iconSize: CGFloat = 48
     private static let contentPadding: CGFloat = 40
@@ -71,8 +72,10 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             forName: .languageDidChange,
             object: nil,
             queue: .main
-        ) { [weak self] _ in
-            self?.rebuildForLanguageChange()
+        ) { @Sendable [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.rebuildForLanguageChange()
+            }
         }
 
         logger.info("Onboarding window shown")
@@ -359,8 +362,10 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     @objc private func finishOnboarding() {
         panel?.close()
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.finishDelay) { [weak self] in
-            self?.onFinish?()
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.finishDelay) { @Sendable [weak self] in
+            MainActor.assumeIsolated {
+                self?.onFinish?()
+            }
         }
     }
 

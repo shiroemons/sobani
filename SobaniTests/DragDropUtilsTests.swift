@@ -1,9 +1,9 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// サポート対象の画像フォーマット判定を検証するテスト
-@Suite struct DragDropUtilsTests {
+@Suite @MainActor struct DragDropUtilsTests {
     // MARK: - isSupportedImageURL Parameterized Tests
 
     /// サポート対象の各拡張子がtrueを返すことを検証

@@ -1,8 +1,8 @@
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// エラーコードのrawValue一貫性、一意性、トラブルシューティングキーの正確性を検証するテスト
-@Suite struct UpdateErrorCodeTests {
+@Suite @MainActor struct UpdateErrorCodeTests {
 
     // MARK: - Raw Value Tests
 

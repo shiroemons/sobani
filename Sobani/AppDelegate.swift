@@ -4,6 +4,7 @@ import os.log
 
 // MARK: - App Delegate
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AppDelegate")
     var characterWindows: [CharacterWindow] = []
@@ -140,17 +141,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     func setupHotkeyMonitors() {
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
-                DispatchQueue.main.async {
-                    self?.toggleAllWindowsVisibility()
+                let weakSelf = self
+                DispatchQueue.main.async { @Sendable in
+                    weakSelf?.toggleAllWindowsVisibility()
                 }
             }
         }
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
-                DispatchQueue.main.async {
-                    self?.toggleAllWindowsVisibility()
+                let weakSelf = self
+                DispatchQueue.main.async { @Sendable in
+                    weakSelf?.toggleAllWindowsVisibility()
                 }
                 return nil
             }

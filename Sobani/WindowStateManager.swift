@@ -3,7 +3,7 @@ import os.log
 
 // MARK: - Window State
 
-struct WindowState: Codable, Equatable {
+struct WindowState: Codable, Equatable, Sendable {
     var imageName: String
     let originX: CGFloat
     let originY: CGFloat
@@ -88,6 +88,7 @@ struct WindowState: Codable, Equatable {
 
 // MARK: - Window State Manager
 
+@MainActor
 final class WindowStateManager {
     static let shared = WindowStateManager()
     private let logger = Logger(
@@ -159,7 +160,7 @@ final class WindowStateManager {
         return states
     }
 
-    static func captureState(from charWindow: CharacterWindow) -> WindowState {
+    @MainActor static func captureState(from charWindow: CharacterWindow) -> WindowState {
         let windowCenter = NSPoint(x: charWindow.window.frame.midX, y: charWindow.window.frame.midY)
         let baseWidth = charWindow.imageView.frame.width
         let baseHeight = charWindow.imageView.frame.height
@@ -208,12 +209,14 @@ extension CharacterWindow {
         // the initial window display cycle. Defer re-application
         // to the next run loop so the transform sticks.
         if adjusted.isFlippedHorizontally || abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
-            DispatchQueue.main.async { [weak self] in
-                if abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
-                    self?.adjustWindowForRotation()
+            DispatchQueue.main.async { @Sendable [weak self] in
+                MainActor.assumeIsolated {
+                    if abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
+                        self?.adjustWindowForRotation()
+                    }
+                    self?.imageView.needsLayout = true
+                    self?.imageView.layoutSubtreeIfNeeded()
                 }
-                self?.imageView.needsLayout = true
-                self?.imageView.layoutSubtreeIfNeeded()
             }
         }
 

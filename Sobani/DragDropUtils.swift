@@ -1,5 +1,6 @@
 import Cocoa
 
+@MainActor
 enum DragDropUtils {
     static func extractImageURLs(from draggingInfo: NSDraggingInfo) -> [URL] {
         // NSURL はドラッグ&ドロップ API に必要
@@ -12,11 +13,11 @@ enum DragDropUtils {
         return filterSupportedImages(items)
     }
 
-    static func filterSupportedImages(_ urls: [URL]) -> [URL] {
+    nonisolated static func filterSupportedImages(_ urls: [URL]) -> [URL] {
         urls.filter { isSupportedImageURL($0) }
     }
 
-    static func isSupportedImageURL(_ url: URL) -> Bool {
+    nonisolated static func isSupportedImageURL(_ url: URL) -> Bool {
         let ext = url.pathExtension.lowercased()
         return ImageManager.supportedExtensions.contains(ext)
     }

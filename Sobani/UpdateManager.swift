@@ -4,7 +4,7 @@ import os.log
 
 // MARK: - GitHub API Models
 
-struct GitHubRelease: Decodable {
+struct GitHubRelease: Decodable, Sendable {
     let tagName: String
     let assets: [GitHubAsset]
     enum CodingKeys: String, CodingKey {
@@ -13,7 +13,7 @@ struct GitHubRelease: Decodable {
     }
 }
 
-struct GitHubAsset: Decodable {
+struct GitHubAsset: Decodable, Sendable {
     let name: String
     let browserDownloadURL: String
     enum CodingKeys: String, CodingKey {
@@ -24,7 +24,7 @@ struct GitHubAsset: Decodable {
 
 // MARK: - Update State
 
-enum UpdateState {
+enum UpdateState: Sendable {
     case idle
     case checking
     case available(version: String, downloadURL: URL, checksumURL: URL?, format: UpdateAssetFormat)
@@ -35,7 +35,7 @@ enum UpdateState {
 
 // MARK: - Check Trigger
 
-enum CheckTrigger: Equatable {
+enum CheckTrigger: Equatable, Sendable {
     case manual    // メニューバーからの手動チェック → 全結果でダイアログ
     case startup   // 起動時チェック → 更新ありのみダイアログ
     case automatic // 周期/スリープ復帰 → ダイアログなし
@@ -43,14 +43,14 @@ enum CheckTrigger: Equatable {
 
 // MARK: - Update Asset Format
 
-enum UpdateAssetFormat {
+enum UpdateAssetFormat: Sendable {
     case dmg
     case zip
 }
 
 // MARK: - Update Error Code
 
-enum UpdateErrorCode: String, CaseIterable {
+enum UpdateErrorCode: String, CaseIterable, Sendable {
     // Check phase
     case networkError       = "U-101"
     case fetchError         = "U-102"
@@ -95,13 +95,14 @@ enum UpdateErrorCode: String, CaseIterable {
 
 // MARK: - Update Manager Delegate
 
+@MainActor
 protocol UpdateManagerDelegate: AnyObject {
     func updateManager(_ manager: UpdateManager, didChangeState state: UpdateState)
 }
 
 // MARK: - Update Manager
 
-final class UpdateManager {
+final class UpdateManager: @unchecked Sendable {
     static let shared = UpdateManager()
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "UpdateManager")
 
@@ -111,7 +112,7 @@ final class UpdateManager {
 
     private(set) var state: UpdateState = .idle {
         didSet {
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async { @Sendable [weak self] in
                 guard let self = self else { return }
                 self.delegate?.updateManager(self, didChangeState: self.state)
             }
@@ -164,7 +165,7 @@ final class UpdateManager {
 
         // 定期チェック（24時間ごと）
         checkTimer?.invalidate()
-        checkTimer = Timer.scheduledTimer(withTimeInterval: Self.checkInterval, repeats: true) { [weak self] _ in
+        checkTimer = Timer.scheduledTimer(withTimeInterval: Self.checkInterval, repeats: true) { @Sendable [weak self] _ in
             self?.checkForUpdate(trigger: .automatic)
         }
         checkTimer?.tolerance = 600 // 10分の許容で省電力
@@ -212,20 +213,20 @@ final class UpdateManager {
         request.setValue("Sobani/\(currentVersion)", forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = Self.requestTimeoutInterval
 
-        let task = session.dataTask(with: request) { [weak self] data, _, error in
+        let task = session.dataTask(with: request) { @Sendable [weak self] data, _, error in
             guard let self = self else { return }
 
             if let error = error {
                 // 内部エラー詳細はログのみ、ユーザーには汎用メッセージを表示
                 logger.error("Check error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.setStateForTrigger(trigger, manualState: .error(code: .networkError, message: L("update.network_error")))
                 }
                 return
             }
 
             guard let data = data else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.setStateForTrigger(trigger, manualState: .error(code: .fetchError, message: L("update.fetch_error")))
                 }
                 return
@@ -237,7 +238,7 @@ final class UpdateManager {
                     ? String(release.tagName.dropFirst())
                     : release.tagName
 
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     UserDefaults.standard.set(Date(), forKey: Self.lastCheckKey)
 
                     if Self.isNewer(latestVersion, than: self.currentVersion),
@@ -254,7 +255,7 @@ final class UpdateManager {
             } catch {
                 // パース失敗の詳細はログのみ
                 logger.error("Parse error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.setStateForTrigger(trigger, manualState: .error(code: .parseError, message: L("update.parse_error")))
                 }
             }
@@ -292,7 +293,7 @@ final class UpdateManager {
             }
         } else {
             // チェックサムなし: 警告ダイアログを表示してユーザーに確認
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async { @Sendable [weak self] in
                 guard let self = self else { return }
                 let alert = NSAlert()
                 alert.messageText = L("update.checksum_missing_title")
@@ -310,8 +311,8 @@ final class UpdateManager {
     }
 
     // チェックサムファイルを取得
-    private func fetchChecksum(from url: URL, assetName: String, completion: @escaping (String?) -> Void) {
-        let task = session.dataTask(with: url) { [weak self] data, _, error in
+    private func fetchChecksum(from url: URL, assetName: String, completion: @Sendable @escaping (String?) -> Void) {
+        let task = session.dataTask(with: url) { @Sendable [weak self] data, _, error in
             if let error = error {
                 self?.logger.error("Checksum fetch error: \(error.localizedDescription)")
                 completion(nil)
@@ -329,20 +330,20 @@ final class UpdateManager {
 
     // アセットをダウンロードしてインストール
     private func downloadAsset(from url: URL, expectedChecksum: String?, format: UpdateAssetFormat) {
-        let downloadTask = session.downloadTask(with: url) { [weak self] tempURL, _, error in
+        let downloadTask = session.downloadTask(with: url) { @Sendable [weak self] tempURL, _, error in
             guard let self = self else { return }
 
             if let error = error {
                 // 内部エラーはログのみ
                 logger.error("Download error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .downloadError, message: L("update.download_error"))
                 }
                 return
             }
 
             guard let tempURL = tempURL else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .fileNotFound, message: L("update.file_not_found"))
                 }
                 return
@@ -352,7 +353,7 @@ final class UpdateManager {
             if let expected = expectedChecksum {
                 guard Self.verifySHA256(of: tempURL, expectedHex: expected) else {
                     logger.error("Checksum mismatch for downloaded file")
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { @Sendable in
                         self.state = .error(code: .checksumFailed, message: L("update.checksum_failed"))
                     }
                     return
@@ -403,7 +404,7 @@ final class UpdateManager {
     // MARK: - Restart App
 
     // 独立した子プロセスで終了を待ってから再起動
-    private func restartApp(at appURL: URL) {
+    @MainActor private func restartApp(at appURL: URL) {
         let pid = ProcessInfo.processInfo.processIdentifier
         let appPath = appURL.path
 
@@ -450,7 +451,7 @@ private extension UpdateManager {
             extractProcess.waitUntilExit()
 
             guard extractProcess.terminationStatus == 0 else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .zipExtractFailed, message: L("update.zip_extract_failed"))
                 }
                 return
@@ -459,7 +460,7 @@ private extension UpdateManager {
             // Find the .app in extracted contents
             let contents = try fm.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
             guard let newAppURL = contents.first(where: { $0.pathExtension == "app" }) else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .zipAppNotFound, message: L("update.app_not_found"))
                 }
                 return
@@ -468,7 +469,7 @@ private extension UpdateManager {
             replaceAndRestart(with: newAppURL)
         } catch {
             logger.error("Install preparation error: \(error.localizedDescription)")
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { @Sendable in
                 self.state = .error(code: .zipPrepareFailed, message: L("update.prepare_failed"))
             }
         }
@@ -493,7 +494,7 @@ private extension UpdateManager {
 
             guard attachProcess.terminationStatus == 0 else {
                 try? fm.removeItem(at: mountPoint)
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .dmgMountFailed, message: L("update.dmg_mount_failed"))
                 }
                 return
@@ -512,7 +513,7 @@ private extension UpdateManager {
             // マウントポイント内の .app を探す
             let contents = try fm.contentsOfDirectory(at: mountPoint, includingPropertiesForKeys: nil)
             guard let appInDMG = contents.first(where: { $0.pathExtension == "app" }) else {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .dmgAppNotFound, message: L("update.app_not_found"))
                 }
                 return
@@ -530,7 +531,7 @@ private extension UpdateManager {
             try? fm.removeItem(at: tempDir)
         } catch {
             logger.error("DMG install error: \(error.localizedDescription)")
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { @Sendable in
                 self.state = .error(code: .dmgPrepareFailed, message: L("update.prepare_failed"))
             }
         }
@@ -540,7 +541,7 @@ private extension UpdateManager {
         let fm = FileManager.default
 
         guard let currentAppURL = Bundle.main.bundleURL as URL? else {
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { @Sendable in
                 self.state = .error(code: .locationError, message: L("update.location_error"))
             }
             return
@@ -564,7 +565,7 @@ private extension UpdateManager {
                 try? fm.removeItem(at: backupURL)
 
                 // Restart
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.restartApp(at: currentAppURL)
                 }
             } catch {
@@ -573,13 +574,13 @@ private extension UpdateManager {
                 try? fm.removeItem(at: currentAppURL)
                 try? fm.moveItem(at: backupURL, to: currentAppURL)
 
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .installFailed, message: L("update.install_failed"))
                 }
             }
         } catch {
             logger.error("Backup error: \(error.localizedDescription)")
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { @Sendable in
                 self.state = .error(code: .backupFailed, message: L("update.prepare_failed"))
             }
         }

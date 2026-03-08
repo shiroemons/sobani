@@ -1,7 +1,7 @@
 import Cocoa
 
 /// スリープ復帰時のウィンドウ復元に必要な状態を集約する構造体
-struct WakeRestorationContext {
+struct WakeRestorationContext: Sendable {
     var states: [Int: WindowState] = [:]
     var displayIDs: [Int: CGDirectDisplayID] = [:]
     var screenFrames: [CGDirectDisplayID: NSRect] = [:]

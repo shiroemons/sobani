@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// checkForUpdateのネットワーク関連テストを検証するテスト
 @Suite(.serialized) struct UpdateManagerNetworkTests {

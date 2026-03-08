@@ -1,10 +1,10 @@
 import CoreGraphics
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// 保留中のウィンドウ復元エントリの追加・削除・期限切れパージ、JSON永続化のラウンドトリップ、後方互換性、スリープ前画面フレームを検証するテスト
-@Suite struct ScreenRestorationManagerTests {
+@Suite @MainActor struct ScreenRestorationManagerTests {
     let manager: ScreenRestorationManager
     let tempDirectory: URL
     let ioManager: ScreenRestorationManager

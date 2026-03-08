@@ -2,10 +2,10 @@ import AppKit
 import Foundation
 import Testing
 import os.log
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// Constants.swiftの定数・ユーティリティの整合性と動作を検証するテスト
-@Suite struct ConstantsTests {
+@Suite @MainActor struct ConstantsTests {
 
     // MARK: - AppConstants 整合性検証
 

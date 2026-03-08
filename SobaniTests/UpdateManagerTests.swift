@@ -1,10 +1,10 @@
 import Foundation
 import Testing
 import CryptoKit
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// バージョン比較ロジック、GitHubリリースJSONパース、チェックトリガー、SHA-256チェックサム検証、アセット選択を検証するテスト
-struct UpdateManagerTests {
+@Suite @MainActor struct UpdateManagerTests {
 
     // MARK: - isNewer Parameterized Tests
 

@@ -1,10 +1,10 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// 言語設定の変更・永続化、バンドル切り替え、言語変更通知の発行を検証するテスト
 @Suite(.serialized)
-struct LanguageManagerTests {
+@MainActor struct LanguageManagerTests {
     // LanguageManager 内部の UserDefaults キーと同一値。
     // LanguageManager 側のキーが変更された場合にテストが失敗して気づける。
     private static let appLanguageKey = "AppLanguage"

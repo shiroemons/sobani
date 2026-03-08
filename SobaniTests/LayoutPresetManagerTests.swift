@@ -1,9 +1,9 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// レイアウトプリセットの保存・読み込み・削除・リネーム、ファイル名サニタイズ、エッジケース、Codable/Equatable準拠を検証するテスト
-@Suite struct LayoutPresetManagerTests {
+@Suite @MainActor struct LayoutPresetManagerTests {
     let tempDirectory: URL
     let presetManager: LayoutPresetManager
 

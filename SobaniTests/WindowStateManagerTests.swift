@@ -1,10 +1,10 @@
 import AppKit
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// WindowStateのJSON永続化、画面可視性判定、オフスクリーン位置調整、後方互換性を検証するテスト
-@Suite struct WindowStateManagerTests {
+@Suite @MainActor struct WindowStateManagerTests {
     let tempDirectory: URL
     let stateManager: WindowStateManager
 

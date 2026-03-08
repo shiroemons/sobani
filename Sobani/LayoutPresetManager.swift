@@ -3,7 +3,7 @@ import os.log
 
 // MARK: - Layout Preset
 
-struct LayoutPreset: Codable, Equatable {
+struct LayoutPreset: Codable, Equatable, Sendable {
     let name: String
     let createdAt: Date
     let states: [WindowState]
@@ -11,6 +11,7 @@ struct LayoutPreset: Codable, Equatable {
 
 // MARK: - Layout Preset Manager
 
+@MainActor
 final class LayoutPresetManager {
     static let shared = LayoutPresetManager()
     private let logger = Logger(

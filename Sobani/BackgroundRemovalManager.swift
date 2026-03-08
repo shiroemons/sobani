@@ -6,14 +6,14 @@ import Vision
 // MARK: - Background Removal Error
 
 @available(macOS 14.0, *)
-enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable {
+enum BackgroundRemovalError: @preconcurrency LocalizedError, Equatable, CaseIterable, Sendable {
     case cgImageConversionFailed
     case noForegroundDetected
     case maskGenerationFailed
     case filterOutputFailed
     case finalImageConversionFailed
 
-    var errorDescription: String? {
+    @MainActor var errorDescription: String? {
         switch self {
         case .cgImageConversionFailed:
             return L("background_removal.error.conversion_failed")
@@ -32,7 +32,7 @@ enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable {
 // MARK: - Background Removal Manager
 
 @available(macOS 14.0, *)
-final class BackgroundRemovalManager {
+final class BackgroundRemovalManager: @unchecked Sendable {
     static let shared = BackgroundRemovalManager()
 
     private let logger = Logger(
@@ -49,19 +49,19 @@ final class BackgroundRemovalManager {
 
     func removeBackground(
         from image: NSImage,
-        completion: @escaping (Result<NSImage, BackgroundRemovalError>) -> Void
+        completion: @Sendable @escaping (Result<NSImage, BackgroundRemovalError>) -> Void
     ) {
-        processingQueue.async { [weak self] in
+        processingQueue.async { @Sendable [weak self] in
             guard let self else { return }
             do {
                 let result = try self.performRemoval(from: image)
-                DispatchQueue.main.async { completion(.success(result)) }
+                DispatchQueue.main.async { @Sendable in completion(.success(result)) }
             } catch let error as BackgroundRemovalError {
-                self.logger.error("Background removal failed: \(error.localizedDescription)")
-                DispatchQueue.main.async { completion(.failure(error)) }
+                self.logger.error("Background removal failed: \(String(describing: error))")
+                DispatchQueue.main.async { @Sendable in completion(.failure(error)) }
             } catch {
-                self.logger.error("Unexpected error: \(error.localizedDescription)")
-                DispatchQueue.main.async { completion(.failure(.maskGenerationFailed)) }
+                self.logger.error("Unexpected error: \(String(describing: error))")
+                DispatchQueue.main.async { @Sendable in completion(.failure(.maskGenerationFailed)) }
             }
         }
     }

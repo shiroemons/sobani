@@ -1,9 +1,9 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// setStateForTrigger、parseChecksumLine、TLS設定を検証するテスト
-@Suite struct UpdateManagerExtendedTests {
+@Suite @MainActor struct UpdateManagerExtendedTests {
 
     // MARK: - setStateForTrigger Tests
 
