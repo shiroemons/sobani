@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// レイアウトプリセットのリネーム機能を検証するテスト
 @Suite @MainActor struct LayoutPresetRenameTests {

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// オンボーディングの表示判定、完了マーク、リセット、バージョン管理、DI対応を検証するテスト
 @Suite @MainActor struct OnboardingManagerTests {

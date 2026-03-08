@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// 言語設定の変更・永続化、バンドル切り替え、言語変更通知の発行を検証するテスト
 @Suite(.serialized)

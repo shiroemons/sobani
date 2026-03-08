@@ -1,9 +1,9 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// WakeRestorationContextの初期化・クリア・変更操作を検証するテスト
-@Suite struct WakeRestorationContextTests {
+@Suite @MainActor struct WakeRestorationContextTests {
 
     /// 初期化時にすべてのプロパティが空/デフォルト値であることを検証
     @Test func initialization_AllPropertiesEmpty() {

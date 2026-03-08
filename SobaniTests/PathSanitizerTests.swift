@@ -1,9 +1,9 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// safeURLとsafeNameによるパストラバーサル防止、無効文字の置換、エッジケースの処理を検証するテスト
-@Suite struct PathSanitizerTests {
+@Suite @MainActor struct PathSanitizerTests {
     // MARK: - safeURL tests
 
     /// 正常なファイル名で正しいURLが生成されることを検証

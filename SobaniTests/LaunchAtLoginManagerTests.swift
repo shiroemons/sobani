@@ -1,7 +1,7 @@
 import Foundation
 import ServiceManagement
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// シングルトンの一貫性、ステータス取得、トグル動作を検証するテスト（SMAppServiceはコード署名環境でのみ完全動作）
 @Suite @MainActor struct LaunchAtLoginManagerTests {

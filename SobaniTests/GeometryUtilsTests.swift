@@ -1,8 +1,8 @@
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// 回転バウンディングボックス計算と角度正規化の正確性を検証するテスト
-@Suite struct GeometryUtilsTests {
+@Suite @MainActor struct GeometryUtilsTests {
 
     // MARK: - rotatedBoundingBox Parameterized Tests
 

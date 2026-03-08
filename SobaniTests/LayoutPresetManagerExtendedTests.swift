@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@preconcurrency @testable import Sobani
+@testable import Sobani
 
 /// レイアウトプリセットの複数WindowState保存・プロパティ保持・削除後の存在確認を検証するテスト
 @Suite @MainActor struct LayoutPresetManagerExtendedTests {
