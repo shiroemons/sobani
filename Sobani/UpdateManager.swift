@@ -124,6 +124,7 @@ final class UpdateManager: @unchecked Sendable {
     private let currentVersion: String
     private let apiURL: URL
     private var checkTimer: Timer?
+    private var wakeObserver: NSObjectProtocol?
     private let defaults: UserDefaults
 
     private static let lastCheckKey = "LastUpdateCheckDate"
@@ -154,7 +155,9 @@ final class UpdateManager: @unchecked Sendable {
 
     deinit {
         checkTimer?.invalidate()
-        NSWorkspace.shared.notificationCenter.removeObserver(self)
+        if let observer = wakeObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
     }
 
     // MARK: - Periodic Checks
@@ -166,18 +169,23 @@ final class UpdateManager: @unchecked Sendable {
         // 定期チェック（24時間ごと）
         checkTimer?.invalidate()
         checkTimer = Timer.scheduledTimer(withTimeInterval: Self.checkInterval, repeats: true) { @Sendable [weak self] _ in
-            self?.checkForUpdate(trigger: .automatic)
+            MainActor.assumeIsolated {
+                self?.checkForUpdate(trigger: .automatic)
+            }
         }
         checkTimer?.tolerance = 600 // 10分の許容で省電力
 
-        // スリープ復帰時にチェック
-        NSWorkspace.shared.notificationCenter.addObserver(
-            self, selector: #selector(handleWake),
-            name: NSWorkspace.didWakeNotification, object: nil
-        )
+        // スリープ復帰時にチェック（queue: .main でメインスレッド配信を保証）
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.handleWake()
+            }
+        }
     }
 
-    @objc func handleWake() {
+    func handleWake() {
         let lastCheck = defaults.object(forKey: Self.lastCheckKey) as? Date ?? .distantPast
         if Date().timeIntervalSince(lastCheck) >= Self.checkInterval {
             checkForUpdate(trigger: .automatic)
