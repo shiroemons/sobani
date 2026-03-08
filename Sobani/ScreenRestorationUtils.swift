@@ -37,4 +37,67 @@ enum ScreenRestorationUtils {
             && abs(frameA.size.width - frameB.size.width) <= tolerance
             && abs(frameA.size.height - frameB.size.height) <= tolerance
     }
+
+    /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
+    /// NSScreen に依存しないデータ型で引数・戻り値を定義
+    nonisolated static func findTargetScreen(
+        savedDisplayID: UInt32,
+        savedScreenFrame: NSRect?,
+        availableScreens: [(displayID: UInt32, frame: NSRect)],
+        tolerance: CGFloat
+    ) -> (displayID: UInt32, frame: NSRect)? {
+        // Phase 1: displayID 完全一致
+        if let match = availableScreens.first(where: { $0.displayID == savedDisplayID }) {
+            return match
+        }
+        // Phase 2: ジオメトリベースのフォールバック
+        if let savedFrame = savedScreenFrame {
+            if let match = availableScreens.first(where: { isFrameMatch($0.frame, savedFrame, tolerance: tolerance) }) {
+                return match
+            }
+        }
+        return nil
+    }
+
+    /// ペンディング復元時の検索パラメータ
+    struct PendingScreenSearch {
+        let displayID: UInt32
+        let savedScreenFrame: NSRect?
+        let originalRect: NSRect
+        let unknownDisplayID: UInt32
+    }
+
+    /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置を含むスクリーン
+    /// NSScreen に依存しないデータ型で引数・戻り値を定義
+    nonisolated static func findTargetScreenForPending(
+        _ search: PendingScreenSearch,
+        availableScreens: [(displayID: UInt32, frame: NSRect)],
+        tolerance: CGFloat
+    ) -> (displayID: UInt32, frame: NSRect)? {
+        let displayID = search.displayID
+        let savedScreenFrame = search.savedScreenFrame
+        let originalRect = search.originalRect
+        let unknownDisplayID = search.unknownDisplayID
+        // Phase 1: displayID 完全一致（unknownDisplayID でない場合のみ）
+        if displayID != unknownDisplayID {
+            if let match = availableScreens.first(where: { $0.displayID == displayID }) {
+                return match
+            }
+        }
+        // Phase 2: ジオメトリベースのフォールバック
+        if let savedFrame = savedScreenFrame {
+            if let match = availableScreens.first(where: { isFrameMatch($0.frame, savedFrame, tolerance: tolerance) }) {
+                return match
+            }
+        }
+        // Phase 3: 元の位置が含まれるスクリーンを検索（最大重複面積）
+        if displayID == unknownDisplayID {
+            return availableScreens.max(by: { screenA, screenB in
+                let areaA = screenA.frame.intersection(originalRect)
+                let areaB = screenB.frame.intersection(originalRect)
+                return areaA.width * areaA.height < areaB.width * areaB.height
+            })
+        }
+        return nil
+    }
 }

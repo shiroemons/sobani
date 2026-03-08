@@ -222,3 +222,145 @@ struct ScreenRestorationUtilsTests {
         #expect(!ScreenRestorationUtils.isFrameMatch(frameA, frameB, tolerance: 0))
     }
 }
+
+// MARK: - findTargetScreen / findTargetScreenForPending Tests
+
+@Suite("ScreenRestorationUtils ScreenSearch Tests")
+struct ScreenRestorationUtilsScreenSearchTests {
+
+    private let mainScreen: (displayID: UInt32, frame: NSRect) =
+        (displayID: 1, frame: NSRect(x: 0, y: 0, width: 1920, height: 1080))
+    private let secondaryScreen: (displayID: UInt32, frame: NSRect) =
+        (displayID: 2, frame: NSRect(x: 1920, y: 0, width: 2560, height: 1440))
+    private let unknownID: UInt32 = 0
+
+    // MARK: - findTargetScreen Tests
+
+    @Test("findTargetScreen: displayID一致で見つかる")
+    func findTargetScreenByDisplayID() {
+        let screens = [mainScreen, secondaryScreen]
+        let result = ScreenRestorationUtils.findTargetScreen(
+            savedDisplayID: 2, savedScreenFrame: nil, availableScreens: screens, tolerance: 100
+        )
+        #expect(result != nil)
+        #expect(result?.displayID == 2)
+        #expect(result?.frame == secondaryScreen.frame)
+    }
+
+    @Test("findTargetScreen: displayID不一致でframeで見つかる")
+    func findTargetScreenByFrame() {
+        let screens = [mainScreen, secondaryScreen]
+        let savedFrame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
+        let result = ScreenRestorationUtils.findTargetScreen(
+            savedDisplayID: 99, savedScreenFrame: savedFrame, availableScreens: screens, tolerance: 100
+        )
+        #expect(result != nil)
+        #expect(result?.displayID == 2)
+    }
+
+    @Test("findTargetScreen: 何も見つからない → nil")
+    func findTargetScreenNotFound() {
+        let screens = [mainScreen, secondaryScreen]
+        let savedFrame = NSRect(x: 5000, y: 5000, width: 800, height: 600)
+        let result = ScreenRestorationUtils.findTargetScreen(
+            savedDisplayID: 99, savedScreenFrame: savedFrame, availableScreens: screens, tolerance: 100
+        )
+        #expect(result == nil)
+    }
+
+    @Test("findTargetScreen: 空のavailableScreens → nil")
+    func findTargetScreenEmptyScreens() {
+        let result = ScreenRestorationUtils.findTargetScreen(
+            savedDisplayID: 1,
+            savedScreenFrame: NSRect(x: 0, y: 0, width: 1920, height: 1080),
+            availableScreens: [],
+            tolerance: 100
+        )
+        #expect(result == nil)
+    }
+
+    @Test("findTargetScreen: savedScreenFrameがnilの場合")
+    func findTargetScreenNilSavedFrame() {
+        let screens = [mainScreen, secondaryScreen]
+        let result = ScreenRestorationUtils.findTargetScreen(
+            savedDisplayID: 99, savedScreenFrame: nil, availableScreens: screens, tolerance: 100
+        )
+        #expect(result == nil)
+    }
+
+    // MARK: - findTargetScreenForPending Tests
+
+    @Test("findTargetScreenForPending: displayID一致で見つかる")
+    func findTargetScreenForPendingByDisplayID() {
+        let screens = [mainScreen, secondaryScreen]
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: 2, savedScreenFrame: nil,
+            originalRect: NSRect(x: 100, y: 100, width: 200, height: 200),
+            unknownDisplayID: unknownID
+        )
+        let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search, availableScreens: screens, tolerance: 100
+        )
+        #expect(result != nil)
+        #expect(result?.displayID == 2)
+    }
+
+    @Test("findTargetScreenForPending: unknownDisplayIDの場合はPhase1スキップ")
+    func findTargetScreenForPendingSkipsPhase1ForUnknown() {
+        let screens = [mainScreen, secondaryScreen]
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: unknownID, savedScreenFrame: nil,
+            originalRect: NSRect(x: 2000, y: 100, width: 200, height: 200),
+            unknownDisplayID: unknownID
+        )
+        let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search, availableScreens: screens, tolerance: 100
+        )
+        #expect(result != nil)
+        #expect(result?.displayID == 2)
+    }
+
+    @Test("findTargetScreenForPending: savedScreenFrameで見つかる")
+    func findTargetScreenForPendingByFrame() {
+        let screens = [mainScreen, secondaryScreen]
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: 99, savedScreenFrame: NSRect(x: 1920, y: 0, width: 2560, height: 1440),
+            originalRect: NSRect(x: 100, y: 100, width: 200, height: 200),
+            unknownDisplayID: unknownID
+        )
+        let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search, availableScreens: screens, tolerance: 100
+        )
+        #expect(result != nil)
+        #expect(result?.displayID == 2)
+    }
+
+    @Test("findTargetScreenForPending: originalRectがスクリーン内で見つかる")
+    func findTargetScreenForPendingByOriginalRect() {
+        let screens = [mainScreen, secondaryScreen]
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: unknownID, savedScreenFrame: nil,
+            originalRect: NSRect(x: 100, y: 100, width: 200, height: 200),
+            unknownDisplayID: unknownID
+        )
+        let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search, availableScreens: screens, tolerance: 100
+        )
+        #expect(result != nil)
+        #expect(result?.displayID == 1)
+    }
+
+    @Test("findTargetScreenForPending: 何も見つからない → nil")
+    func findTargetScreenForPendingNotFound() {
+        let screens = [mainScreen, secondaryScreen]
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: 99, savedScreenFrame: NSRect(x: 5000, y: 5000, width: 800, height: 600),
+            originalRect: NSRect(x: 100, y: 100, width: 200, height: 200),
+            unknownDisplayID: unknownID
+        )
+        let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search, availableScreens: screens, tolerance: 100
+        )
+        #expect(result == nil)
+    }
+}

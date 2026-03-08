@@ -277,36 +277,43 @@ extension AppDelegate {
 
     /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
     private func findTargetScreen(displayID: CGDirectDisplayID?, windowId: Int) -> NSScreen? {
-        // ① displayID 完全一致
-        if let savedID = displayID, let screen = NSScreen.screen(withDisplayID: savedID) {
-            return screen
+        guard let savedID = displayID else { return nil }
+        let savedFrame = wakeContext.screenFrames[savedID]
+        let availableScreens = NSScreen.screens.compactMap { screen -> (displayID: UInt32, frame: NSRect)? in
+            guard let did = screen.displayID else { return nil }
+            return (displayID: did, frame: screen.frame)
         }
-        // ② ジオメトリベースのフォールバック
-        if let savedID = displayID, let savedFrame = wakeContext.screenFrames[savedID] {
-            return NSScreen.screen(matchingFrame: savedFrame, tolerance: AppConstants.screenMatchTolerance)
-        }
-        return nil
+        guard let result = ScreenRestorationUtils.findTargetScreen(
+            savedDisplayID: savedID,
+            savedScreenFrame: savedFrame,
+            availableScreens: availableScreens,
+            tolerance: AppConstants.screenMatchTolerance
+        ) else { return nil }
+        return NSScreen.screen(withDisplayID: result.displayID)
     }
 
-    /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
+    /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置を含むスクリーン
     private func findTargetScreenForPending(_ entry: PendingRestoration) -> NSScreen? {
-        // ① displayID 完全一致
-        if entry.displayID != AppConstants.unknownDisplayID, let screen = NSScreen.screen(withDisplayID: entry.displayID) {
-            return screen
+        let originalRect = NSRect(
+            x: entry.originalState.originX, y: entry.originalState.originY,
+            width: entry.originalState.width, height: entry.originalState.height
+        )
+        let availableScreens = NSScreen.screens.compactMap { screen -> (displayID: UInt32, frame: NSRect)? in
+            guard let did = screen.displayID else { return nil }
+            return (displayID: did, frame: screen.frame)
         }
-        // ② ジオメトリベースのフォールバック
-        if let savedFrame = entry.preSleepScreenFrame {
-            return NSScreen.screen(matchingFrame: savedFrame, tolerance: AppConstants.screenMatchTolerance)
-        }
-        // ③ displayID: 0（スリープなし切断）の場合、元の位置が含まれるスクリーンを返す
-        if entry.displayID == AppConstants.unknownDisplayID {
-            let originalRect = NSRect(
-                x: entry.originalState.originX, y: entry.originalState.originY,
-                width: entry.originalState.width, height: entry.originalState.height
-            )
-            return NSScreen.screen(containing: originalRect)
-        }
-        return nil
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: entry.displayID,
+            savedScreenFrame: entry.preSleepScreenFrame,
+            originalRect: originalRect,
+            unknownDisplayID: AppConstants.unknownDisplayID
+        )
+        guard let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search,
+            availableScreens: availableScreens,
+            tolerance: AppConstants.screenMatchTolerance
+        ) else { return nil }
+        return NSScreen.screen(withDisplayID: result.displayID)
     }
 }
 
