@@ -74,7 +74,7 @@ final class DraggableImageView: NSImageView {
             handler(delta)
             return
         }
-        let scaleFactor: CGFloat = 1.0 + (delta * AppConstants.scrollScaleSensitivity)
+        let scaleFactor = Self.scaleFactor(fromScrollDelta: delta)
         if event.modifierFlags.contains(.option) {
             let allWindows = allCharacterWindows
             for targetWindow in allWindows {
@@ -88,50 +88,86 @@ final class DraggableImageView: NSImageView {
     }
 
     private func resizeWindow(_ window: NSWindow, imageView: DraggableImageView, scaleFactor: CGFloat) {
-        let currentHeight = imageView.frame.height
-        var newHeight = currentHeight * scaleFactor
-        newHeight = max(minHeight, min(maxHeight, newHeight))
-        let newWidth = newHeight * imageView.aspectRatio
-
-        let boundingBox = GeometryUtils.rotatedBoundingBox(
-            width: newWidth, height: newHeight, angleDegrees: imageView.rotationAngle
+        let frames = Self.calculateResizedFrames(
+            currentHeight: imageView.frame.height,
+            scaleFactor: scaleFactor,
+            aspectRatio: imageView.aspectRatio,
+            rotationAngle: imageView.rotationAngle,
+            windowCenter: CGPoint(x: window.frame.midX, y: window.frame.midY)
         )
-        let bbWidth = boundingBox.width
-        let bbHeight = boundingBox.height
-
-        let centerX = window.frame.midX
-        let centerY = window.frame.midY
-        window.setFrame(NSRect(
-            x: round(centerX - bbWidth / 2),
-            y: round(centerY - bbHeight / 2),
-            width: round(bbWidth),
-            height: round(bbHeight)
-        ), display: true)
-
-        imageView.frame = NSRect(
-            x: (bbWidth - newWidth) / 2,
-            y: (bbHeight - newHeight) / 2,
-            width: newWidth,
-            height: newHeight
-        )
+        window.setFrame(frames.windowFrame, display: true)
+        imageView.frame = frames.imageViewFrame
         onSizeChanged?()
     }
 
     override func layout() {
         super.layout()
-        var transform = CGAffineTransform.identity
-        let centerX = bounds.width / 2
-        let centerY = bounds.height / 2
+        let transform = Self.imageTransform(
+            rotationDegrees: rotationAngle,
+            isFlipped: isFlippedHorizontally,
+            boundsWidth: bounds.width,
+            boundsHeight: bounds.height
+        )
+        layer?.setAffineTransform(transform)
+    }
 
-        if abs(rotationAngle) > AppConstants.floatingPointTolerance {
-            let radians = -rotationAngle * .pi / 180
+    // MARK: - Testable Static Methods
+
+    /// スクロールデルタからスケールファクターを計算
+    nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat) -> CGFloat {
+        return 1.0 + (delta * AppConstants.scrollScaleSensitivity)
+    }
+
+    /// リサイズ時のウィンドウフレームと画像ビューフレームを計算
+    nonisolated static func calculateResizedFrames(
+        currentHeight: CGFloat, scaleFactor: CGFloat, aspectRatio: CGFloat,
+        rotationAngle: CGFloat, windowCenter: CGPoint,
+        minHeight: CGFloat = AppConstants.minImageHeight,
+        maxHeight: CGFloat = AppConstants.maxImageHeight
+    ) -> (windowFrame: NSRect, imageViewFrame: NSRect) {
+        var newHeight = currentHeight * scaleFactor
+        newHeight = max(minHeight, min(maxHeight, newHeight))
+        let newWidth = newHeight * aspectRatio
+
+        let boundingBox = GeometryUtils.rotatedBoundingBox(
+            width: newWidth, height: newHeight, angleDegrees: rotationAngle
+        )
+        let bbWidth = boundingBox.width
+        let bbHeight = boundingBox.height
+
+        let windowFrame = NSRect(
+            x: round(windowCenter.x - bbWidth / 2),
+            y: round(windowCenter.y - bbHeight / 2),
+            width: round(bbWidth),
+            height: round(bbHeight)
+        )
+        let imageViewFrame = NSRect(
+            x: (bbWidth - newWidth) / 2,
+            y: (bbHeight - newHeight) / 2,
+            width: newWidth,
+            height: newHeight
+        )
+        return (windowFrame, imageViewFrame)
+    }
+
+    /// 回転・反転のアフィン変換を計算
+    nonisolated static func imageTransform(
+        rotationDegrees: CGFloat, isFlipped: Bool,
+        boundsWidth: CGFloat, boundsHeight: CGFloat
+    ) -> CGAffineTransform {
+        var transform = CGAffineTransform.identity
+        let centerX = boundsWidth / 2
+        let centerY = boundsHeight / 2
+
+        if abs(rotationDegrees) > AppConstants.floatingPointTolerance {
+            let radians = -rotationDegrees * .pi / 180
             transform = transform
                 .translatedBy(x: centerX, y: centerY)
                 .rotated(by: radians)
                 .translatedBy(x: -centerX, y: -centerY)
         }
 
-        if isFlippedHorizontally {
+        if isFlipped {
             let flip = CGAffineTransform.identity
                 .translatedBy(x: centerX, y: centerY)
                 .scaledBy(x: -1, y: 1)
@@ -139,7 +175,7 @@ final class DraggableImageView: NSImageView {
             transform = transform.concatenating(flip)
         }
 
-        layer?.setAffineTransform(transform)
+        return transform
     }
 }
 

@@ -193,28 +193,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     func moveWindowToFront(_ charWindow: CharacterWindow) {
-        zOrderedWindows.removeAll { $0 === charWindow }
-        zOrderedWindows.insert(charWindow, at: 0)
+        zOrderedWindows = ZOrderUtils.moveToFront(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
     }
 
     func moveWindowForward(_ charWindow: CharacterWindow) {
-        guard let currentIndex = zOrderedWindows.firstIndex(where: { $0 === charWindow }),
-              currentIndex > 0 else { return }
-        zOrderedWindows.swapAt(currentIndex, currentIndex - 1)
+        zOrderedWindows = ZOrderUtils.moveForward(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
     }
 
     func moveWindowBackward(_ charWindow: CharacterWindow) {
-        guard let currentIndex = zOrderedWindows.firstIndex(where: { $0 === charWindow }),
-              currentIndex < zOrderedWindows.count - 1 else { return }
-        zOrderedWindows.swapAt(currentIndex, currentIndex + 1)
+        zOrderedWindows = ZOrderUtils.moveBackward(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
     }
 
     func moveWindowToBack(_ charWindow: CharacterWindow) {
-        zOrderedWindows.removeAll { $0 === charWindow }
-        zOrderedWindows.append(charWindow)
+        zOrderedWindows = ZOrderUtils.moveToBack(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
     }
 

@@ -7,9 +7,7 @@ final class ImagePreviewPanel {
     private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "ImagePreviewPanel")
     private let panel: NSPanel
     private let imageView: NSImageView
-    private static let maxDimension: CGFloat = 256
     private static let padding: CGFloat = 8
-    private static let fallbackMouseOffset: CGFloat = 20
     private static let cornerRadius: CGFloat = 8
 
     init() {
@@ -76,65 +74,88 @@ final class ImagePreviewPanel {
         return panel.isVisible
     }
 
-    // MARK: - Private
+    // MARK: - Testable Static Methods
 
-    private func scaledSize(for image: NSImage) -> NSSize {
-        let originalSize = image.size
-        guard originalSize.width > 0, originalSize.height > 0 else {
-            return NSSize(width: Self.maxDimension, height: Self.maxDimension)
+    /// 画像サイズを最大寸法に収まるようスケーリング
+    nonisolated static func scaledSize(for imageSize: NSSize, maxDimension: CGFloat = AppConstants.previewMaxDimension) -> NSSize {
+        guard imageSize.width > 0, imageSize.height > 0 else {
+            return NSSize(width: maxDimension, height: maxDimension)
         }
 
-        let maxSide = max(originalSize.width, originalSize.height)
-        if maxSide <= Self.maxDimension {
-            return originalSize
+        let maxSide = max(imageSize.width, imageSize.height)
+        if maxSide <= maxDimension {
+            return imageSize
         }
 
-        let scale = Self.maxDimension / maxSide
+        let scale = maxDimension / maxSide
         return NSSize(
-            width: round(originalSize.width * scale),
-            height: round(originalSize.height * scale)
+            width: round(imageSize.width * scale),
+            height: round(imageSize.height * scale)
         )
     }
 
-    private static let gap: CGFloat = 6
+    /// プレビューパネルの表示位置を計算
+    nonisolated static func calculatePanelPosition( // swiftlint:disable:this function_parameter_count
+        rightmostX: CGFloat, leftmostX: CGFloat,
+        mouseY: CGFloat, panelSize: NSSize,
+        screenFrame: NSRect?, visibleFrame: NSRect?,
+        gap: CGFloat = AppConstants.previewGap
+    ) -> NSPoint {
+        // Vertical: center on mouse cursor
+        let panelY = mouseY - panelSize.height / 2
+
+        // Horizontal: place to the right of all menus
+        var panelX = rightmostX + gap
+
+        // If off-screen to the right, place to the left of all menus
+        if let screenFrame = screenFrame, panelX + panelSize.width > screenFrame.maxX {
+            panelX = leftmostX - panelSize.width - gap
+        }
+
+        // Clamp vertical position to screen bounds
+        let minY = visibleFrame?.minY ?? 0
+        let maxY = (visibleFrame?.maxY ?? screenFrame?.maxY ?? AppConstants.fallbackScreenHeight) - panelSize.height
+        let clampedY = min(max(panelY, minY), maxY)
+
+        return NSPoint(x: panelX, y: clampedY)
+    }
+
+    /// フォールバック位置を計算
+    nonisolated static func fallbackPosition(
+        mouseLocation: NSPoint, panelSize: NSSize, offset: CGFloat = AppConstants.previewFallbackMouseOffset
+    ) -> NSPoint {
+        return NSPoint(x: mouseLocation.x + offset, y: mouseLocation.y - panelSize.height / 2)
+    }
+
+    // MARK: - Private
+
+    private func scaledSize(for image: NSImage) -> NSSize {
+        return Self.scaledSize(for: image.size)
+    }
 
     private func calculatePosition(menuItem: NSMenuItem, menu: NSMenu, panelSize: NSSize) -> NSPoint {
         let menuWindows = Self.findMenuWindows(excluding: panel)
 
         guard !menuWindows.isEmpty else {
-            return fallbackPosition(panelSize: panelSize)
+            let mouseLocation = NSEvent.mouseLocation
+            return Self.fallbackPosition(mouseLocation: mouseLocation, panelSize: panelSize)
         }
 
         // Find the bounding rect of all menu windows (parent + submenus)
         let rightmostX = menuWindows.map { $0.frame.maxX }.max() ?? 0
         let leftmostX = menuWindows.map { $0.frame.minX }.min() ?? 0
 
-        // Vertical: center on mouse cursor
         let mouseY = NSEvent.mouseLocation.y
-        let panelY = mouseY - panelSize.height / 2
 
-        // Horizontal: place to the right of all menus
-        var panelX = rightmostX + Self.gap
-
-        // If off-screen to the right, place to the left of all menus
         let screen = NSScreen.screens.first(where: {
             $0.frame.contains(NSPoint(x: rightmostX, y: mouseY))
         }) ?? NSScreen.main
-        if let screen = screen, panelX + panelSize.width > screen.frame.maxX {
-            panelX = leftmostX - panelSize.width - Self.gap
-        }
 
-        // Clamp vertical position to screen bounds
-        let minY = screen?.visibleFrame.minY ?? 0
-        let maxY = (screen?.visibleFrame.maxY ?? NSScreen.main?.frame.maxY ?? AppConstants.fallbackScreenHeight) - panelSize.height
-        let clampedY = min(max(panelY, minY), maxY)
-
-        return NSPoint(x: panelX, y: clampedY)
-    }
-
-    private func fallbackPosition(panelSize: NSSize) -> NSPoint {
-        let mouseLocation = NSEvent.mouseLocation
-        return NSPoint(x: mouseLocation.x + Self.fallbackMouseOffset, y: mouseLocation.y - panelSize.height / 2)
+        return Self.calculatePanelPosition(
+            rightmostX: rightmostX, leftmostX: leftmostX,
+            mouseY: mouseY, panelSize: panelSize,
+            screenFrame: screen?.frame, visibleFrame: screen?.visibleFrame
+        )
     }
 
     private static func findMenuWindows(excluding excludedPanel: NSPanel) -> [NSWindow] {

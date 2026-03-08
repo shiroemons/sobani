@@ -51,6 +51,11 @@
 		F0LE000002000000000001 /* LayoutPresetManagerExtendedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */; };
 		F0UN000002000000000001 /* UpdateManagerNetworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */; };
 		E8A1B2C3D4E5F6A8 /* AdjustmentPanelControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2C3D4E5F6A7 /* AdjustmentPanelControllerTests.swift */; };
+		F0ZO000002000000000001 /* ZOrderUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ZO000001000000000001 /* ZOrderUtils.swift */; };
+		F0DI000002000000000001 /* DraggableImageViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DI000001000000000001 /* DraggableImageViewTests.swift */; };
+		F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PT000001000000000001 /* ImagePreviewPanelTests.swift */; };
+		F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ZO000003000000000001 /* ZOrderUtilsTests.swift */; };
+		F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CW000001000000000001 /* CharacterWindowTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +117,11 @@
 		F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetManagerExtendedTests.swift; sourceTree = "<group>"; };
 		F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerNetworkTests.swift; sourceTree = "<group>"; };
 		E8A1B2C3D4E5F6A7 /* AdjustmentPanelControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustmentPanelControllerTests.swift; sourceTree = "<group>"; };
+		F0ZO000001000000000001 /* ZOrderUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZOrderUtils.swift; sourceTree = "<group>"; };
+		F0DI000001000000000001 /* DraggableImageViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraggableImageViewTests.swift; sourceTree = "<group>"; };
+		F0PT000001000000000001 /* ImagePreviewPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanelTests.swift; sourceTree = "<group>"; };
+		F0ZO000003000000000001 /* ZOrderUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZOrderUtilsTests.swift; sourceTree = "<group>"; };
+		F0CW000001000000000001 /* CharacterWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterWindowTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,6 +175,7 @@
 				F0LP000001000000000001 /* LayoutPresetManager.swift */,
 				F0UW000001000000000001 /* UnconstrainedWindow.swift */,
 				F0IP000001000000000001 /* ImagePreviewPanel.swift */,
+				F0ZO000001000000000001 /* ZOrderUtils.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -205,6 +216,10 @@
 				F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */,
 				F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */,
 				E8A1B2C3D4E5F6A7 /* AdjustmentPanelControllerTests.swift */,
+				F0DI000001000000000001 /* DraggableImageViewTests.swift */,
+				F0PT000001000000000001 /* ImagePreviewPanelTests.swift */,
+				F0ZO000003000000000001 /* ZOrderUtilsTests.swift */,
+				F0CW000001000000000001 /* CharacterWindowTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -347,6 +362,7 @@
 				F0LP000002000000000001 /* LayoutPresetManager.swift in Sources */,
 				F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */,
 				F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */,
+				F0ZO000002000000000001 /* ZOrderUtils.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -374,6 +390,10 @@
 				F0LE000002000000000001 /* LayoutPresetManagerExtendedTests.swift in Sources */,
 				F0UN000002000000000001 /* UpdateManagerNetworkTests.swift in Sources */,
 				E8A1B2C3D4E5F6A8 /* AdjustmentPanelControllerTests.swift in Sources */,
+				F0DI000002000000000001 /* DraggableImageViewTests.swift in Sources */,
+				F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */,
+				F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */,
+				F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

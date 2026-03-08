@@ -48,6 +48,11 @@ enum AppConstants {
 
     // Menu
     static let menuWindowMinWidth: CGFloat = 10
+
+    // Image Preview Panel
+    static let previewMaxDimension: CGFloat = 256
+    static let previewGap: CGFloat = 6
+    static let previewFallbackMouseOffset: CGFloat = 20
     static let menuTabPadding: CGFloat = 16
     static let layoutDialogFieldWidth: CGFloat = 260
     static let layoutDialogFieldHeight: CGFloat = 24

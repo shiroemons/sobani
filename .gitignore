@@ -16,6 +16,9 @@ xcschememanagement.plist
 *.app
 *.zip
 
+# Logs
+tmp/
+
 # Miscellaneous
 *.swp
 *~

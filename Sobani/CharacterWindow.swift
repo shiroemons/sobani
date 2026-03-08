@@ -306,16 +306,10 @@ extension CharacterWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
-        // position is the image origin in global coordinates
-        let bbSize = GeometryUtils.rotatedBoundingBox(
-            width: imageView.frame.width, height: imageView.frame.height, angleDegrees: imageView.rotationAngle
+        let origin = Self.windowOrigin(
+            forImageOrigin: position, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle
         )
-        let centerX = position.x + imageView.frame.width / 2
-        let centerY = position.y + imageView.frame.height / 2
-        window.setFrameOrigin(NSPoint(
-            x: round(centerX - bbSize.width / 2),
-            y: round(centerY - bbSize.height / 2)
-        ))
+        window.setFrameOrigin(origin)
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize) {
@@ -334,15 +328,10 @@ extension CharacterWindow: AdjustmentPanelDelegate {
             x: screen.frame.origin.x + relativeX,
             y: screen.frame.origin.y + relativeY
         )
-        let bbSize = GeometryUtils.rotatedBoundingBox(
-            width: imageView.frame.width, height: imageView.frame.height, angleDegrees: imageView.rotationAngle
+        let newWindowOrigin = Self.windowOrigin(
+            forImageOrigin: newOrigin, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle
         )
-        let centerX = newOrigin.x + imageView.frame.width / 2
-        let centerY = newOrigin.y + imageView.frame.height / 2
-        window.setFrameOrigin(NSPoint(
-            x: round(centerX - bbSize.width / 2),
-            y: round(centerY - bbSize.height / 2)
-        ))
+        window.setFrameOrigin(newWindowOrigin)
         adjustmentPanelController?.updatePosition(currentImageOrigin())
     }
 
@@ -356,10 +345,7 @@ extension CharacterWindow: AdjustmentPanelDelegate {
     // MARK: Helpers
 
     private func currentImageOrigin() -> CGPoint {
-        return CGPoint(
-            x: window.frame.midX - imageView.frame.width / 2,
-            y: window.frame.midY - imageView.frame.height / 2
-        )
+        return Self.imageOrigin(windowFrame: window.frame, imageViewSize: imageView.frame.size)
     }
 }
 
@@ -656,6 +642,33 @@ extension CharacterWindow {
     func hideHighlightBorder() {
         window.contentView?.layer?.borderWidth = 0
         window.contentView?.layer?.borderColor = nil
+    }
+}
+
+// MARK: - Testable Static Methods
+
+extension CharacterWindow {
+    /// ウィンドウフレームから画像の原点座標を計算
+    nonisolated static func imageOrigin(windowFrame: NSRect, imageViewSize: NSSize) -> CGPoint {
+        return CGPoint(
+            x: windowFrame.midX - imageViewSize.width / 2,
+            y: windowFrame.midY - imageViewSize.height / 2
+        )
+    }
+
+    /// 画像原点座標からウィンドウ原点座標を計算（逆変換）
+    nonisolated static func windowOrigin(
+        forImageOrigin imageOrigin: CGPoint, imageViewSize: NSSize, rotationAngle: CGFloat
+    ) -> NSPoint {
+        let bbSize = GeometryUtils.rotatedBoundingBox(
+            width: imageViewSize.width, height: imageViewSize.height, angleDegrees: rotationAngle
+        )
+        let centerX = imageOrigin.x + imageViewSize.width / 2
+        let centerY = imageOrigin.y + imageViewSize.height / 2
+        return NSPoint(
+            x: round(centerX - bbSize.width / 2),
+            y: round(centerY - bbSize.height / 2)
+        )
     }
 }
 
