@@ -6,26 +6,30 @@ import Vision
 // MARK: - Background Removal Error
 
 @available(macOS 14.0, *)
-enum BackgroundRemovalError: @preconcurrency LocalizedError, Equatable, CaseIterable, Sendable {
+enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
     case cgImageConversionFailed
     case noForegroundDetected
     case maskGenerationFailed
     case filterOutputFailed
     case finalImageConversionFailed
 
-    @MainActor var errorDescription: String? {
+    private var localizationKey: String {
         switch self {
         case .cgImageConversionFailed:
-            return L("background_removal.error.conversion_failed")
+            return "background_removal.error.conversion_failed"
         case .noForegroundDetected:
-            return L("background_removal.error.no_foreground")
+            return "background_removal.error.no_foreground"
         case .maskGenerationFailed:
-            return L("background_removal.error.mask_failed")
+            return "background_removal.error.mask_failed"
         case .filterOutputFailed:
-            return L("background_removal.error.filter_failed")
+            return "background_removal.error.filter_failed"
         case .finalImageConversionFailed:
-            return L("background_removal.error.final_conversion_failed")
+            return "background_removal.error.final_conversion_failed"
         }
+    }
+
+    var errorDescription: String? {
+        return NSLocalizedString(localizationKey, comment: "")
     }
 }
 
