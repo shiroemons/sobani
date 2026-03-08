@@ -56,6 +56,11 @@
 		F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PT000001000000000001 /* ImagePreviewPanelTests.swift */; };
 		F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ZO000003000000000001 /* ZOrderUtilsTests.swift */; };
 		F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CW000001000000000001 /* CharacterWindowTests.swift */; };
+		F0AD000002000000000001 /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AD000001000000000001 /* AppDelegateTests.swift */; };
+		F0MS000002000000000001 /* MenuStateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MS000001000000000001 /* MenuStateUtils.swift */; };
+		F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MS000003000000000001 /* MenuStateUtilsTests.swift */; };
+		F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000001000000000001 /* ScreenRestorationUtils.swift */; };
+		F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -122,6 +127,11 @@
 		F0PT000001000000000001 /* ImagePreviewPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanelTests.swift; sourceTree = "<group>"; };
 		F0ZO000003000000000001 /* ZOrderUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZOrderUtilsTests.swift; sourceTree = "<group>"; };
 		F0CW000001000000000001 /* CharacterWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterWindowTests.swift; sourceTree = "<group>"; };
+		F0AD000001000000000001 /* AppDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateTests.swift; sourceTree = "<group>"; };
+		F0MS000001000000000001 /* MenuStateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStateUtils.swift; sourceTree = "<group>"; };
+		F0MS000003000000000001 /* MenuStateUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStateUtilsTests.swift; sourceTree = "<group>"; };
+		F0SR000001000000000001 /* ScreenRestorationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtils.swift; sourceTree = "<group>"; };
+		F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtilsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,6 +186,8 @@
 				F0UW000001000000000001 /* UnconstrainedWindow.swift */,
 				F0IP000001000000000001 /* ImagePreviewPanel.swift */,
 				F0ZO000001000000000001 /* ZOrderUtils.swift */,
+				F0MS000001000000000001 /* MenuStateUtils.swift */,
+				F0SR000001000000000001 /* ScreenRestorationUtils.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -220,6 +232,9 @@
 				F0PT000001000000000001 /* ImagePreviewPanelTests.swift */,
 				F0ZO000003000000000001 /* ZOrderUtilsTests.swift */,
 				F0CW000001000000000001 /* CharacterWindowTests.swift */,
+				F0AD000001000000000001 /* AppDelegateTests.swift */,
+				F0MS000003000000000001 /* MenuStateUtilsTests.swift */,
+				F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -363,6 +378,8 @@
 				F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */,
 				F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */,
 				F0ZO000002000000000001 /* ZOrderUtils.swift in Sources */,
+				F0MS000002000000000001 /* MenuStateUtils.swift in Sources */,
+				F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -394,6 +411,9 @@
 				F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */,
 				F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */,
 				F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */,
+				F0AD000002000000000001 /* AppDelegateTests.swift in Sources */,
+				F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */,
+				F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

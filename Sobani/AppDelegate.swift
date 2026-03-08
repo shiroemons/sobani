@@ -221,8 +221,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         zOrderedWindows.removeAll()
         quitIfNoWindows()
     }
+    nonisolated static func shouldQuitApp(windowCount: Int, isApplyingLayout: Bool) -> Bool {
+        windowCount == 0 && !isApplyingLayout
+    }
+
     func quitIfNoWindows() {
-        if characterWindows.isEmpty && !isApplyingLayout {
+        if Self.shouldQuitApp(windowCount: characterWindows.count, isApplyingLayout: isApplyingLayout) {
             shouldTerminate = true
             NSApp.terminate(nil)
         }
