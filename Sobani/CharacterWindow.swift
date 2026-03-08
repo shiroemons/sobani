@@ -23,7 +23,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private var adjustmentPanelController: AdjustmentPanelController?
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
-    private var windowMoveObserver: NSObjectProtocol?
+    nonisolated(unsafe) private var windowMoveObserver: NSObjectProtocol?
 
     init(image: NSImage) {
         let maxHeight: CGFloat = AppConstants.defaultWindowHeight
@@ -154,10 +154,12 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         }
         windowMoveObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didMoveNotification, object: window, queue: .main
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            self.adjustmentPanelController?.updatePosition(self.currentImageOrigin())
-            self.adjustmentPanelController?.updateMonitor(self.window)
+        ) { @Sendable [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self = self else { return }
+                self.adjustmentPanelController?.updatePosition(self.currentImageOrigin())
+                self.adjustmentPanelController?.updateMonitor(self.window)
+            }
         }
         imageView.onSizeChanged = { [weak self] in
             guard let self = self else { return }
@@ -682,23 +684,25 @@ extension CharacterWindow {
             }
             showSpinner()
             BackgroundRemovalManager.shared.removeBackground(from: currentImage) { [weak self] result in
-                guard let self = self else { return }
-                self.hideSpinner()
-                self.isRemovingBackground = false
-                switch result {
-                case .success(let newImage):
-                    let baseName = URL(fileURLWithPath: self.displayName).deletingPathExtension().lastPathComponent
-                    let newName = "\(baseName)_nobg.png"
-                    ImageManager.shared.registerImage(newImage, name: newName)
-                    self.displayName = newName
-                    self.applyImage(newImage)
-                case .failure(let error):
-                    let alert = NSAlert()
-                    alert.messageText = L("background_removal.error.title")
-                    alert.informativeText = error.localizedDescription
-                    alert.alertStyle = .warning
-                    alert.addButton(withTitle: L("update.ok"))
-                    alert.runModal()
+                MainActor.assumeIsolated {
+                    guard let self = self else { return }
+                    self.hideSpinner()
+                    self.isRemovingBackground = false
+                    switch result {
+                    case .success(let newImage):
+                        let baseName = URL(fileURLWithPath: self.displayName).deletingPathExtension().lastPathComponent
+                        let newName = "\(baseName)_nobg.png"
+                        ImageManager.shared.registerImage(newImage, name: newName)
+                        self.displayName = newName
+                        self.applyImage(newImage)
+                    case .failure(let error):
+                        let alert = NSAlert()
+                        alert.messageText = L("background_removal.error.title")
+                        alert.informativeText = error.localizedDescription
+                        alert.alertStyle = .warning
+                        alert.addButton(withTitle: L("update.ok"))
+                        alert.runModal()
+                    }
                 }
             }
         }

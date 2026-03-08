@@ -56,13 +56,18 @@ extension AppDelegate {
         screenChangeDebounceTimer?.invalidate()
         if wakeContext.isActive {
             // Wake 復元中のスクリーン変更 → 復元リトライをトリガー（1.5秒デバウンス）
-            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeDebounceInterval, repeats: false) { [weak self] _ in
-                self?.attemptWakeRestoration()
+            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeDebounceInterval, repeats: false) { @Sendable [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.attemptWakeRestoration()
+                }
             }
         } else {
             // 通常時 → ペンディング復元を試行（1秒デバウンス）
-            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.screenChangeDebounceInterval, repeats: false) { [weak self] _ in
-                self?.attemptPendingRestorations()
+            let interval = AppConstants.screenChangeDebounceInterval
+            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { @Sendable [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.attemptPendingRestorations()
+                }
             }
         }
     }
@@ -105,8 +110,10 @@ extension AppDelegate {
         wakeContext.isActive = true
         wakeContext.retryCount = 0
         screenChangeDebounceTimer?.invalidate()
-        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeInitialDelay, repeats: false) { [weak self] _ in
-            self?.attemptWakeRestoration()
+        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeInitialDelay, repeats: false) { @Sendable [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.attemptWakeRestoration()
+            }
         }
     }
 
@@ -220,8 +227,10 @@ extension AppDelegate {
 
     private func scheduleWakeRetry(interval: TimeInterval) {
         screenChangeDebounceTimer?.invalidate()
-        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
-            self?.attemptWakeRestoration()
+        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { @Sendable [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.attemptWakeRestoration()
+            }
         }
     }
 

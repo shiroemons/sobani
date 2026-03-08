@@ -6,7 +6,7 @@ import Vision
 // MARK: - Background Removal Error
 
 @available(macOS 14.0, *)
-enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
+enum BackgroundRemovalError: @preconcurrency LocalizedError, Equatable, CaseIterable, Sendable {
     case cgImageConversionFailed
     case noForegroundDetected
     case maskGenerationFailed
@@ -49,19 +49,19 @@ final class BackgroundRemovalManager: @unchecked Sendable {
 
     func removeBackground(
         from image: NSImage,
-        completion: @escaping (Result<NSImage, BackgroundRemovalError>) -> Void
+        completion: @Sendable @escaping (Result<NSImage, BackgroundRemovalError>) -> Void
     ) {
-        processingQueue.async { [weak self] in
+        processingQueue.async { @Sendable [weak self] in
             guard let self else { return }
             do {
                 let result = try self.performRemoval(from: image)
-                DispatchQueue.main.async { completion(.success(result)) }
+                DispatchQueue.main.async { @Sendable in completion(.success(result)) }
             } catch let error as BackgroundRemovalError {
                 self.logger.error("Background removal failed: \(error.localizedDescription)")
-                DispatchQueue.main.async { completion(.failure(error)) }
+                DispatchQueue.main.async { @Sendable in completion(.failure(error)) }
             } catch {
                 self.logger.error("Unexpected error: \(error.localizedDescription)")
-                DispatchQueue.main.async { completion(.failure(.maskGenerationFailed)) }
+                DispatchQueue.main.async { @Sendable in completion(.failure(.maskGenerationFailed)) }
             }
         }
     }

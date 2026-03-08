@@ -10,7 +10,7 @@ final class ImageManager {
         category: "ImageManager"
     )
     static let shared = ImageManager()
-    static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
+    nonisolated static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
     private let baseDirectory: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。

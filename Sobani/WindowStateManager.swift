@@ -209,12 +209,14 @@ extension CharacterWindow {
         // the initial window display cycle. Defer re-application
         // to the next run loop so the transform sticks.
         if adjusted.isFlippedHorizontally || abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
-            DispatchQueue.main.async { [weak self] in
-                if abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
-                    self?.adjustWindowForRotation()
+            DispatchQueue.main.async { @Sendable [weak self] in
+                MainActor.assumeIsolated {
+                    if abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
+                        self?.adjustWindowForRotation()
+                    }
+                    self?.imageView.needsLayout = true
+                    self?.imageView.layoutSubtreeIfNeeded()
                 }
-                self?.imageView.needsLayout = true
-                self?.imageView.layoutSubtreeIfNeeded()
             }
         }
 
