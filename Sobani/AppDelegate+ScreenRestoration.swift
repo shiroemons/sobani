@@ -191,15 +191,9 @@ extension AppDelegate {
     /// 新しいスクリーン位置に変換する。
     private func computeRestoredOrigin(savedOrigin: NSPoint, savedDisplayID: CGDirectDisplayID?,
                                        currentScreen: NSScreen) -> NSPoint {
-        guard let displayID = savedDisplayID,
-              let oldFrame = wakeContext.screenFrames[displayID] else {
-            return savedOrigin
-        }
-        let relativeX = savedOrigin.x - oldFrame.origin.x
-        let relativeY = savedOrigin.y - oldFrame.origin.y
-        return NSPoint(
-            x: currentScreen.frame.origin.x + relativeX,
-            y: currentScreen.frame.origin.y + relativeY
+        let oldFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
+        return ScreenRestorationUtils.computeRestoredOrigin(
+            savedOrigin: savedOrigin, oldScreenFrame: oldFrame, currentScreenFrame: currentScreen.frame
         )
     }
 
@@ -278,13 +272,7 @@ extension AppDelegate {
 
     /// ウィンドウ原点をスクリーン内にクランプ
     private func clampOrigin(_ origin: NSPoint, windowSize: NSSize, to screenFrame: NSRect) -> NSPoint {
-        let clampedX = windowSize.width >= screenFrame.width
-            ? origin.x
-            : max(screenFrame.minX, min(origin.x, screenFrame.maxX - windowSize.width))
-        let clampedY = windowSize.height >= screenFrame.height
-            ? origin.y
-            : max(screenFrame.minY, min(origin.y, screenFrame.maxY - windowSize.height))
-        return NSPoint(x: clampedX, y: clampedY)
+        ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
     }
 
     /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
@@ -347,10 +335,7 @@ extension NSScreen {
     /// 指定されたフレームと位置・サイズが tolerance 以内で一致するスクリーンを返す
     static func screen(matchingFrame savedFrame: NSRect, tolerance: CGFloat) -> NSScreen? {
         screens.first { screen in
-            abs(screen.frame.origin.x - savedFrame.origin.x) <= tolerance
-                && abs(screen.frame.origin.y - savedFrame.origin.y) <= tolerance
-                && abs(screen.frame.size.width - savedFrame.size.width) <= tolerance
-                && abs(screen.frame.size.height - savedFrame.size.height) <= tolerance
+            ScreenRestorationUtils.isFrameMatch(screen.frame, savedFrame, tolerance: tolerance)
         }
     }
 }
