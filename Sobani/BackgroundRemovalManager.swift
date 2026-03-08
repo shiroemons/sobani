@@ -57,10 +57,10 @@ final class BackgroundRemovalManager: @unchecked Sendable {
                 let result = try self.performRemoval(from: image)
                 DispatchQueue.main.async { @Sendable in completion(.success(result)) }
             } catch let error as BackgroundRemovalError {
-                self.logger.error("Background removal failed: \(error.localizedDescription)")
+                self.logger.error("Background removal failed: \(String(describing: error))")
                 DispatchQueue.main.async { @Sendable in completion(.failure(error)) }
             } catch {
-                self.logger.error("Unexpected error: \(error.localizedDescription)")
+                self.logger.error("Unexpected error: \(String(describing: error))")
                 DispatchQueue.main.async { @Sendable in completion(.failure(.maskGenerationFailed)) }
             }
         }
