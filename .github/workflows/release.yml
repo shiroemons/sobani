@@ -80,8 +80,8 @@ jobs:
         run: |
           echo "🔍 コード署名を検証中..."
           codesign --verify --deep --strict --verbose=2 Sobani.app
-          echo "🔍 公証を検証中..."
-          spctl --assess --type execute --verbose=2 Sobani.app
+          echo "🔍 公証ステープルを検証中..."
+          xcrun stapler validate Sobani.app
           echo "✅ 署名・公証検証完了"
 
       - name: DMG リネーム
