@@ -41,6 +41,10 @@ import Testing
         )
     }
 
+    private func fakeScreens() -> [ScreenInfo] {
+        [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)]
+    }
+
     // MARK: - Encode/Decode Tests
 
     /// WindowStateのJSONエンコード・デコードのラウンドトリップを検証
@@ -119,15 +123,15 @@ import Testing
 
     /// 画面内の位置でisPositionVisibleがtrueを返すことを検証
     @Test func isPositionVisibleOnScreen() {
-        guard let mainScreen = NSScreen.main else { return }
-        let frame = mainScreen.frame
+        let screens = fakeScreens()
+        let frame = screens[0].frame
         let state = makeState(
             originX: frame.midX - 150,
             originY: frame.midY - 200,
             width: 300,
             height: 400
         )
-        #expect(state.isPositionVisible())
+        #expect(state.isPositionVisible(on: screens))
     }
 
     /// 画面外の位置でisPositionVisibleがfalseを返すことを検証
@@ -138,39 +142,38 @@ import Testing
             width: 300,
             height: 400
         )
-        #expect(!state.isPositionVisible())
+        #expect(!state.isPositionVisible(on: fakeScreens()))
     }
 
     /// 画面内の位置でadjustedToVisibleAreaが変更しないことを検証
     @Test func adjustToVisibleAreaNoChangeWhenVisible() {
-        guard let mainScreen = NSScreen.main else { return }
-        let frame = mainScreen.frame
+        let screens = fakeScreens()
+        let frame = screens[0].frame
         let state = makeState(
             originX: frame.midX - 150,
             originY: frame.midY - 200,
             width: 300,
             height: 400
         )
-        let adjusted = state.adjustedToVisibleArea()
+        let adjusted = state.adjustedToVisibleArea(on: screens)
         #expect(adjusted == state)
     }
 
     /// 画面外の位置がメインスクリーン中央に調整されることを検証
     @Test func adjustToVisibleAreaMovesToCenter() {
-        guard let mainScreen = NSScreen.main else { return }
+        let screens = fakeScreens()
         let state = makeState(
             originX: -99999,
             originY: -99999,
             width: 300,
             height: 400
         )
-        let adjusted = state.adjustedToVisibleArea()
+        let adjusted = state.adjustedToVisibleArea(on: screens)
         #expect(adjusted.originX != state.originX)
         #expect(adjusted.originY != state.originY)
 
-        let expectedX = mainScreen.frame.midX - 150
-        let expectedY = mainScreen.frame.midY - 200
-        // ピクセル位置の丸め誤差を許容するため、精度を意図的に大きく設定
+        let expectedX = screens[0].frame.midX - 150
+        let expectedY = screens[0].frame.midY - 200
         #expect(abs(adjusted.originX - expectedX) < 1.0)
         #expect(abs(adjusted.originY - expectedY) < 1.0)
         #expect(adjusted.width == 300)
@@ -250,7 +253,7 @@ import Testing
             height: 400,
             rotationAngle: 180
         )
-        let adjusted = state.adjustedToVisibleArea()
+        let adjusted = state.adjustedToVisibleArea(on: fakeScreens())
         #expect(adjusted.rotationAngle == 180)
     }
 
@@ -296,7 +299,7 @@ import Testing
             height: 400,
             opacityLevel: 0.3
         )
-        let adjusted = state.adjustedToVisibleArea()
+        let adjusted = state.adjustedToVisibleArea(on: fakeScreens())
         #expect(abs(adjusted.opacityLevel - 0.3) < AppConstants.floatingPointTolerance)
     }
 
@@ -339,7 +342,7 @@ import Testing
             height: 400,
             windowId: 7
         )
-        let adjusted = state.adjustedToVisibleArea()
+        let adjusted = state.adjustedToVisibleArea(on: fakeScreens())
         #expect(adjusted.windowId == 7)
     }
 

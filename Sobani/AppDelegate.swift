@@ -63,7 +63,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
                 charWindow.setWindowId(state.windowId)
                 let wasAdjusted = charWindow.restore(from: state)
                 if wasAdjusted {
-                    let adjusted = state.adjustedToVisibleArea()
+                    let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
                     screenRestorationManager.addPending(
                         windowId: state.windowId,
                         originalState: state,

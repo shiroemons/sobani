@@ -205,7 +205,7 @@ extension AppDelegate {
             guard let savedState = wakeContext.states[windowId] else { continue }
 
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
-            let adjusted = savedState.adjustedToVisibleArea()
+            let adjusted = savedState.adjustedToVisibleArea(on: ScreenInfo.current())
 
             if let charWindow = characterWindows.first(where: { $0.windowId == windowId }) {
                 charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
@@ -233,8 +233,8 @@ extension AppDelegate {
         // wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
         for charWindow in characterWindows {
             let currentState = WindowStateManager.captureState(from: charWindow)
-            guard !currentState.isPositionVisible() else { continue }
-            let adjusted = currentState.adjustedToVisibleArea()
+            guard !currentState.isPositionVisible(on: ScreenInfo.current()) else { continue }
+            let adjusted = currentState.adjustedToVisibleArea(on: ScreenInfo.current())
             charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
             // displayID は切断後には取得不可のため 0 を使用（位置ベースで復元判定）
             screenRestorationManager.addPending(

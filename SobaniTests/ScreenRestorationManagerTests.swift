@@ -133,6 +133,7 @@ import Testing
         manager.addPending(windowId: 1, originalState: state1, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
         manager.addPending(windowId: 2, originalState: state2, displayID: 999999, adjustedOriginX: 70, adjustedOriginY: 80)
 
+        manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
         let results = manager.restorableEntries()
 
         // displayID: 999999 は実スクリーンと一致しないため空になる
@@ -159,6 +160,7 @@ import Testing
         let state = makeState(windowId: 1, originX: 100, originY: 200)
         manager.addPending(windowId: 1, originalState: state, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
 
+        manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
         let results = manager.restorableEntries()
 
         #expect(results.isEmpty)
@@ -170,6 +172,7 @@ import Testing
         let state = makeState(windowId: 1, originX: -99999, originY: -99999)
         manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
 
+        manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
         let results = manager.restorableEntries()
 
         // 元の位置が不可視のため、復元対象にならない

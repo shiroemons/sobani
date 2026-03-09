@@ -12,6 +12,30 @@ func L(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
 }
 
+struct ScreenInfo: Sendable {
+    let frame: NSRect
+    let displayID: CGDirectDisplayID
+    let isMain: Bool
+
+    @MainActor
+    static func current() -> [Self] {
+        NSScreen.screens.map { screen in
+            Self(
+                frame: screen.frame,
+                displayID: (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
+                    as? CGDirectDisplayID) ?? 0,
+                isMain: screen == NSScreen.main
+            )
+        }
+    }
+
+    static func mainFrame(from screens: [Self]) -> NSRect {
+        screens.first(where: { $0.isMain })?.frame
+            ?? screens.first?.frame
+            ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+    }
+}
+
 enum AppConstants {
     static let defaultImageName = "default"
 

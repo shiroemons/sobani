@@ -53,9 +53,9 @@ struct WindowState: Codable, Equatable, Sendable {
         windowId = try container.decodeIfPresent(Int.self, forKey: .windowId) ?? 0
     }
 
-    func isPositionVisible() -> Bool {
+    func isPositionVisible(on screens: [ScreenInfo]) -> Bool {
         let windowRect = NSRect(x: originX, y: originY, width: width, height: height)
-        for screen in NSScreen.screens {
+        for screen in screens {
             let intersection = windowRect.intersection(screen.frame)
             let threshold = AppConstants.screenIntersectionThreshold
             if !intersection.isNull && intersection.width >= threshold && intersection.height >= threshold {
@@ -65,11 +65,11 @@ struct WindowState: Codable, Equatable, Sendable {
         return false
     }
 
-    func adjustedToVisibleArea() -> Self {
-        if isPositionVisible() {
+    func adjustedToVisibleArea(on screens: [ScreenInfo]) -> Self {
+        if isPositionVisible(on: screens) {
             return self
         }
-        let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+        let mainFrame = ScreenInfo.mainFrame(from: screens)
         let newOriginX = mainFrame.midX - width / 2
         let newOriginY = mainFrame.midY - height / 2
         return Self(
@@ -184,7 +184,7 @@ final class WindowStateManager {
 extension CharacterWindow {
     @discardableResult
     func restore(from state: WindowState) -> Bool {
-        let adjusted = state.adjustedToVisibleArea()
+        let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
         guard adjusted.height > 0 else { return false }
         let tolerance = AppConstants.floatingPointTolerance
         let wasAdjusted = abs(adjusted.originX - state.originX) > tolerance

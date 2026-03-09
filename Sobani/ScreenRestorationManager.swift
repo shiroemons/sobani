@@ -63,6 +63,7 @@ final class ScreenRestorationManager {
     private let timeout: TimeInterval
     private let baseDirectory: URL?
     var currentDate: @Sendable () -> Date = { Date() }
+    var screenProvider: () -> [ScreenInfo] = { ScreenInfo.current() }
 
     init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
         self.timeout = timeout
@@ -105,18 +106,14 @@ final class ScreenRestorationManager {
 
     func restorableEntries() -> [PendingRestoration] {
         purgeExpired()
+        let screens = screenProvider()
         return pendingRestorations.filter { entry in
             if entry.displayID != AppConstants.unknownDisplayID {
-                // displayIDが既知: まずモニターIDで判定
-                let matchByID = NSScreen.screens.contains { screen in
-                    (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
-                        as? CGDirectDisplayID) == entry.displayID
-                }
+                let matchByID = screens.contains { $0.displayID == entry.displayID }
                 if matchByID { return true }
-                // displayIDが一致しない場合: ジオメトリベースのフォールバック
                 if let savedFrame = entry.preSleepScreenFrame {
                     let tol = AppConstants.screenMatchTolerance
-                    return NSScreen.screens.contains { screen in
+                    return screens.contains { screen in
                         abs(screen.frame.origin.x - savedFrame.origin.x) <= tol
                             && abs(screen.frame.origin.y - savedFrame.origin.y) <= tol
                             && abs(screen.frame.size.width - savedFrame.size.width) <= tol
@@ -125,8 +122,7 @@ final class ScreenRestorationManager {
                 }
                 return false
             } else {
-                // displayIDが不明（スリープなし切断）: 元の位置が現在可視かどうかで判定
-                return entry.originalState.isPositionVisible()
+                return entry.originalState.isPositionVisible(on: screens)
             }
         }
     }
