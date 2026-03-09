@@ -104,7 +104,7 @@ protocol UpdateManagerDelegate: AnyObject {
 
 final class UpdateManager: @unchecked Sendable {
     static let shared = UpdateManager()
-    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "UpdateManager")
+    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "UpdateManager")
 
     weak var delegate: UpdateManagerDelegate?
 

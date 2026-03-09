@@ -56,7 +56,7 @@ struct PendingRestoration: Codable, Sendable {
 @MainActor
 final class ScreenRestorationManager {
     private let logger = Logger(
-        subsystem: "com.shiroemons.Sobani",
+        subsystem: AppConstants.loggerSubsystem,
         category: "ScreenRestorationManager"
     )
     private(set) var pendingRestorations: [PendingRestoration] = []

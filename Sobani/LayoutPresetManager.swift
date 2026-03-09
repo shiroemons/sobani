@@ -15,7 +15,7 @@ struct LayoutPreset: Codable, Equatable, Sendable {
 final class LayoutPresetManager {
     static let shared = LayoutPresetManager()
     private let logger = Logger(
-        subsystem: "com.shiroemons.Sobani",
+        subsystem: AppConstants.loggerSubsystem,
         category: "LayoutPresetManager"
     )
     private let baseDirectory: URL?

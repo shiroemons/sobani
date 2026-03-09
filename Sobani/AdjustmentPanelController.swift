@@ -207,7 +207,7 @@ private enum PositionSizeLayout {
 
 @MainActor
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
-    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AdjustmentPanelController")
+    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220
     private static let panelHeight: CGFloat = 460
     private static let rotationSectionOffsetY: CGFloat = 300

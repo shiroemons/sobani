@@ -6,7 +6,7 @@ import os.log
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
-    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "AppDelegate")
+    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "AppDelegate")
     var characterWindows: [CharacterWindow] = []
     var statusItem: NSStatusItem?
     private var shouldTerminate = false

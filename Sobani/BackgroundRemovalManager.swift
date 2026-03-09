@@ -40,12 +40,12 @@ final class BackgroundRemovalManager: @unchecked Sendable {
     static let shared = BackgroundRemovalManager()
 
     private let logger = Logger(
-        subsystem: "com.shiroemons.Sobani",
+        subsystem: AppConstants.loggerSubsystem,
         category: "BackgroundRemovalManager"
     )
 
     private let processingQueue = DispatchQueue(
-        label: "com.shiroemons.Sobani.backgroundRemoval",
+        label: "\(AppConstants.loggerSubsystem).backgroundRemoval",
         qos: .userInitiated
     )
 

@@ -12,7 +12,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     var onAddImage: (() -> Void)?
     var onFinish: (() -> Void)?
     nonisolated(unsafe) private var languageObserver: NSObjectProtocol?
-    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "OnboardingWindowController")
+    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "OnboardingWindowController")
     private static let iconSize: CGFloat = 48
     private static let contentPadding: CGFloat = 40
     private static let dotSize: CGFloat = 8

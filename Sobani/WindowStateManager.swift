@@ -92,7 +92,7 @@ struct WindowState: Codable, Equatable, Sendable {
 final class WindowStateManager {
     static let shared = WindowStateManager()
     private let logger = Logger(
-        subsystem: "com.shiroemons.Sobani",
+        subsystem: AppConstants.loggerSubsystem,
         category: "WindowStateManager"
     )
     private let baseDirectory: URL?

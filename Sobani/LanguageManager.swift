@@ -26,7 +26,7 @@ enum Language: String, CaseIterable, Sendable {
 
 @MainActor
 final class LanguageManager {
-    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "LanguageManager")
+    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LanguageManager")
     static let shared = LanguageManager()
 
     private static let userDefaultsKey = "AppLanguage"

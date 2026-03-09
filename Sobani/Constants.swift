@@ -37,6 +37,10 @@ struct ScreenInfo: Sendable {
 }
 
 enum AppConstants {
+    // App Identity
+    static let appName = "Sobani"
+    static let loggerSubsystem = "com.shiroemons.Sobani"
+
     static let defaultImageName = "default"
 
     // Window
@@ -124,7 +128,7 @@ enum AppSupportDirectory {
             appDir = base
         } else {
             guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-            appDir = appSupport.appendingPathComponent("Sobani")
+            appDir = appSupport.appendingPathComponent(AppConstants.appName)
         }
         if !fm.fileExists(atPath: appDir.path) {
             do {

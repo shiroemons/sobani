@@ -91,6 +91,16 @@ import os.log
         #expect(AppConstants.layoutDialogFieldHeight > 0)
     }
 
+    /// appNameが正しい値であることを検証
+    @Test func testAppName() {
+        #expect(AppConstants.appName == "Sobani")
+    }
+
+    /// loggerSubsystemが正しい値であることを検証
+    @Test func testLoggerSubsystem() {
+        #expect(AppConstants.loggerSubsystem == "com.shiroemons.Sobani")
+    }
+
     // MARK: - AppSupportDirectory テスト
 
     /// カスタムbaseDirectoryが指定された場合にそのパスが返されることを検証
@@ -99,7 +109,7 @@ import os.log
             .appendingPathComponent("sobani_test_\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "Test")
+        let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: tempDir, logger: logger)
         #expect(result?.path == tempDir.path)
     }
@@ -112,7 +122,7 @@ import os.log
 
         #expect(!FileManager.default.fileExists(atPath: tempDir.path))
 
-        let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "Test")
+        let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: tempDir, logger: logger)
 
         #expect(result != nil)
@@ -126,14 +136,14 @@ import os.log
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "Test")
+        let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: tempDir, logger: logger)
         #expect(result?.path == tempDir.path)
     }
 
     /// nil baseDirectoryでデフォルトパスが使用されることを検証
     @Test func appSupportDirectory_NilBaseDirectoryUsesDefault() {
-        let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "Test")
+        let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: nil, logger: logger)
         #expect(result != nil)
         if let path = result?.path {

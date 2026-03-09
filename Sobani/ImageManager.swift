@@ -6,7 +6,7 @@ import os.log
 @MainActor
 final class ImageManager {
     private let logger = Logger(
-        subsystem: "com.shiroemons.Sobani",
+        subsystem: AppConstants.loggerSubsystem,
         category: "ImageManager"
     )
     static let shared = ImageManager()
