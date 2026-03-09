@@ -57,6 +57,7 @@
 		F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ZO000003000000000001 /* ZOrderUtilsTests.swift */; };
 		F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CW000001000000000001 /* CharacterWindowTests.swift */; };
 		F0AD000002000000000001 /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AD000001000000000001 /* AppDelegateTests.swift */; };
+		F0AS000002000000000001 /* AppDelegateServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AS000001000000000001 /* AppDelegateServicesTests.swift */; };
 		F0MS000002000000000001 /* MenuStateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MS000001000000000001 /* MenuStateUtils.swift */; };
 		F0AT000002000000000001 /* AppDelegate+TestableLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */; };
 		F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SV000001000000000001 /* AppDelegate+Services.swift */; };
@@ -132,6 +133,7 @@
 		F0ZO000003000000000001 /* ZOrderUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZOrderUtilsTests.swift; sourceTree = "<group>"; };
 		F0CW000001000000000001 /* CharacterWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterWindowTests.swift; sourceTree = "<group>"; };
 		F0AD000001000000000001 /* AppDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateTests.swift; sourceTree = "<group>"; };
+		F0AS000001000000000001 /* AppDelegateServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateServicesTests.swift; sourceTree = "<group>"; };
 		F0MS000001000000000001 /* MenuStateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStateUtils.swift; sourceTree = "<group>"; };
 		F0MS000003000000000001 /* MenuStateUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStateUtilsTests.swift; sourceTree = "<group>"; };
 		F0SR000001000000000001 /* ScreenRestorationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtils.swift; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 				F0ZO000003000000000001 /* ZOrderUtilsTests.swift */,
 				F0CW000001000000000001 /* CharacterWindowTests.swift */,
 				F0AD000001000000000001 /* AppDelegateTests.swift */,
+				F0AS000001000000000001 /* AppDelegateServicesTests.swift */,
 				F0MS000003000000000001 /* MenuStateUtilsTests.swift */,
 				F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */,
 				F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */,
@@ -425,6 +428,7 @@
 				F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */,
 				F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */,
 				F0AD000002000000000001 /* AppDelegateTests.swift in Sources */,
+				F0AS000002000000000001 /* AppDelegateServicesTests.swift in Sources */,
 				F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */,
 				F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */,
 				F0OW000002000000000001 /* OnboardingWindowControllerTests.swift in Sources */,
