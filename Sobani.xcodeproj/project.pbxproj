@@ -59,6 +59,7 @@
 		F0AD000002000000000001 /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AD000001000000000001 /* AppDelegateTests.swift */; };
 		F0MS000002000000000001 /* MenuStateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MS000001000000000001 /* MenuStateUtils.swift */; };
 		F0AT000002000000000001 /* AppDelegate+TestableLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */; };
+		F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SV000001000000000001 /* AppDelegate+Services.swift */; };
 		F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MS000003000000000001 /* MenuStateUtilsTests.swift */; };
 		F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000001000000000001 /* ScreenRestorationUtils.swift */; };
 		F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */; };
@@ -97,6 +98,7 @@
 		FF000002 /* ScreenRestorationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManager.swift; sourceTree = "<group>"; };
 		FF000004 /* ScreenRestorationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationManagerTests.swift; sourceTree = "<group>"; };
 		FF000006 /* AppDelegate+ScreenRestoration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+ScreenRestoration.swift"; sourceTree = "<group>"; };
+		F0NF000001000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		GG000002 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		KK000002 /* WakeRestorationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContext.swift; sourceTree = "<group>"; };
 		HH000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 		F0MS000003000000000001 /* MenuStateUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStateUtilsTests.swift; sourceTree = "<group>"; };
 		F0SR000001000000000001 /* ScreenRestorationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtils.swift; sourceTree = "<group>"; };
 		F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+TestableLogic.swift"; sourceTree = "<group>"; };
+		F0SV000001000000000001 /* AppDelegate+Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Services.swift"; sourceTree = "<group>"; };
 		F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtilsTests.swift; sourceTree = "<group>"; };
 		F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -193,10 +196,12 @@
 				F0MS000001000000000001 /* MenuStateUtils.swift */,
 				F0SR000001000000000001 /* ScreenRestorationUtils.swift */,
 				F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */,
+				F0SV000001000000000001 /* AppDelegate+Services.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
+				F0NF000001000000000001 /* Info.plist */,
 				JJ000004 /* InfoPlist.strings */,
 			);
 			path = Sobani;
@@ -387,6 +392,7 @@
 				F0MS000002000000000001 /* MenuStateUtils.swift in Sources */,
 				F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */,
 				F0AT000002000000000001 /* AppDelegate+TestableLogic.swift in Sources */,
+				F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -510,11 +516,8 @@
 				DEVELOPMENT_TEAM = U4Y9MKZ4GZ;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 0;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 shiroemons";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sobani/Info.plist;
 				MARKETING_VERSION = 202603.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.Sobani;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -533,11 +536,8 @@
 				DEVELOPMENT_TEAM = U4Y9MKZ4GZ;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 0;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 shiroemons";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sobani/Info.plist;
 				MARKETING_VERSION = 202603.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.Sobani;
 				PRODUCT_NAME = "$(TARGET_NAME)";
