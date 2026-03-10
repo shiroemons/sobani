@@ -188,6 +188,7 @@ classDiagram
 | `floatingMenuDidRequestFlip(_:)` | 反転ボタンの押下を通知 |
 | `floatingMenuDidRequestRotation(_:)` | 回転調整パネルの表示を要求 |
 | `floatingMenuDidRequestCrop(_:)` | 切り取りモードの開始を要求 |
+| `floatingMenuDidSelectResetDisplay(_:)` | 表示をリセット（回転・反転・透明度・切り取りを初期状態に戻す） |
 | `floatingMenuDidRequestClose(_:)` | ウィンドウの閉じるを要求 |
 
 ### UpdateManagerDelegate
