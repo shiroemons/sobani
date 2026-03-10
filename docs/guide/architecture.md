@@ -76,6 +76,20 @@ classDiagram
     class UnconstrainedWindow {
         +constrainFrameRect()
     }
+    class FloatingMenuController {
+        +delegate: FloatingMenuDelegate
+        +show(near:)
+        +dismiss()
+    }
+    class CropModeController {
+        +startCrop()
+        +commitCrop()
+        +cancelCrop()
+    }
+    class CropOverlayView {
+        +cropRect: CropRect
+        +handles: [DragHandle]
+    }
 
     AppDelegate --> CharacterWindow : manages
     AppDelegate ..|> CharacterWindowDelegate
@@ -93,6 +107,10 @@ classDiagram
     AppDelegate --> LaunchAtLoginManager : uses
     AppDelegate --> LayoutPresetManager : uses
     CharacterWindow --> UnconstrainedWindow : uses
+    CharacterWindow --> FloatingMenuController : uses
+    CharacterWindow --> CropModeController : uses
+    CharacterWindow ..|> FloatingMenuDelegate
+    CropModeController --> CropOverlayView : manages
 ```
 
 `AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
@@ -117,6 +135,9 @@ classDiagram
 | `Constants.swift` | `AppConstants`、`GeometryUtils`、`MenuItemTag`、`L()` ヘルパー |
 | `LayoutPresetManager.swift` | レイアウトプリセットの保存・読み込み・削除を管理するシングルトン。`layouts/` ディレクトリにプリセットごとのJSONファイルを保存 |
 | `UnconstrainedWindow.swift` | `NSWindow` サブクラス。`constrainFrameRect` をオーバーライドし画面端制約を無効化。透過PNG画像のメニューバー越え配置を実現 |
+| `FloatingMenuController.swift` | ダブルクリックで表示するSFシンボルアイコンのフローティングツールバー（NSPanel） |
+| `CropModeController.swift` | 切り取りモードのライフサイクル管理（オーバーレイ表示、確定/リセット/キャンセルツールバー、ESCキー対応） |
+| `CropOverlayView.swift` | CropRect構造体（正規化0-1座標）と8つのドラッグハンドル付き切り取りオーバーレイビュー |
 | `DragDropUtils.swift` | ドラッグ＆ドロップ操作のユーティリティ。ペーストボードから対応画像URLを抽出 |
 | `WakeRestorationContext.swift` | スリープ/復帰時の復元コンテキスト |
 
@@ -157,6 +178,17 @@ classDiagram
 | `rotationPanelDidReset(_:)` | 回転のリセットを通知 |
 | `adjustmentPanel(_:didChangeOpacity:)` | 透明度スライダーの変更を通知 |
 | `adjustmentPanelDidResetOpacity(_:)` | 透明度のリセットを通知 |
+
+### FloatingMenuDelegate
+
+`FloatingMenuController` から `CharacterWindow` へのボタンアクション通知を担うプロトコルです。`CharacterWindow` が準拠します。
+
+| メソッド | 用途 |
+|---|---|
+| `floatingMenuDidRequestFlip(_:)` | 反転ボタンの押下を通知 |
+| `floatingMenuDidRequestRotation(_:)` | 回転調整パネルの表示を要求 |
+| `floatingMenuDidRequestCrop(_:)` | 切り取りモードの開始を要求 |
+| `floatingMenuDidRequestClose(_:)` | ウィンドウの閉じるを要求 |
 
 ### UpdateManagerDelegate
 
@@ -212,11 +244,19 @@ flowchart TD
     RC["RotatableContainer<br/>(NSView)<br/>回転時のバウンディングボックス調整"]
     DIV["DraggableImageView<br/>(NSImageView)<br/>ドラッグ・リサイズ・反転・回転・透明度"]
     AP["AdjustmentPanelController<br/>(NSObject, NSPanel を保持)<br/>回転ダイアル・透明度スライダー"]
+    FM["FloatingMenuController<br/>(NSObject, NSPanel を保持)<br/>ダブルクリックで表示するツールバー"]
+    CMC["CropModeController<br/>(NSObject)<br/>切り取りモード管理・ツールバー"]
+    COV["CropOverlayView<br/>(NSView)<br/>8つのドラッグハンドル付き切り取り領域"]
 
     CW --> |contentView| RC
     RC --> |subview| DIV
+    RC -.-> |subview（切り取り時）| COV
     CW -.-> |opens| AP
     AP -.-> |AdjustmentPanelDelegate| CW
+    CW -.-> |opens（ダブルクリック）| FM
+    FM -.-> |FloatingMenuDelegate| CW
+    CW -.-> |opens（切り取り時）| CMC
+    CMC --> |manages| COV
 ```
 
 `CharacterWindow` は `NSObject` のサブクラスで、`NSWindow` インスタンスをプロパティとして保持します。ウィンドウはボーダーレスかつ透明で、全 Space に表示される常に最前面のウィンドウです。`contentView` として `RotatableContainer` を設定し、その子ビューとして `DraggableImageView` が配置されます。

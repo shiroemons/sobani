@@ -48,6 +48,9 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `rotationAngle` | `CGFloat` | 回転角度（0–360°） | `0` |
 | `opacityLevel` | `CGFloat` | 透明度（0.1–1.0） | `1.0` |
 | `windowId` | `Int` | ウィンドウ識別子（旧バージョン互換用デフォルト 0） | `0` |
+| `cropRect` | `CropRect?` | 切り取り領域（正規化座標、x/y/width/height各0.0〜1.0）、nilは切り取りなし | `nil` |
+
+> **注**: `cropRect` は `decodeIfPresent` を使用してデコードされるため、cropRectフィールドが無い既存JSONも正常に読み込み可能です（後方互換性）。
 
 > **注**: Z-order はウィンドウ状態の配列順で表現されます（構造体のフィールドではありません）。保存時は背面→前面の順で格納され、復元時に逆順にすることで正しい重なり順を再現します。
 
@@ -136,6 +139,8 @@ flowchart LR
     DFLT --> DF
     URL -->|setCustomDefault| DFLT
 ```
+
+> **注**: 切り取り（crop）は非破壊的です。元画像は `images/` にそのまま保持され、`cropRect` に基づいて表示領域のみが変更されます。
 
 #### 主な操作
 
