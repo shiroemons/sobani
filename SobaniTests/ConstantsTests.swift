@@ -54,7 +54,7 @@ import os.log
 
     /// MenuItemTagのケース数が想定通りであることを検証
     @Test func menuItemTag_CaseCount() {
-        #expect(MenuItemTag.allCases.count == 29)
+        #expect(MenuItemTag.allCases.count == 31)
     }
 
     // MARK: - Screen Restoration / Wake Retry 定数検証

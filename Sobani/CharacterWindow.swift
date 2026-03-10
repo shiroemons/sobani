@@ -7,7 +7,13 @@ import UniformTypeIdentifiers
 // Always delegate hit testing to imageView so the entire window area remains interactive.
 private final class RotatableContainer: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? {
-        return subviews.first ?? super.hitTest(point)
+        // Standard hit test checks subviews in reverse order (front to back),
+        // so overlay/toolbar views receive events when present.
+        if let hit = super.hitTest(point), hit !== self {
+            return hit
+        }
+        // Fall back to imageView so the entire window area remains interactive.
+        return subviews.first
     }
 }
 
@@ -23,6 +29,8 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private var adjustmentPanelController: AdjustmentPanelController?
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
+    private var floatingMenuController: FloatingMenuController?
+    private var cropModeController: CropModeController?
     nonisolated(unsafe) private var windowMoveObserver: NSObjectProtocol?
 
     init(image: NSImage) {
@@ -64,6 +72,11 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.onMouseDown = { [weak self] in
             guard let self = self else { return }
             self.delegate?.characterWindowDidBecomeActive(self)
+        }
+
+        imageView.onDoubleClick = { [weak self] in
+            guard let self = self else { return }
+            self.showFloatingMenu(at: NSEvent.mouseLocation)
         }
 
         imageView.onRotationChanged = { [weak self] in
@@ -176,13 +189,9 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.onSizeChanged = nil
     }
 
-    @objc func resetRotation() {
-        applyRotation(0)
-    }
+    @objc func resetRotation() { applyRotation(0) }
 
-    @objc func resetOpacity() {
-        applyOpacity(1.0)
-    }
+    @objc func resetOpacity() { applyOpacity(1.0) }
 
     func applyOpacity(_ opacity: CGFloat) {
         let clamped = min(max(opacity, AppConstants.opacityMin), AppConstants.opacityMax)
@@ -281,6 +290,62 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func quitApp() {
         (NSApp.delegate as? AppDelegate)?.quitApp()
+    }
+}
+
+// MARK: - Floating Menu
+
+extension CharacterWindow: FloatingMenuDelegate {
+    func showFloatingMenu(at screenPoint: NSPoint) {
+        // Don't show if crop mode is active or adjustment panel is open
+        guard cropModeController?.isActive != true else { return }
+
+        if floatingMenuController == nil {
+            floatingMenuController = FloatingMenuController()
+            floatingMenuController?.delegate = self
+        }
+        // Convert screen point to window-local point
+        let windowPoint = window.convertPoint(fromScreen: screenPoint)
+        floatingMenuController?.show(at: windowPoint, in: window)
+    }
+
+    func floatingMenuDidSelectCrop(_ menu: FloatingMenuController) { enterCropMode() }
+    func floatingMenuDidSelectFlip(_ menu: FloatingMenuController) { toggleFlip() }
+    func floatingMenuDidSelectAdjust(_ menu: FloatingMenuController) { showAdjustmentPanel() }
+    func floatingMenuDidSelectRemoveBackground(_ menu: FloatingMenuController) { removeBackground() }
+    func floatingMenuDidSelectClose(_ menu: FloatingMenuController) { closeThisWindow() }
+}
+
+// MARK: - Crop Mode
+
+extension CharacterWindow {
+    func enterCropMode() {
+        guard cropModeController?.isActive != true else { return }
+        let controller = CropModeController()
+        controller.onCropConfirmed = { [weak self] cropRect in
+            guard let self = self else { return }
+            self.imageView.isCropModeActive = false
+            self.imageView.cropRect = cropRect
+        }
+        controller.onCropReset = { [weak self] in
+            guard let self = self else { return }
+            self.imageView.isCropModeActive = false
+            self.imageView.resetCrop()
+        }
+        controller.onCropCancelled = { [weak self] in
+            self?.imageView.isCropModeActive = false
+        }
+        imageView.isCropModeActive = true
+        controller.enterCropMode(in: window, imageView: imageView, currentCropRect: imageView.cropRect)
+        cropModeController = controller
+    }
+
+    @objc func enterCropModeAction() {
+        enterCropMode()
+    }
+
+    @objc func resetCrop() {
+        imageView.resetCrop()
     }
 }
 
@@ -562,6 +627,23 @@ extension CharacterWindow {
 
         otherSubmenu.addItem(NSMenuItem.separator())
 
+        let cropItem = NSMenuItem(
+            title: L("menu.crop"), action: #selector(enterCropModeAction), keyEquivalent: ""
+        )
+        cropItem.tag = MenuItemTag.cropImage.rawValue
+        cropItem.target = self
+        otherSubmenu.addItem(cropItem)
+
+        let resetCropItem = NSMenuItem(
+            title: L("menu.reset_crop"), action: #selector(resetCrop), keyEquivalent: ""
+        )
+        resetCropItem.tag = MenuItemTag.resetCrop.rawValue
+        resetCropItem.target = self
+        resetCropItem.isEnabled = imageView.cropRect != nil
+        otherSubmenu.addItem(resetCropItem)
+
+        otherSubmenu.addItem(NSMenuItem.separator())
+
         let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
         let deleteSubmenu = NSMenu()
         deleteSubmenu.delegate = self
@@ -578,6 +660,7 @@ extension CharacterWindow {
 
     @objc func resetDisplay() {
         imageView.isFlippedHorizontally = false
+        imageView.resetCrop()
         imageView.rotationAngle = 0
         imageView.opacityLevel = 1.0
         adjustmentPanelController?.updateAngle(0)
@@ -717,13 +800,8 @@ extension CharacterWindow {
 // MARK: - CharacterWindow + Property Setters
 
 extension CharacterWindow {
-    func setDisplayName(_ name: String) {
-        displayName = name
-    }
-
-    func setWindowId(_ newId: Int) {
-        windowId = newId
-    }
+    func setDisplayName(_ name: String) { displayName = name }
+    func setWindowId(_ newId: Int) { windowId = newId }
 }
 
 // MARK: - CharacterWindow + Background Removal
@@ -771,21 +849,18 @@ extension CharacterWindow {
         if let contentView = window.contentView {
             spinner.frame.origin = NSPoint(
                 x: (contentView.bounds.width - spinner.frame.width) / 2,
-                y: (contentView.bounds.height - spinner.frame.height) / 2
-            )
+                y: (contentView.bounds.height - spinner.frame.height) / 2)
             spinner.autoresizingMask = [.minXMargin, .maxXMargin, .minYMargin, .maxYMargin]
             contentView.addSubview(spinner)
             spinner.startAnimation(nil)
         }
         spinnerOverlay = spinner
     }
-
     private func hideSpinner() {
         spinnerOverlay?.stopAnimation(nil)
         spinnerOverlay?.removeFromSuperview()
         spinnerOverlay = nil
     }
-
     func imageHasAlpha() -> Bool {
         guard let image = imageView.image,
               let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {

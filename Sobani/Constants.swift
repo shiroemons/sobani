@@ -94,6 +94,17 @@ enum AppConstants {
     static let opacityMin: CGFloat = 0.1
     static let opacityMax: CGFloat = 1.0
 
+    // Crop
+    static let cropHandleSize: CGFloat = 8
+    static let cropMinProportion: CGFloat = 0.1
+    static let cropOverlayAlpha: CGFloat = 0.5
+
+    // Floating Menu
+    static let floatingMenuButtonSize: CGFloat = 32
+    static let floatingMenuPadding: CGFloat = 8
+    static let floatingMenuGap: CGFloat = 4
+    static let floatingMenuCornerRadius: CGFloat = 10
+
     // Onboarding
     enum Onboarding {
         static let width: CGFloat = 520
@@ -199,6 +210,8 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case settingsSubmenu = 1028
     case bulkResetSubmenu = 1029
     case renameLayout = 1030
+    case cropImage = 1031
+    case resetCrop = 1032
 }
 
 @MainActor

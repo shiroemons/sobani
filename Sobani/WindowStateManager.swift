@@ -13,9 +13,11 @@ struct WindowState: Codable, Equatable, Sendable {
     let rotationAngle: CGFloat
     var opacityLevel: CGFloat
     var windowId: Int
+    var cropRect: CropRect?
 
     enum CodingKeys: String, CodingKey {
         case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle, opacityLevel, windowId
+        case cropRect
     }
 
     init(
@@ -27,7 +29,8 @@ struct WindowState: Codable, Equatable, Sendable {
         isFlippedHorizontally: Bool,
         rotationAngle: CGFloat = 0,
         opacityLevel: CGFloat = 1.0,
-        windowId: Int = 0
+        windowId: Int = 0,
+        cropRect: CropRect? = nil
     ) {
         self.imageName = imageName
         self.originX = originX
@@ -38,6 +41,7 @@ struct WindowState: Codable, Equatable, Sendable {
         self.rotationAngle = rotationAngle
         self.opacityLevel = opacityLevel
         self.windowId = windowId
+        self.cropRect = cropRect
     }
 
     init(from decoder: Decoder) throws {
@@ -51,6 +55,7 @@ struct WindowState: Codable, Equatable, Sendable {
         rotationAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
         opacityLevel = try container.decodeIfPresent(CGFloat.self, forKey: .opacityLevel) ?? 1.0
         windowId = try container.decodeIfPresent(Int.self, forKey: .windowId) ?? 0
+        cropRect = try container.decodeIfPresent(CropRect.self, forKey: .cropRect)
     }
 
     func isPositionVisible(on screens: [ScreenInfo]) -> Bool {
@@ -81,7 +86,8 @@ struct WindowState: Codable, Equatable, Sendable {
             isFlippedHorizontally: isFlippedHorizontally,
             rotationAngle: rotationAngle,
             opacityLevel: opacityLevel,
-            windowId: windowId
+            windowId: windowId,
+            cropRect: cropRect
         )
     }
 }
@@ -173,7 +179,8 @@ final class WindowStateManager {
             isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally,
             rotationAngle: charWindow.imageView.rotationAngle,
             opacityLevel: charWindow.imageView.opacityLevel,
-            windowId: charWindow.windowId
+            windowId: charWindow.windowId,
+            cropRect: charWindow.imageView.cropRect
         )
     }
 
@@ -204,6 +211,7 @@ extension CharacterWindow {
         imageView.isFlippedHorizontally = adjusted.isFlippedHorizontally
         imageView.rotationAngle = adjusted.rotationAngle
         imageView.opacityLevel = adjusted.opacityLevel
+        imageView.cropRect = adjusted.cropRect
 
         // AppKit resets the backing layer's affineTransform during
         // the initial window display cycle. Defer re-application

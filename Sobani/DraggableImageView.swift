@@ -32,6 +32,12 @@ final class DraggableImageView: NSImageView {
     var onDragEntered: (() -> Void)?
     var onDragExited: (() -> Void)?
     var onSizeChanged: (() -> Void)?
+    var onDoubleClick: (() -> Void)?
+    var cropRect: CropRect? {
+        didSet { applyCrop() }
+    }
+    private var originalImage: NSImage?
+    var isCropModeActive: Bool = false
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -48,12 +54,18 @@ final class DraggableImageView: NSImageView {
     }
 
     override func mouseDown(with event: NSEvent) {
+        if event.clickCount == 2 {
+            onDoubleClick?()
+            return
+        }
+        if isCropModeActive { return }
         onMouseDown?()
         isDraggingAll = event.modifierFlags.contains(.option)
         dragStartLocation = NSEvent.mouseLocation
     }
 
     override func mouseDragged(with event: NSEvent) {
+        if isCropModeActive { return }
         let currentLocation = NSEvent.mouseLocation
         let deltaX = currentLocation.x - dragStartLocation.x
         let deltaY = currentLocation.y - dragStartLocation.y
@@ -68,6 +80,7 @@ final class DraggableImageView: NSImageView {
     }
 
     override func scrollWheel(with event: NSEvent) {
+        if isCropModeActive { return }
         let delta = event.scrollingDeltaY
         if abs(delta) < AppConstants.floatingPointTolerance { return }
         if let handler = scrollRotationHandler {
@@ -109,6 +122,51 @@ final class DraggableImageView: NSImageView {
             boundsHeight: bounds.height
         )
         layer?.setAffineTransform(transform)
+    }
+
+    // MARK: - Crop Support
+
+    private func applyCrop() {
+        guard let crop = cropRect, let original = originalImage ?? image else {
+            // If cropRect is nil, restore original image
+            if let original = originalImage {
+                image = original
+                originalImage = nil
+            }
+            return
+        }
+        // Save original if not already saved
+        if originalImage == nil {
+            originalImage = image
+        }
+        guard let cgImage = original.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
+        let imgWidth = CGFloat(cgImage.width)
+        let imgHeight = CGFloat(cgImage.height)
+        let cropX = crop.x * imgWidth
+        let cropY = crop.y * imgHeight
+        let cropW = crop.width * imgWidth
+        let cropH = crop.height * imgHeight
+        let cropCGRect = CGRect(x: cropX, y: imgHeight - cropY - cropH, width: cropW, height: cropH)
+        guard cropW > 0, cropH > 0, let croppedCG = cgImage.cropping(to: cropCGRect) else { return }
+        let croppedImage = NSImage(cgImage: croppedCG, size: NSSize(width: cropW, height: cropH))
+        image = croppedImage
+        // Update aspect ratio
+        if cropH > 0 {
+            aspectRatio = cropW / cropH
+        }
+    }
+
+    func setOriginalImage(_ newImage: NSImage) {
+        originalImage = newImage
+        if cropRect != nil {
+            applyCrop()
+        } else {
+            image = newImage
+        }
+    }
+
+    func resetCrop() {
+        cropRect = nil
     }
 
     // MARK: - Testable Static Methods

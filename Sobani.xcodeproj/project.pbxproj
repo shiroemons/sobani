@@ -65,6 +65,11 @@
 		F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000001000000000001 /* ScreenRestorationUtils.swift */; };
 		F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */; };
 		F0OW000002000000000001 /* OnboardingWindowControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */; };
+		C0F10002AAAA000000000001 /* FloatingMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000001 /* FloatingMenuController.swift */; };
+		C0F10002AAAA000000000002 /* CropOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000002 /* CropOverlayView.swift */; };
+		C0F10002AAAA000000000003 /* CropModeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000003 /* CropModeController.swift */; };
+		C0F10002AAAA000000000004 /* FloatingMenuControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000004 /* FloatingMenuControllerTests.swift */; };
+		C0F10002AAAA000000000005 /* CropRectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000005 /* CropRectTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +146,11 @@
 		F0SV000001000000000001 /* AppDelegate+Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Services.swift"; sourceTree = "<group>"; };
 		F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtilsTests.swift; sourceTree = "<group>"; };
 		F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowControllerTests.swift; sourceTree = "<group>"; };
+		C0F10001AAAA000000000001 /* FloatingMenuController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingMenuController.swift; sourceTree = "<group>"; };
+		C0F10001AAAA000000000002 /* CropOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropOverlayView.swift; sourceTree = "<group>"; };
+		C0F10001AAAA000000000003 /* CropModeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropModeController.swift; sourceTree = "<group>"; };
+		C0F10001AAAA000000000004 /* FloatingMenuControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingMenuControllerTests.swift; sourceTree = "<group>"; };
+		C0F10001AAAA000000000005 /* CropRectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropRectTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -199,6 +209,9 @@
 				F0SR000001000000000001 /* ScreenRestorationUtils.swift */,
 				F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */,
 				F0SV000001000000000001 /* AppDelegate+Services.swift */,
+				C0F10001AAAA000000000001 /* FloatingMenuController.swift */,
+				C0F10001AAAA000000000002 /* CropOverlayView.swift */,
+				C0F10001AAAA000000000003 /* CropModeController.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -249,6 +262,8 @@
 				F0MS000003000000000001 /* MenuStateUtilsTests.swift */,
 				F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */,
 				F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */,
+				C0F10001AAAA000000000004 /* FloatingMenuControllerTests.swift */,
+				C0F10001AAAA000000000005 /* CropRectTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -396,6 +411,9 @@
 				F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */,
 				F0AT000002000000000001 /* AppDelegate+TestableLogic.swift in Sources */,
 				F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */,
+				C0F10002AAAA000000000001 /* FloatingMenuController.swift in Sources */,
+				C0F10002AAAA000000000002 /* CropOverlayView.swift in Sources */,
+				C0F10002AAAA000000000003 /* CropModeController.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -432,6 +450,8 @@
 				F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */,
 				F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */,
 				F0OW000002000000000001 /* OnboardingWindowControllerTests.swift in Sources */,
+				C0F10002AAAA000000000004 /* FloatingMenuControllerTests.swift in Sources */,
+				C0F10002AAAA000000000005 /* CropRectTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
