@@ -26,6 +26,7 @@ final class FloatingMenuController {
     private static let aboveOffset: CGFloat = 8
 
     weak var delegate: FloatingMenuDelegate?
+    var isRemoveBackgroundEnabled: Bool = true
 
     private var panel: NSPanel?
     nonisolated(unsafe) private var globalMonitor: Any?
@@ -78,6 +79,7 @@ final class FloatingMenuController {
         newPanel.backgroundColor = .clear
         newPanel.hidesOnDeactivate = false
         newPanel.isReleasedWhenClosed = false
+        newPanel.allowsToolTipsWhenApplicationIsInactive = true
         newPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
         let contentView = NSVisualEffectView(frame: panelRect)
@@ -132,7 +134,9 @@ final class FloatingMenuController {
             ButtonSpec(symbolName: "slider.horizontal.3", tooltip: L("floating_menu.adjust"), action: #selector(adjustTapped))
         ]
 
+        var removeBackgroundIndex: Int?
         if #available(macOS 14.0, *) {
+            removeBackgroundIndex = buttons.count
             buttons.append(ButtonSpec(
                 symbolName: "eraser.fill", tooltip: L("floating_menu.remove_background"), action: #selector(removeBackgroundTapped)
             ))
@@ -157,6 +161,10 @@ final class FloatingMenuController {
             if let image = NSImage(systemSymbolName: spec.symbolName, accessibilityDescription: spec.tooltip) {
                 let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .medium)
                 button.image = image.withSymbolConfiguration(config)
+            }
+
+            if index == removeBackgroundIndex {
+                button.isEnabled = isRemoveBackgroundEnabled
             }
 
             // Hover effect via tracking area

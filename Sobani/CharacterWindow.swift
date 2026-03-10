@@ -304,6 +304,7 @@ extension CharacterWindow: FloatingMenuDelegate {
             floatingMenuController = FloatingMenuController()
             floatingMenuController?.delegate = self
         }
+        floatingMenuController?.isRemoveBackgroundEnabled = !isRemovingBackground && !imageHasAlpha()
         // Convert screen point to window-local point
         let windowPoint = window.convertPoint(fromScreen: screenPoint)
         floatingMenuController?.show(at: windowPoint, in: window)
