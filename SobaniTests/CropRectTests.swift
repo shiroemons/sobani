@@ -3,8 +3,7 @@ import Foundation
 import Testing
 @testable import Sobani
 
-/// CropRect構造体、CropOverlayView初期状態、CropModeController、
-/// およびWindowStateとのCodable互換性を検証するテスト
+/// CropRect構造体およびWindowStateとのCodable互換性を検証するテスト
 @Suite @MainActor struct CropRectTests {
 
     // MARK: - CropRect基本テスト
@@ -152,34 +151,6 @@ import Testing
         #expect(abs(decodedCrop.y - 0.25) < AppConstants.floatingPointTolerance)
     }
 
-    // MARK: - CropOverlayView初期状態テスト
-
-    /// CropOverlayViewのデフォルトcropRectがfullであることを検証
-    @Test func cropOverlayView_defaultCropRect() {
-        let overlay = CropOverlayView(frame: NSRect(x: 0, y: 0, width: 200, height: 200))
-        #expect(overlay.cropRect == CropRect.full)
-    }
-
-    /// CropOverlayViewにカスタムcropRectを設定できることを検証
-    @Test func cropOverlayView_customCropRect() {
-        let overlay = CropOverlayView(frame: NSRect(x: 0, y: 0, width: 200, height: 200))
-        let crop = CropRect(x: 0.1, y: 0.2, width: 0.5, height: 0.5)
-        overlay.cropRect = crop
-        #expect(overlay.cropRect == crop)
-    }
-
-    /// CropOverlayViewのcropRectを更新できることを検証
-    @Test func cropOverlayView_cropRectCanBeUpdated() {
-        let overlay = CropOverlayView(frame: NSRect(x: 0, y: 0, width: 300, height: 300))
-        let first = CropRect(x: 0.1, y: 0.1, width: 0.5, height: 0.5)
-        overlay.cropRect = first
-        #expect(overlay.cropRect == first)
-
-        let second = CropRect(x: 0.2, y: 0.3, width: 0.4, height: 0.3)
-        overlay.cropRect = second
-        #expect(overlay.cropRect == second)
-    }
-
     // MARK: - AppConstants Crop/FloatingMenu定数テスト
 
     /// Crop関連定数が正しい値であることを検証
@@ -235,51 +206,4 @@ import Testing
         #expect(resetCropCount == 1)
     }
 
-    // MARK: - CropModeControllerテスト
-
-    /// CropModeControllerの初期状態でisActiveがfalseであることを検証
-    @Test func cropModeController_initialState() {
-        let controller = CropModeController()
-        #expect(!controller.isActive)
-    }
-
-    /// enterCropMode前にexitCropModeを呼んでもクラッシュしないことを検証
-    @Test func cropModeController_exitWithoutEnter() {
-        let controller = CropModeController()
-        controller.exitCropMode()
-        #expect(!controller.isActive)
-    }
-
-    /// exitCropModeを複数回呼んでもクラッシュしないことを検証
-    @Test func cropModeController_multipleExits() {
-        let controller = CropModeController()
-        controller.exitCropMode()
-        controller.exitCropMode()
-        controller.exitCropMode()
-        #expect(!controller.isActive)
-    }
-
-    /// CropModeControllerのコールバックが初期状態でnilであることを検証
-    @Test func cropModeController_callbacksInitiallyNil() {
-        let controller = CropModeController()
-        #expect(controller.onCropConfirmed == nil)
-        #expect(controller.onCropCancelled == nil)
-    }
-
-    /// CropModeControllerにコールバックを設定できることを検証
-    @Test func cropModeController_callbacksCanBeSet() {
-        let controller = CropModeController()
-        var confirmCalled = false
-        var cancelCalled = false
-
-        controller.onCropConfirmed = { _ in confirmCalled = true }
-        controller.onCropCancelled = { cancelCalled = true }
-
-        #expect(controller.onCropConfirmed != nil)
-        #expect(controller.onCropCancelled != nil)
-
-        // Prevent unused variable warnings
-        _ = confirmCalled
-        _ = cancelCalled
-    }
 }

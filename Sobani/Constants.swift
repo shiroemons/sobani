@@ -99,6 +99,23 @@ enum AppConstants {
     static let cropMinProportion: CGFloat = 0.1
     static let cropOverlayAlpha: CGFloat = 0.5
 
+    // Crop Editor
+    static let cropEditorPanelWidth: CGFloat = 480
+    static let cropEditorPanelHeight: CGFloat = 640
+    static let cropEditorTopBarHeight: CGFloat = 44
+    static let cropEditorToolbarHeight: CGFloat = 120
+    static let cropEditorCanvasPadding: CGFloat = 20
+    static let cropEditorHandleLength: CGFloat = 20
+    static let cropEditorHandleThickness: CGFloat = 3
+    static let cropEditorGridLineWidth: CGFloat = 0.5
+    static let cropEditorOverlayAlpha: CGFloat = 0.6
+
+    // Straighten Slider
+    static let straightenMinAngle: CGFloat = -45
+    static let straightenMaxAngle: CGFloat = 45
+    static let straightenMajorTickInterval: CGFloat = 15
+    static let straightenMinorTickInterval: CGFloat = 5
+
     // Floating Menu
     static let floatingMenuButtonSize: CGFloat = 32
     static let floatingMenuPadding: CGFloat = 8

@@ -30,7 +30,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
     private var floatingMenuController: FloatingMenuController?
-    private var cropModeController: CropModeController?
+    private var cropEditorController: CropEditorPanelController?
     nonisolated(unsafe) private var windowMoveObserver: NSObjectProtocol?
 
     init(image: NSImage) {
@@ -298,7 +298,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 extension CharacterWindow: FloatingMenuDelegate {
     func showFloatingMenu(at screenPoint: NSPoint) {
         // Don't show if crop mode is active or adjustment panel is open
-        guard cropModeController?.isActive != true else { return }
+        guard cropEditorController?.isVisible != true else { return }
 
         if floatingMenuController == nil {
             floatingMenuController = FloatingMenuController()
@@ -320,26 +320,23 @@ extension CharacterWindow: FloatingMenuDelegate {
 
 // MARK: - Crop Mode
 
-extension CharacterWindow {
+extension CharacterWindow: CropEditorPanelDelegate {
     func enterCropMode() {
-        guard cropModeController?.isActive != true else { return }
-        let controller = CropModeController()
-        controller.onCropConfirmed = { [weak self] cropRect in
-            guard let self = self else { return }
-            self.imageView.isCropModeActive = false
-            self.imageView.cropRect = cropRect
+        guard cropEditorController?.isVisible != true else { return }
+        let controller = CropEditorPanelController(cropRect: imageView.cropRect ?? .full)
+        controller.delegate = self
+
+        let sourceImage: NSImage
+        if let original = imageView.originalImage {
+            sourceImage = original
+        } else if let current = imageView.image {
+            sourceImage = current
+        } else {
+            return
         }
-        controller.onCropReset = { [weak self] in
-            guard let self = self else { return }
-            self.imageView.isCropModeActive = false
-            self.imageView.resetCrop()
-        }
-        controller.onCropCancelled = { [weak self] in
-            self?.imageView.isCropModeActive = false
-        }
-        imageView.isCropModeActive = true
-        controller.enterCropMode(in: window, imageView: imageView, currentCropRect: imageView.cropRect)
-        cropModeController = controller
+
+        controller.show(image: sourceImage, near: window)
+        cropEditorController = controller
     }
 
     @objc func enterCropModeAction() {
@@ -349,6 +346,18 @@ extension CharacterWindow {
     @objc func resetCrop() {
         imageView.resetCrop()
     }
+
+    func cropEditorDidConfirm(_ editor: CropEditorPanelController, cropRect: CropRect) {
+        imageView.cropRect = cropRect
+        // Resize imageView frame and window to match the new aspect ratio after crop
+        imageView.frame.size.width = imageView.frame.height * imageView.aspectRatio
+        adjustWindowForRotation()
+        cropEditorController = nil
+    }
+
+    func cropEditorDidCancel(_ editor: CropEditorPanelController) { cropEditorController = nil }
+
+    func cropEditorDidReset(_ editor: CropEditorPanelController) { imageView.resetCrop() }
 }
 
 // MARK: - Adjustment Panel Delegate

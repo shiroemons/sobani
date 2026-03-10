@@ -1,9 +1,12 @@
 import Cocoa
+import os.log
 
 // MARK: - Draggable Image View
 
 @MainActor
 final class DraggableImageView: NSImageView {
+    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "DraggableImageView")
+
     var aspectRatio: CGFloat = 1.0
     let minHeight: CGFloat = AppConstants.minImageHeight
     let maxHeight: CGFloat = AppConstants.maxImageHeight
@@ -36,7 +39,7 @@ final class DraggableImageView: NSImageView {
     var cropRect: CropRect? {
         didSet { applyCrop() }
     }
-    private var originalImage: NSImage?
+    private(set) var originalImage: NSImage?
     var isCropModeActive: Bool = false
 
     override init(frame frameRect: NSRect) {
@@ -132,6 +135,7 @@ final class DraggableImageView: NSImageView {
             if let original = originalImage {
                 image = original
                 originalImage = nil
+                onSizeChanged?()
             }
             return
         }
@@ -139,21 +143,40 @@ final class DraggableImageView: NSImageView {
         if originalImage == nil {
             originalImage = image
         }
-        guard let cgImage = original.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-        let imgWidth = CGFloat(cgImage.width)
-        let imgHeight = CGFloat(cgImage.height)
-        let cropX = crop.x * imgWidth
-        let cropY = crop.y * imgHeight
-        let cropW = crop.width * imgWidth
-        let cropH = crop.height * imgHeight
-        let cropCGRect = CGRect(x: cropX, y: imgHeight - cropY - cropH, width: cropW, height: cropH)
-        guard cropW > 0, cropH > 0, let croppedCG = cgImage.cropping(to: cropCGRect) else { return }
-        let croppedImage = NSImage(cgImage: croppedCG, size: NSSize(width: cropW, height: cropH))
-        image = croppedImage
-        // Update aspect ratio
-        if cropH > 0 {
-            aspectRatio = cropW / cropH
+        guard let cgImage = Self.extractCGImage(from: original) else {
+            logger.error("Failed to get CGImage from original image for crop")
+            return
         }
+        guard let croppedCG = CropImageProcessor.applyFullCrop(to: cgImage, cropRect: crop) else {
+            logger.error("CropImageProcessor.applyFullCrop returned nil")
+            return
+        }
+        let croppedImage = NSImage(
+            cgImage: croppedCG,
+            size: NSSize(width: croppedCG.width, height: croppedCG.height)
+        )
+        image = croppedImage
+        if CGFloat(croppedCG.height) > 0 {
+            aspectRatio = CGFloat(croppedCG.width) / CGFloat(croppedCG.height)
+        }
+        needsDisplay = true
+        onSizeChanged?()
+    }
+
+    /// NSImage から CGImage を安全に取得する
+    /// cgImage(forProposedRect:) が nil を返す場合は tiffRepresentation 経由でフォールバック
+    nonisolated static func extractCGImage(from nsImage: NSImage) -> CGImage? {
+        // 最初に直接取得を試みる
+        if let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil) {
+            return cgImage
+        }
+        // フォールバック: tiffRepresentation → NSBitmapImageRep → CGImage
+        guard let tiffData = nsImage.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiffData),
+              let cgImage = bitmap.cgImage else {
+            return nil
+        }
+        return cgImage
     }
 
     func setOriginalImage(_ newImage: NSImage) {
