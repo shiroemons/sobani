@@ -2721,6 +2721,22 @@
         }
       }
     },
+    "floating_menu.reset_display": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示をリセット"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Display"
+          }
+        }
+      }
+    },
     "crop.confirm": {
       "localizations": {
         "ja": {

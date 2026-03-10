@@ -315,6 +315,7 @@ extension CharacterWindow: FloatingMenuDelegate {
     func floatingMenuDidSelectAdjust(_ menu: FloatingMenuController) { showAdjustmentPanel() }
     func floatingMenuDidSelectRemoveBackground(_ menu: FloatingMenuController) { removeBackground() }
     func floatingMenuDidSelectClose(_ menu: FloatingMenuController) { closeThisWindow() }
+    func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) { resetDisplay() }
 }
 
 // MARK: - Crop Mode
