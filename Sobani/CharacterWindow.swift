@@ -3,16 +3,9 @@ import UniformTypeIdentifiers
 
 // MARK: - Rotatable Container
 
-// Rotation expands the window beyond the image bounds.
-// Always delegate hit testing to imageView so the entire window area remains interactive.
 private final class RotatableContainer: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? {
-        // Standard hit test checks subviews in reverse order (front to back),
-        // so overlay/toolbar views receive events when present.
-        if let hit = super.hitTest(point), hit !== self {
-            return hit
-        }
-        // Fall back to imageView so the entire window area remains interactive.
+        if let hit = super.hitTest(point), hit !== self { return hit }
         return subviews.first
     }
 }
@@ -34,11 +27,9 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     nonisolated(unsafe) private var windowMoveObserver: NSObjectProtocol?
 
     init(image: NSImage) {
-        let maxHeight: CGFloat = AppConstants.defaultWindowHeight
-        let windowSize = Self.calculateWindowSize(imageSize: image.size, maxHeight: maxHeight)
+        let windowSize = Self.calculateWindowSize(imageSize: image.size, maxHeight: AppConstants.defaultWindowHeight)
         let windowWidth = windowSize.width
         let windowHeight = windowSize.height
-
         window = UnconstrainedWindow(
             contentRect: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight),
             styleMask: [.borderless],
@@ -70,34 +61,29 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         setupMenu()
 
         imageView.onMouseDown = { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.delegate?.characterWindowDidBecomeActive(self)
         }
-
         imageView.onDoubleClick = { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.showFloatingMenu(at: NSEvent.mouseLocation)
         }
-
         imageView.onRotationChanged = { [weak self] in
             self?.adjustmentPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
         }
-
         imageView.onOpacityChanged = { [weak self] in
             self?.adjustmentPanelController?.updateOpacity(self?.imageView.opacityLevel ?? 1.0)
         }
-
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
         imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
         imageView.onDropImage = { [weak self] url, isOption in
-            guard let self = self else { return }
+            guard let self else { return }
             if isOption {
                 self.delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
             } else {
                 self.handleDroppedImage(url: url)
             }
         }
-
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
         let offsetX = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
         let offsetY = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
@@ -122,8 +108,6 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
         adjustWindowForRotation()
     }
-
-    // MARK: Actions
 
     @objc func toggleFlip() {
         imageView.isFlippedHorizontally.toggle()
@@ -297,15 +281,12 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 
 extension CharacterWindow: FloatingMenuDelegate {
     func showFloatingMenu(at screenPoint: NSPoint) {
-        // Don't show if crop mode is active or adjustment panel is open
         guard cropEditorController?.isVisible != true else { return }
-
         if floatingMenuController == nil {
             floatingMenuController = FloatingMenuController()
             floatingMenuController?.delegate = self
         }
         floatingMenuController?.isRemoveBackgroundEnabled = !isRemovingBackground && !imageHasAlpha()
-        // Convert screen point to window-local point
         let windowPoint = window.convertPoint(fromScreen: screenPoint)
         floatingMenuController?.show(at: windowPoint, in: window)
     }
@@ -348,9 +329,15 @@ extension CharacterWindow: CropEditorPanelDelegate {
     }
 
     func cropEditorDidConfirm(_ editor: CropEditorPanelController, cropRect: CropRect) {
+        let oldWidth = imageView.frame.size.width
+        let oldHeight = imageView.frame.size.height
         imageView.cropRect = cropRect
-        // Resize imageView frame and window to match the new aspect ratio after crop
-        imageView.frame.size.width = imageView.frame.height * imageView.aspectRatio
+        let newAspect = imageView.aspectRatio
+        // フレーム面積を維持しながら、新しいアスペクト比に合わせてリサイズ
+        let oldArea = oldWidth * oldHeight
+        let newHeight = sqrt(oldArea / newAspect)
+        let newWidth = newHeight * newAspect
+        imageView.frame.size = NSSize(width: round(newWidth), height: round(newHeight))
         adjustWindowForRotation()
         cropEditorController = nil
     }
@@ -393,7 +380,6 @@ extension CharacterWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didSelectMonitor screen: NSScreen) {
-        // Maintain monitor-relative position when switching monitors
         guard let oldScreen = NSScreen.screen(containing: window.frame) else { return }
         let oldOrigin = currentImageOrigin()
         let relativeX = oldOrigin.x - oldScreen.frame.origin.x
@@ -425,18 +411,12 @@ extension CharacterWindow: AdjustmentPanelDelegate {
 
 // MARK: - Character Window Delegate
 
-/// CharacterWindow からのイベントを AppDelegate に通知するプロトコル
 @MainActor
 protocol CharacterWindowDelegate: AnyObject {
-    /// 新しいウィンドウの作成を要求する
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
-    /// ファイルURLを指定して新しいウィンドウの作成を要求する
     func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
-    /// ウィンドウが閉じられたことを通知する
     func characterWindowDidClose(_ sender: CharacterWindow)
-    /// 登録画像が削除されたことを通知する
     func characterWindowDidDeleteImage(named name: String)
-    /// ウィンドウがアクティブになったことを通知する（Z-order更新用）
     func characterWindowDidBecomeActive(_ sender: CharacterWindow)
 }
 

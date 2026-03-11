@@ -215,15 +215,7 @@ final class CropEditorPanelController: NSObject {
     }
 
     private func handleRotate90() {
-        let newTurns = CropGeometry.normalizeQuarterTurns(currentCropRect.quarterTurns + 1)
-        var updated = CropRect(
-            x: currentCropRect.x, y: currentCropRect.y,
-            width: currentCropRect.width, height: currentCropRect.height,
-            straightenAngle: currentCropRect.straightenAngle,
-            quarterTurns: newTurns,
-            isFlippedInCrop: currentCropRect.isFlippedInCrop,
-            aspectRatioPreset: currentCropRect.aspectRatioPreset
-        )
+        var updated = CropGeometry.cropRectAfterQuarterTurn(cropRect: currentCropRect, turns: 1)
         updated = applyCurrentAspectRatioConstraint(to: updated)
         currentCropRect = updated
         canvasView?.cropRect = currentCropRect
