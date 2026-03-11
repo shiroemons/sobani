@@ -232,18 +232,19 @@ final class CropEditorPanelController: NSObject {
     private func handleAspectRatioSelected(_ preset: AspectRatioPreset) {
         let imageSize = effectiveImageSize()
         if let ratio = resolveAspectRatio(for: preset, imageSize: imageSize) {
-            let constrained = CropGeometry.constrainCropRect(
-                currentCropRect, toAspectRatio: ratio, within: imageSize
+            let base = CropGeometry.cropRectForAspectRatio(
+                ratio: ratio, within: imageSize
             )
             currentCropRect = CropRect(
-                x: constrained.x, y: constrained.y,
-                width: constrained.width, height: constrained.height,
+                x: base.x, y: base.y,
+                width: base.width, height: base.height,
                 straightenAngle: currentCropRect.straightenAngle,
                 quarterTurns: currentCropRect.quarterTurns,
                 isFlippedInCrop: currentCropRect.isFlippedInCrop,
                 aspectRatioPreset: preset.rawValue
             )
         } else {
+            // フリー: aspectRatioPresetのみ更新、サイズ変更なし
             currentCropRect = CropRect(
                 x: currentCropRect.x, y: currentCropRect.y,
                 width: currentCropRect.width, height: currentCropRect.height,
