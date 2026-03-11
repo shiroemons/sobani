@@ -43,6 +43,9 @@ final class CropEditorPanelController: NSObject {
     private var doneButton: NSButton?
     private var donePillContainer: NSView?
     private var initialCropRect: CropRect
+    private var history: CropEditHistory?
+    private var undoButton: NSButton?
+    private var redoButton: NSButton?
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -60,6 +63,7 @@ final class CropEditorPanelController: NSObject {
         close()
         initialCropRect = currentCropRect
         originalImage = image
+        history = CropEditHistory(initialState: currentCropRect)
 
         let panelRect = NSRect(
             x: 0, y: 0,
@@ -99,6 +103,9 @@ final class CropEditorPanelController: NSObject {
         toolbar.onModeChanged = { [weak self] mode in
             self?.handleModeChanged(mode)
         }
+        toolbar.onSliderDragEnded = { [weak self] in
+            self?.recordCurrentState()
+        }
         contentView.addSubview(toolbar)
         toolbarView = toolbar
         if let preset = AspectRatioPreset.from(presetName: currentCropRect.aspectRatioPreset) {
@@ -117,6 +124,9 @@ final class CropEditorPanelController: NSObject {
             self?.currentCropRect = newRect
             self?.updateRevertButtonVisibility()
         }
+        canvas.onDragEnded = { [weak self] in
+            self?.recordCurrentState()
+        }
         contentView.addSubview(canvas)
         canvasView = canvas
 
@@ -129,6 +139,7 @@ final class CropEditorPanelController: NSObject {
         panel = newPanel
 
         updateRevertButtonVisibility()
+        updateUndoRedoButtons()
         installKeyMonitor()
         logger.debug("Crop editor panel shown")
     }
@@ -139,6 +150,9 @@ final class CropEditorPanelController: NSObject {
         modeToggleButton = nil
         doneButton = nil
         donePillContainer = nil
+        undoButton = nil
+        redoButton = nil
+        history = nil
         canvasView = nil
         toolbarView = nil
         panel?.orderOut(nil)
@@ -168,17 +182,20 @@ final class CropEditorPanelController: NSObject {
         toolbarView?.hideAspectRatioSelector()
         toolbarView?.updateAspectRatioSelection(.free)
         delegate?.cropEditorDidReset(self)
+        recordCurrentState()
         updateRevertButtonVisibility()
     }
 
     @objc private func flipTapped() {
         currentCropRect = currentCropRect.with(isFlippedInCrop: !currentCropRect.isFlippedInCrop)
         canvasView?.cropRect = currentCropRect
+        recordCurrentState()
         updateRevertButtonVisibility()
     }
 
     @objc private func rotate90Tapped() {
         handleRotate90()
+        recordCurrentState()
         updateRevertButtonVisibility()
     }
 
@@ -187,6 +204,47 @@ final class CropEditorPanelController: NSObject {
         let newMode: ToolbarMode = (toolbar.currentToolbarMode == .correction) ? .aspectRatio : .correction
         toolbar.setMode(newMode)
         updateModeToggleAppearance()
+    }
+
+    @objc private func undoTapped() {
+        guard let state = history?.undo() else { return }
+        applyHistoryState(state)
+    }
+
+    @objc private func redoTapped() {
+        guard let state = history?.redo() else { return }
+        applyHistoryState(state)
+    }
+
+    // MARK: - History Helpers
+
+    private func applyHistoryState(_ state: CropRect) {
+        currentCropRect = state
+        canvasView?.initializeFromCropRect(state)
+        toolbarView?.syncAngles(
+            straighten: state.straightenAngle,
+            verticalPerspective: state.verticalPerspective,
+            horizontalPerspective: state.horizontalPerspective
+        )
+        if let preset = AspectRatioPreset.from(presetName: state.aspectRatioPreset) {
+            toolbarView?.updateAspectRatioSelection(preset)
+        }
+        updateRevertButtonVisibility()
+        updateUndoRedoButtons()
+    }
+
+    private func recordCurrentState() {
+        history?.record(currentCropRect)
+        updateUndoRedoButtons()
+    }
+
+    private func updateUndoRedoButtons() {
+        let canUndo = history?.canUndo ?? false
+        let canRedo = history?.canRedo ?? false
+        undoButton?.isEnabled = canUndo
+        redoButton?.isEnabled = canRedo
+        undoButton?.contentTintColor = canUndo ? .white : .tertiaryLabelColor
+        redoButton?.contentTintColor = canRedo ? .white : .tertiaryLabelColor
     }
 
     // MARK: - Revert Button Visibility
@@ -223,7 +281,11 @@ final class CropEditorPanelController: NSObject {
         }
     }
 
-    // MARK: - Toolbar Handlers
+}
+
+// MARK: - Toolbar Handlers
+
+extension CropEditorPanelController {
 
     private func handleStraightenAngleChanged(_ angle: CGFloat) {
         let clamped = CropGeometry.clampStraightenAngle(angle)
@@ -271,10 +333,14 @@ final class CropEditorPanelController: NSObject {
         }
         canvasView?.initializeFromCropRect(currentCropRect)
         toolbarView?.updateAspectRatioSelection(preset)
+        recordCurrentState()
         updateRevertButtonVisibility()
     }
+}
 
-    // MARK: - Aspect Ratio Helpers
+// MARK: - Aspect Ratio Helpers
+
+extension CropEditorPanelController {
 
     /// 現在の画像サイズを取得（フォールバック: 1:1）
     private func effectiveImageSize() -> CGSize {
@@ -309,8 +375,11 @@ final class CropEditorPanelController: NSObject {
             width: constrained.width, height: constrained.height
         )
     }
+}
 
-    // MARK: - Key Monitor
+// MARK: - Key Monitor & Position Calculation
+
+extension CropEditorPanelController {
 
     private func installKeyMonitor() {
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
@@ -330,8 +399,6 @@ final class CropEditorPanelController: NSObject {
             keyMonitor = nil
         }
     }
-
-    // MARK: - Position Calculation
 
     static func calculatePanelOrigin(near window: NSWindow, panelSize: NSSize) -> NSPoint {
         let windowFrame = window.frame
@@ -385,7 +452,7 @@ extension CropEditorPanelController {
         let pillSize = AppConstants.cropEditorPillButtonSize
         let sidePad = Self.topBarSidePadding
         let width = AppConstants.cropEditorPanelWidth
-        // ── Row 1: [× Cancel]  ···  [✓ Done] ──
+        // ── Row 1: [× Cancel]  [↩ Undo | Redo ↪]  [✓ Done] ──
         let (cancelPill, _) = makePillButton(symbolName: "xmark", action: #selector(cancelTapped))
         cancelPill.frame = NSRect(x: sidePad, y: rowY, width: pillSize, height: pillSize)
         bar.addSubview(cancelPill)
@@ -396,6 +463,24 @@ extension CropEditorPanelController {
         bar.addSubview(donePill)
         doneButton = doneBtn
         donePillContainer = donePill
+
+        // Center: grouped Undo/Redo pill
+        let groupWidth = pillSize * 2 + Self.separatorWidth
+        let (undoRedoPill, undoRedoButtons) = makeGroupedPill(
+            symbols: [
+                ("arrow.uturn.backward", #selector(undoTapped)),
+                ("arrow.uturn.forward", #selector(redoTapped))
+            ],
+            width: groupWidth
+        )
+        let groupX = (width - groupWidth) / 2
+        undoRedoPill.frame = NSRect(x: groupX, y: rowY, width: groupWidth, height: pillSize)
+        bar.addSubview(undoRedoPill)
+
+        if undoRedoButtons.count >= 2 {
+            undoButton = undoRedoButtons[0]
+            redoButton = undoRedoButtons[1]
+        }
     }
 
     private func addRow2(to bar: NSView, rowY: CGFloat) {
@@ -406,7 +491,7 @@ extension CropEditorPanelController {
 
         // Left: grouped pill [Flip | Rotate90]
         let groupWidth = pillSize * 2 + Self.separatorWidth
-        let groupPill = makeGroupedPill(
+        let (groupPill, _) = makeGroupedPill(
             symbols: [
                 ("arrow.left.and.right.righttriangle.left.righttriangle.right", #selector(flipTapped)),
                 ("rotate.left", #selector(rotate90Tapped))
@@ -473,17 +558,19 @@ extension CropEditorPanelController {
     }
 
     /// Creates a grouped pill with multiple icon buttons separated by a 1px vertical line.
-    private func makeGroupedPill(symbols: [(String, Selector)], width: CGFloat) -> NSView {
+    private func makeGroupedPill(symbols: [(String, Selector)], width: CGFloat) -> (container: NSView, buttons: [NSButton]) {
         let height = AppConstants.cropEditorPillButtonSize
         let container = makePillContainer(frame: NSRect(x: 0, y: 0, width: width, height: height))
 
         let buttonWidth = (width - CGFloat(symbols.count - 1) * Self.separatorWidth) / CGFloat(symbols.count)
+        var buttons: [NSButton] = []
 
         for (index, (symbolName, action)) in symbols.enumerated() {
             let buttonX = CGFloat(index) * (buttonWidth + Self.separatorWidth)
             let button = NSButton(frame: NSRect(x: buttonX, y: 0, width: buttonWidth, height: height))
             configureIconButton(button, symbolName: symbolName, action: action)
             container.addSubview(button)
+            buttons.append(button)
 
             // Add 1px separator between buttons
             if index < symbols.count - 1 {
@@ -495,7 +582,7 @@ extension CropEditorPanelController {
             }
         }
 
-        return container
+        return (container, buttons)
     }
 }
 

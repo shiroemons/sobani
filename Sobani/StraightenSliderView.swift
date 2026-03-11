@@ -18,6 +18,7 @@ final class StraightenSliderView: NSView {
     }
 
     var onAngleChanged: ((CGFloat) -> Void)?
+    var onDragEnded: (() -> Void)?
     private var isDragging = false
     private var dragStartAngle: CGFloat = 0
     private var dragStartX: CGFloat = 0
@@ -211,6 +212,7 @@ final class StraightenSliderView: NSView {
                 angle = snapped
                 onAngleChanged?(angle)
             }
+            onDragEnded?()
         }
     }
 
@@ -279,9 +281,13 @@ final class StraightenSliderView: NSView {
     }
 
     private func stopInertia() {
+        let wasRunning = inertiaTimer != nil
         inertiaTimer?.invalidate()
         inertiaTimer = nil
         inertiaVelocity = 0
+        if wasRunning {
+            onDragEnded?()
+        }
     }
 
     // MARK: - Fade Trail

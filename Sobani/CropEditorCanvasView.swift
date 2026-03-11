@@ -38,6 +38,7 @@ final class CropEditorCanvasView: NSView {
         }
     }
     var onCropRectChanged: ((CropRect) -> Void)?
+    var onDragEnded: (() -> Void)?
     private(set) var displayImage: NSImage?
 
     private var imageOffset: CGPoint = .zero
@@ -497,6 +498,7 @@ extension CropEditorCanvasView {
         }
         if !wasIdle {
             needsDisplay = true
+            onDragEnded?()
         }
     }
 

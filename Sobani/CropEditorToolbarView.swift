@@ -52,6 +52,7 @@ final class CropEditorToolbarView: NSView {
     var onStraightenAngleChanged: ((CGFloat) -> Void)?
     var onAspectRatioSelected: ((AspectRatioPreset) -> Void)?
     var onModeChanged: ((StraightenMode) -> Void)?
+    var onSliderDragEnded: (() -> Void)?
 
     // MARK: - State
 
@@ -91,6 +92,9 @@ final class CropEditorToolbarView: NSView {
         let slider = StraightenSliderView(frame: .zero)
         slider.onAngleChanged = { [weak self] angle in
             self?.handleSliderAngleChanged(angle)
+        }
+        slider.onDragEnded = { [weak self] in
+            self?.onSliderDragEnded?()
         }
         addSubview(slider)
         sliderView = slider
@@ -155,6 +159,7 @@ final class CropEditorToolbarView: NSView {
             sliderView?.angle = 0
             updateModeButtonViews()
             onStraightenAngleChanged?(0)
+            onSliderDragEnded?()
             return
         }
         straightenMode = mode
@@ -222,6 +227,15 @@ final class CropEditorToolbarView: NSView {
 
     func getCurrentModeAngle() -> CGFloat {
         angleForMode(straightenMode)
+    }
+
+    /// Undo/Redo時に全モードの角度を一括同期する
+    func syncAngles(straighten: CGFloat, verticalPerspective: CGFloat, horizontalPerspective: CGFloat) {
+        modeAngles[.straighten] = straighten
+        modeAngles[.verticalPerspective] = verticalPerspective
+        modeAngles[.horizontalPerspective] = horizontalPerspective
+        sliderView?.angle = angleForMode(straightenMode)
+        updateModeButtonViews()
     }
 }
 

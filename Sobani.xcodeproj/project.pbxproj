@@ -81,6 +81,8 @@
 		F0SS000002000000000001 /* StraightenSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SS000001000000000001 /* StraightenSliderView.swift */; };
 		F0ARS00002000000000001 /* AspectRatioSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ARS00001000000000001 /* AspectRatioSelectorView.swift */; };
 		F0TB000002000000000001 /* CropEditorToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TB000001000000000001 /* CropEditorToolbarView.swift */; };
+		F0EH000002000000000001 /* CropEditHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0EH000001000000000001 /* CropEditHistory.swift */; };
+		F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0EH000003000000000001 /* CropEditHistoryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -173,6 +175,8 @@
 		F0SS000001000000000001 /* StraightenSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StraightenSliderView.swift; sourceTree = "<group>"; };
 		F0ARS00001000000000001 /* AspectRatioSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AspectRatioSelectorView.swift; sourceTree = "<group>"; };
 		F0TB000001000000000001 /* CropEditorToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorToolbarView.swift; sourceTree = "<group>"; };
+		F0EH000001000000000001 /* CropEditHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditHistory.swift; sourceTree = "<group>"; };
+		F0EH000003000000000001 /* CropEditHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditHistoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -241,6 +245,7 @@
 				F0SS000001000000000001 /* StraightenSliderView.swift */,
 				F0ARS00001000000000001 /* AspectRatioSelectorView.swift */,
 				F0TB000001000000000001 /* CropEditorToolbarView.swift */,
+				F0EH000001000000000001 /* CropEditHistory.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -297,6 +302,7 @@
 				F0AR000003000000000001 /* AspectRatioPresetTests.swift */,
 				F0CG000003000000000001 /* CropGeometryTests.swift */,
 				F0CI000003000000000001 /* CropImageProcessorTests.swift */,
+				F0EH000003000000000001 /* CropEditHistoryTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -454,6 +460,7 @@
 				F0SS000002000000000001 /* StraightenSliderView.swift in Sources */,
 				F0ARS00002000000000001 /* AspectRatioSelectorView.swift in Sources */,
 				F0TB000002000000000001 /* CropEditorToolbarView.swift in Sources */,
+				F0EH000002000000000001 /* CropEditHistory.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -495,6 +502,7 @@
 				C0F10002AAAA000000000007 /* CropRectExtendedTests.swift in Sources */,
 				F0AR000004000000000001 /* AspectRatioPresetTests.swift in Sources */,
 				F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */,
+				F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
