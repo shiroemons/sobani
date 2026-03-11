@@ -260,7 +260,7 @@ final class FloatingMenuController {
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown]) { [weak self] event in
             guard let self else { return event }
 
-            if event.type == .keyDown && event.keyCode == 53 {
+            if event.type == .keyDown && event.keyCode == AppConstants.escKeyCode {
                 // ESC key
                 self.dismiss()
                 return nil

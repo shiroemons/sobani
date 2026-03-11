@@ -19,6 +19,8 @@ extension AppDelegate {
         guard menu === statusItem?.menu else { return }
         menu.removeAllItems()
 
+        let imageNames = ImageManager.shared.registeredImageNames()
+
         // About & Update
         let aboutItem = NSMenuItem(title: L("menu.about"), action: #selector(showAbout), keyEquivalent: "")
         aboutItem.target = self
@@ -29,7 +31,7 @@ extension AppDelegate {
         menu.addItem(NSMenuItem.separator())
 
         // 画像を追加表示 & 表示中
-        menu.addItem(buildNewWindowMenuItem())
+        menu.addItem(buildNewWindowMenuItem(imageNames: imageNames))
 
         let countTitle = MenuStateUtils.formatWindowCountText(
             count: characterWindows.count,
@@ -44,7 +46,7 @@ extension AppDelegate {
             keyEquivalent: ""
         )
         if !characterWindows.isEmpty {
-            countItem.submenu = buildCharacterWindowsSubmenu()
+            countItem.submenu = buildCharacterWindowsSubmenu(imageNames: imageNames)
         } else {
             countItem.isEnabled = false
         }
@@ -177,7 +179,7 @@ extension AppDelegate {
         return item
     }
 
-    func buildNewWindowMenuItem() -> NSMenuItem {
+    func buildNewWindowMenuItem(imageNames: [String]) -> NSMenuItem {
         let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
         newWindowItem.image = menuIcon("plus.rectangle.on.rectangle")
         let submenu = NSMenu()
@@ -193,13 +195,12 @@ extension AppDelegate {
         defaultWindowItem.image = menuIcon("person.fill")
         submenu.addItem(defaultWindowItem)
 
-        let names = ImageManager.shared.registeredImageNames()
-        if !names.isEmpty {
+        if !imageNames.isEmpty {
             submenu.addItem(NSMenuItem.separator())
             let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
             registeredLabel.isEnabled = false
             submenu.addItem(registeredLabel)
-            for name in names {
+            for name in imageNames {
                 let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImageFromMenu(_:)), keyEquivalent: "")
                 item.target = self
                 item.representedObject = name
@@ -211,7 +212,7 @@ extension AppDelegate {
         return newWindowItem
     }
 
-    func buildCharacterWindowsSubmenu() -> NSMenu {
+    func buildCharacterWindowsSubmenu(imageNames: [String]) -> NSMenu {
         let submenu = NSMenu()
         submenu.autoenablesItems = false
         submenu.delegate = self
@@ -253,13 +254,13 @@ extension AppDelegate {
             let item = NSMenuItem(title: info.leftText, action: nil, keyEquivalent: "")
             item.attributedTitle = attributedTitle
             item.representedObject = charWindow
-            item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows)
+            item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows, imageNames: imageNames)
             submenu.addItem(item)
         }
         return submenu
     }
 
-    func buildWindowActionsSubmenu(for charWindow: CharacterWindow, orderedWindows: [CharacterWindow]) -> NSMenu {
+    func buildWindowActionsSubmenu(for charWindow: CharacterWindow, orderedWindows: [CharacterWindow], imageNames: [String]) -> NSMenu {
         let submenu = NSMenu()
         submenu.autoenablesItems = false
         let windowNumber = charWindow.window.windowNumber
@@ -272,7 +273,7 @@ extension AppDelegate {
         submenu.addItem(NSMenuItem.separator())
 
         let changeImageItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
-        changeImageItem.submenu = buildChangeImageSubmenuForWindow(charWindow: charWindow)
+        changeImageItem.submenu = buildChangeImageSubmenuForWindow(charWindow: charWindow, imageNames: imageNames)
         changeImageItem.isEnabled = !areWindowsHidden
         changeImageItem.image = menuIcon("photo.on.rectangle")
         submenu.addItem(changeImageItem)
@@ -343,7 +344,7 @@ extension AppDelegate {
         return submenu
     }
 
-    func buildChangeImageSubmenuForWindow(charWindow: CharacterWindow) -> NSMenu {
+    func buildChangeImageSubmenuForWindow(charWindow: CharacterWindow, imageNames: [String]) -> NSMenu {
         let changeSubmenu = NSMenu()
         changeSubmenu.delegate = self
         changeSubmenu.autoenablesItems = false
@@ -362,13 +363,12 @@ extension AppDelegate {
         resetItem.image = menuIcon("arrow.counterclockwise")
         changeSubmenu.addItem(resetItem)
 
-        let names = ImageManager.shared.registeredImageNames()
-        if !names.isEmpty {
+        if !imageNames.isEmpty {
             changeSubmenu.addItem(NSMenuItem.separator())
             let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
             registeredLabel.isEnabled = false
             changeSubmenu.addItem(registeredLabel)
-            for name in names {
+            for name in imageNames {
                 let item = NSMenuItem(title: name, action: #selector(selectRegisteredImageByWindowNumber(_:)), keyEquivalent: "")
                 item.target = self
                 item.tag = windowNumber

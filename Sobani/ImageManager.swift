@@ -19,6 +19,10 @@ final class ImageManager {
         self.baseDirectory = baseDirectory
     }
 
+    private func invalidateImageNamesCache() {
+        cachedImageNames = nil
+    }
+
     private var appSupportURL: URL? {
         AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
@@ -82,7 +86,7 @@ final class ImageManager {
         }
         do {
             try fm.copyItem(at: url, to: finalURL)
-            cachedImageNames = nil
+            invalidateImageNamesCache()
             return finalName
         } catch {
             logger.error("Failed to copy image: \(error.localizedDescription)")
@@ -99,7 +103,7 @@ final class ImageManager {
         guard let destURL = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
         do {
             try pngData.write(to: destURL)
-            cachedImageNames = nil
+            invalidateImageNamesCache()
         } catch {
             logger.error("Failed to write image data: \(error.localizedDescription)")
             return nil
@@ -112,7 +116,7 @@ final class ImageManager {
         guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return }
         do {
             try FileManager.default.removeItem(at: url)
-            cachedImageNames = nil
+            invalidateImageNamesCache()
         } catch {
             logger.error("Failed to remove image: \(error.localizedDescription)")
         }

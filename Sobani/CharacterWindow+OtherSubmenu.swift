@@ -10,7 +10,7 @@ extension CharacterWindow {
             title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: ""
         )
         resetRotationItem.target = self
-        resetRotationItem.isEnabled = abs(imageView.rotationAngle) > AppConstants.floatingPointTolerance
+        resetRotationItem.isEnabled = MenuStateUtils.isRotationResetEnabled(angle: imageView.rotationAngle)
         resetRotationItem.image = SFSymbolUtils.icon("arrow.counterclockwise")
         otherSubmenu.addItem(resetRotationItem)
 
@@ -18,7 +18,7 @@ extension CharacterWindow {
             title: L("adjust.reset_opacity"), action: #selector(resetOpacity), keyEquivalent: ""
         )
         resetOpacityItem.target = self
-        resetOpacityItem.isEnabled = abs(imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance
+        resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(opacity: imageView.opacityLevel)
         resetOpacityItem.image = SFSymbolUtils.icon("circle.lefthalf.filled")
         otherSubmenu.addItem(resetOpacityItem)
 
