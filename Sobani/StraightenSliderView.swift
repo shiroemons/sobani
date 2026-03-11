@@ -9,7 +9,10 @@ final class StraightenSliderView: NSView {
 
     var angle: CGFloat = 0 {
         didSet {
+            let oldAngle = oldValue
             angle = CropGeometry.clampStraightenAngle(angle)
+            angle = snapToZeroIfNeeded(angle)
+            detectCrossedTicks(from: oldAngle, to: angle)
             needsDisplay = true
         }
     }
@@ -18,6 +21,17 @@ final class StraightenSliderView: NSView {
     private var isDragging = false
     private var dragStartAngle: CGFloat = 0
     private var dragStartX: CGFloat = 0
+
+    // Inertia
+    private var inertiaVelocity: CGFloat = 0
+    private var inertiaTimer: Timer?
+    private var lastDragTime: TimeInterval = 0
+    private var lastDragAngle: CGFloat = 0
+
+    // Fade trail
+    private var fadingTicks: [Int: TimeInterval] = [:]
+    private var fadeTimer: Timer?
+    private var previousAngle: CGFloat = 0
 
     // MARK: - Drawing
 
@@ -59,31 +73,59 @@ final class StraightenSliderView: NSView {
             let isMajor = tickDeg % Int(AppConstants.straightenMajorTickInterval) == 0
             let isMinor = tickDeg % Int(AppConstants.straightenMinorTickInterval) == 0
 
-            let tickHeight: CGFloat
-            let lineWidth: CGFloat
-            if isMajor {
+            var tickHeight: CGFloat
+            var lineWidth: CGFloat
+            var tickColor: CGColor
+
+            if let fadeStart = fadingTicks[tickDeg] {
+                let elapsed = CACurrentMediaTime() - fadeStart
+                let progress = min(CGFloat(elapsed) / Double(AppConstants.straightenFadeDuration), 1.0)
+
+                let normalHeight: CGFloat = isMajor ? 14 : isMinor ? 10 : 6
+                tickHeight = AppConstants.straightenFadeHighlightHeight
+                    - (AppConstants.straightenFadeHighlightHeight - normalHeight) * progress
+                let normalWidth: CGFloat = isMajor ? 1.0 : isMinor ? 0.75 : 0.5
+                lineWidth = AppConstants.straightenFadeHighlightWidth
+                    - (AppConstants.straightenFadeHighlightWidth - normalWidth) * progress
+                tickColor = NSColor.labelColor.blended(
+                    withFraction: progress, of: NSColor.secondaryLabelColor
+                )?.cgColor ?? NSColor.secondaryLabelColor.cgColor
+            } else if isMajor {
                 tickHeight = 14
-                lineWidth = 1.5
+                lineWidth = 1.0
+                tickColor = NSColor.secondaryLabelColor.cgColor
             } else if isMinor {
                 tickHeight = 10
-                lineWidth = 1.0
+                lineWidth = 0.75
+                tickColor = NSColor.secondaryLabelColor.cgColor
             } else {
                 tickHeight = 6
                 lineWidth = 0.5
+                tickColor = NSColor.secondaryLabelColor.cgColor
             }
 
-            context.setStrokeColor(NSColor.secondaryLabelColor.cgColor)
+            context.setStrokeColor(tickColor)
             context.setLineWidth(lineWidth)
             context.move(to: CGPoint(x: tickX, y: centerY - tickHeight / 2))
             context.addLine(to: CGPoint(x: tickX, y: centerY + tickHeight / 2))
             context.strokePath()
 
-            // 主目盛り（15°ごと）に角度ラベルを描画
-            if isMajor {
+            // 主目盛り（15°ごと）と0°に角度ラベルを描画
+            if isMajor || tickDeg == 0 {
                 let labelText = "\(tickDeg)°"
+                let labelColor: NSColor
+                if let fadeStart = fadingTicks[tickDeg] {
+                    let elapsed = CACurrentMediaTime() - fadeStart
+                    let progress = min(CGFloat(elapsed) / Double(AppConstants.straightenFadeDuration), 1.0)
+                    labelColor = NSColor.labelColor.blended(
+                        withFraction: progress, of: NSColor.secondaryLabelColor
+                    ) ?? NSColor.secondaryLabelColor
+                } else {
+                    labelColor = NSColor.secondaryLabelColor
+                }
                 let attrs: [NSAttributedString.Key: Any] = [
                     .font: NSFont.monospacedDigitSystemFont(ofSize: 8, weight: .regular),
-                    .foregroundColor: NSColor.secondaryLabelColor
+                    .foregroundColor: labelColor
                 ]
                 let attrString = NSAttributedString(string: labelText, attributes: attrs)
                 let size = attrString.size()
@@ -99,32 +141,29 @@ final class StraightenSliderView: NSView {
     }
 
     private func drawCenterIndicator(context: CGContext, centerX: CGFloat, centerY: CGFloat) {
-        // 下向き三角形インジケーター（黄色、上部中央固定）
-        let triangleSize: CGFloat = 8
-        let triangleTip = centerY + 14 / 2 + 4  // 最長目盛り上端より少し上
+        // iPhone風: 他のティックより長い黄色バーで現在位置を示す
+        let barHeight: CGFloat = 18  // 0°ティック(16pt)より少し長い
+        let barWidth: CGFloat = 1.5
 
         context.saveGState()
-
-        let trianglePath = CGMutablePath()
-        trianglePath.move(to: CGPoint(x: centerX, y: triangleTip - triangleSize))
-        trianglePath.addLine(to: CGPoint(x: centerX - triangleSize / 2, y: triangleTip))
-        trianglePath.addLine(to: CGPoint(x: centerX + triangleSize / 2, y: triangleTip))
-        trianglePath.closeSubpath()
-
-        context.setFillColor(NSColor.systemYellow.cgColor)
-        context.addPath(trianglePath)
-        context.fillPath()
-
+        context.setStrokeColor(NSColor.systemYellow.cgColor)
+        context.setLineWidth(barWidth)
+        context.move(to: CGPoint(x: centerX, y: centerY - barHeight / 2))
+        context.addLine(to: CGPoint(x: centerX, y: centerY + barHeight / 2))
+        context.strokePath()
         context.restoreGState()
     }
 
     // MARK: - Mouse Events
 
     override func mouseDown(with event: NSEvent) {
+        stopInertia()
         let point = convert(event.locationInWindow, from: nil)
         isDragging = true
         dragStartAngle = angle
         dragStartX = point.x
+        lastDragTime = event.timestamp
+        lastDragAngle = angle
     }
 
     override func mouseDragged(with event: NSEvent) {
@@ -133,18 +172,149 @@ final class StraightenSliderView: NSView {
         let deltaX = point.x - dragStartX
         // ドラッグ方向と角度変化の関係: 左ドラッグ → 角度増加（ルーラーが左にスクロール）
         let deltaAngle = -deltaX / AppConstants.cropEditorRulerTickSpacing
-        angle = CropGeometry.clampStraightenAngle(dragStartAngle + deltaAngle)
+        let newAngle = CropGeometry.clampStraightenAngle(dragStartAngle + deltaAngle)
+
+        // 慣性用の速度計算
+        let currentTime = event.timestamp
+        let timeDelta = currentTime - lastDragTime
+        if timeDelta > 0 {
+            inertiaVelocity = (newAngle - lastDragAngle) / CGFloat(timeDelta)
+                * CGFloat(AppConstants.straightenInertiaFrameInterval)
+        }
+        lastDragTime = currentTime
+        lastDragAngle = newAngle
+
+        angle = newAngle
         onAngleChanged?(angle)
     }
 
     override func mouseUp(with event: NSEvent) {
         isDragging = false
+        startInertiaIfNeeded()
+    }
+
+    override func scrollWheel(with event: NSEvent) {
+        stopInertia()
+        let delta = event.scrollingDeltaY * AppConstants.straightenScrollSensitivity
+        angle = CropGeometry.clampStraightenAngle(angle - delta)
+        onAngleChanged?(angle)
     }
 
     // MARK: - Public
 
     func reset() {
+        stopInertia()
+        stopFadeTrail()
         angle = 0
         onAngleChanged?(0)
+    }
+
+    // MARK: - Inertia
+
+    private func startInertiaIfNeeded() {
+        guard abs(inertiaVelocity) >= AppConstants.straightenInertiaMinVelocity else { return }
+        inertiaTimer = Timer.scheduledTimer(
+            withTimeInterval: AppConstants.straightenInertiaFrameInterval,
+            repeats: true
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.updateInertia()
+            }
+        }
+    }
+
+    private func updateInertia() {
+        inertiaVelocity *= AppConstants.straightenInertiaDecayRate
+        let newAngle = CropGeometry.clampStraightenAngle(angle + inertiaVelocity)
+
+        // 0°スナップ判定: 0°付近かつ速度が低い場合
+        if abs(newAngle) <= AppConstants.straightenZeroSnapThreshold
+            && abs(inertiaVelocity) < AppConstants.straightenInertiaMinVelocity * 3 {
+            angle = 0
+            onAngleChanged?(angle)
+            stopInertia()
+            return
+        }
+
+        // 端到達で停止
+        if newAngle == AppConstants.straightenMinAngle || newAngle == AppConstants.straightenMaxAngle {
+            angle = newAngle
+            onAngleChanged?(angle)
+            stopInertia()
+            return
+        }
+
+        // 速度閾値以下で停止
+        if abs(inertiaVelocity) < AppConstants.straightenInertiaMinVelocity {
+            onAngleChanged?(angle)
+            stopInertia()
+            return
+        }
+
+        angle = newAngle
+        onAngleChanged?(angle)
+    }
+
+    private func stopInertia() {
+        inertiaTimer?.invalidate()
+        inertiaTimer = nil
+        inertiaVelocity = 0
+    }
+
+    // MARK: - Fade Trail
+
+    private func detectCrossedTicks(from oldAngle: CGFloat, to newAngle: CGFloat) {
+        guard abs(oldAngle - newAngle) > 0.001 else { return }
+        let minDeg = Int(floor(min(oldAngle, newAngle)))
+        let maxDeg = Int(ceil(max(oldAngle, newAngle)))
+        guard minDeg <= maxDeg else { return }
+        let now = CACurrentMediaTime()
+        for deg in minDeg...maxDeg {
+            let degF = CGFloat(deg)
+            if (oldAngle < degF && degF <= newAngle)
+                || (newAngle < degF && degF <= oldAngle)
+                || abs(degF - oldAngle) < 0.001 {
+                fadingTicks[deg] = now
+            }
+        }
+        startFadeTimerIfNeeded()
+    }
+
+    private func startFadeTimerIfNeeded() {
+        guard fadeTimer == nil, !fadingTicks.isEmpty else { return }
+        fadeTimer = Timer.scheduledTimer(
+            withTimeInterval: AppConstants.straightenInertiaFrameInterval,
+            repeats: true
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.updateFade()
+            }
+        }
+    }
+
+    private func updateFade() {
+        let now = CACurrentMediaTime()
+        fadingTicks = fadingTicks.filter { now - $0.value < Double(AppConstants.straightenFadeDuration) }
+        if fadingTicks.isEmpty {
+            fadeTimer?.invalidate()
+            fadeTimer = nil
+        }
+        needsDisplay = true
+    }
+
+    private func stopFadeTrail() {
+        fadeTimer?.invalidate()
+        fadeTimer = nil
+        fadingTicks.removeAll()
+    }
+
+    // MARK: - Snap
+
+    private func snapToZeroIfNeeded(_ value: CGFloat) -> CGFloat {
+        if !isDragging && inertiaTimer == nil
+            && abs(value) <= AppConstants.straightenZeroSnapThreshold {
+            return 0
+        }
+        return value
     }
 }

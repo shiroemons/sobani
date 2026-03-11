@@ -123,6 +123,16 @@ enum AppConstants {
     static let straightenMaxAngle: CGFloat = 45
     static let straightenMajorTickInterval: CGFloat = 15
     static let straightenMinorTickInterval: CGFloat = 5
+    static let straightenZeroSnapThreshold: CGFloat = 1.0
+    static let straightenScrollSensitivity: CGFloat = 0.5
+    static let straightenInertiaDecayRate: CGFloat = 0.95
+    static let straightenInertiaMinVelocity: CGFloat = 0.1
+    static let straightenInertiaFrameInterval: TimeInterval = 1.0 / 60.0
+
+    // Straighten Slider - Fade Trail
+    static let straightenFadeDuration: CGFloat = 0.5
+    static let straightenFadeHighlightHeight: CGFloat = 18
+    static let straightenFadeHighlightWidth: CGFloat = 1.5
 
     // Floating Menu
     static let floatingMenuButtonSize: CGFloat = 32
