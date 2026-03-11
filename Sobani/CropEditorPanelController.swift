@@ -432,7 +432,7 @@ extension CropEditorPanelController {
         revertBtn.imagePosition = .noImage
         revertBtn.title = L("crop_editor.reset")
         revertBtn.font = NSFont.systemFont(ofSize: Self.revertFontSize, weight: .medium)
-        revertBtn.contentTintColor = .labelColor
+        revertBtn.contentTintColor = .systemYellow
         revertBtn.target = self
         revertBtn.action = #selector(resetTapped)
         revertContainer.addSubview(revertBtn)
