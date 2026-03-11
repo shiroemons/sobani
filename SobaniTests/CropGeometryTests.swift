@@ -197,4 +197,119 @@ import Testing
         // クロップ領域が縮小されているため zoom > 1.0
         #expect(result.zoom > 1.0)
     }
+
+    // MARK: - constrainedResize テスト
+
+    private func makeInput(
+        start: CropRect, newWidth: CGFloat, newHeight: CGFloat,
+        handle: CropGeometry.ResizeHandle, normalizedRatio: CGFloat, minSize: CGFloat = 0.1
+    ) -> CropGeometry.ConstrainedResizeInput {
+        CropGeometry.ConstrainedResizeInput(
+            start: start, newWidth: newWidth, newHeight: newHeight,
+            handle: handle, normalizedRatio: normalizedRatio, minSize: minSize
+        )
+    }
+
+    @Test func constrainedResize_cornerHandle_maintainsRatio() {
+        let start = CropRect(x: 0.1, y: 0.1, width: 0.5, height: 0.5)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.6, newHeight: 0.7,
+                             handle: .bottomRight, normalizedRatio: 1.0)
+        )
+        // 正方形比率: width == height
+        #expect(abs(result.width - result.height) < AppConstants.floatingPointTolerance)
+        // 左端がアンカー（bottomRightドラッグ）
+        #expect(abs(result.originX - 0.1) < AppConstants.floatingPointTolerance)
+        // 上端がアンカー
+        #expect(abs(result.originY - (0.1 + 0.5 - result.height)) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func constrainedResize_cornerHandle_selectsSmallerArea() {
+        let start = CropRect(x: 0.1, y: 0.1, width: 0.5, height: 0.5)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.8, newHeight: 0.3,
+                             handle: .topRight, normalizedRatio: 2.0)
+        )
+        // 比率維持: width / height ≈ 2.0
+        #expect(abs(result.width / result.height - 2.0) < 0.01)
+    }
+
+    @Test func constrainedResize_topEdge_adjustsWidth() {
+        let start = CropRect(x: 0.2, y: 0.2, width: 0.4, height: 0.4)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.4, newHeight: 0.6,
+                             handle: .top, normalizedRatio: 1.0)
+        )
+        // 正方形比率: width == height
+        #expect(abs(result.width - result.height) < AppConstants.floatingPointTolerance)
+        // 下端固定
+        #expect(abs(result.originY - 0.2) < AppConstants.floatingPointTolerance)
+        // X中心固定
+        let expectedX = 0.2 + 0.4 / 2 - result.width / 2
+        #expect(abs(result.originX - expectedX) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func constrainedResize_leftEdge_adjustsHeight() {
+        let start = CropRect(x: 0.3, y: 0.2, width: 0.4, height: 0.4)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.3, newHeight: 0.4,
+                             handle: .left, normalizedRatio: 1.0)
+        )
+        // 正方形比率
+        #expect(abs(result.width - result.height) < AppConstants.floatingPointTolerance)
+        // 右端固定
+        let expectedX = 0.3 + 0.4 - result.width
+        #expect(abs(result.originX - expectedX) < AppConstants.floatingPointTolerance)
+        // Y中心固定
+        let expectedY = 0.2 + 0.4 / 2 - result.height / 2
+        #expect(abs(result.originY - expectedY) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func constrainedResize_clampsToNormalizedBounds() {
+        let start = CropRect(x: 0.8, y: 0.8, width: 0.15, height: 0.15)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.5, newHeight: 0.5,
+                             handle: .bottomRight, normalizedRatio: 1.0)
+        )
+        // x + width <= 1.0, y + height <= 1.0
+        #expect(result.originX + result.width <= 1.0 + AppConstants.floatingPointTolerance)
+        #expect(result.originY + result.height <= 1.0 + AppConstants.floatingPointTolerance)
+    }
+
+    @Test func constrainedResize_minSizeConstraint() {
+        let start = CropRect(x: 0.5, y: 0.5, width: 0.3, height: 0.3)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.01, newHeight: 0.01,
+                             handle: .topLeft, normalizedRatio: 1.0)
+        )
+        // 最小サイズ以上
+        #expect(result.width >= 0.1)
+        #expect(result.height >= 0.1)
+    }
+
+    @Test func constrainedResize_bottomHandle_anchorsTop() {
+        let start = CropRect(x: 0.2, y: 0.2, width: 0.4, height: 0.4)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.4, newHeight: 0.3,
+                             handle: .bottom, normalizedRatio: 1.0)
+        )
+        // 上端固定: start.y + start.height
+        let topEdge = start.y + start.height
+        let resultTopEdge = result.originY + result.height
+        #expect(abs(resultTopEdge - topEdge) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func constrainedResize_topLeftHandle_anchorsBottomRight() {
+        let start = CropRect(x: 0.2, y: 0.2, width: 0.4, height: 0.4)
+        let result = CropGeometry.constrainedResize(
+            input: makeInput(start: start, newWidth: 0.3, newHeight: 0.3,
+                             handle: .topLeft, normalizedRatio: 1.0)
+        )
+        // 右端固定
+        let rightEdge = start.x + start.width
+        let resultRightEdge = result.originX + result.width
+        #expect(abs(resultRightEdge - rightEdge) < AppConstants.floatingPointTolerance)
+        // 下端固定
+        #expect(abs(result.originY - start.y) < AppConstants.floatingPointTolerance)
+    }
 }

@@ -112,6 +112,161 @@ enum CropGeometry {
         )
     }
 
+    // MARK: - Constrained Resize
+
+    /// ハンドルの種類（リサイズ方向）
+    enum ResizeHandle {
+        case topLeft, topRight, bottomLeft, bottomRight
+        case top, bottom, left, right
+
+        var isCorner: Bool {
+            switch self {
+            case .topLeft, .topRight, .bottomLeft, .bottomRight: return true
+            default: return false
+            }
+        }
+    }
+
+    /// アスペクト比制約付きリサイズの結果
+    struct ConstrainedResizeResult {
+        let width: CGFloat
+        let height: CGFloat
+        let originX: CGFloat
+        let originY: CGFloat
+    }
+
+    /// アスペクト比制約付きリサイズ計算
+    /// - Parameters:
+    ///   - input: リサイズ入力パラメータ
+    /// - Returns: 制約適用後の結果
+    static func constrainedResize(input: ConstrainedResizeInput) -> ConstrainedResizeResult {
+        var size = constrainedSize(
+            newWidth: input.newWidth, newHeight: input.newHeight,
+            handle: input.handle, normalizedRatio: input.normalizedRatio,
+            minSize: input.minSize
+        )
+        var origin = anchorOrigin(
+            start: input.start, handle: input.handle,
+            width: size.width, height: size.height
+        )
+        clampToBounds(
+            origin: &origin, size: &size,
+            normalizedRatio: input.normalizedRatio, minSize: input.minSize
+        )
+        return ConstrainedResizeResult(
+            width: size.width, height: size.height,
+            originX: origin.x, originY: origin.y
+        )
+    }
+
+    /// リサイズ入力パラメータ
+    struct ConstrainedResizeInput {
+        let start: CropRect
+        let newWidth: CGFloat
+        let newHeight: CGFloat
+        let handle: ResizeHandle
+        let normalizedRatio: CGFloat
+        let minSize: CGFloat
+    }
+
+    // MARK: - Constrained Resize Helpers
+
+    private static func constrainedSize(
+        newWidth: CGFloat, newHeight: CGFloat,
+        handle: ResizeHandle, normalizedRatio: CGFloat, minSize: CGFloat
+    ) -> (width: CGFloat, height: CGFloat) {
+        var width: CGFloat
+        var height: CGFloat
+
+        if handle.isCorner {
+            let widthBasedArea = newWidth * (newWidth / normalizedRatio)
+            let heightBasedArea = (newHeight * normalizedRatio) * newHeight
+            if widthBasedArea <= heightBasedArea {
+                width = newWidth
+                height = newWidth / normalizedRatio
+            } else {
+                width = newHeight * normalizedRatio
+                height = newHeight
+            }
+        } else {
+            switch handle {
+            case .top, .bottom:
+                height = newHeight
+                width = newHeight * normalizedRatio
+            case .left, .right:
+                width = newWidth
+                height = newWidth / normalizedRatio
+            default:
+                width = newWidth
+                height = newHeight
+            }
+        }
+
+        width = max(width, minSize)
+        height = max(height, minSize)
+
+        // 最小サイズ適用後もアスペクト比を維持
+        if width / normalizedRatio > height {
+            height = width / normalizedRatio
+        } else {
+            width = height * normalizedRatio
+        }
+        return (width, height)
+    }
+
+    private static func anchorOrigin(
+        start: CropRect, handle: ResizeHandle,
+        width: CGFloat, height: CGFloat
+    ) -> (x: CGFloat, y: CGFloat) {
+        let originX: CGFloat
+        switch handle {
+        case .topRight, .right, .bottomRight:
+            originX = start.x
+        case .topLeft, .left, .bottomLeft:
+            originX = start.x + start.width - width
+        case .top, .bottom:
+            originX = start.x + start.width / 2 - width / 2
+        }
+
+        let originY: CGFloat
+        switch handle {
+        case .topLeft, .top, .topRight:
+            originY = start.y
+        case .bottomLeft, .bottom, .bottomRight:
+            originY = start.y + start.height - height
+        case .left, .right:
+            originY = start.y + start.height / 2 - height / 2
+        }
+        return (originX, originY)
+    }
+
+    private static func clampToBounds(
+        origin: inout (x: CGFloat, y: CGFloat),
+        size: inout (width: CGFloat, height: CGFloat),
+        normalizedRatio: CGFloat, minSize: CGFloat
+    ) {
+        if origin.x < 0 {
+            size.width += origin.x
+            origin.x = 0
+            size.height = size.width / normalizedRatio
+        }
+        if origin.y < 0 {
+            size.height += origin.y
+            origin.y = 0
+            size.width = size.height * normalizedRatio
+        }
+        if origin.x + size.width > 1 {
+            size.width = 1 - origin.x
+            size.height = size.width / normalizedRatio
+        }
+        if origin.y + size.height > 1 {
+            size.height = 1 - origin.y
+            size.width = size.height * normalizedRatio
+        }
+        size.width = max(size.width, minSize)
+        size.height = max(size.height, minSize)
+    }
+
     // MARK: - View Coordinate Conversion
 
     /// 正規化されたクロップ座標（0〜1）
