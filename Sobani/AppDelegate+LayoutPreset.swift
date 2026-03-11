@@ -46,6 +46,7 @@ extension AppDelegate {
     func buildLayoutMenuItem() -> NSMenuItem {
         let layoutItem = NSMenuItem(title: L("layout.title"), action: nil, keyEquivalent: "")
         layoutItem.tag = MenuItemTag.layoutSubmenu.rawValue
+        layoutItem.image = menuIcon("square.grid.2x2")
         let submenu = NSMenu()
 
         let saveItem = NSMenuItem(
@@ -56,6 +57,7 @@ extension AppDelegate {
         saveItem.target = self
         saveItem.tag = MenuItemTag.saveLayout.rawValue
         saveItem.isEnabled = !characterWindows.isEmpty
+        saveItem.image = menuIcon("square.and.arrow.down")
         submenu.addItem(saveItem)
 
         let createItem = NSMenuItem(
@@ -65,6 +67,7 @@ extension AppDelegate {
         )
         createItem.target = self
         createItem.tag = MenuItemTag.createLayout.rawValue
+        createItem.image = menuIcon("plus.square")
         submenu.addItem(createItem)
 
         let presets = LayoutPresetManager.shared.loadPresets()
@@ -93,17 +96,22 @@ extension AppDelegate {
                 action: #selector(updateLayoutFromMenu(_:)), presets: presets
             )
             updateItem.isEnabled = !characterWindows.isEmpty
+            updateItem.image = menuIcon("arrow.triangle.2.circlepath")
             submenu.addItem(updateItem)
 
-            submenu.addItem(buildLayoutPresetSubmenu(
+            let renameItem = buildLayoutPresetSubmenu(
                 title: L("layout.rename"), tag: .renameLayout,
                 action: #selector(renameLayoutFromMenu(_:)), presets: presets
-            ))
+            )
+            renameItem.image = menuIcon("pencil")
+            submenu.addItem(renameItem)
 
-            submenu.addItem(buildLayoutPresetSubmenu(
+            let deleteItem = buildLayoutPresetSubmenu(
                 title: L("layout.delete"), tag: .deleteLayout,
                 action: #selector(deleteLayoutFromMenu(_:)), presets: presets
-            ))
+            )
+            deleteItem.image = menuIcon("trash")
+            submenu.addItem(deleteItem)
         }
 
         layoutItem.submenu = submenu
