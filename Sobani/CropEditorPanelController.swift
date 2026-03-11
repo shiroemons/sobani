@@ -18,10 +18,6 @@ final class CropEditorPanelController: NSObject {
 
     // MARK: - Constants
 
-    private static let panelWidth: CGFloat = 480
-    private static let panelHeight: CGFloat = 640
-    private static let topBarHeight: CGFloat = 44
-    private static let toolbarHeight: CGFloat = 130
     private static let buttonPadding: CGFloat = 16
     private static let buttonWidth: CGFloat = 80
     private static let buttonHeight: CGFloat = 28
@@ -55,7 +51,7 @@ final class CropEditorPanelController: NSObject {
 
         let panelRect = NSRect(
             x: 0, y: 0,
-            width: Self.panelWidth, height: Self.panelHeight
+            width: AppConstants.cropEditorPanelWidth, height: AppConstants.cropEditorPanelHeight
         )
         let newPanel = NSPanel(
             contentRect: panelRect,
@@ -74,13 +70,13 @@ final class CropEditorPanelController: NSObject {
         contentView.wantsLayer = true
 
         // Top bar (cancel / reset / done buttons)
-        let topBar = createTopBar(width: Self.panelWidth)
-        topBar.frame.origin = NSPoint(x: 0, y: Self.panelHeight - Self.topBarHeight)
+        let topBar = createTopBar(width: AppConstants.cropEditorPanelWidth)
+        topBar.frame.origin = NSPoint(x: 0, y: AppConstants.cropEditorPanelHeight - AppConstants.cropEditorTopBarHeight)
         contentView.addSubview(topBar)
 
         // Bottom toolbar
         let toolbar = CropEditorToolbarView(
-            frame: NSRect(x: 0, y: 0, width: Self.panelWidth, height: Self.toolbarHeight)
+            frame: NSRect(x: 0, y: 0, width: AppConstants.cropEditorPanelWidth, height: AppConstants.cropEditorToolbarHeight)
         )
         toolbar.onStraightenAngleChanged = { [weak self] angle in
             self?.handleStraightenAngleChanged(angle)
@@ -98,10 +94,10 @@ final class CropEditorPanelController: NSObject {
         }
 
         // Central canvas
-        let canvasY = Self.toolbarHeight
-        let canvasHeight = Self.panelHeight - Self.topBarHeight - Self.toolbarHeight
+        let canvasY = AppConstants.cropEditorToolbarHeight
+        let canvasHeight = AppConstants.cropEditorPanelHeight - AppConstants.cropEditorTopBarHeight - AppConstants.cropEditorToolbarHeight
         let canvas = CropEditorCanvasView(
-            frame: NSRect(x: 0, y: canvasY, width: Self.panelWidth, height: canvasHeight)
+            frame: NSRect(x: 0, y: canvasY, width: AppConstants.cropEditorPanelWidth, height: canvasHeight)
         )
         canvas.setImage(image)
         canvas.initializeFromCropRect(currentCropRect)
@@ -135,7 +131,7 @@ final class CropEditorPanelController: NSObject {
     // MARK: - Top Bar
 
     private func createTopBar(width: CGFloat) -> NSView {
-        let bar = NSView(frame: NSRect(x: 0, y: 0, width: width, height: Self.topBarHeight))
+        let bar = NSView(frame: NSRect(x: 0, y: 0, width: width, height: AppConstants.cropEditorTopBarHeight))
         bar.wantsLayer = true
 
         // Cancel button (left)
@@ -209,14 +205,7 @@ final class CropEditorPanelController: NSObject {
 
     private func handleStraightenAngleChanged(_ angle: CGFloat) {
         let clamped = CropGeometry.clampStraightenAngle(angle)
-        var updated = CropRect(
-            x: currentCropRect.x, y: currentCropRect.y,
-            width: currentCropRect.width, height: currentCropRect.height,
-            straightenAngle: clamped,
-            quarterTurns: currentCropRect.quarterTurns,
-            isFlippedInCrop: currentCropRect.isFlippedInCrop,
-            aspectRatioPreset: currentCropRect.aspectRatioPreset
-        )
+        var updated = currentCropRect.with(straightenAngle: clamped)
         updated = applyCurrentAspectRatioConstraint(to: updated)
         currentCropRect = updated
         canvasView?.cropRect = currentCropRect
@@ -235,24 +224,14 @@ final class CropEditorPanelController: NSObject {
             let base = CropGeometry.cropRectForAspectRatio(
                 ratio: ratio, within: imageSize
             )
-            currentCropRect = CropRect(
+            currentCropRect = currentCropRect.with(
                 x: base.x, y: base.y,
                 width: base.width, height: base.height,
-                straightenAngle: currentCropRect.straightenAngle,
-                quarterTurns: currentCropRect.quarterTurns,
-                isFlippedInCrop: currentCropRect.isFlippedInCrop,
-                aspectRatioPreset: preset.rawValue
+                aspectRatioPreset: .some(preset.rawValue)
             )
         } else {
             // フリー: aspectRatioPresetのみ更新、サイズ変更なし
-            currentCropRect = CropRect(
-                x: currentCropRect.x, y: currentCropRect.y,
-                width: currentCropRect.width, height: currentCropRect.height,
-                straightenAngle: currentCropRect.straightenAngle,
-                quarterTurns: currentCropRect.quarterTurns,
-                isFlippedInCrop: currentCropRect.isFlippedInCrop,
-                aspectRatioPreset: preset.rawValue
-            )
+            currentCropRect = currentCropRect.with(aspectRatioPreset: .some(preset.rawValue))
         }
         canvasView?.initializeFromCropRect(currentCropRect)
         toolbarView?.updateAspectRatioSelection(preset)
@@ -288,13 +267,9 @@ final class CropEditorPanelController: NSObject {
             return rect
         }
         let constrained = CropGeometry.constrainCropRect(rect, toAspectRatio: ratio, within: imageSize)
-        return CropRect(
+        return rect.with(
             x: constrained.x, y: constrained.y,
-            width: constrained.width, height: constrained.height,
-            straightenAngle: rect.straightenAngle,
-            quarterTurns: rect.quarterTurns,
-            isFlippedInCrop: rect.isFlippedInCrop,
-            aspectRatioPreset: rect.aspectRatioPreset
+            width: constrained.width, height: constrained.height
         )
     }
 

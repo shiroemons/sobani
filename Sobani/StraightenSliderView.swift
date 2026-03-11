@@ -6,10 +6,6 @@ final class StraightenSliderView: NSView {
 
     // MARK: - Constants
 
-    private static let minAngle: CGFloat = -45
-    private static let maxAngle: CGFloat = 45
-    private static let majorTickInterval: CGFloat = 15
-    private static let minorTickInterval: CGFloat = 5
     private static let tickHeight: CGFloat = 8
     private static let minorTickHeight: CGFloat = 4
     private static let indicatorSize: CGFloat = 12
@@ -54,10 +50,10 @@ final class StraightenSliderView: NSView {
     }
 
     private func drawTicks(context: CGContext, trackRect: NSRect, centerY: CGFloat) {
-        var tickAngle = Self.minAngle
-        while tickAngle <= Self.maxAngle {
+        var tickAngle = AppConstants.straightenMinAngle
+        while tickAngle <= AppConstants.straightenMaxAngle {
             let x = xForAngle(tickAngle, in: trackRect)
-            let isMajor = abs(tickAngle.truncatingRemainder(dividingBy: Self.majorTickInterval)) < 0.1
+            let isMajor = abs(tickAngle.truncatingRemainder(dividingBy: AppConstants.straightenMajorTickInterval)) < 0.1
             let height = isMajor ? Self.tickHeight : Self.minorTickHeight
 
             context.setStrokeColor(NSColor.secondaryLabelColor.cgColor)
@@ -66,7 +62,7 @@ final class StraightenSliderView: NSView {
             context.addLine(to: CGPoint(x: x, y: centerY + height))
             context.strokePath()
 
-            tickAngle += Self.minorTickInterval
+            tickAngle += AppConstants.straightenMinorTickInterval
         }
     }
 
@@ -118,7 +114,7 @@ final class StraightenSliderView: NSView {
         let point = convert(event.locationInWindow, from: nil)
         let trackRect = trackArea()
         let deltaX = point.x - dragStartX
-        let angleRange = Self.maxAngle - Self.minAngle
+        let angleRange = AppConstants.straightenMaxAngle - AppConstants.straightenMinAngle
         let trackWidth = trackRect.width
         guard trackWidth > 0 else { return }
         let deltaAngle = (deltaX / trackWidth) * angleRange
@@ -145,8 +141,8 @@ final class StraightenSliderView: NSView {
     }
 
     private func xForAngle(_ angle: CGFloat, in trackRect: NSRect) -> CGFloat {
-        let range = Self.maxAngle - Self.minAngle
-        let fraction = (angle - Self.minAngle) / range
+        let range = AppConstants.straightenMaxAngle - AppConstants.straightenMinAngle
+        let fraction = (angle - AppConstants.straightenMinAngle) / range
         return trackRect.minX + fraction * trackRect.width
     }
 }

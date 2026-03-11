@@ -37,6 +37,29 @@ struct CropRect: Codable, Equatable, Sendable {
         self.aspectRatioPreset = aspectRatioPreset
     }
 
+    // MARK: - Copy Helper
+
+    /// フィールドを選択的に上書きしたコピーを返す
+    func with(
+        x: CGFloat? = nil, y: CGFloat? = nil,
+        width: CGFloat? = nil, height: CGFloat? = nil,
+        straightenAngle: CGFloat? = nil,
+        quarterTurns: Int? = nil,
+        isFlippedInCrop: Bool? = nil,
+        aspectRatioPreset: String?? = nil
+    ) -> Self {
+        Self(
+            x: x ?? self.x,
+            y: y ?? self.y,
+            width: width ?? self.width,
+            height: height ?? self.height,
+            straightenAngle: straightenAngle ?? self.straightenAngle,
+            quarterTurns: quarterTurns ?? self.quarterTurns,
+            isFlippedInCrop: isFlippedInCrop ?? self.isFlippedInCrop,
+            aspectRatioPreset: aspectRatioPreset ?? self.aspectRatioPreset
+        )
+    }
+
     // カスタムデコーダ（後方互換：旧JSON対応）
     enum CodingKeys: String, CodingKey {
         case x, y, width, height

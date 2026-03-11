@@ -16,7 +16,6 @@ final class CropEditorToolbarView: NSView {
 
     var onStraightenAngleChanged: ((CGFloat) -> Void)?
     var onRotate90Tapped: (() -> Void)?
-    var onAspectRatioTapped: (() -> Void)?
     var onAspectRatioSelected: ((AspectRatioPreset) -> Void)?
 
     // MARK: - State
@@ -161,7 +160,6 @@ final class CropEditorToolbarView: NSView {
         isSelectorVisible.toggle()
         selectorView?.isHidden = !isSelectorVisible
         updateAspectRatioButtonAppearance()
-        onAspectRatioTapped?()
     }
 
     // MARK: - Public API

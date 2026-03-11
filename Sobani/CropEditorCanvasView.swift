@@ -7,13 +7,7 @@ final class CropEditorCanvasView: NSView {
 
     // MARK: - Constants
 
-    private static let padding: CGFloat = 20
-    private static let handleLength: CGFloat = 20
-    private static let handleThickness: CGFloat = 3
     private static let handleHitTolerance: CGFloat = 14
-    private static let gridLineWidth: CGFloat = 0.5
-    private static let overlayAlpha: CGFloat = 0.6
-    private static let minCropProportion: CGFloat = 0.1
     private static let minZoom: CGFloat = 1.0
     private static let maxZoom: CGFloat = 10.0
     private static let zoomSensitivity: CGFloat = 0.02
@@ -93,12 +87,12 @@ final class CropEditorCanvasView: NSView {
 
     // MARK: - Coordinate Helpers
 
-    func clamp(_ value: CGFloat, min minVal: CGFloat, max maxVal: CGFloat) -> CGFloat {
+    private func clamp(_ value: CGFloat, min minVal: CGFloat, max maxVal: CGFloat) -> CGFloat {
         Swift.min(Swift.max(value, minVal), maxVal)
     }
 
-    func handleCornerPoint(for position: HandlePosition,
-                           cropFrame: NSRect) -> NSPoint {
+    private func handleCornerPoint(for position: HandlePosition,
+                                   cropFrame: NSRect) -> NSPoint {
         switch position {
         case .topLeft: return NSPoint(x: cropFrame.minX, y: cropFrame.maxY)
         case .topRight: return NSPoint(x: cropFrame.maxX, y: cropFrame.maxY)
@@ -123,13 +117,9 @@ final class CropEditorCanvasView: NSView {
             cropFrame: cropFrame, imageRect: imgRect
         )
 
-        return CropRect(
+        return cropRect.with(
             x: normalized.x, y: normalized.y,
-            width: normalized.width, height: normalized.height,
-            straightenAngle: cropRect.straightenAngle,
-            quarterTurns: cropRect.quarterTurns,
-            isFlippedInCrop: cropRect.isFlippedInCrop,
-            aspectRatioPreset: cropRect.aspectRatioPreset
+            width: normalized.width, height: normalized.height
         )
     }
 
@@ -185,7 +175,7 @@ extension CropEditorCanvasView {
         let cropAspect = (cropRect.width * effectiveWidth)
             / max(cropRect.height * effectiveHeight, AppConstants.floatingPointTolerance)
 
-        let availableRect = bounds.insetBy(dx: Self.padding, dy: Self.padding)
+        let availableRect = bounds.insetBy(dx: AppConstants.cropEditorCanvasPadding, dy: AppConstants.cropEditorCanvasPadding)
         guard availableRect.width > 0, availableRect.height > 0 else { return .zero }
 
         let frameWidth: CGFloat
@@ -307,7 +297,7 @@ extension CropEditorCanvasView {
 
     private func drawOverlay(context: CGContext, cropFrame: NSRect) {
         context.saveGState()
-        context.setFillColor(NSColor.black.withAlphaComponent(Self.overlayAlpha).cgColor)
+        context.setFillColor(NSColor.black.withAlphaComponent(AppConstants.cropEditorOverlayAlpha).cgColor)
 
         // bounds全体からクロップ枠を除外して塗る
         // 上
@@ -333,7 +323,7 @@ extension CropEditorCanvasView {
 
     private func drawGrid(context: CGContext, cropFrame: NSRect) {
         context.setStrokeColor(NSColor.white.withAlphaComponent(0.5).cgColor)
-        context.setLineWidth(Self.gridLineWidth)
+        context.setLineWidth(AppConstants.cropEditorGridLineWidth)
 
         for idx in 1...2 {
             let fraction = CGFloat(idx) / 3
@@ -355,7 +345,7 @@ extension CropEditorCanvasView {
 
     private func drawHandles(context: CGContext, cropFrame: NSRect) {
         context.setStrokeColor(NSColor.white.cgColor)
-        context.setLineWidth(Self.handleThickness)
+        context.setLineWidth(AppConstants.cropEditorHandleThickness)
 
         for position in HandlePosition.allCases {
             drawHandle(at: position, cropFrame: cropFrame, context: context)
@@ -365,7 +355,7 @@ extension CropEditorCanvasView {
     private func drawHandle(at position: HandlePosition,
                             cropFrame: NSRect,
                             context: CGContext) {
-        let len = Self.handleLength
+        let len = AppConstants.cropEditorHandleLength
         let point = handleCornerPoint(for: position, cropFrame: cropFrame)
 
         switch position {
@@ -546,7 +536,7 @@ extension CropEditorCanvasView {
             let normalizedDX = deltaX / dragStartCropFrame.width * dragStartCropRect.width
             let normalizedDY = deltaY / dragStartCropFrame.height * dragStartCropRect.height
             let start = dragStartCropRect
-            let minSize = Self.minCropProportion
+            let minSize = AppConstants.cropMinProportion
             var newW = start.width
             var newH = start.height
 
@@ -573,13 +563,9 @@ extension CropEditorCanvasView {
                 handle: handle, normalizedRatio: normalizedRatio, minSize: minSize
             )
             let result = CropGeometry.constrainedResize(input: input)
-            cropRect = CropRect(
+            cropRect = cropRect.with(
                 x: result.originX, y: result.originY,
-                width: result.width, height: result.height,
-                straightenAngle: cropRect.straightenAngle,
-                quarterTurns: cropRect.quarterTurns,
-                isFlippedInCrop: cropRect.isFlippedInCrop,
-                aspectRatioPreset: cropRect.aspectRatioPreset
+                width: result.width, height: result.height
             )
 
             // ピクセルベースのcropFrameを計算（リフィット防止）
@@ -597,13 +583,9 @@ extension CropEditorCanvasView {
             let normalized = CropGeometry.viewRectToNormalizedCrop(
                 cropFrame: newFrame, imageRect: imgRect
             )
-            cropRect = CropRect(
+            cropRect = cropRect.with(
                 x: normalized.x, y: normalized.y,
-                width: normalized.width, height: normalized.height,
-                straightenAngle: cropRect.straightenAngle,
-                quarterTurns: cropRect.quarterTurns,
-                isFlippedInCrop: cropRect.isFlippedInCrop,
-                aspectRatioPreset: cropRect.aspectRatioPreset
+                width: normalized.width, height: normalized.height
             )
         }
         onCropRectChanged?(cropRect)
@@ -614,8 +596,8 @@ extension CropEditorCanvasView {
                                  deltaX: CGFloat, deltaY: CGFloat) -> NSRect {
         let startFrame = dragStartCropFrame
         let imgRect = dragStartImageDrawRect
-        let minPixelW = Self.minCropProportion * imgRect.width
-        let minPixelH = Self.minCropProportion * imgRect.height
+        let minPixelW = AppConstants.cropMinProportion * imgRect.width
+        let minPixelH = AppConstants.cropMinProportion * imgRect.height
 
         var minX = startFrame.minX
         var minY = startFrame.minY

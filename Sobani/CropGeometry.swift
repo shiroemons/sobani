@@ -46,12 +46,9 @@ enum CropGeometry {
             h = newH
         }
 
-        return CropRect(
+        return cropRect.with(
             x: x, y: y, width: w, height: h,
-            straightenAngle: cropRect.straightenAngle,
-            quarterTurns: normalizeQuarterTurns(cropRect.quarterTurns + turns),
-            isFlippedInCrop: cropRect.isFlippedInCrop,
-            aspectRatioPreset: cropRect.aspectRatioPreset
+            quarterTurns: normalizeQuarterTurns(cropRect.quarterTurns + turns)
         )
     }
 
@@ -103,13 +100,7 @@ enum CropGeometry {
         let x = min(max(rect.x, 0), 1 - w)
         let y = min(max(rect.y, 0), 1 - h)
 
-        return CropRect(
-            x: x, y: y, width: w, height: h,
-            straightenAngle: rect.straightenAngle,
-            quarterTurns: rect.quarterTurns,
-            isFlippedInCrop: rect.isFlippedInCrop,
-            aspectRatioPreset: rect.aspectRatioPreset
-        )
+        return rect.with(x: x, y: y, width: w, height: h)
     }
 
     // MARK: - Constrained Resize
@@ -367,6 +358,6 @@ enum CropGeometry {
 
     /// straightenAngleを-45〜+45にクランプ
     static func clampStraightenAngle(_ angle: CGFloat) -> CGFloat {
-        min(max(angle, -45), 45)
+        min(max(angle, AppConstants.straightenMinAngle), AppConstants.straightenMaxAngle)
     }
 }
