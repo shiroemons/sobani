@@ -12,6 +12,7 @@ final class ImageManager {
     static let shared = ImageManager()
     nonisolated static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
     private let baseDirectory: URL?
+    private var cachedImageNames: [String]?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
@@ -37,16 +38,21 @@ final class ImageManager {
     }
 
     func registeredImageNames() -> [String] {
+        if let cached = cachedImageNames {
+            return cached
+        }
         guard let imagesDir = imagesDirectoryURL else { return [] }
         let fm = FileManager.default
         let files = (try? fm.contentsOfDirectory(atPath: imagesDir.path)) ?? []
         let imageExtensions = Self.supportedExtensions
-        return files
+        let result = files
             .filter { name in
                 let ext = URL(fileURLWithPath: name).pathExtension.lowercased()
                 return imageExtensions.contains(ext)
             }
             .sorted()
+        cachedImageNames = result
+        return result
     }
 
     func loadRegisteredImage(named name: String) -> NSImage? {
@@ -76,6 +82,7 @@ final class ImageManager {
         }
         do {
             try fm.copyItem(at: url, to: finalURL)
+            cachedImageNames = nil
             return finalName
         } catch {
             logger.error("Failed to copy image: \(error.localizedDescription)")
@@ -92,6 +99,7 @@ final class ImageManager {
         guard let destURL = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
         do {
             try pngData.write(to: destURL)
+            cachedImageNames = nil
         } catch {
             logger.error("Failed to write image data: \(error.localizedDescription)")
             return nil
@@ -104,6 +112,7 @@ final class ImageManager {
         guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return }
         do {
             try FileManager.default.removeItem(at: url)
+            cachedImageNames = nil
         } catch {
             logger.error("Failed to remove image: \(error.localizedDescription)")
         }

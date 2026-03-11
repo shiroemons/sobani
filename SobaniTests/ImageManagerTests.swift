@@ -349,6 +349,63 @@ import Testing
         // （パストラバーサルは防止されるが、サニタイズ後の名前で登録される）
     }
 
+    // MARK: - Cache Tests
+
+    /// registeredImageNames()が同一オブジェクトを返すことでキャッシュが機能していることを検証
+    @Test func registeredImageNames_Cache_ReturnsSameResult() throws {
+        let imagesDir = tempDirectory.appendingPathComponent("images")
+        try FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+        try createTestImageFile(named: "cache_test.png", in: imagesDir)
+
+        let first = imageManager.registeredImageNames()
+        let second = imageManager.registeredImageNames()
+        #expect(first == second)
+    }
+
+    /// registerImage後にキャッシュがクリアされ最新の一覧が返されることを検証
+    @Test func registeredImageNames_Cache_InvalidatedOnRegister() throws {
+        let sourceDir = try createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
+
+        let beforeNames = imageManager.registeredImageNames()
+        #expect(beforeNames.isEmpty)
+
+        let sourceURL = try createTestImageFile(named: "new_image.png", in: sourceDir)
+        imageManager.registerImage(from: sourceURL)
+
+        let afterNames = imageManager.registeredImageNames()
+        #expect(afterNames.contains("new_image.png"))
+    }
+
+    /// removeRegisteredImage後にキャッシュがクリアされ最新の一覧が返されることを検証
+    @Test func registeredImageNames_Cache_InvalidatedOnRemove() throws {
+        let sourceDir = try createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
+
+        let sourceURL = try createTestImageFile(named: "to_remove.png", in: sourceDir)
+        imageManager.registerImage(from: sourceURL)
+        #expect(imageManager.registeredImageNames().contains("to_remove.png"))
+
+        imageManager.removeRegisteredImage(named: "to_remove.png")
+        #expect(!imageManager.registeredImageNames().contains("to_remove.png"))
+    }
+
+    /// registerImage(NSImage)後にキャッシュがクリアされ最新の一覧が返されることを検証
+    @Test func registeredImageNames_Cache_InvalidatedOnRegisterNSImage() throws {
+        let beforeNames = imageManager.registeredImageNames()
+        #expect(beforeNames.isEmpty)
+
+        let image = NSImage(size: NSSize(width: 10, height: 10))
+        image.lockFocus()
+        NSColor.green.setFill()
+        NSRect(x: 0, y: 0, width: 10, height: 10).fill()
+        image.unlockFocus()
+        imageManager.registerImage(image, name: "nsimage_cache.png")
+
+        let afterNames = imageManager.registeredImageNames()
+        #expect(afterNames.contains("nsimage_cache.png"))
+    }
+
     // MARK: - supportedExtensions Tests
 
     /// supportedExtensionsが全サポート形式を含むことを検証
