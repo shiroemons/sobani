@@ -262,7 +262,7 @@ extension CropEditorCanvasView {
 
         // 1. quarterTurns（90°単位の回転）
         if hasQuarterTurns {
-            let quarterRadians = -CGFloat(normalizedTurns) * .pi / 2
+            let quarterRadians = CGFloat(normalizedTurns) * .pi / 2
             context.rotate(by: quarterRadians)
         }
 
