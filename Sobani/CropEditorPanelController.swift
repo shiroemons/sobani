@@ -21,7 +21,7 @@ final class CropEditorPanelController: NSObject {
     private static let panelWidth: CGFloat = 480
     private static let panelHeight: CGFloat = 640
     private static let topBarHeight: CGFloat = 44
-    private static let toolbarHeight: CGFloat = 120
+    private static let toolbarHeight: CGFloat = 130
     private static let buttonPadding: CGFloat = 16
     private static let buttonWidth: CGFloat = 80
     private static let buttonHeight: CGFloat = 28
@@ -88,11 +88,14 @@ final class CropEditorPanelController: NSObject {
         toolbar.onRotate90Tapped = { [weak self] in
             self?.handleRotate90()
         }
-        toolbar.onAspectRatioTapped = { [weak self] in
-            self?.handleAspectRatioCycle()
+        toolbar.onAspectRatioSelected = { [weak self] preset in
+            self?.handleAspectRatioSelected(preset)
         }
         contentView.addSubview(toolbar)
         toolbarView = toolbar
+        if let preset = AspectRatioPreset.from(presetName: currentCropRect.aspectRatioPreset) {
+            toolbar.updateAspectRatioSelection(preset)
+        }
 
         // Central canvas
         let canvasY = Self.toolbarHeight
@@ -197,6 +200,8 @@ final class CropEditorPanelController: NSObject {
         canvasView?.cropRect = .full
         canvasView?.resetZoomAndOffset()
         toolbarView?.resetStraightenAngle()
+        toolbarView?.hideAspectRatioSelector()
+        toolbarView?.updateAspectRatioSelection(.free)
         delegate?.cropEditorDidReset(self)
     }
 
@@ -224,15 +229,9 @@ final class CropEditorPanelController: NSObject {
         canvasView?.cropRect = currentCropRect
     }
 
-    private func handleAspectRatioCycle() {
-        let allPresets = AspectRatioPreset.allCases
-        let currentPreset = AspectRatioPreset.from(presetName: currentCropRect.aspectRatioPreset)
-        let currentIndex = currentPreset.flatMap { allPresets.firstIndex(of: $0) } ?? -1
-        let nextIndex = (currentIndex + 1) % allPresets.count
-        let nextPreset = allPresets[nextIndex]
-
+    private func handleAspectRatioSelected(_ preset: AspectRatioPreset) {
         let imageSize = effectiveImageSize()
-        if let ratio = resolveAspectRatio(for: nextPreset, imageSize: imageSize) {
+        if let ratio = resolveAspectRatio(for: preset, imageSize: imageSize) {
             let constrained = CropGeometry.constrainCropRect(
                 currentCropRect, toAspectRatio: ratio, within: imageSize
             )
@@ -242,20 +241,20 @@ final class CropEditorPanelController: NSObject {
                 straightenAngle: currentCropRect.straightenAngle,
                 quarterTurns: currentCropRect.quarterTurns,
                 isFlippedInCrop: currentCropRect.isFlippedInCrop,
-                aspectRatioPreset: nextPreset.rawValue
+                aspectRatioPreset: preset.rawValue
             )
         } else {
-            // free モード：現在の矩形を維持し、プリセット名のみ更新
             currentCropRect = CropRect(
                 x: currentCropRect.x, y: currentCropRect.y,
                 width: currentCropRect.width, height: currentCropRect.height,
                 straightenAngle: currentCropRect.straightenAngle,
                 quarterTurns: currentCropRect.quarterTurns,
                 isFlippedInCrop: currentCropRect.isFlippedInCrop,
-                aspectRatioPreset: nextPreset.rawValue
+                aspectRatioPreset: preset.rawValue
             )
         }
-        canvasView?.cropRect = currentCropRect
+        canvasView?.initializeFromCropRect(currentCropRect)
+        toolbarView?.updateAspectRatioSelection(preset)
     }
 
     // MARK: - Aspect Ratio Helpers

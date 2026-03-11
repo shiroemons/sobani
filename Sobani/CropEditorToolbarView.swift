@@ -10,16 +10,24 @@ final class CropEditorToolbarView: NSView {
     private static let buttonSpacing: CGFloat = 24
     private static let sliderHeight: CGFloat = 50
     private static let bottomPadding: CGFloat = 12
+    private static let selectorHeight: CGFloat = 36
 
     // MARK: - Callbacks
 
     var onStraightenAngleChanged: ((CGFloat) -> Void)?
     var onRotate90Tapped: (() -> Void)?
     var onAspectRatioTapped: (() -> Void)?
+    var onAspectRatioSelected: ((AspectRatioPreset) -> Void)?
+
+    // MARK: - State
+
+    private var isSelectorVisible = false
 
     // MARK: - Subviews
 
     private var sliderView: StraightenSliderView?
+    private var selectorView: AspectRatioSelectorView?
+    private var buttons: [NSButton] = []
 
     // MARK: - Init
 
@@ -39,9 +47,8 @@ final class CropEditorToolbarView: NSView {
         wantsLayer = true
 
         // StraightenSliderView（上部）
-        let sliderY = bounds.height - Self.sliderHeight
         let slider = StraightenSliderView(
-            frame: NSRect(x: 0, y: sliderY, width: bounds.width, height: Self.sliderHeight)
+            frame: NSRect(x: 0, y: bounds.height - Self.sliderHeight, width: bounds.width, height: Self.sliderHeight)
         )
         slider.onAngleChanged = { [weak self] angle in
             self?.onStraightenAngleChanged?(angle)
@@ -49,22 +56,23 @@ final class CropEditorToolbarView: NSView {
         addSubview(slider)
         sliderView = slider
 
-        // ボタン行（下部）
-        let buttonY = Self.bottomPadding
-        let buttons = createButtons()
-        let totalWidth = CGFloat(buttons.count) * Self.buttonSize
-            + CGFloat(buttons.count - 1) * Self.buttonSpacing
-        let startX = (bounds.width - totalWidth) / 2
+        // AspectRatioSelectorView
+        let selector = AspectRatioSelectorView(
+            frame: NSRect(x: 0, y: Self.bottomPadding + Self.buttonSize, width: bounds.width, height: Self.selectorHeight)
+        )
+        selector.onPresetSelected = { [weak self] preset in
+            self?.onAspectRatioSelected?(preset)
+        }
+        selector.isHidden = true
+        addSubview(selector)
+        selectorView = selector
 
-        for (index, button) in buttons.enumerated() {
-            button.frame = NSRect(
-                x: startX + CGFloat(index) * (Self.buttonSize + Self.buttonSpacing),
-                y: buttonY,
-                width: Self.buttonSize,
-                height: Self.buttonSize
-            )
+        // ボタン行（下部）
+        let createdButtons = createButtons()
+        for button in createdButtons {
             addSubview(button)
         }
+        buttons = createdButtons
     }
 
     private struct ButtonSpec {
@@ -100,6 +108,35 @@ final class CropEditorToolbarView: NSView {
         }
     }
 
+    // MARK: - Layout
+
+    override func layout() {
+        super.layout()
+
+        // ボタン行（下部）
+        let buttonY = Self.bottomPadding
+        let totalWidth = CGFloat(buttons.count) * Self.buttonSize
+            + CGFloat(buttons.count - 1) * Self.buttonSpacing
+        let startX = (bounds.width - totalWidth) / 2
+
+        for (index, button) in buttons.enumerated() {
+            button.frame = NSRect(
+                x: startX + CGFloat(index) * (Self.buttonSize + Self.buttonSpacing),
+                y: buttonY,
+                width: Self.buttonSize,
+                height: Self.buttonSize
+            )
+        }
+
+        // セレクター（ボタンの上）
+        let selectorY = Self.bottomPadding + Self.buttonSize
+        selectorView?.frame = NSRect(x: 0, y: selectorY, width: bounds.width, height: Self.selectorHeight)
+
+        // スライダー（最上部）
+        let sliderY = bounds.height - Self.sliderHeight
+        sliderView?.frame = NSRect(x: 0, y: sliderY, width: bounds.width, height: Self.sliderHeight)
+    }
+
     // MARK: - Actions
 
     @objc private func rotate90Tapped() {
@@ -107,6 +144,8 @@ final class CropEditorToolbarView: NSView {
     }
 
     @objc private func aspectRatioTapped() {
+        isSelectorVisible.toggle()
+        selectorView?.isHidden = !isSelectorVisible
         onAspectRatioTapped?()
     }
 
@@ -114,5 +153,14 @@ final class CropEditorToolbarView: NSView {
 
     func resetStraightenAngle() {
         sliderView?.reset()
+    }
+
+    func updateAspectRatioSelection(_ preset: AspectRatioPreset) {
+        selectorView?.updateSelection(preset)
+    }
+
+    func hideAspectRatioSelector() {
+        isSelectorVisible = false
+        selectorView?.isHidden = true
     }
 }
