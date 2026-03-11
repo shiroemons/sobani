@@ -129,23 +129,24 @@ final class CropEditorCanvasView: NSView {
     func initializeFromCropRect(_ rect: CropRect) {
         cropRect = rect
         imageZoom = Self.minZoom
+        recalculateImageOffset()
+        needsDisplay = true
+    }
 
+    /// cropRect変更後に imageOffset を再計算（ズームは維持）
+    private func recalculateImageOffset() {
         let cropFrame = calculateCropFrameRect()
         guard cropFrame.width > 0, cropFrame.height > 0,
-              rect.width > AppConstants.floatingPointTolerance,
-              rect.height > AppConstants.floatingPointTolerance else {
+              cropRect.width > AppConstants.floatingPointTolerance,
+              cropRect.height > AppConstants.floatingPointTolerance else {
             imageOffset = .zero
-            needsDisplay = true
             return
         }
-
-        // baseWidth/baseHeight は calculateImageDrawRect と同じ計算
-        let baseWidth = cropFrame.width / rect.width
-        let baseHeight = cropFrame.height / rect.height
-        let offsetX = baseWidth * (0.5 - rect.x) - cropFrame.width / 2
-        let offsetY = baseHeight * (0.5 - rect.y) - cropFrame.height / 2
+        let baseWidth = cropFrame.width / cropRect.width
+        let baseHeight = cropFrame.height / cropRect.height
+        let offsetX = baseWidth * (0.5 - cropRect.x) - cropFrame.width / 2
+        let offsetY = baseHeight * (0.5 - cropRect.y) - cropFrame.height / 2
         imageOffset = CGPoint(x: offsetX, y: offsetY)
-        needsDisplay = true
     }
 
     /// ズーム/オフセットをリセットする
@@ -455,8 +456,12 @@ extension CropEditorCanvasView {
     }
 
     override func mouseUp(with event: NSEvent) {
+        let wasResizing = if case .resizingHandle = dragState { true } else { false }
         activeDragCropFrame = nil
         dragState = .idle
+        if wasResizing {
+            recalculateImageOffset()
+        }
         needsDisplay = true
     }
 
