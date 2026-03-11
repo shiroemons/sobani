@@ -14,6 +14,9 @@ final class CropEditorCanvasView: NSView {
     private static let gridLineWidth: CGFloat = 0.5
     private static let overlayAlpha: CGFloat = 0.6
     private static let minCropProportion: CGFloat = 0.1
+    private static let minZoom: CGFloat = 1.0
+    private static let maxZoom: CGFloat = 10.0
+    private static let zoomSensitivity: CGFloat = 0.02
 
     // MARK: - Handle Position
 
@@ -26,7 +29,7 @@ final class CropEditorCanvasView: NSView {
 
     private enum DragState {
         case idle
-        case movingRect
+        case movingImage
         case resizingHandle(HandlePosition)
     }
 
@@ -37,10 +40,13 @@ final class CropEditorCanvasView: NSView {
     }
     var onCropRectChanged: ((CropRect) -> Void)?
     private(set) var displayImage: NSImage?
-    private(set) var imageRect: NSRect = .zero
+
+    private var imageOffset: CGPoint = .zero
+    private var imageZoom: CGFloat = 1.0
     private var dragState: DragState = .idle
     private var dragStartPoint: NSPoint = .zero
     private var dragStartCropRect: CropRect = .full
+    private var dragStartImageOffset: CGPoint = .zero
 
     // MARK: - Setup
 
@@ -58,23 +64,23 @@ final class CropEditorCanvasView: NSView {
         context.setFillColor(NSColor.black.cgColor)
         context.fill(bounds)
 
-        drawImage(context: context)
-        drawOverlay(context: context)
-        drawCropBorder(context: context)
-        drawGrid(context: context)
-        drawHandles(context: context)
+        let cropFrame = calculateCropFrameRect()
+        guard cropFrame.width > 0, cropFrame.height > 0 else { return }
+
+        let imgDrawRect = calculateImageDrawRect(cropFrame: cropFrame)
+
+        // 画像がキャンバス領域外に描画されないようクリッピング
+        context.saveGState()
+        context.clip(to: bounds)
+        drawTransformedImage(context: context, imageDrawRect: imgDrawRect)
+        context.restoreGState()
+        drawOverlay(context: context, cropFrame: cropFrame)
+        drawCropBorder(context: context, cropFrame: cropFrame)
+        drawGrid(context: context, cropFrame: cropFrame)
+        drawHandles(context: context, cropFrame: cropFrame)
     }
 
     // MARK: - Coordinate Helpers
-
-    func cropRectInViewCoords() -> NSRect {
-        NSRect(
-            x: imageRect.origin.x + cropRect.x * imageRect.width,
-            y: imageRect.origin.y + cropRect.y * imageRect.height,
-            width: cropRect.width * imageRect.width,
-            height: cropRect.height * imageRect.height
-        )
-    }
 
     func clamp(_ value: CGFloat, min minVal: CGFloat, max maxVal: CGFloat) -> CGFloat {
         Swift.min(Swift.max(value, minVal), maxVal)
@@ -93,61 +99,150 @@ final class CropEditorCanvasView: NSView {
         case .right: return NSPoint(x: cropFrame.maxX, y: cropFrame.midY)
         }
     }
+
+    // MARK: - Final Crop Rect
+
+    /// 現在のズーム/オフセット状態から最終的な正規化 CropRect を計算
+    func computeFinalCropRect() -> CropRect {
+        let cropFrame = calculateCropFrameRect()
+        let imgRect = calculateImageDrawRect(cropFrame: cropFrame)
+        guard imgRect.width > 0, imgRect.height > 0 else { return cropRect }
+
+        let normalized = CropGeometry.viewRectToNormalizedCrop(
+            cropFrame: cropFrame, imageRect: imgRect
+        )
+
+        return CropRect(
+            x: normalized.x, y: normalized.y,
+            width: normalized.width, height: normalized.height,
+            straightenAngle: cropRect.straightenAngle,
+            quarterTurns: cropRect.quarterTurns,
+            isFlippedInCrop: cropRect.isFlippedInCrop,
+            aspectRatioPreset: cropRect.aspectRatioPreset
+        )
+    }
+
+    // MARK: - State Initialization
+
+    /// 既存の CropRect からズーム/オフセットの初期状態を復元する
+    func initializeFromCropRect(_ rect: CropRect) {
+        cropRect = rect
+        let state = CropGeometry.initialStateFromCropRect(
+            cropRect: rect,
+            canvasSize: bounds.size,
+            imageSize: displayImage?.size ?? CGSize(width: 1, height: 1)
+        )
+        imageZoom = clamp(state.zoom, min: Self.minZoom, max: Self.maxZoom)
+        imageOffset = state.offset
+        clampImageOffset()
+        needsDisplay = true
+    }
+
+    /// ズーム/オフセットをリセットする
+    func resetZoomAndOffset() {
+        imageZoom = Self.minZoom
+        imageOffset = .zero
+        needsDisplay = true
+    }
+}
+
+// MARK: - Crop Frame & Image Rect Calculation
+
+extension CropEditorCanvasView {
+
+    /// クロップ枠をキャンバス中央に配置
+    private func calculateCropFrameRect() -> NSRect {
+        guard let image = displayImage, image.size.width > 0, image.size.height > 0 else {
+            return .zero
+        }
+        let imageSize = image.size
+        let normalizedTurns = CropGeometry.normalizeQuarterTurns(cropRect.quarterTurns)
+        let isSwapped = (normalizedTurns == 1 || normalizedTurns == 3)
+        let effectiveWidth = isSwapped ? imageSize.height : imageSize.width
+        let effectiveHeight = isSwapped ? imageSize.width : imageSize.height
+
+        // クロップ領域のアスペクト比を計算
+        let cropAspect = (cropRect.width * effectiveWidth)
+            / max(cropRect.height * effectiveHeight, AppConstants.floatingPointTolerance)
+
+        let availableRect = bounds.insetBy(dx: Self.padding, dy: Self.padding)
+        guard availableRect.width > 0, availableRect.height > 0 else { return .zero }
+
+        let frameWidth: CGFloat
+        let frameHeight: CGFloat
+        if cropAspect > availableRect.width / availableRect.height {
+            frameWidth = availableRect.width
+            frameHeight = frameWidth / cropAspect
+        } else {
+            frameHeight = availableRect.height
+            frameWidth = frameHeight * cropAspect
+        }
+
+        return NSRect(
+            x: availableRect.midX - frameWidth / 2,
+            y: availableRect.midY - frameHeight / 2,
+            width: frameWidth,
+            height: frameHeight
+        )
+    }
+
+    /// ズームとオフセットを考慮した画像の描画レクトを計算
+    private func calculateImageDrawRect(cropFrame: NSRect) -> NSRect {
+        guard let image = displayImage, image.size.width > 0, image.size.height > 0 else {
+            return .zero
+        }
+
+        // zoom=1.0でクロップ枠にちょうど画像全体が収まるスケールを基準にする
+        let baseWidth = cropFrame.width / max(cropRect.width, AppConstants.floatingPointTolerance)
+        let baseHeight = cropFrame.height / max(cropRect.height, AppConstants.floatingPointTolerance)
+
+        let drawWidth = baseWidth * imageZoom
+        let drawHeight = baseHeight * imageZoom
+
+        // 画像中心 = クロップ枠中心 + オフセット
+        let centerX = cropFrame.midX + imageOffset.x
+        let centerY = cropFrame.midY + imageOffset.y
+
+        return NSRect(
+            x: centerX - drawWidth / 2,
+            y: centerY - drawHeight / 2,
+            width: drawWidth,
+            height: drawHeight
+        )
+    }
+
+    private func clampImageOffset() {
+        let cropFrame = calculateCropFrameRect()
+        let imgRect = calculateImageDrawRect(cropFrame: cropFrame)
+        imageOffset = CropGeometry.clampOffset(
+            offset: imageOffset,
+            imageSize: imgRect.size,
+            cropFrameSize: cropFrame.size
+        )
+    }
 }
 
 // MARK: - Image Drawing
 
 extension CropEditorCanvasView {
 
-    private func drawImage(context: CGContext) {
-        guard let image = displayImage else { return }
-        let imageSize = image.size
-        guard imageSize.width > 0, imageSize.height > 0 else { return }
-
-        calculateImageRect(imageSize: imageSize)
-        drawTransformedImage(image, context: context)
-    }
-
-    private func calculateImageRect(imageSize: NSSize) {
-        let availableRect = bounds.insetBy(dx: Self.padding, dy: Self.padding)
-        let normalizedTurns = CropGeometry.normalizeQuarterTurns(cropRect.quarterTurns)
-        let isQuarterTurnSwapped = (normalizedTurns == 1 || normalizedTurns == 3)
-
-        // quarterTurns が 1 or 3 の場合、画像の幅と高さが入れ替わる
-        let effectiveWidth = isQuarterTurnSwapped ? imageSize.height : imageSize.width
-        let effectiveHeight = isQuarterTurnSwapped ? imageSize.width : imageSize.height
-
-        let scale = min(
-            availableRect.width / effectiveWidth,
-            availableRect.height / effectiveHeight
-        )
-        let drawWidth = effectiveWidth * scale
-        let drawHeight = effectiveHeight * scale
-        imageRect = NSRect(
-            x: availableRect.midX - drawWidth / 2,
-            y: availableRect.midY - drawHeight / 2,
-            width: drawWidth,
-            height: drawHeight
-        )
-    }
-
     /// すべての変換（quarterTurns、isFlippedInCrop、straightenAngle）を統合して描画
-    private func drawTransformedImage(_ image: NSImage, context: CGContext) {
+    private func drawTransformedImage(context: CGContext, imageDrawRect: NSRect) {
+        guard let image = displayImage else { return }
         let normalizedTurns = CropGeometry.normalizeQuarterTurns(cropRect.quarterTurns)
         let angle = cropRect.straightenAngle
         let hasQuarterTurns = normalizedTurns != 0
         let hasStraighten = abs(angle) > AppConstants.floatingPointTolerance
         let hasFlip = cropRect.isFlippedInCrop
 
-        // 変換が不要な場合はそのまま描画
         guard hasQuarterTurns || hasStraighten || hasFlip else {
-            image.draw(in: imageRect)
+            image.draw(in: imageDrawRect)
             return
         }
 
         context.saveGState()
-        let centerX = imageRect.midX
-        let centerY = imageRect.midY
+        let centerX = imageDrawRect.midX
+        let centerY = imageDrawRect.midY
         context.translateBy(x: centerX, y: centerY)
 
         // 1. quarterTurns（90°単位の回転）
@@ -161,35 +256,28 @@ extension CropEditorCanvasView {
             context.scaleBy(x: -1, y: 1)
         }
 
-        // 3. straightenAngle（微調整回転 + 自動ズーム）
+        // 3. straightenAngle（微調整回転のみ、自動ズームなし）
         if hasStraighten {
-            let aspectRatio = imageRect.width / max(imageRect.height, 1)
-            let zoomScale = CropGeometry.zoomScaleForStraighten(
-                angleDegrees: angle, aspectRatio: aspectRatio
-            )
             context.rotate(by: -angle * .pi / 180)
-            context.scaleBy(x: zoomScale, y: zoomScale)
         }
 
         // 描画矩形を決定
-        // imageRect は回転後の見た目に合わせたサイズ（effectiveWidth/Height ベース）
-        // 90°/270° 回転時は元の画像を回転後の座標系で描くため、
-        // 描画矩形の幅と高さを入れ替える必要がある
+        // 90°/270° 回転時は元の画像を回転後の座標系で描くため、幅と高さを入れ替える
         let isSwapped = (normalizedTurns == 1 || normalizedTurns == 3)
         let drawRect: NSRect
         if isSwapped {
             drawRect = NSRect(
-                x: -imageRect.height / 2,
-                y: -imageRect.width / 2,
-                width: imageRect.height,
-                height: imageRect.width
+                x: -imageDrawRect.height / 2,
+                y: -imageDrawRect.width / 2,
+                width: imageDrawRect.height,
+                height: imageDrawRect.width
             )
         } else {
             drawRect = NSRect(
-                x: -imageRect.width / 2,
-                y: -imageRect.height / 2,
-                width: imageRect.width,
-                height: imageRect.height
+                x: -imageDrawRect.width / 2,
+                y: -imageDrawRect.height / 2,
+                width: imageDrawRect.width,
+                height: imageDrawRect.height
             )
         }
 
@@ -202,36 +290,33 @@ extension CropEditorCanvasView {
 
 extension CropEditorCanvasView {
 
-    private func drawOverlay(context: CGContext) {
-        let cropFrame = cropRectInViewCoords()
+    private func drawOverlay(context: CGContext, cropFrame: NSRect) {
         context.saveGState()
         context.setFillColor(NSColor.black.withAlphaComponent(Self.overlayAlpha).cgColor)
 
-        let imgRect = imageRect
+        // bounds全体からクロップ枠を除外して塗る
         // 上
-        context.fill(NSRect(x: imgRect.minX, y: cropFrame.maxY,
-                            width: imgRect.width, height: imgRect.maxY - cropFrame.maxY))
+        context.fill(NSRect(x: bounds.minX, y: cropFrame.maxY,
+                            width: bounds.width, height: bounds.maxY - cropFrame.maxY))
         // 下
-        context.fill(NSRect(x: imgRect.minX, y: imgRect.minY,
-                            width: imgRect.width, height: cropFrame.minY - imgRect.minY))
+        context.fill(NSRect(x: bounds.minX, y: bounds.minY,
+                            width: bounds.width, height: cropFrame.minY - bounds.minY))
         // 左
-        context.fill(NSRect(x: imgRect.minX, y: cropFrame.minY,
-                            width: cropFrame.minX - imgRect.minX, height: cropFrame.height))
+        context.fill(NSRect(x: bounds.minX, y: cropFrame.minY,
+                            width: cropFrame.minX - bounds.minX, height: cropFrame.height))
         // 右
         context.fill(NSRect(x: cropFrame.maxX, y: cropFrame.minY,
-                            width: imgRect.maxX - cropFrame.maxX, height: cropFrame.height))
+                            width: bounds.maxX - cropFrame.maxX, height: cropFrame.height))
         context.restoreGState()
     }
 
-    private func drawCropBorder(context: CGContext) {
-        let cropFrame = cropRectInViewCoords()
+    private func drawCropBorder(context: CGContext, cropFrame: NSRect) {
         context.setStrokeColor(NSColor.white.cgColor)
         context.setLineWidth(1.0)
         context.stroke(cropFrame)
     }
 
-    private func drawGrid(context: CGContext) {
-        let cropFrame = cropRectInViewCoords()
+    private func drawGrid(context: CGContext, cropFrame: NSRect) {
         context.setStrokeColor(NSColor.white.withAlphaComponent(0.5).cgColor)
         context.setLineWidth(Self.gridLineWidth)
 
@@ -253,8 +338,7 @@ extension CropEditorCanvasView {
 
 extension CropEditorCanvasView {
 
-    private func drawHandles(context: CGContext) {
-        let cropFrame = cropRectInViewCoords()
+    private func drawHandles(context: CGContext, cropFrame: NSRect) {
         context.setStrokeColor(NSColor.white.cgColor)
         context.setLineWidth(Self.handleThickness)
 
@@ -329,46 +413,50 @@ extension CropEditorCanvasView {
         let point = convert(event.locationInWindow, from: nil)
         dragStartPoint = point
         dragStartCropRect = cropRect
+        dragStartImageOffset = imageOffset
 
-        let cropFrame = cropRectInViewCoords()
+        let cropFrame = calculateCropFrameRect()
 
         if let handlePosition = hitTestHandle(point: point, cropFrame: cropFrame) {
             dragState = .resizingHandle(handlePosition)
             return
         }
 
-        if cropFrame.contains(point) {
-            dragState = .movingRect
-            return
-        }
-
-        dragState = .idle
+        // それ以外は画像移動
+        dragState = .movingImage
     }
 
     override func mouseDragged(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
-        guard imageRect.width > 0, imageRect.height > 0 else { return }
-
-        let deltaX = point.x - dragStartPoint.x
-        let deltaY = point.y - dragStartPoint.y
-        let normalizedDX = deltaX / imageRect.width
-        let normalizedDY = deltaY / imageRect.height
 
         switch dragState {
         case .idle:
             break
-        case .movingRect:
-            handleMoveRect(normalizedDX: normalizedDX, normalizedDY: normalizedDY)
+        case .movingImage:
+            let deltaX = point.x - dragStartPoint.x
+            let deltaY = point.y - dragStartPoint.y
+            imageOffset = CGPoint(
+                x: dragStartImageOffset.x + deltaX,
+                y: dragStartImageOffset.y + deltaY
+            )
+            clampImageOffset()
+            needsDisplay = true
         case .resizingHandle(let position):
-            cropRect = resizedCropRect(for: position,
-                                       normalizedDX: normalizedDX,
-                                       normalizedDY: normalizedDY)
-            onCropRectChanged?(cropRect)
+            let cropFrame = calculateCropFrameRect()
+            guard cropFrame.width > 0, cropFrame.height > 0 else { return }
+            handleResize(position: position, currentPoint: point, cropFrame: cropFrame)
         }
     }
 
     override func mouseUp(with event: NSEvent) {
         dragState = .idle
+    }
+
+    override func scrollWheel(with event: NSEvent) {
+        let zoomDelta = event.deltaY * Self.zoomSensitivity
+        imageZoom = clamp(imageZoom + zoomDelta, min: Self.minZoom, max: Self.maxZoom)
+        clampImageOffset()
+        needsDisplay = true
     }
 
     private func hitTestHandle(point: NSPoint,
@@ -383,94 +471,52 @@ extension CropEditorCanvasView {
         return nil
     }
 
-    private func handleMoveRect(normalizedDX: CGFloat, normalizedDY: CGFloat) {
-        let newX = clamp(dragStartCropRect.x + normalizedDX,
-                         min: 0, max: 1 - dragStartCropRect.width)
-        let newY = clamp(dragStartCropRect.y + normalizedDY,
-                         min: 0, max: 1 - dragStartCropRect.height)
-        cropRect = CropRect(
-            x: newX, y: newY,
-            width: dragStartCropRect.width, height: dragStartCropRect.height,
-            straightenAngle: cropRect.straightenAngle,
-            quarterTurns: cropRect.quarterTurns,
-            isFlippedInCrop: cropRect.isFlippedInCrop,
-            aspectRatioPreset: cropRect.aspectRatioPreset
-        )
-        onCropRectChanged?(cropRect)
-    }
+    // MARK: - Handle Resize
 
-    private func resizedCropRect(
-        for position: HandlePosition,
-        normalizedDX: CGFloat,
-        normalizedDY: CGFloat
-    ) -> CropRect {
+    private func handleResize(position: HandlePosition,
+                              currentPoint: NSPoint,
+                              cropFrame: NSRect) {
+        let deltaX = currentPoint.x - dragStartPoint.x
+        let deltaY = currentPoint.y - dragStartPoint.y
+
+        // ビュー座標のデルタをクロップ枠の比率に変換
+        let normalizedDX = deltaX / cropFrame.width * dragStartCropRect.width
+        let normalizedDY = deltaY / cropFrame.height * dragStartCropRect.height
+
         let start = dragStartCropRect
         let minSize = Self.minCropProportion
-        var newX = start.x
-        var newY = start.y
         var newW = start.width
         var newH = start.height
 
-        applyHorizontalResize(position: position, delta: normalizedDX,
-                              start: start, minSize: minSize, outX: &newX, outW: &newW)
-        applyVerticalResize(position: position, delta: normalizedDY,
-                            start: start, minSize: minSize, outY: &newY, outH: &newH)
+        // 水平方向のリサイズ
+        switch position {
+        case .topLeft, .left, .bottomLeft:
+            newW = clamp(start.width - normalizedDX, min: minSize, max: 1.0)
+        case .topRight, .right, .bottomRight:
+            newW = clamp(start.width + normalizedDX, min: minSize, max: 1.0)
+        case .top, .bottom:
+            break
+        }
 
-        newW = max(newW, minSize)
-        newH = max(newH, minSize)
-        newX = clamp(newX, min: 0, max: 1 - newW)
-        newY = clamp(newY, min: 0, max: 1 - newH)
+        // 垂直方向のリサイズ
+        switch position {
+        case .bottomLeft, .bottom, .bottomRight:
+            newH = clamp(start.height - normalizedDY, min: minSize, max: 1.0)
+        case .topLeft, .top, .topRight:
+            newH = clamp(start.height + normalizedDY, min: minSize, max: 1.0)
+        case .left, .right:
+            break
+        }
 
-        return CropRect(
-            x: newX, y: newY, width: newW, height: newH,
+        cropRect = CropRect(
+            x: cropRect.x, y: cropRect.y,
+            width: newW, height: newH,
             straightenAngle: cropRect.straightenAngle,
             quarterTurns: cropRect.quarterTurns,
             isFlippedInCrop: cropRect.isFlippedInCrop,
             aspectRatioPreset: cropRect.aspectRatioPreset
         )
+        clampImageOffset()
+        onCropRectChanged?(cropRect)
     }
-
-    // swiftlint:disable function_parameter_count
-    private func applyHorizontalResize(position: HandlePosition,
-                                       delta: CGFloat,
-                                       start: CropRect,
-                                       minSize: CGFloat,
-                                       outX: inout CGFloat,
-                                       outW: inout CGFloat) {
-        switch position {
-        case .topLeft, .left, .bottomLeft:
-            let maxDX = start.width - minSize
-            let clampedDX = clamp(delta, min: -start.x, max: maxDX)
-            outX = start.x + clampedDX
-            outW = start.width - clampedDX
-        case .topRight, .right, .bottomRight:
-            let maxExpand = 1 - start.x - start.width
-            let clampedDX = clamp(delta, min: -(start.width - minSize), max: maxExpand)
-            outW = start.width + clampedDX
-        case .top, .bottom:
-            break
-        }
-    }
-
-    private func applyVerticalResize(position: HandlePosition,
-                                     delta: CGFloat,
-                                     start: CropRect,
-                                     minSize: CGFloat,
-                                     outY: inout CGFloat,
-                                     outH: inout CGFloat) {
-        switch position {
-        case .bottomLeft, .bottom, .bottomRight:
-            let maxDY = start.height - minSize
-            let clampedDY = clamp(delta, min: -start.y, max: maxDY)
-            outY = start.y + clampedDY
-            outH = start.height - clampedDY
-        case .topLeft, .top, .topRight:
-            let maxExpand = 1 - start.y - start.height
-            let clampedDY = clamp(delta, min: -(start.height - minSize), max: maxExpand)
-            outH = start.height + clampedDY
-        case .left, .right:
-            break
-        }
-    }
-    // swiftlint:enable function_parameter_count
 }

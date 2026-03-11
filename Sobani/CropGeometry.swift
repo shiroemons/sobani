@@ -1,4 +1,4 @@
-import Foundation
+import CoreGraphics
 
 /// クロップ関連の幾何学計算ユーティリティ
 enum CropGeometry {
@@ -110,6 +110,97 @@ enum CropGeometry {
             isFlippedInCrop: rect.isFlippedInCrop,
             aspectRatioPreset: rect.aspectRatioPreset
         )
+    }
+
+    // MARK: - View Coordinate Conversion
+
+    /// 正規化されたクロップ座標（0〜1）
+    struct NormalizedCrop {
+        let x: CGFloat
+        let y: CGFloat
+        let width: CGFloat
+        let height: CGFloat
+    }
+
+    /// Converts a crop frame in view coordinates to normalized (0–1) crop coordinates.
+    /// - Parameters:
+    ///   - cropFrame: The crop rectangle in view coordinate space
+    ///   - imageRect: The image rectangle in view coordinate space
+    /// - Returns: Normalized (x, y, width, height) clamped to [0, 1]
+    static func viewRectToNormalizedCrop(
+        cropFrame: CGRect, imageRect: CGRect
+    ) -> NormalizedCrop {
+        let x = (cropFrame.minX - imageRect.minX) / imageRect.width
+        let y = (cropFrame.minY - imageRect.minY) / imageRect.height
+        let w = cropFrame.width / imageRect.width
+        let h = cropFrame.height / imageRect.height
+        return NormalizedCrop(
+            x: max(0, min(1, x)),
+            y: max(0, min(1, y)),
+            width: max(0, min(1, w)),
+            height: max(0, min(1, h))
+        )
+    }
+
+    // MARK: - Pan Offset Clamping
+
+    /// Clamps a pan offset so that the image fully covers the crop frame.
+    /// If the image is smaller than the crop frame on an axis, that axis is locked to zero.
+    /// - Parameters:
+    ///   - offset: The current pan offset
+    ///   - imageSize: The rendered image size (post-zoom)
+    ///   - cropFrameSize: The crop frame size
+    /// - Returns: Clamped offset
+    static func clampOffset(offset: CGPoint, imageSize: CGSize, cropFrameSize: CGSize) -> CGPoint {
+        let maxOffsetX = max(0, (imageSize.width - cropFrameSize.width) / 2)
+        let maxOffsetY = max(0, (imageSize.height - cropFrameSize.height) / 2)
+        return CGPoint(
+            x: max(-maxOffsetX, min(maxOffsetX, offset.x)),
+            y: max(-maxOffsetY, min(maxOffsetY, offset.y))
+        )
+    }
+
+    // MARK: - Editor State Reconstruction
+
+    /// Reconstructs the zoom and pan offset from a persisted CropRect so the editor can resume
+    /// a previous crop session at the correct view state.
+    /// - Parameters:
+    ///   - cropRect: The persisted normalized crop rect
+    ///   - canvasSize: The visible canvas size in the editor
+    ///   - imageSize: The original image size (pixels or points)
+    /// - Returns: The zoom scale and pan offset that reproduce the crop rect in the editor
+    static func initialStateFromCropRect(
+        cropRect: CropRect, canvasSize: CGSize, imageSize: CGSize
+    ) -> (offset: CGPoint, zoom: CGFloat) {
+        guard cropRect.width > AppConstants.floatingPointTolerance,
+              cropRect.height > AppConstants.floatingPointTolerance else {
+            return (offset: .zero, zoom: 1.0)
+        }
+
+        let imageAspect = imageSize.width / max(imageSize.height, AppConstants.floatingPointTolerance)
+        let canvasAspect = canvasSize.width / max(canvasSize.height, AppConstants.floatingPointTolerance)
+
+        // Zoom is the reciprocal of the crop fraction that fills the smaller canvas dimension.
+        let zoom = 1.0 / max(cropRect.width, cropRect.height)
+
+        // Compute the fitted image size on the canvas at zoom = 1.0.
+        let fitSize: CGSize
+        if imageAspect > canvasAspect {
+            fitSize = CGSize(width: canvasSize.width, height: canvasSize.width / imageAspect)
+        } else {
+            fitSize = CGSize(width: canvasSize.height * imageAspect, height: canvasSize.height)
+        }
+
+        // Offset is the displacement from the image center to the crop center, in canvas points.
+        let cropCenterX = cropRect.x + cropRect.width / 2
+        let cropCenterY = cropRect.y + cropRect.height / 2
+        let imageCenterX: CGFloat = 0.5
+        let imageCenterY: CGFloat = 0.5
+
+        let offsetX = (imageCenterX - cropCenterX) * fitSize.width * zoom
+        let offsetY = (imageCenterY - cropCenterY) * fitSize.height * zoom
+
+        return (offset: CGPoint(x: offsetX, y: offsetY), zoom: zoom)
     }
 
     // MARK: - Normalization / Clamping

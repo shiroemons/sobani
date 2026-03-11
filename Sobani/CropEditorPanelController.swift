@@ -101,7 +101,7 @@ final class CropEditorPanelController: NSObject {
             frame: NSRect(x: 0, y: canvasY, width: Self.panelWidth, height: canvasHeight)
         )
         canvas.setImage(image)
-        canvas.cropRect = currentCropRect
+        canvas.initializeFromCropRect(currentCropRect)
         canvas.onCropRectChanged = { [weak self] newRect in
             self?.currentCropRect = newRect
         }
@@ -186,13 +186,16 @@ final class CropEditorPanelController: NSObject {
     }
 
     @objc private func doneTapped() {
-        delegate?.cropEditorDidConfirm(self, cropRect: currentCropRect)
+        let finalRect = canvasView?.computeFinalCropRect() ?? currentCropRect
+        currentCropRect = finalRect
+        delegate?.cropEditorDidConfirm(self, cropRect: finalRect)
         close()
     }
 
     @objc private func resetTapped() {
         currentCropRect = .full
         canvasView?.cropRect = .full
+        canvasView?.resetZoomAndOffset()
         toolbarView?.resetStraightenAngle()
         delegate?.cropEditorDidReset(self)
     }

@@ -137,44 +137,48 @@ enum CropImageProcessor {
         return context.makeImage()
     }
 
-    /// 傾き補正（回転 + 自動ズーム）を適用
+    /// 傾き補正（回転のみ、空白部分は透過）を適用
     static func applyStraighten(to image: CGImage, angleDegrees: CGFloat) -> CGImage? {
         let width = CGFloat(image.width)
         let height = CGFloat(image.height)
-        let aspectRatio = width / height
-        let zoomScale = CropGeometry.zoomScaleForStraighten(
-            angleDegrees: angleDegrees, aspectRatio: aspectRatio
-        )
-
-        let scaledWidth = width * zoomScale
-        let scaledHeight = height * zoomScale
 
         let radians = angleDegrees * .pi / 180
         let boundingBox = GeometryUtils.rotatedBoundingBox(
-            width: scaledWidth, height: scaledHeight, angleDegrees: angleDegrees
+            width: width, height: height, angleDegrees: angleDegrees
         )
 
         let bbWidth = Int(ceil(boundingBox.width))
         let bbHeight = Int(ceil(boundingBox.height))
 
-        guard let context = createContext(width: bbWidth, height: bbHeight, source: image) else {
+        // アルファチャンネル付きコンテキストで透過背景を確保する
+        guard let context = CGContext(
+            data: nil, width: bbWidth, height: bbHeight,
+            bitsPerComponent: 8,
+            bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
             return nil
         }
+
+        // 背景を透明にクリア
+        let rect = CGRect(x: 0, y: 0, width: bbWidth, height: bbHeight)
+        context.clear(rect)
 
         let centerX = CGFloat(bbWidth) / 2
         let centerY = CGFloat(bbHeight) / 2
 
         context.translateBy(x: centerX, y: centerY)
         context.rotate(by: -radians)
-        context.scaleBy(x: zoomScale, y: zoomScale)
         context.translateBy(x: -width / 2, y: -height / 2)
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
 
-        // 中央からオリジナルサイズで切り出し
+        // 中央からオリジナルサイズで切り出し（空白部分は透過）
         guard let fullImage = context.makeImage() else { return nil }
-        let cropX = (CGFloat(bbWidth) - width) / 2
-        let cropY = (CGFloat(bbHeight) - height) / 2
-        let cropCGRect = CGRect(x: cropX, y: cropY, width: width, height: height)
+        let intWidth = Int(width)
+        let intHeight = Int(height)
+        let cropX = (bbWidth - intWidth) / 2
+        let cropY = (bbHeight - intHeight) / 2
+        let cropCGRect = CGRect(x: cropX, y: cropY, width: intWidth, height: intHeight)
         return fullImage.cropping(to: cropCGRect)
     }
 

@@ -80,6 +80,28 @@ import Testing
         #expect(result.height == 100)
     }
 
+    @Test func straighten_returnsAlphaImage() throws {
+        let image = try #require(makeTestImage(width: 100, height: 100))
+        let result = try #require(CropImageProcessor.applyStraighten(to: image, angleDegrees: 15))
+        // 回転後の出力はアルファチャンネルを持つ
+        let alphaInfo = result.alphaInfo
+        #expect(
+            alphaInfo == .premultipliedLast ||
+            alphaInfo == .premultipliedFirst ||
+            alphaInfo == .last ||
+            alphaInfo == .first ||
+            alphaInfo == .alphaOnly
+        )
+    }
+
+    @Test func straighten_rectangularImage_noZoomApplied() throws {
+        let image = try #require(makeTestImage(width: 200, height: 100))
+        let result = try #require(CropImageProcessor.applyStraighten(to: image, angleDegrees: 30))
+        // 自動ズームは行われないため、出力サイズは元画像と同じ
+        #expect(result.width == image.width)
+        #expect(result.height == image.height)
+    }
+
     // MARK: - applyCropRect
 
     @Test func cropRect_full_preservesDimensions() throws {
