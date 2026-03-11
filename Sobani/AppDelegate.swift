@@ -285,8 +285,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         charWindow.setDisplayName(imageName ?? AppConstants.defaultImageName)
         charWindow.setWindowId(nextWindowId)
         nextWindowId += 1
-        characterWindows.append(charWindow)
-        zOrderedWindows.insert(charWindow, at: 0)
+        addCharacterWindow(charWindow)
     }
 
     @objc func addNewWindowWithNewImageFromMenu() {
@@ -313,8 +312,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     func characterWindowDidClose(_ sender: CharacterWindow) {
-        characterWindows.removeAll { $0 === sender }
-        zOrderedWindows.removeAll { $0 === sender }
+        removeCharacterWindow(sender)
         if characterWindows.isEmpty {
             areWindowsHidden = false
         }

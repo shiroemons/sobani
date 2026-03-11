@@ -3,6 +3,18 @@ import Cocoa
 // MARK: - AppDelegate + Layout Preset
 
 extension AppDelegate {
+    // MARK: - Window Array Management
+
+    func addCharacterWindow(_ window: CharacterWindow) {
+        characterWindows.append(window)
+        zOrderedWindows.insert(window, at: 0)
+    }
+
+    func removeCharacterWindow(_ window: CharacterWindow) {
+        characterWindows.removeAll { $0 === window }
+        zOrderedWindows.removeAll { $0 === window }
+    }
+
     func applyLayout(_ preset: LayoutPreset) {
         isApplyingLayout = true
         areWindowsHidden = false
