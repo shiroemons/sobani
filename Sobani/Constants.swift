@@ -67,6 +67,7 @@ enum AppConstants {
 
     // Hotkey
     static let optionHKeyCode: UInt16 = 4
+    static let escKeyCode: UInt16 = 53
 
     // Display ID
     static let unknownDisplayID: CGDirectDisplayID = 0

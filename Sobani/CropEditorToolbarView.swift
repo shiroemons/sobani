@@ -5,12 +5,35 @@ import Cocoa
 enum ToolbarMode {
     case correction   // デフォルト: モードボタン + ルーラーダイヤル
     case aspectRatio  // アスペクト比セレクターのみ
+
+    var toggleSymbolName: String {
+        switch self {
+        case .correction: return "aspectratio"
+        case .aspectRatio: return "angle"
+        }
+    }
 }
 
-enum StraightenMode {
+enum StraightenMode: CaseIterable {
     case straighten              // 水平傾き補正
     case verticalPerspective     // 垂直パース補正
     case horizontalPerspective   // 水平パース補正
+
+    var symbolName: String {
+        switch self {
+        case .straighten: return "circle.and.line.horizontal"
+        case .verticalPerspective: return "trapezoid.and.line.vertical"
+        case .horizontalPerspective: return "trapezoid.and.line.horizontal"
+        }
+    }
+
+    var localizationKey: String {
+        switch self {
+        case .straighten: return "crop_editor.straighten"
+        case .verticalPerspective: return "crop_editor.vertical_perspective"
+        case .horizontalPerspective: return "crop_editor.horizontal_perspective"
+        }
+    }
 }
 
 // MARK: - CropEditorToolbarView
@@ -35,9 +58,11 @@ final class CropEditorToolbarView: NSView {
     private var toolbarMode: ToolbarMode = .correction
     private var straightenMode: StraightenMode = .straighten
 
-    private var straightenAngle: CGFloat = 0
-    private var verticalPerspectiveAngle: CGFloat = 0
-    private var horizontalPerspectiveAngle: CGFloat = 0
+    private var modeAngles: [StraightenMode: CGFloat] = [
+        .straighten: 0,
+        .verticalPerspective: 0,
+        .horizontalPerspective: 0
+    ]
 
     // MARK: - Subviews
 
@@ -96,11 +121,9 @@ final class CropEditorToolbarView: NSView {
     }
 
     private func createModeButtonViews() -> [ModeButtonView] {
-        let specs: [ModeButtonSpec] = [
-            ModeButtonSpec(symbol: "circle.and.line.horizontal", tooltip: L("crop_editor.straighten"), mode: .straighten),
-            ModeButtonSpec(symbol: "trapezoid.and.line.vertical", tooltip: L("crop_editor.vertical_perspective"), mode: .verticalPerspective),
-            ModeButtonSpec(symbol: "trapezoid.and.line.horizontal", tooltip: L("crop_editor.horizontal_perspective"), mode: .horizontalPerspective)
-        ]
+        let specs: [ModeButtonSpec] = StraightenMode.allCases.map { mode in
+            ModeButtonSpec(symbol: mode.symbolName, tooltip: L(mode.localizationKey), mode: mode)
+        }
 
         return specs.map { spec in
             let view = ModeButtonView(symbolName: spec.symbol)
@@ -140,32 +163,17 @@ final class CropEditorToolbarView: NSView {
         onModeChanged?(mode)
         updateModeButtonViews()
         // 選択中ボタンが中央に来るようにレイアウトを更新
-        needsLayout = true
         layout()
     }
 
     private func resetAngleForMode(_ mode: StraightenMode) {
-        switch mode {
-        case .straighten:
-            straightenAngle = 0
-        case .verticalPerspective:
-            verticalPerspectiveAngle = 0
-        case .horizontalPerspective:
-            horizontalPerspectiveAngle = 0
-        }
+        modeAngles[mode] = 0
     }
 
     // MARK: - Slider Callback
 
     private func handleSliderAngleChanged(_ angle: CGFloat) {
-        switch straightenMode {
-        case .straighten:
-            straightenAngle = angle
-        case .verticalPerspective:
-            verticalPerspectiveAngle = angle
-        case .horizontalPerspective:
-            horizontalPerspectiveAngle = angle
-        }
+        modeAngles[straightenMode] = angle
         onStraightenAngleChanged?(angle)
         updateModeButtonViews()
     }
@@ -173,14 +181,7 @@ final class CropEditorToolbarView: NSView {
     // MARK: - Helpers
 
     private func angleForMode(_ mode: StraightenMode) -> CGFloat {
-        switch mode {
-        case .straighten:
-            return straightenAngle
-        case .verticalPerspective:
-            return verticalPerspectiveAngle
-        case .horizontalPerspective:
-            return horizontalPerspectiveAngle
-        }
+        modeAngles[mode, default: 0]
     }
 
     // MARK: - Public API
@@ -195,14 +196,13 @@ final class CropEditorToolbarView: NSView {
 
     func setMode(_ mode: ToolbarMode) {
         toolbarMode = mode
-        needsLayout = true
         layout()
     }
 
     func resetStraightenAngle() {
-        straightenAngle = 0
-        verticalPerspectiveAngle = 0
-        horizontalPerspectiveAngle = 0
+        for mode in StraightenMode.allCases {
+            modeAngles[mode] = 0
+        }
         sliderView?.reset()
         updateModeButtonViews()
     }
@@ -216,14 +216,7 @@ final class CropEditorToolbarView: NSView {
     }
 
     func setAngleForCurrentMode(_ angle: CGFloat) {
-        switch straightenMode {
-        case .straighten:
-            straightenAngle = angle
-        case .verticalPerspective:
-            verticalPerspectiveAngle = angle
-        case .horizontalPerspective:
-            horizontalPerspectiveAngle = angle
-        }
+        modeAngles[straightenMode] = angle
         sliderView?.angle = angle
     }
 
@@ -291,8 +284,14 @@ private extension CropEditorToolbarView {
         let modes: [StraightenMode] = [.straighten, .verticalPerspective, .horizontalPerspective]
         for (index, buttonView) in modeButtonViews.enumerated() {
             guard index < modes.count else { continue }
-            buttonView.isSelected = modes[index] == straightenMode
-            buttonView.angle = angleForMode(modes[index])
+            let newSelected = modes[index] == straightenMode
+            let newAngle = angleForMode(modes[index])
+            if buttonView.isSelected != newSelected {
+                buttonView.isSelected = newSelected
+            }
+            if abs(buttonView.angle - newAngle) > AppConstants.floatingPointTolerance {
+                buttonView.angle = newAngle
+            }
         }
     }
 }
@@ -301,9 +300,33 @@ private extension CropEditorToolbarView {
 
 /// iPhone風プログレスアーク付きモードボタン
 private class ModeButtonView: NSView {
+    private static let inset: CGFloat = 2
+    private static let iconPointSize: CGFloat = 16
+    private static let arcLineWidth: CGFloat = 2.0
+    private static let baseCircleLineWidth: CGFloat = 1.5
+    private static let angleFontSize: CGFloat = 13
+    private static let zeroAngleThreshold: CGFloat = 0.05
+
     var symbolName: String
-    var angle: CGFloat = 0 { didSet { needsDisplay = true } }
-    var isSelected: Bool = false { didSet { needsDisplay = true } }
+    private var cachedIcon: NSImage?
+
+    var angle: CGFloat = 0 {
+        didSet {
+            if abs(angle - oldValue) > AppConstants.floatingPointTolerance {
+                needsDisplay = true
+            }
+        }
+    }
+
+    var isSelected: Bool = false {
+        didSet {
+            if isSelected != oldValue {
+                cachedIcon = nil
+                needsDisplay = true
+            }
+        }
+    }
+
     var onClick: (() -> Void)?
 
     init(symbolName: String) {
@@ -317,29 +340,24 @@ private class ModeButtonView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         guard let context = NSGraphicsContext.current?.cgContext else { return }
-        let rect = bounds.insetBy(dx: 2, dy: 2)
+        let rect = bounds.insetBy(dx: Self.inset, dy: Self.inset)
         let center = CGPoint(x: bounds.midX, y: bounds.midY)
         let radius = min(rect.width, rect.height) / 2
+        let ellipseRect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
 
-        if abs(angle) < 0.05 {
+        if abs(angle) < Self.zeroAngleThreshold {
             // 値=0: サークル全体を描画
             let baseColor: NSColor = isSelected ? .labelColor : .secondaryLabelColor.withAlphaComponent(0.5)
-            let baseWidth: CGFloat = isSelected ? 2.0 : 1.5
+            let baseWidth: CGFloat = isSelected ? Self.arcLineWidth : Self.baseCircleLineWidth
             context.setStrokeColor(baseColor.cgColor)
             context.setLineWidth(baseWidth)
-            context.addEllipse(in: CGRect(
-                x: center.x - radius, y: center.y - radius,
-                width: radius * 2, height: radius * 2
-            ))
+            context.addEllipse(in: ellipseRect)
             context.strokePath()
 
             // 選択中の背景
             if isSelected {
                 context.setFillColor(NSColor.white.withAlphaComponent(0.15).cgColor)
-                context.fillEllipse(in: CGRect(
-                    x: center.x - radius, y: center.y - radius,
-                    width: radius * 2, height: radius * 2
-                ))
+                context.fillEllipse(in: ellipseRect)
             }
 
             // アイコン表示
@@ -347,20 +365,17 @@ private class ModeButtonView: NSView {
         } else {
             // 値≠0: 薄いベースライン + プログレスアーク
             context.setStrokeColor(NSColor.secondaryLabelColor.withAlphaComponent(0.3).cgColor)
-            context.setLineWidth(2.0)
-            context.addEllipse(in: CGRect(
-                x: center.x - radius, y: center.y - radius,
-                width: radius * 2, height: radius * 2
-            ))
+            context.setLineWidth(Self.arcLineWidth)
+            context.addEllipse(in: ellipseRect)
             context.strokePath()
 
             // プログレスアーク
-            let proportion = min(abs(angle) / 45.0, 1.0)
+            let proportion = min(abs(angle) / AppConstants.straightenMaxAngle, 1.0)
             let arcAngle = proportion * CGFloat.pi * 2
             let arcColor: NSColor = angle > 0 ? .systemOrange : .labelColor
 
             context.setStrokeColor(arcColor.cgColor)
-            context.setLineWidth(2.0)
+            context.setLineWidth(Self.arcLineWidth)
             context.setLineCap(.round)
             let startAngle = CGFloat.pi / 2
             let endAngle = startAngle - arcAngle
@@ -371,7 +386,7 @@ private class ModeButtonView: NSView {
             let textColor: NSColor = angle > 0 ? .systemOrange : .labelColor
             let text = String(format: "%.0f", angle)
             let attrs: [NSAttributedString.Key: Any] = [
-                .font: NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold),
+                .font: NSFont.monospacedDigitSystemFont(ofSize: Self.angleFontSize, weight: .semibold),
                 .foregroundColor: textColor
             ]
             let attrString = NSAttributedString(string: text, attributes: attrs)
@@ -386,20 +401,25 @@ private class ModeButtonView: NSView {
 
     private func drawIcon(at center: CGPoint) {
         let iconColor: NSColor = isSelected ? .labelColor : .secondaryLabelColor
-        if let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
+        let icon: NSImage
+        if let cached = cachedIcon {
+            icon = cached
+        } else {
+            guard let baseImage = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) else { return }
             let colorConfig = NSImage.SymbolConfiguration(paletteColors: [iconColor])
-            let sizeConfig = NSImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+            let sizeConfig = NSImage.SymbolConfiguration(pointSize: Self.iconPointSize, weight: .medium)
             let config = sizeConfig.applying(colorConfig)
-            let configuredImage = image.withSymbolConfiguration(config) ?? image
-            let imageSize = configuredImage.size
-            let imageRect = NSRect(
-                x: center.x - imageSize.width / 2,
-                y: center.y - imageSize.height / 2,
-                width: imageSize.width,
-                height: imageSize.height
-            )
-            configuredImage.draw(in: imageRect)
+            icon = baseImage.withSymbolConfiguration(config) ?? baseImage
+            cachedIcon = icon
         }
+        let imageSize = icon.size
+        let imageRect = NSRect(
+            x: center.x - imageSize.width / 2,
+            y: center.y - imageSize.height / 2,
+            width: imageSize.width,
+            height: imageSize.height
+        )
+        icon.draw(in: imageRect)
     }
 
     override func mouseDown(with event: NSEvent) {

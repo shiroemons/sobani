@@ -12,6 +12,7 @@ final class CropEditorCanvasView: NSView {
     private static let minZoom: CGFloat = 1.0
     private static let maxZoom: CGFloat = 10.0
     private static let zoomSensitivity: CGFloat = 0.02
+    private static let perspectiveDepth: CGFloat = -1.0 / 500.0
 
     // MARK: - Handle Position
 
@@ -32,6 +33,7 @@ final class CropEditorCanvasView: NSView {
 
     var cropRect: CropRect = .full {
         didSet {
+            guard cropRect != oldValue else { return }
             needsDisplay = true
         }
     }
@@ -87,10 +89,6 @@ final class CropEditorCanvasView: NSView {
     }
 
     // MARK: - Coordinate Helpers
-
-    private func clamp(_ value: CGFloat, min minVal: CGFloat, max maxVal: CGFloat) -> CGFloat {
-        Swift.min(Swift.max(value, minVal), maxVal)
-    }
 
     private func handleCornerPoint(for position: HandlePosition,
                                    cropFrame: NSRect) -> NSPoint {
@@ -274,9 +272,9 @@ extension CropEditorCanvasView {
         if hasVertPerspective {
             let perspAngle = cropRect.verticalPerspective * .pi / 180
             var transform = CATransform3DIdentity
-            transform.m34 = -1.0 / 500.0  // perspective depth
+            transform.m34 = Self.perspectiveDepth
             transform = CATransform3DRotate(transform, perspAngle, 1, 0, 0)  // rotate around X axis
-            let affine = perspectiveToAffine(transform, size: imageDrawRect.size)
+            let affine = perspectiveToAffine(transform)
             context.concatenate(affine)
         }
 
@@ -284,9 +282,9 @@ extension CropEditorCanvasView {
         if hasHorizPerspective {
             let perspAngle = cropRect.horizontalPerspective * .pi / 180
             var transform = CATransform3DIdentity
-            transform.m34 = -1.0 / 500.0
+            transform.m34 = Self.perspectiveDepth
             transform = CATransform3DRotate(transform, perspAngle, 0, 1, 0)  // rotate around Y axis
-            let affine = perspectiveToAffine(transform, size: imageDrawRect.size)
+            let affine = perspectiveToAffine(transform)
             context.concatenate(affine)
         }
 
@@ -315,7 +313,7 @@ extension CropEditorCanvasView {
     }
 
     /// CATransform3Dの2Dアフィン近似変換を計算する
-    private func perspectiveToAffine(_ transform: CATransform3D, size: CGSize) -> CGAffineTransform {
+    private func perspectiveToAffine(_ transform: CATransform3D) -> CGAffineTransform {
         // CATransform3Dから2Dアフィン変換への簡易的な射影
         // m34がパース深度、m11/m12/m21/m22が回転成分
         return CGAffineTransform(
@@ -491,17 +489,20 @@ extension CropEditorCanvasView {
 
     override func mouseUp(with event: NSEvent) {
         let wasResizing = if case .resizingHandle = dragState { true } else { false }
+        let wasIdle = if case .idle = dragState { true } else { false }
         activeDragCropFrame = nil
         dragState = .idle
         if wasResizing {
             recalculateImageOffset()
         }
-        needsDisplay = true
+        if !wasIdle {
+            needsDisplay = true
+        }
     }
 
     override func scrollWheel(with event: NSEvent) {
         let zoomDelta = event.deltaY * Self.zoomSensitivity
-        imageZoom = clamp(imageZoom + zoomDelta, min: Self.minZoom, max: Self.maxZoom)
+        imageZoom = Swift.min(Swift.max(imageZoom + zoomDelta, Self.minZoom), Self.maxZoom)
         clampImageOffset()
         needsDisplay = true
     }
@@ -581,17 +582,17 @@ extension CropEditorCanvasView {
 
             switch position {
             case .topLeft, .left, .bottomLeft:
-                newW = clamp(start.width - normalizedDX, min: minSize, max: 1.0)
+                newW = Swift.min(Swift.max(start.width - normalizedDX, minSize), 1.0)
             case .topRight, .right, .bottomRight:
-                newW = clamp(start.width + normalizedDX, min: minSize, max: 1.0)
+                newW = Swift.min(Swift.max(start.width + normalizedDX, minSize), 1.0)
             case .top, .bottom:
                 break
             }
             switch position {
             case .bottomLeft, .bottom, .bottomRight:
-                newH = clamp(start.height - normalizedDY, min: minSize, max: 1.0)
+                newH = Swift.min(Swift.max(start.height - normalizedDY, minSize), 1.0)
             case .topLeft, .top, .topRight:
-                newH = clamp(start.height + normalizedDY, min: minSize, max: 1.0)
+                newH = Swift.min(Swift.max(start.height + normalizedDY, minSize), 1.0)
             case .left, .right:
                 break
             }

@@ -33,6 +33,18 @@ final class StraightenSliderView: NSView {
     private var fadeTimer: Timer?
     private var previousAngle: CGFloat = 0
 
+    // MARK: - Constants
+
+    private static let majorTickHeight: CGFloat = 14
+    private static let minorTickHeight: CGFloat = 10
+    private static let normalTickHeight: CGFloat = 6
+    private static let majorTickWidth: CGFloat = 1.0
+    private static let minorTickWidth: CGFloat = 0.75
+    private static let normalTickWidth: CGFloat = 0.5
+    private static let tickLabelFontSize: CGFloat = 8
+    private static let tickLabelSpacing: CGFloat = 2
+    private static let tickLabelAreaHeight: CGFloat = 12
+
     // MARK: - Drawing
 
     override func draw(_ dirtyRect: NSRect) {
@@ -41,7 +53,7 @@ final class StraightenSliderView: NSView {
 
         let centerX = bounds.midX
         // ルーラー目盛りエリアの垂直中心（下部に度数ラベル）
-        let tickLabelHeight: CGFloat = 12   // 下部の度数ラベルスペース
+        let tickLabelHeight = Self.tickLabelAreaHeight
         let tickAreaHeight = bounds.height - tickLabelHeight
         let tickAreaMidY = tickLabelHeight + tickAreaHeight / 2
 
@@ -77,30 +89,35 @@ final class StraightenSliderView: NSView {
             var lineWidth: CGFloat
             var tickColor: CGColor
 
+            let fadeProgress: CGFloat?
             if let fadeStart = fadingTicks[tickDeg] {
                 let elapsed = CACurrentMediaTime() - fadeStart
-                let progress = min(CGFloat(elapsed) / Double(AppConstants.straightenFadeDuration), 1.0)
+                fadeProgress = min(CGFloat(elapsed) / Double(AppConstants.straightenFadeDuration), 1.0)
+            } else {
+                fadeProgress = nil
+            }
 
-                let normalHeight: CGFloat = isMajor ? 14 : isMinor ? 10 : 6
+            if let progress = fadeProgress {
+                let normalHeight: CGFloat = isMajor ? Self.majorTickHeight : isMinor ? Self.minorTickHeight : Self.normalTickHeight
                 tickHeight = AppConstants.straightenFadeHighlightHeight
                     - (AppConstants.straightenFadeHighlightHeight - normalHeight) * progress
-                let normalWidth: CGFloat = isMajor ? 1.0 : isMinor ? 0.75 : 0.5
+                let normalWidth: CGFloat = isMajor ? Self.majorTickWidth : isMinor ? Self.minorTickWidth : Self.normalTickWidth
                 lineWidth = AppConstants.straightenFadeHighlightWidth
                     - (AppConstants.straightenFadeHighlightWidth - normalWidth) * progress
                 tickColor = NSColor.labelColor.blended(
                     withFraction: progress, of: NSColor.secondaryLabelColor
                 )?.cgColor ?? NSColor.secondaryLabelColor.cgColor
             } else if isMajor {
-                tickHeight = 14
-                lineWidth = 1.0
+                tickHeight = Self.majorTickHeight
+                lineWidth = Self.majorTickWidth
                 tickColor = NSColor.secondaryLabelColor.cgColor
             } else if isMinor {
-                tickHeight = 10
-                lineWidth = 0.75
+                tickHeight = Self.minorTickHeight
+                lineWidth = Self.minorTickWidth
                 tickColor = NSColor.secondaryLabelColor.cgColor
             } else {
-                tickHeight = 6
-                lineWidth = 0.5
+                tickHeight = Self.normalTickHeight
+                lineWidth = Self.normalTickWidth
                 tickColor = NSColor.secondaryLabelColor.cgColor
             }
 
@@ -114,9 +131,7 @@ final class StraightenSliderView: NSView {
             if isMajor || tickDeg == 0 {
                 let labelText = "\(tickDeg)°"
                 let labelColor: NSColor
-                if let fadeStart = fadingTicks[tickDeg] {
-                    let elapsed = CACurrentMediaTime() - fadeStart
-                    let progress = min(CGFloat(elapsed) / Double(AppConstants.straightenFadeDuration), 1.0)
+                if let progress = fadeProgress {
                     labelColor = NSColor.labelColor.blended(
                         withFraction: progress, of: NSColor.secondaryLabelColor
                     ) ?? NSColor.secondaryLabelColor
@@ -124,14 +139,14 @@ final class StraightenSliderView: NSView {
                     labelColor = NSColor.secondaryLabelColor
                 }
                 let attrs: [NSAttributedString.Key: Any] = [
-                    .font: NSFont.monospacedDigitSystemFont(ofSize: 8, weight: .regular),
+                    .font: NSFont.monospacedDigitSystemFont(ofSize: Self.tickLabelFontSize, weight: .regular),
                     .foregroundColor: labelColor
                 ]
                 let attrString = NSAttributedString(string: labelText, attributes: attrs)
                 let size = attrString.size()
                 let drawPoint = NSPoint(
                     x: tickX - size.width / 2,
-                    y: centerY - tickHeight / 2 - size.height - 2
+                    y: centerY - tickHeight / 2 - size.height - Self.tickLabelSpacing
                 )
                 attrString.draw(at: drawPoint)
             }
@@ -142,8 +157,8 @@ final class StraightenSliderView: NSView {
 
     private func drawCenterIndicator(context: CGContext, centerX: CGFloat, centerY: CGFloat) {
         // iPhone風: 他のティックより長い黄色バーで現在位置を示す
-        let barHeight: CGFloat = 18  // 0°ティック(16pt)より少し長い
-        let barWidth: CGFloat = 1.5
+        let barHeight = AppConstants.straightenFadeHighlightHeight
+        let barWidth = AppConstants.straightenFadeHighlightWidth
 
         context.saveGState()
         context.setStrokeColor(NSColor.systemYellow.cgColor)
