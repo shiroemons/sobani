@@ -90,4 +90,21 @@ struct CropRect: Codable, Equatable, Sendable {
         verticalPerspective = try container.decodeIfPresent(CGFloat.self, forKey: .verticalPerspective) ?? 0
         horizontalPerspective = try container.decodeIfPresent(CGFloat.self, forKey: .horizontalPerspective) ?? 0
     }
+
+    // MARK: - Approximate Equality
+
+    /// 浮動小数点トレランス付きの等価比較
+    func isEffectivelyEqual(to other: Self) -> Bool {
+        let tol = AppConstants.floatingPointTolerance
+        return abs(x - other.x) < tol
+            && abs(y - other.y) < tol
+            && abs(width - other.width) < tol
+            && abs(height - other.height) < tol
+            && abs(straightenAngle - other.straightenAngle) < tol
+            && quarterTurns == other.quarterTurns
+            && isFlippedInCrop == other.isFlippedInCrop
+            && aspectRatioPreset == other.aspectRatioPreset
+            && abs(verticalPerspective - other.verticalPerspective) < tol
+            && abs(horizontalPerspective - other.horizontalPerspective) < tol
+    }
 }

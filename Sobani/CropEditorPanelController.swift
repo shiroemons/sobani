@@ -40,6 +40,9 @@ final class CropEditorPanelController: NSObject {
 
     private var revertButton: NSButton?
     private var modeToggleButton: NSButton?
+    private var doneButton: NSButton?
+    private var donePillContainer: NSView?
+    private var initialCropRect: CropRect
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -47,6 +50,7 @@ final class CropEditorPanelController: NSObject {
 
     init(cropRect: CropRect = .full) {
         self.currentCropRect = cropRect
+        self.initialCropRect = cropRect
         super.init()
     }
 
@@ -54,6 +58,7 @@ final class CropEditorPanelController: NSObject {
 
     func show(image: NSImage, near window: NSWindow) {
         close()
+        initialCropRect = currentCropRect
         originalImage = image
 
         let panelRect = NSRect(
@@ -110,6 +115,7 @@ final class CropEditorPanelController: NSObject {
         canvas.initializeFromCropRect(currentCropRect)
         canvas.onCropRectChanged = { [weak self] newRect in
             self?.currentCropRect = newRect
+            self?.updateRevertButtonVisibility()
         }
         contentView.addSubview(canvas)
         canvasView = canvas
@@ -131,6 +137,8 @@ final class CropEditorPanelController: NSObject {
         removeKeyMonitor()
         revertButton = nil
         modeToggleButton = nil
+        doneButton = nil
+        donePillContainer = nil
         canvasView = nil
         toolbarView = nil
         panel?.orderOut(nil)
@@ -184,11 +192,24 @@ final class CropEditorPanelController: NSObject {
     // MARK: - Revert Button Visibility
 
     private func updateRevertButtonVisibility() {
-        let shouldShow = currentCropRect != .full
+        let shouldShow = !currentCropRect.isEffectivelyEqual(to: .full)
         let isCurrentlyHidden = revertButton?.isHidden ?? true
-        guard shouldShow == isCurrentlyHidden else { return }
-        revertButton?.isHidden = !shouldShow
-        revertButton?.superview?.isHidden = !shouldShow
+        if shouldShow == isCurrentlyHidden {
+            revertButton?.isHidden = !shouldShow
+            revertButton?.superview?.isHidden = !shouldShow
+        }
+        updateDoneButtonAppearance()
+    }
+
+    private func updateDoneButtonAppearance() {
+        let hasChanges = !currentCropRect.isEffectivelyEqual(to: initialCropRect)
+        if hasChanges {
+            donePillContainer?.layer?.backgroundColor = NSColor.systemGreen.cgColor
+            doneButton?.contentTintColor = .white
+        } else {
+            donePillContainer?.layer?.backgroundColor = NSColor.white.withAlphaComponent(Self.pillBackgroundAlpha).cgColor
+            doneButton?.contentTintColor = .labelColor
+        }
     }
 
     // MARK: - Mode Toggle Appearance
@@ -373,6 +394,8 @@ extension CropEditorPanelController {
         doneBtn.keyEquivalent = "\r"
         donePill.frame = NSRect(x: width - sidePad - pillSize, y: rowY, width: pillSize, height: pillSize)
         bar.addSubview(donePill)
+        doneButton = doneBtn
+        donePillContainer = donePill
     }
 
     private func addRow2(to bar: NSView, rowY: CGFloat) {

@@ -185,6 +185,54 @@ import Testing
         #expect(AppConstants.floatingMenuCornerRadius > 0)
     }
 
+    // MARK: - isEffectivelyEqual
+
+    /// 同一値のCropRect同士がisEffectivelyEqualでtrueになることを検証
+    @Test func testIsEffectivelyEqual_identicalValues() throws {
+        let cropRect = CropRect(x: 0.1, y: 0.2, width: 0.6, height: 0.5,
+                                straightenAngle: 10.0, quarterTurns: 1,
+                                isFlippedInCrop: true, aspectRatioPreset: "16:9",
+                                verticalPerspective: 5.0, horizontalPerspective: -3.0)
+        #expect(cropRect.isEffectivelyEqual(to: cropRect))
+    }
+
+    /// 許容誤差内の微小な浮動小数点差があるCropRectが.fullとisEffectivelyEqualになることを検証
+    @Test func testIsEffectivelyEqual_withinTolerance() throws {
+        let tiny = 0.0000001 as CGFloat
+        let almostFull = CropRect(x: tiny, y: tiny, width: 1 - tiny, height: 1 - tiny,
+                                  straightenAngle: tiny, quarterTurns: 0,
+                                  isFlippedInCrop: false, aspectRatioPreset: nil,
+                                  verticalPerspective: tiny, horizontalPerspective: tiny)
+        #expect(almostFull.isEffectivelyEqual(to: .full))
+    }
+
+    /// 許容誤差を超えるstraightenAngleの差がある場合にisEffectivelyEqualがfalseになることを検証
+    @Test func testIsEffectivelyEqual_beyondTolerance() throws {
+        let slightlyRotated = CropRect(x: 0, y: 0, width: 1, height: 1, straightenAngle: 0.5)
+        #expect(!slightlyRotated.isEffectivelyEqual(to: .full))
+    }
+
+    /// 浮動小数点値が同一でもquarterTurnsが異なる場合にisEffectivelyEqualがfalseになることを検証
+    @Test func testIsEffectivelyEqual_differentQuarterTurns() throws {
+        let base = CropRect(x: 0, y: 0, width: 1, height: 1, quarterTurns: 0)
+        let rotated = CropRect(x: 0, y: 0, width: 1, height: 1, quarterTurns: 1)
+        #expect(!base.isEffectivelyEqual(to: rotated))
+    }
+
+    /// 浮動小数点値が同一でもisFlippedInCropが異なる場合にisEffectivelyEqualがfalseになることを検証
+    @Test func testIsEffectivelyEqual_differentFlip() throws {
+        let notFlipped = CropRect(x: 0, y: 0, width: 1, height: 1, isFlippedInCrop: false)
+        let flipped = CropRect(x: 0, y: 0, width: 1, height: 1, isFlippedInCrop: true)
+        #expect(!notFlipped.isEffectivelyEqual(to: flipped))
+    }
+
+    /// 浮動小数点値が同一でもaspectRatioPresetが異なる場合にisEffectivelyEqualがfalseになることを検証
+    @Test func testIsEffectivelyEqual_differentAspectRatio() throws {
+        let free = CropRect(x: 0, y: 0, width: 1, height: 1, aspectRatioPreset: nil)
+        let fixed = CropRect(x: 0, y: 0, width: 1, height: 1, aspectRatioPreset: "16:9")
+        #expect(!free.isEffectivelyEqual(to: fixed))
+    }
+
     // MARK: - MenuItemTagテスト
 
     /// cropImage MenuItemTagのrawValueが1031であることを検証

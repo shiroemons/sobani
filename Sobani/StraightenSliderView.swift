@@ -205,7 +205,13 @@ final class StraightenSliderView: NSView {
 
     override func mouseUp(with event: NSEvent) {
         isDragging = false
-        startInertiaIfNeeded()
+        if !startInertiaIfNeeded() {
+            let snapped = snapToZeroIfNeeded(angle)
+            if snapped != angle {
+                angle = snapped
+                onAngleChanged?(angle)
+            }
+        }
     }
 
     override func scrollWheel(with event: NSEvent) {
@@ -226,8 +232,9 @@ final class StraightenSliderView: NSView {
 
     // MARK: - Inertia
 
-    private func startInertiaIfNeeded() {
-        guard abs(inertiaVelocity) >= AppConstants.straightenInertiaMinVelocity else { return }
+    @discardableResult
+    private func startInertiaIfNeeded() -> Bool {
+        guard abs(inertiaVelocity) >= AppConstants.straightenInertiaMinVelocity else { return false }
         inertiaTimer = Timer.scheduledTimer(
             withTimeInterval: AppConstants.straightenInertiaFrameInterval,
             repeats: true
@@ -236,6 +243,7 @@ final class StraightenSliderView: NSView {
                 self?.updateInertia()
             }
         }
+        return true
     }
 
     private func updateInertia() {
