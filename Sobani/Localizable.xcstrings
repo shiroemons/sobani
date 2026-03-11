@@ -2913,6 +2913,38 @@
         }
       }
     },
+    "crop_editor.vertical_perspective": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "垂直"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vertical"
+          }
+        }
+      }
+    },
+    "crop_editor.horizontal_perspective": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "水平パース"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horiz. Persp."
+          }
+        }
+      }
+    },
     "crop_editor.aspect_ratio": {
       "localizations": {
         "ja": {

@@ -1,4 +1,5 @@
 import Cocoa
+import QuartzCore
 
 // MARK: - Crop Editor Canvas View
 
@@ -232,7 +233,7 @@ extension CropEditorCanvasView {
 
 extension CropEditorCanvasView {
 
-    /// すべての変換（quarterTurns、isFlippedInCrop、straightenAngle）を統合して描画
+    /// すべての変換（quarterTurns、isFlippedInCrop、straightenAngle、perspective）を統合して描画
     private func drawTransformedImage(context: CGContext, imageDrawRect: NSRect) {
         guard let image = displayImage else { return }
         let normalizedTurns = CropGeometry.normalizeQuarterTurns(cropRect.quarterTurns)
@@ -240,8 +241,10 @@ extension CropEditorCanvasView {
         let hasQuarterTurns = normalizedTurns != 0
         let hasStraighten = abs(angle) > AppConstants.floatingPointTolerance
         let hasFlip = cropRect.isFlippedInCrop
+        let hasVertPerspective = abs(cropRect.verticalPerspective) > AppConstants.floatingPointTolerance
+        let hasHorizPerspective = abs(cropRect.horizontalPerspective) > AppConstants.floatingPointTolerance
 
-        guard hasQuarterTurns || hasStraighten || hasFlip else {
+        guard hasQuarterTurns || hasStraighten || hasFlip || hasVertPerspective || hasHorizPerspective else {
             image.draw(in: imageDrawRect)
             return
         }
@@ -267,6 +270,26 @@ extension CropEditorCanvasView {
             context.rotate(by: -angle * .pi / 180)
         }
 
+        // 4. verticalPerspective（垂直方向パース補正）
+        if hasVertPerspective {
+            let perspAngle = cropRect.verticalPerspective * .pi / 180
+            var transform = CATransform3DIdentity
+            transform.m34 = -1.0 / 500.0  // perspective depth
+            transform = CATransform3DRotate(transform, perspAngle, 1, 0, 0)  // rotate around X axis
+            let affine = perspectiveToAffine(transform, size: imageDrawRect.size)
+            context.concatenate(affine)
+        }
+
+        // 5. horizontalPerspective（水平方向パース補正）
+        if hasHorizPerspective {
+            let perspAngle = cropRect.horizontalPerspective * .pi / 180
+            var transform = CATransform3DIdentity
+            transform.m34 = -1.0 / 500.0
+            transform = CATransform3DRotate(transform, perspAngle, 0, 1, 0)  // rotate around Y axis
+            let affine = perspectiveToAffine(transform, size: imageDrawRect.size)
+            context.concatenate(affine)
+        }
+
         // 描画矩形を決定
         // 90°/270° 回転時は元の画像を回転後の座標系で描くため、幅と高さを入れ替える
         let isSwapped = (normalizedTurns == 1 || normalizedTurns == 3)
@@ -289,6 +312,17 @@ extension CropEditorCanvasView {
 
         image.draw(in: drawRect)
         context.restoreGState()
+    }
+
+    /// CATransform3Dの2Dアフィン近似変換を計算する
+    private func perspectiveToAffine(_ transform: CATransform3D, size: CGSize) -> CGAffineTransform {
+        // CATransform3Dから2Dアフィン変換への簡易的な射影
+        // m34がパース深度、m11/m12/m21/m22が回転成分
+        return CGAffineTransform(
+            a: transform.m11, b: transform.m12,
+            c: transform.m21, d: transform.m22,
+            tx: 0, ty: 0
+        )
     }
 }
 

@@ -1,16 +1,9 @@
 import Cocoa
 
-/// 傾き補正スライダー（-45°〜+45°、目盛り付き）
+/// iPhone風ルーラーダイヤル（-45°〜+45°）
+/// 固定の黄色い中央インジケーターに対してルーラーがスクロールする
 @MainActor
 final class StraightenSliderView: NSView {
-
-    // MARK: - Constants
-
-    private static let tickHeight: CGFloat = 8
-    private static let minorTickHeight: CGFloat = 4
-    private static let indicatorSize: CGFloat = 12
-    private static let trackHeight: CGFloat = 2
-    private static let sidePadding: CGFloat = 20
 
     // MARK: - Properties
 
@@ -32,72 +25,97 @@ final class StraightenSliderView: NSView {
         super.draw(dirtyRect)
         guard let context = NSGraphicsContext.current?.cgContext else { return }
 
-        let trackRect = trackArea()
-        let centerY = trackRect.midY
+        let centerX = bounds.midX
+        // ルーラー目盛りエリアの垂直中心（下部に度数ラベル）
+        let tickLabelHeight: CGFloat = 12   // 下部の度数ラベルスペース
+        let tickAreaHeight = bounds.height - tickLabelHeight
+        let tickAreaMidY = tickLabelHeight + tickAreaHeight / 2
 
-        drawTrack(context: context, trackRect: trackRect, centerY: centerY)
-        drawTicks(context: context, trackRect: trackRect, centerY: centerY)
-        drawCenterLine(context: context, trackRect: trackRect, centerY: centerY)
-        drawIndicator(context: context, trackRect: trackRect, centerY: centerY)
+        drawTicks(context: context, centerX: centerX, centerY: tickAreaMidY)
+        drawCenterIndicator(context: context, centerX: centerX, centerY: tickAreaMidY)
     }
 
-    private func drawTrack(context: CGContext, trackRect: NSRect, centerY: CGFloat) {
-        context.setStrokeColor(NSColor.tertiaryLabelColor.cgColor)
-        context.setLineWidth(Self.trackHeight)
-        context.move(to: CGPoint(x: trackRect.minX, y: centerY))
-        context.addLine(to: CGPoint(x: trackRect.maxX, y: centerY))
-        context.strokePath()
-    }
+    private func drawTicks(context: CGContext, centerX: CGFloat, centerY: CGFloat) {
+        let tickSpacing = AppConstants.cropEditorRulerTickSpacing
+        // 現在の角度に対応するルーラーオフセット（角度が増えるとルーラーは左へ）
+        let rulerOffset = -angle * tickSpacing
 
-    private func drawTicks(context: CGContext, trackRect: NSRect, centerY: CGFloat) {
-        var tickAngle = AppConstants.straightenMinAngle
-        while tickAngle <= AppConstants.straightenMaxAngle {
-            let x = xForAngle(tickAngle, in: trackRect)
-            let isMajor = abs(tickAngle.truncatingRemainder(dividingBy: AppConstants.straightenMajorTickInterval)) < 0.1
-            let height = isMajor ? Self.tickHeight : Self.minorTickHeight
+        // クリッピング領域を設定してビュー外の目盛りを非表示に
+        context.saveGState()
+        context.clip(to: bounds)
+
+        let minAngle = Int(AppConstants.straightenMinAngle)
+        let maxAngle = Int(AppConstants.straightenMaxAngle)
+
+        for tickDeg in minAngle...maxAngle {
+            let tickAngle = CGFloat(tickDeg)
+            let tickX = centerX + tickAngle * tickSpacing + rulerOffset
+
+            // ビューの範囲外は描画しない（パフォーマンス最適化）
+            guard tickX >= bounds.minX - tickSpacing && tickX <= bounds.maxX + tickSpacing else {
+                continue
+            }
+
+            let isMajor = tickDeg % Int(AppConstants.straightenMajorTickInterval) == 0
+            let isMinor = tickDeg % Int(AppConstants.straightenMinorTickInterval) == 0
+
+            let tickHeight: CGFloat
+            let lineWidth: CGFloat
+            if isMajor {
+                tickHeight = 14
+                lineWidth = 1.5
+            } else if isMinor {
+                tickHeight = 10
+                lineWidth = 1.0
+            } else {
+                tickHeight = 6
+                lineWidth = 0.5
+            }
 
             context.setStrokeColor(NSColor.secondaryLabelColor.cgColor)
-            context.setLineWidth(isMajor ? 1.0 : 0.5)
-            context.move(to: CGPoint(x: x, y: centerY - height))
-            context.addLine(to: CGPoint(x: x, y: centerY + height))
+            context.setLineWidth(lineWidth)
+            context.move(to: CGPoint(x: tickX, y: centerY - tickHeight / 2))
+            context.addLine(to: CGPoint(x: tickX, y: centerY + tickHeight / 2))
             context.strokePath()
 
-            tickAngle += AppConstants.straightenMinorTickInterval
+            // 主目盛り（15°ごと）に角度ラベルを描画
+            if isMajor {
+                let labelText = "\(tickDeg)°"
+                let attrs: [NSAttributedString.Key: Any] = [
+                    .font: NSFont.monospacedDigitSystemFont(ofSize: 8, weight: .regular),
+                    .foregroundColor: NSColor.secondaryLabelColor
+                ]
+                let attrString = NSAttributedString(string: labelText, attributes: attrs)
+                let size = attrString.size()
+                let drawPoint = NSPoint(
+                    x: tickX - size.width / 2,
+                    y: centerY - tickHeight / 2 - size.height - 2
+                )
+                attrString.draw(at: drawPoint)
+            }
         }
+
+        context.restoreGState()
     }
 
-    private func drawCenterLine(context: CGContext, trackRect: NSRect, centerY: CGFloat) {
-        let zeroX = xForAngle(0, in: trackRect)
-        context.setStrokeColor(NSColor.systemYellow.cgColor)
-        context.setLineWidth(1.5)
-        context.move(to: CGPoint(x: zeroX, y: centerY - Self.tickHeight - 2))
-        context.addLine(to: CGPoint(x: zeroX, y: centerY + Self.tickHeight + 2))
-        context.strokePath()
-    }
+    private func drawCenterIndicator(context: CGContext, centerX: CGFloat, centerY: CGFloat) {
+        // 下向き三角形インジケーター（黄色、上部中央固定）
+        let triangleSize: CGFloat = 8
+        let triangleTip = centerY + 14 / 2 + 4  // 最長目盛り上端より少し上
 
-    private func drawIndicator(context: CGContext, trackRect: NSRect, centerY: CGFloat) {
-        let indicatorX = xForAngle(angle, in: trackRect)
-        let halfSize = Self.indicatorSize / 2
-        let indicatorRect = NSRect(
-            x: indicatorX - halfSize, y: centerY - halfSize,
-            width: Self.indicatorSize, height: Self.indicatorSize
-        )
-        context.setFillColor(NSColor.white.cgColor)
-        context.fillEllipse(in: indicatorRect)
+        context.saveGState()
 
-        drawAngleLabel(at: NSPoint(x: indicatorX, y: centerY - halfSize - 16))
-    }
+        let trianglePath = CGMutablePath()
+        trianglePath.move(to: CGPoint(x: centerX, y: triangleTip - triangleSize))
+        trianglePath.addLine(to: CGPoint(x: centerX - triangleSize / 2, y: triangleTip))
+        trianglePath.addLine(to: CGPoint(x: centerX + triangleSize / 2, y: triangleTip))
+        trianglePath.closeSubpath()
 
-    private func drawAngleLabel(at point: NSPoint) {
-        let text = String(format: "%.1f\u{00B0}", angle)
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .medium),
-            .foregroundColor: NSColor.labelColor
-        ]
-        let attrString = NSAttributedString(string: text, attributes: attrs)
-        let size = attrString.size()
-        let drawPoint = NSPoint(x: point.x - size.width / 2, y: point.y)
-        attrString.draw(at: drawPoint)
+        context.setFillColor(NSColor.systemYellow.cgColor)
+        context.addPath(trianglePath)
+        context.fillPath()
+
+        context.restoreGState()
     }
 
     // MARK: - Mouse Events
@@ -112,12 +130,9 @@ final class StraightenSliderView: NSView {
     override func mouseDragged(with event: NSEvent) {
         guard isDragging else { return }
         let point = convert(event.locationInWindow, from: nil)
-        let trackRect = trackArea()
         let deltaX = point.x - dragStartX
-        let angleRange = AppConstants.straightenMaxAngle - AppConstants.straightenMinAngle
-        let trackWidth = trackRect.width
-        guard trackWidth > 0 else { return }
-        let deltaAngle = (deltaX / trackWidth) * angleRange
+        // ドラッグ方向と角度変化の関係: 左ドラッグ → 角度増加（ルーラーが左にスクロール）
+        let deltaAngle = -deltaX / AppConstants.cropEditorRulerTickSpacing
         angle = CropGeometry.clampStraightenAngle(dragStartAngle + deltaAngle)
         onAngleChanged?(angle)
     }
@@ -126,23 +141,10 @@ final class StraightenSliderView: NSView {
         isDragging = false
     }
 
-    // MARK: - Helpers
+    // MARK: - Public
 
     func reset() {
         angle = 0
         onAngleChanged?(0)
-    }
-
-    private func trackArea() -> NSRect {
-        NSRect(
-            x: Self.sidePadding, y: bounds.height / 2 - 15,
-            width: bounds.width - Self.sidePadding * 2, height: 30
-        )
-    }
-
-    private func xForAngle(_ angle: CGFloat, in trackRect: NSRect) -> CGFloat {
-        let range = AppConstants.straightenMaxAngle - AppConstants.straightenMinAngle
-        let fraction = (angle - AppConstants.straightenMinAngle) / range
-        return trackRect.minX + fraction * trackRect.width
     }
 }

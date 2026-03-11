@@ -62,6 +62,18 @@ enum CropImageProcessor {
             current = flipped
         }
 
+        // 2.5. パース補正
+        if abs(cropRect.verticalPerspective) > AppConstants.floatingPointTolerance
+            || abs(cropRect.horizontalPerspective) > AppConstants.floatingPointTolerance {
+            guard let perspectiveCorrected = applyPerspective(
+                to: current, vertical: cropRect.verticalPerspective, horizontal: cropRect.horizontalPerspective
+            ) else {
+                logger.error("applyPerspective failed")
+                return nil
+            }
+            current = perspectiveCorrected
+        }
+
         // 3+4. 傾き補正 + クロップ（統合処理）
         if abs(cropRect.straightenAngle) > AppConstants.floatingPointTolerance {
             let result = applyStraightenAndCrop(
@@ -134,6 +146,46 @@ enum CropImageProcessor {
         context.translateBy(x: CGFloat(width), y: 0)
         context.scaleBy(x: -1, y: 1)
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return context.makeImage()
+    }
+
+    /// パース補正を適用する
+    static func applyPerspective(to image: CGImage, vertical: CGFloat, horizontal: CGFloat) -> CGImage? {
+        guard abs(vertical) > AppConstants.floatingPointTolerance
+            || abs(horizontal) > AppConstants.floatingPointTolerance else {
+            return image
+        }
+
+        let width = CGFloat(image.width)
+        let height = CGFloat(image.height)
+        let intWidth = Int(width)
+        let intHeight = Int(height)
+
+        guard let context = CGContext(
+            data: nil, width: intWidth, height: intHeight,
+            bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+
+        context.clear(CGRect(x: 0, y: 0, width: intWidth, height: intHeight))
+        context.translateBy(x: width / 2, y: height / 2)
+
+        // Apply vertical perspective (X-axis rotation approximation)
+        if abs(vertical) > AppConstants.floatingPointTolerance {
+            let angle = vertical * .pi / 180
+            let scaleY = cos(angle)
+            context.scaleBy(x: 1.0, y: scaleY)
+        }
+
+        // Apply horizontal perspective (Y-axis rotation approximation)
+        if abs(horizontal) > AppConstants.floatingPointTolerance {
+            let angle = horizontal * .pi / 180
+            let scaleX = cos(angle)
+            context.scaleBy(x: scaleX, y: 1.0)
+        }
+
+        context.draw(image, in: CGRect(x: -width / 2, y: -height / 2, width: width, height: height))
         return context.makeImage()
     }
 

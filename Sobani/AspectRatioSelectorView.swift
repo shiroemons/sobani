@@ -6,7 +6,7 @@ final class AspectRatioSelectorView: NSView {
 
     // MARK: - Constants
 
-    private static let viewHeight: CGFloat = 36
+    static let viewHeight: CGFloat = 36
     private static let buttonSpacing: CGFloat = 8
     private static let cornerRadius: CGFloat = 6
     private static let selectedBackgroundColor = NSColor.labelColor.withAlphaComponent(0.1)

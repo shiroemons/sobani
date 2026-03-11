@@ -13,6 +13,8 @@ struct CropRect: Codable, Equatable, Sendable {
     let quarterTurns: Int         // 90°回転回数（0〜3、デフォルト0）
     let isFlippedInCrop: Bool     // クロップ内反転（デフォルトfalse）
     let aspectRatioPreset: String? // アスペクト比プリセット名（nil=フリー）
+    let verticalPerspective: CGFloat   // 垂直方向パース補正（-45〜+45、デフォルト0）
+    let horizontalPerspective: CGFloat // 水平方向パース補正（-45〜+45、デフォルト0）
 
     static let full = Self(x: 0, y: 0, width: 1, height: 1)
 
@@ -25,7 +27,9 @@ struct CropRect: Codable, Equatable, Sendable {
         straightenAngle: CGFloat = 0,
         quarterTurns: Int = 0,
         isFlippedInCrop: Bool = false,
-        aspectRatioPreset: String? = nil
+        aspectRatioPreset: String? = nil,
+        verticalPerspective: CGFloat = 0,
+        horizontalPerspective: CGFloat = 0
     ) {
         self.x = x
         self.y = y
@@ -35,6 +39,8 @@ struct CropRect: Codable, Equatable, Sendable {
         self.quarterTurns = quarterTurns
         self.isFlippedInCrop = isFlippedInCrop
         self.aspectRatioPreset = aspectRatioPreset
+        self.verticalPerspective = verticalPerspective
+        self.horizontalPerspective = horizontalPerspective
     }
 
     // MARK: - Copy Helper
@@ -46,7 +52,9 @@ struct CropRect: Codable, Equatable, Sendable {
         straightenAngle: CGFloat? = nil,
         quarterTurns: Int? = nil,
         isFlippedInCrop: Bool? = nil,
-        aspectRatioPreset: String?? = nil
+        aspectRatioPreset: String?? = nil,
+        verticalPerspective: CGFloat? = nil,
+        horizontalPerspective: CGFloat? = nil
     ) -> Self {
         Self(
             x: x ?? self.x,
@@ -56,7 +64,9 @@ struct CropRect: Codable, Equatable, Sendable {
             straightenAngle: straightenAngle ?? self.straightenAngle,
             quarterTurns: quarterTurns ?? self.quarterTurns,
             isFlippedInCrop: isFlippedInCrop ?? self.isFlippedInCrop,
-            aspectRatioPreset: aspectRatioPreset ?? self.aspectRatioPreset
+            aspectRatioPreset: aspectRatioPreset ?? self.aspectRatioPreset,
+            verticalPerspective: verticalPerspective ?? self.verticalPerspective,
+            horizontalPerspective: horizontalPerspective ?? self.horizontalPerspective
         )
     }
 
@@ -64,6 +74,7 @@ struct CropRect: Codable, Equatable, Sendable {
     enum CodingKeys: String, CodingKey {
         case x, y, width, height
         case straightenAngle, quarterTurns, isFlippedInCrop, aspectRatioPreset
+        case verticalPerspective, horizontalPerspective
     }
 
     init(from decoder: Decoder) throws {
@@ -76,5 +87,7 @@ struct CropRect: Codable, Equatable, Sendable {
         quarterTurns = try container.decodeIfPresent(Int.self, forKey: .quarterTurns) ?? 0
         isFlippedInCrop = try container.decodeIfPresent(Bool.self, forKey: .isFlippedInCrop) ?? false
         aspectRatioPreset = try container.decodeIfPresent(String.self, forKey: .aspectRatioPreset)
+        verticalPerspective = try container.decodeIfPresent(CGFloat.self, forKey: .verticalPerspective) ?? 0
+        horizontalPerspective = try container.decodeIfPresent(CGFloat.self, forKey: .horizontalPerspective) ?? 0
     }
 }

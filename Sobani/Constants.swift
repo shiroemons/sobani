@@ -102,13 +102,21 @@ enum AppConstants {
     // Crop Editor
     static let cropEditorPanelWidth: CGFloat = 480
     static let cropEditorPanelHeight: CGFloat = 640
-    static let cropEditorTopBarHeight: CGFloat = 44
+    static let cropEditorTopBarHeight: CGFloat = 80
     static let cropEditorToolbarHeight: CGFloat = 130
     static let cropEditorCanvasPadding: CGFloat = 20
     static let cropEditorHandleLength: CGFloat = 20
     static let cropEditorHandleThickness: CGFloat = 3
     static let cropEditorGridLineWidth: CGFloat = 0.5
     static let cropEditorOverlayAlpha: CGFloat = 0.6
+
+    // Top bar pill buttons
+    static let cropEditorPillButtonSize: CGFloat = 36
+    static let cropEditorPillCornerRadius: CGFloat = 18
+
+    // Ruler dial
+    static let cropEditorRulerHeight: CGFloat = 44
+    static let cropEditorRulerTickSpacing: CGFloat = 6
 
     // Straighten Slider
     static let straightenMinAngle: CGFloat = -45
