@@ -119,12 +119,12 @@ extension AppDelegate {
     }
 
     @objc func saveLayoutFromMenu() {
-        let alert = NSAlert()
-        alert.messageText = L("layout.save_title")
-        alert.informativeText = L("layout.save_message")
-        alert.addButton(withTitle: L("layout.save_button"))
-        alert.addButton(withTitle: L("quit.cancel"))
-        alert.alertStyle = .informational
+        let alert = AlertFactory.make(
+            style: .informational,
+            messageText: L("layout.save_title"),
+            informativeText: L("layout.save_message"),
+            buttonTitles: [L("layout.save_button"), L("quit.cancel")]
+        )
 
         let textField = makeLayoutNameField(for: alert)
 
@@ -133,12 +133,12 @@ extension AppDelegate {
         guard !name.isEmpty else { return }
 
         if LayoutPresetManager.shared.presetExists(named: name) {
-            let overwriteAlert = NSAlert()
-            overwriteAlert.messageText = L("layout.overwrite_title")
-            overwriteAlert.informativeText = String(format: L("layout.overwrite_message"), name)
-            overwriteAlert.addButton(withTitle: L("layout.overwrite_button"))
-            overwriteAlert.addButton(withTitle: L("quit.cancel"))
-            overwriteAlert.alertStyle = .warning
+            let overwriteAlert = AlertFactory.confirmation(
+                messageText: L("layout.overwrite_title"),
+                informativeText: String(format: L("layout.overwrite_message"), name),
+                okTitle: L("layout.overwrite_button"),
+                cancelTitle: L("quit.cancel")
+            )
             guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
         }
 
@@ -148,12 +148,12 @@ extension AppDelegate {
     }
 
     @objc func createNewLayoutFromMenu() {
-        let alert = NSAlert()
-        alert.messageText = L("layout.create_title")
-        alert.informativeText = L("layout.create_message")
-        alert.addButton(withTitle: L("layout.create_button"))
-        alert.addButton(withTitle: L("quit.cancel"))
-        alert.alertStyle = .informational
+        let alert = AlertFactory.make(
+            style: .informational,
+            messageText: L("layout.create_title"),
+            informativeText: L("layout.create_message"),
+            buttonTitles: [L("layout.create_button"), L("quit.cancel")]
+        )
 
         let textField = makeLayoutNameField(for: alert)
 
@@ -162,12 +162,12 @@ extension AppDelegate {
         guard !name.isEmpty else { return }
 
         if LayoutPresetManager.shared.presetExists(named: name) {
-            let overwriteAlert = NSAlert()
-            overwriteAlert.messageText = L("layout.overwrite_title")
-            overwriteAlert.informativeText = String(format: L("layout.overwrite_message"), name)
-            overwriteAlert.addButton(withTitle: L("layout.overwrite_button"))
-            overwriteAlert.addButton(withTitle: L("quit.cancel"))
-            overwriteAlert.alertStyle = .warning
+            let overwriteAlert = AlertFactory.confirmation(
+                messageText: L("layout.overwrite_title"),
+                informativeText: String(format: L("layout.overwrite_message"), name),
+                okTitle: L("layout.overwrite_button"),
+                cancelTitle: L("quit.cancel")
+            )
             guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
         }
 
@@ -196,12 +196,12 @@ extension AppDelegate {
     @objc func updateLayoutFromMenu(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
 
-        let alert = NSAlert()
-        alert.messageText = L("layout.overwrite_title")
-        alert.informativeText = String(format: L("layout.update_confirm_message"), name)
-        alert.addButton(withTitle: L("layout.overwrite_button"))
-        alert.addButton(withTitle: L("quit.cancel"))
-        alert.alertStyle = .warning
+        let alert = AlertFactory.confirmation(
+            messageText: L("layout.overwrite_title"),
+            informativeText: String(format: L("layout.update_confirm_message"), name),
+            okTitle: L("layout.overwrite_button"),
+            cancelTitle: L("quit.cancel")
+        )
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
@@ -212,12 +212,12 @@ extension AppDelegate {
     @objc func deleteLayoutFromMenu(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
 
-        let alert = NSAlert()
-        alert.messageText = L("layout.delete_confirm_title")
-        alert.informativeText = String(format: L("layout.delete_confirm_message"), name)
-        alert.addButton(withTitle: L("layout.delete_button"))
-        alert.addButton(withTitle: L("quit.cancel"))
-        alert.alertStyle = .warning
+        let alert = AlertFactory.confirmation(
+            messageText: L("layout.delete_confirm_title"),
+            informativeText: String(format: L("layout.delete_confirm_message"), name),
+            okTitle: L("layout.delete_button"),
+            cancelTitle: L("quit.cancel")
+        )
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         LayoutPresetManager.shared.deletePreset(named: name)
@@ -226,12 +226,12 @@ extension AppDelegate {
     @objc func renameLayoutFromMenu(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
 
-        let alert = NSAlert()
-        alert.messageText = L("layout.rename_title")
-        alert.informativeText = L("layout.rename_message")
-        alert.addButton(withTitle: L("layout.rename_button"))
-        alert.addButton(withTitle: L("quit.cancel"))
-        alert.alertStyle = .informational
+        let alert = AlertFactory.make(
+            style: .informational,
+            messageText: L("layout.rename_title"),
+            informativeText: L("layout.rename_message"),
+            buttonTitles: [L("layout.rename_button"), L("quit.cancel")]
+        )
 
         let textField = makeLayoutNameField(for: alert)
         textField.stringValue = name
@@ -242,12 +242,12 @@ extension AppDelegate {
         guard newName != name else { return }
 
         if LayoutPresetManager.shared.presetExists(named: newName) {
-            let overwriteAlert = NSAlert()
-            overwriteAlert.messageText = L("layout.overwrite_title")
-            overwriteAlert.informativeText = String(format: L("layout.overwrite_message"), newName)
-            overwriteAlert.addButton(withTitle: L("layout.overwrite_button"))
-            overwriteAlert.addButton(withTitle: L("quit.cancel"))
-            overwriteAlert.alertStyle = .warning
+            let overwriteAlert = AlertFactory.confirmation(
+                messageText: L("layout.overwrite_title"),
+                informativeText: String(format: L("layout.overwrite_message"), newName),
+                okTitle: L("layout.overwrite_button"),
+                cancelTitle: L("quit.cancel")
+            )
             guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
         }
 

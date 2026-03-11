@@ -303,12 +303,12 @@ final class UpdateManager: @unchecked Sendable {
             // チェックサムなし: 警告ダイアログを表示してユーザーに確認
             DispatchQueue.main.async { @Sendable [weak self] in
                 guard let self = self else { return }
-                let alert = NSAlert()
-                alert.messageText = L("update.checksum_missing_title")
-                alert.informativeText = L("update.checksum_missing_message")
-                alert.addButton(withTitle: L("update.continue"))
-                alert.addButton(withTitle: L("update.cancel"))
-                alert.alertStyle = .warning
+                let alert = AlertFactory.confirmation(
+                    messageText: L("update.checksum_missing_title"),
+                    informativeText: L("update.checksum_missing_message"),
+                    okTitle: L("update.continue"),
+                    cancelTitle: L("update.cancel")
+                )
                 if alert.runModal() == .alertFirstButtonReturn {
                     self.downloadAsset(from: url, expectedChecksum: nil, format: format)
                 } else {
@@ -605,12 +605,12 @@ extension AppDelegate: UpdateManagerDelegate {
     @objc func performUpdate() {
         guard case .available(let version, let url, let checksumURL, let format) = UpdateManager.shared.state else { return }
 
-        let alert = NSAlert()
-        alert.messageText = String(format: L("update.confirm_title"), version)
-        alert.informativeText = L("update.confirm_message")
-        alert.addButton(withTitle: L("update.button"))
-        alert.addButton(withTitle: L("update.cancel"))
-        alert.alertStyle = .informational
+        let alert = AlertFactory.make(
+            style: .informational,
+            messageText: String(format: L("update.confirm_title"), version),
+            informativeText: L("update.confirm_message"),
+            buttonTitles: [L("update.button"), L("update.cancel")]
+        )
 
         if alert.runModal() == .alertFirstButtonReturn {
             UpdateManager.shared.downloadAndInstall(url: url, checksumURL: checksumURL, format: format)
@@ -621,31 +621,30 @@ extension AppDelegate: UpdateManagerDelegate {
         switch state {
         case .available(let version, let url, let checksumURL, let format):
             if manager.lastCheckTrigger != .automatic {
-                let alert = NSAlert()
-                alert.messageText = L("update.new_version_title")
-                alert.informativeText = String(format: L("update.new_version_message"), version)
-                alert.addButton(withTitle: L("update.button"))
-                alert.addButton(withTitle: L("update.later"))
-                alert.alertStyle = .informational
+                let alert = AlertFactory.make(
+                    style: .informational,
+                    messageText: L("update.new_version_title"),
+                    informativeText: String(format: L("update.new_version_message"), version),
+                    buttonTitles: [L("update.button"), L("update.later")]
+                )
                 if alert.runModal() == .alertFirstButtonReturn {
                     UpdateManager.shared.downloadAndInstall(url: url, checksumURL: checksumURL, format: format)
                 }
             }
         case .upToDate:
-            let alert = NSAlert()
-            alert.messageText = L("update.up_to_date_title")
-            alert.informativeText = L("update.up_to_date_message")
-            alert.addButton(withTitle: L("update.ok"))
-            alert.alertStyle = .informational
-            alert.runModal()
+            AlertFactory.make(
+                messageText: L("update.up_to_date_title"),
+                informativeText: L("update.up_to_date_message"),
+                buttonTitles: [L("update.ok")]
+            ).runModal()
         case .error(let code, let message):
-            let alert = NSAlert()
-            alert.messageText = L("update.check_failed_title")
             let hint = L(code.troubleshootingKey)
-            alert.informativeText = "\(message)\n\n\(L("update.hint_label"))\(hint)\n\n\(String(format: L("update.error_code_label"), code.rawValue))"
-            alert.addButton(withTitle: L("update.ok"))
-            alert.alertStyle = .warning
-            alert.runModal()
+            AlertFactory.make(
+                style: .warning,
+                messageText: L("update.check_failed_title"),
+                informativeText: "\(message)\n\n\(L("update.hint_label"))\(hint)\n\n\(String(format: L("update.error_code_label"), code.rawValue))",
+                buttonTitles: [L("update.ok")]
+            ).runModal()
         default:
             break
         }

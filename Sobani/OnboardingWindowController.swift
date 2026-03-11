@@ -410,11 +410,8 @@ extension OnboardingWindowController {
 
 extension OnboardingWindowController {
     private func makeSymbolView(_ symbolName: String, size: CGFloat, color: NSColor) -> NSImageView {
-        let config = NSImage.SymbolConfiguration(pointSize: size, weight: .regular)
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
-            .withSymbolConfiguration(config)
         let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: size, height: size))
-        imageView.image = image
+        imageView.image = SFSymbolUtils.icon(symbolName, pointSize: size)
         imageView.contentTintColor = color
         return imageView
     }

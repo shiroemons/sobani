@@ -166,7 +166,6 @@ final class FloatingMenuController {
             label: L("floating_menu.label.close"), action: #selector(closeTapped)
         ))
 
-        let config = NSImage.SymbolConfiguration(pointSize: Self.buttonIconPointSize, weight: .medium)
         for (index, spec) in buttons.enumerated() {
             let columnX = Self.panelPadding + (Self.columnWidth + Self.buttonPadding) * CGFloat(index)
             let buttonX = columnX + (Self.columnWidth - Self.buttonSize) / 2
@@ -182,9 +181,7 @@ final class FloatingMenuController {
             button.target = self
             button.action = spec.action
 
-            if let image = NSImage(systemSymbolName: spec.symbolName, accessibilityDescription: spec.tooltip) {
-                button.image = image.withSymbolConfiguration(config)
-            }
+            button.image = SFSymbolUtils.icon(spec.symbolName, pointSize: Self.buttonIconPointSize, weight: .medium)
 
             // Hover effect via tracking area
             button.wantsLayer = true

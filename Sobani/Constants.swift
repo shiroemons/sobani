@@ -42,6 +42,7 @@ enum AppConstants {
     static let loggerSubsystem = "com.shiroemons.Sobani"
 
     static let defaultImageName = "default"
+    static let legacyDefaultImageName = "デフォルト"
 
     // Window
     static let defaultWindowHeight: CGFloat = 600
@@ -254,6 +255,17 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case renameLayout = 1030
     case cropImage = 1031
     case resetCrop = 1032
+}
+
+// MARK: - SF Symbol Utils
+
+enum SFSymbolUtils {
+    static func icon(_ name: String, pointSize: CGFloat = AppConstants.menuIconPointSize,
+                     weight: NSFont.Weight = .regular) -> NSImage? {
+        let config = NSImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
+        return NSImage(systemSymbolName: name, accessibilityDescription: nil)?
+            .withSymbolConfiguration(config)
+    }
 }
 
 @MainActor

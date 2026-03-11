@@ -6,15 +6,12 @@ extension CharacterWindow {
     func populateOtherSubmenu(_ otherSubmenu: NSMenu, names: [String]) {
         otherSubmenu.removeAllItems()
 
-        let symbolConfig = NSImage.SymbolConfiguration(pointSize: AppConstants.menuIconPointSize, weight: .regular)
-
         let resetRotationItem = NSMenuItem(
             title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: ""
         )
         resetRotationItem.target = self
         resetRotationItem.isEnabled = abs(imageView.rotationAngle) > AppConstants.floatingPointTolerance
-        resetRotationItem.image = NSImage(systemSymbolName: "arrow.counterclockwise", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        resetRotationItem.image = SFSymbolUtils.icon("arrow.counterclockwise")
         otherSubmenu.addItem(resetRotationItem)
 
         let resetOpacityItem = NSMenuItem(
@@ -22,8 +19,7 @@ extension CharacterWindow {
         )
         resetOpacityItem.target = self
         resetOpacityItem.isEnabled = abs(imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance
-        resetOpacityItem.image = NSImage(systemSymbolName: "circle.lefthalf.filled", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        resetOpacityItem.image = SFSymbolUtils.icon("circle.lefthalf.filled")
         otherSubmenu.addItem(resetOpacityItem)
 
         otherSubmenu.addItem(NSMenuItem.separator())
@@ -32,8 +28,7 @@ extension CharacterWindow {
             title: L("adjust.reset_display"), action: #selector(resetDisplay), keyEquivalent: ""
         )
         resetDisplayItem.target = self
-        resetDisplayItem.image = NSImage(systemSymbolName: "arrow.counterclockwise.circle", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        resetDisplayItem.image = SFSymbolUtils.icon("arrow.counterclockwise.circle")
         otherSubmenu.addItem(resetDisplayItem)
 
         otherSubmenu.addItem(NSMenuItem.separator())
@@ -43,8 +38,7 @@ extension CharacterWindow {
         )
         cropItem.tag = MenuItemTag.cropImage.rawValue
         cropItem.target = self
-        cropItem.image = NSImage(systemSymbolName: "crop", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        cropItem.image = SFSymbolUtils.icon("crop")
         otherSubmenu.addItem(cropItem)
 
         let resetCropItem = NSMenuItem(
@@ -53,15 +47,13 @@ extension CharacterWindow {
         resetCropItem.tag = MenuItemTag.resetCrop.rawValue
         resetCropItem.target = self
         resetCropItem.isEnabled = imageView.cropRect != nil
-        resetCropItem.image = NSImage(systemSymbolName: "crop", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        resetCropItem.image = SFSymbolUtils.icon("crop")
         otherSubmenu.addItem(resetCropItem)
 
         otherSubmenu.addItem(NSMenuItem.separator())
 
         let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
-        deleteRegisteredItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        deleteRegisteredItem.image = SFSymbolUtils.icon("trash")
         let deleteSubmenu = NSMenu()
         deleteSubmenu.delegate = self
         for name in names {

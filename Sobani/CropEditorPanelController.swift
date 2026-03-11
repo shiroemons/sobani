@@ -282,10 +282,7 @@ final class CropEditorPanelController: NSObject {
     private func updateModeToggleAppearance() {
         let mode = toolbarView?.currentToolbarMode ?? .correction
         let symbolName = mode.toggleSymbolName
-        let config = NSImage.SymbolConfiguration(pointSize: Self.pillIconPointSize, weight: .medium)
-        if let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
-            modeToggleButton?.image = image.withSymbolConfiguration(config)
-        }
+        modeToggleButton?.image = SFSymbolUtils.icon(symbolName, pointSize: Self.pillIconPointSize, weight: .medium)
     }
 
 }
@@ -546,10 +543,7 @@ extension CropEditorPanelController {
         button.imagePosition = .imageOnly
         button.target = self
         button.action = action
-        let config = NSImage.SymbolConfiguration(pointSize: Self.pillIconPointSize, weight: .medium)
-        if let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
-            button.image = image.withSymbolConfiguration(config)
-        }
+        button.image = SFSymbolUtils.icon(symbolName, pointSize: Self.pillIconPointSize, weight: .medium)
         button.contentTintColor = .labelColor
     }
 

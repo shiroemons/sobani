@@ -156,7 +156,7 @@ final class WindowStateManager {
         // Backward compatibility: normalize legacy "デフォルト" to internal constant
         // Introduced: v202502.0 — Can be removed after sufficient migration period (e.g. v202602.0+)
         states = states.map { state in
-            if state.imageName == "デフォルト" {
+            if state.imageName == AppConstants.legacyDefaultImageName {
                 var normalized = state
                 normalized.imageName = AppConstants.defaultImageName
                 return normalized

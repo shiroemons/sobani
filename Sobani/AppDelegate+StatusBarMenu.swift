@@ -626,13 +626,8 @@ extension AppDelegate {
         }
     }
 
-    private static let menuSymbolConfig = NSImage.SymbolConfiguration(
-        pointSize: AppConstants.menuIconPointSize, weight: .regular
-    )
-
     func menuIcon(_ name: String) -> NSImage? {
-        NSImage(systemSymbolName: name, accessibilityDescription: nil)?
-            .withSymbolConfiguration(Self.menuSymbolConfig)
+        SFSymbolUtils.icon(name)
     }
 
     @objc func changeDefaultImageFromMenu() {

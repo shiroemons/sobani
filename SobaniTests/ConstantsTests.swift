@@ -101,6 +101,11 @@ import os.log
         #expect(AppConstants.loggerSubsystem == "com.shiroemons.Sobani")
     }
 
+    /// legacyDefaultImageNameが正しい値であることを検証
+    @Test func legacyDefaultImageNameValue() {
+        #expect(AppConstants.legacyDefaultImageName == "デフォルト")
+    }
+
     // MARK: - AppSupportDirectory テスト
 
     /// カスタムbaseDirectoryが指定された場合にそのパスが返されることを検証
@@ -228,5 +233,31 @@ import os.log
         #expect(types.contains(.gif))
         #expect(types.contains(.tiff))
         #expect(types.contains(.heic))
+    }
+
+    // MARK: - SFSymbolUtils テスト
+
+    /// 有効なSF Symbol名でnon-nilが返されることを検証
+    @Test func sfSymbolUtils_ValidSymbolReturnsImage() {
+        let image = SFSymbolUtils.icon("photo")
+        #expect(image != nil)
+    }
+
+    /// 無効なSF Symbol名でnilが返されることを検証
+    @Test func sfSymbolUtils_InvalidSymbolReturnsNil() {
+        let image = SFSymbolUtils.icon("this.symbol.does.not.exist.xyz")
+        #expect(image == nil)
+    }
+
+    /// デフォルトパラメータ（menuIconPointSize, .regular）で動作することを検証
+    @Test func sfSymbolUtils_DefaultParametersWork() {
+        let image = SFSymbolUtils.icon("star")
+        #expect(image != nil)
+    }
+
+    /// カスタムpointSizeとweightで動作することを検証
+    @Test func sfSymbolUtils_CustomPointSizeAndWeightWork() {
+        let image = SFSymbolUtils.icon("star", pointSize: 18, weight: .medium)
+        #expect(image != nil)
     }
 }
