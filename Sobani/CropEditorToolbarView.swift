@@ -229,7 +229,7 @@ final class CropEditorToolbarView: NSView {
         angleForMode(straightenMode)
     }
 
-    /// Undo/Redo時に全モードの角度を一括同期する
+    /// 全モードの角度を一括同期する（初期化・Undo/Redo共通）
     func syncAngles(straighten: CGFloat, verticalPerspective: CGFloat, horizontalPerspective: CGFloat) {
         modeAngles[.straighten] = straighten
         modeAngles[.verticalPerspective] = verticalPerspective

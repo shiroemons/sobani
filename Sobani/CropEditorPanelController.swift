@@ -108,9 +108,7 @@ final class CropEditorPanelController: NSObject {
         }
         contentView.addSubview(toolbar)
         toolbarView = toolbar
-        if let preset = AspectRatioPreset.from(presetName: currentCropRect.aspectRatioPreset) {
-            toolbar.updateAspectRatioSelection(preset)
-        }
+        syncToolbarState(to: currentCropRect)
 
         // Central canvas
         let canvasY = AppConstants.cropEditorToolbarHeight + AppConstants.cropEditorCanvasGap
@@ -224,14 +222,7 @@ final class CropEditorPanelController: NSObject {
     private func applyHistoryState(_ state: CropRect) {
         currentCropRect = state
         canvasView?.initializeFromCropRect(state)
-        toolbarView?.syncAngles(
-            straighten: state.straightenAngle,
-            verticalPerspective: state.verticalPerspective,
-            horizontalPerspective: state.horizontalPerspective
-        )
-        if let preset = AspectRatioPreset.from(presetName: state.aspectRatioPreset) {
-            toolbarView?.updateAspectRatioSelection(preset)
-        }
+        syncToolbarState(to: state)
         updateRevertButtonVisibility()
         updateUndoRedoButtons()
     }
@@ -248,6 +239,19 @@ final class CropEditorPanelController: NSObject {
         redoButton?.isEnabled = canRedo
         undoButton?.contentTintColor = canUndo ? .white : .tertiaryLabelColor
         redoButton?.contentTintColor = canRedo ? .white : .tertiaryLabelColor
+    }
+
+    // MARK: - Toolbar Sync
+
+    private func syncToolbarState(to cropRect: CropRect) {
+        toolbarView?.syncAngles(
+            straighten: cropRect.straightenAngle,
+            verticalPerspective: cropRect.verticalPerspective,
+            horizontalPerspective: cropRect.horizontalPerspective
+        )
+        if let preset = AspectRatioPreset.from(presetName: cropRect.aspectRatioPreset) {
+            toolbarView?.updateAspectRatioSelection(preset)
+        }
     }
 
     // MARK: - Revert Button Visibility
