@@ -20,11 +20,16 @@ final class FloatingMenuController {
     private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "FloatingMenuController")
 
     // Layout constants
-    private static let buttonSize: CGFloat = 32
-    private static let buttonPadding: CGFloat = 6
+    private static let buttonSize: CGFloat = 36
+    private static let columnWidth: CGFloat = 50
+    private static let buttonPadding: CGFloat = 4
     private static let panelPadding: CGFloat = 8
     private static let cornerRadius: CGFloat = 10
     private static let aboveOffset: CGFloat = 8
+    private static let labelHeight: CGFloat = 12
+    private static let labelTopGap: CGFloat = 2
+    private static let labelFontSize: CGFloat = 9
+    private static let buttonIconPointSize: CGFloat = 18
 
     weak var delegate: FloatingMenuDelegate?
     var isRemoveBackgroundEnabled: Bool = true
@@ -43,9 +48,9 @@ final class FloatingMenuController {
         dismiss()
 
         let buttonCount = Self.buttonCount()
-        let panelWidth = Self.panelPadding * 2 + Self.buttonSize * CGFloat(buttonCount)
+        let panelWidth = Self.panelPadding * 2 + Self.columnWidth * CGFloat(buttonCount)
             + Self.buttonPadding * CGFloat(buttonCount - 1)
-        let panelHeight = Self.panelPadding * 2 + Self.buttonSize
+        let panelHeight = Self.panelPadding * 2 + Self.buttonSize + Self.labelTopGap + Self.labelHeight
 
         // Convert window-local point to screen coordinates
         let screenPoint = window.convertPoint(toScreen: point)
@@ -121,38 +126,52 @@ final class FloatingMenuController {
     private struct ButtonSpec {
         let symbolName: String
         let tooltip: String
+        let label: String
         let action: Selector
     }
 
     private func setupButtons(in container: NSView) {
         var buttons: [ButtonSpec] = [
-            ButtonSpec(symbolName: "crop", tooltip: L("floating_menu.crop"), action: #selector(cropTapped)),
+            ButtonSpec(symbolName: "crop", tooltip: L("floating_menu.crop"), label: L("floating_menu.label.crop"), action: #selector(cropTapped)),
             ButtonSpec(
                 symbolName: "arrow.left.and.right.righttriangle.left.righttriangle.right",
                 tooltip: L("floating_menu.flip"),
+                label: L("floating_menu.label.flip"),
                 action: #selector(flipTapped)
             ),
-            ButtonSpec(symbolName: "slider.horizontal.3", tooltip: L("floating_menu.adjust"), action: #selector(adjustTapped))
+            ButtonSpec(
+                symbolName: "slider.horizontal.3", tooltip: L("floating_menu.adjust"),
+                label: L("floating_menu.label.adjust"), action: #selector(adjustTapped)
+            )
         ]
 
         var removeBackgroundIndex: Int?
         if #available(macOS 14.0, *) {
             removeBackgroundIndex = buttons.count
             buttons.append(ButtonSpec(
-                symbolName: "eraser.fill", tooltip: L("floating_menu.remove_background"), action: #selector(removeBackgroundTapped)
+                symbolName: "eraser.fill",
+                tooltip: L("floating_menu.remove_background"),
+                label: L("floating_menu.label.remove_background"),
+                action: #selector(removeBackgroundTapped)
             ))
         }
 
         buttons.append(ButtonSpec(
             symbolName: "arrow.counterclockwise", tooltip: L("floating_menu.reset_display"),
+            label: L("floating_menu.label.reset_display"),
             action: #selector(resetDisplayTapped)
         ))
-        buttons.append(ButtonSpec(symbolName: "xmark.circle", tooltip: L("floating_menu.close"), action: #selector(closeTapped)))
+        buttons.append(ButtonSpec(
+            symbolName: "xmark.circle", tooltip: L("floating_menu.close"),
+            label: L("floating_menu.label.close"), action: #selector(closeTapped)
+        ))
 
+        let config = NSImage.SymbolConfiguration(pointSize: Self.buttonIconPointSize, weight: .medium)
         for (index, spec) in buttons.enumerated() {
-            let x = Self.panelPadding + (Self.buttonSize + Self.buttonPadding) * CGFloat(index)
-            let y = Self.panelPadding
-            let buttonFrame = NSRect(x: x, y: y, width: Self.buttonSize, height: Self.buttonSize)
+            let columnX = Self.panelPadding + (Self.columnWidth + Self.buttonPadding) * CGFloat(index)
+            let buttonX = columnX + (Self.columnWidth - Self.buttonSize) / 2
+            let buttonY = Self.panelPadding + Self.labelHeight + Self.labelTopGap
+            let buttonFrame = NSRect(x: buttonX, y: buttonY, width: Self.buttonSize, height: Self.buttonSize)
 
             let button = NSButton(frame: buttonFrame)
             button.bezelStyle = .regularSquare
@@ -164,12 +183,7 @@ final class FloatingMenuController {
             button.action = spec.action
 
             if let image = NSImage(systemSymbolName: spec.symbolName, accessibilityDescription: spec.tooltip) {
-                let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .medium)
                 button.image = image.withSymbolConfiguration(config)
-            }
-
-            if index == removeBackgroundIndex {
-                button.isEnabled = isRemoveBackgroundEnabled
             }
 
             // Hover effect via tracking area
@@ -183,6 +197,25 @@ final class FloatingMenuController {
             button.addTrackingArea(trackingArea)
 
             container.addSubview(button)
+
+            // Label below button
+            let labelFrame = NSRect(x: columnX, y: Self.panelPadding, width: Self.columnWidth, height: Self.labelHeight)
+            let label = NSTextField(frame: labelFrame)
+            label.stringValue = spec.label
+            label.isEditable = false
+            label.isBordered = false
+            label.drawsBackground = false
+            label.alignment = .center
+            label.font = .systemFont(ofSize: Self.labelFontSize)
+            label.textColor = .secondaryLabelColor
+            label.lineBreakMode = .byTruncatingTail
+
+            if index == removeBackgroundIndex && !isRemoveBackgroundEnabled {
+                button.isEnabled = false
+                label.textColor = .tertiaryLabelColor
+            }
+
+            container.addSubview(label)
         }
     }
 
