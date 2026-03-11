@@ -697,14 +697,6 @@ extension AdjustmentPanelController {
         return CGPoint(x: point.x + screenOrigin.x, y: point.y + screenOrigin.y)
     }
 
-    private func globalToMonitorRelative(_ point: CGPoint, screen: NSScreen) -> CGPoint {
-        return Self.globalToMonitorRelative(point, screenOrigin: screen.frame.origin)
-    }
-
-    private func monitorRelativeToGlobal(_ point: CGPoint, screen: NSScreen) -> CGPoint {
-        return Self.monitorRelativeToGlobal(point, screenOrigin: screen.frame.origin)
-    }
-
     // MARK: Monitor Popup
 
     private func populateMonitorPopup() {
@@ -749,11 +741,11 @@ extension AdjustmentPanelController {
             updatePositionFields()
             return
         }
-        let currentRelative = globalToMonitorRelative(currentPosition, screen: screen)
+        let currentRelative = Self.globalToMonitorRelative(currentPosition, screenOrigin: screen.frame.origin)
         let relative = Self.updatedRelativePosition(
             newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: true
         )
-        let global = monitorRelativeToGlobal(relative, screen: screen)
+        let global = Self.monitorRelativeToGlobal(relative, screenOrigin: screen.frame.origin)
         currentPosition = global
         delegate?.adjustmentPanel(self, didChangePosition: global)
     }
@@ -765,11 +757,11 @@ extension AdjustmentPanelController {
             updatePositionFields()
             return
         }
-        let currentRelative = globalToMonitorRelative(currentPosition, screen: screen)
+        let currentRelative = Self.globalToMonitorRelative(currentPosition, screenOrigin: screen.frame.origin)
         let relative = Self.updatedRelativePosition(
             newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: false
         )
-        let global = monitorRelativeToGlobal(relative, screen: screen)
+        let global = Self.monitorRelativeToGlobal(relative, screenOrigin: screen.frame.origin)
         currentPosition = global
         delegate?.adjustmentPanel(self, didChangePosition: global)
     }
@@ -831,7 +823,7 @@ extension AdjustmentPanelController {
 
     private func updatePositionFields() {
         guard let screen = currentScreen else { return }
-        let relative = globalToMonitorRelative(currentPosition, screen: screen)
+        let relative = Self.globalToMonitorRelative(currentPosition, screenOrigin: screen.frame.origin)
         xField?.stringValue = "\(Int(round(relative.x)))"
         yField?.stringValue = "\(Int(round(relative.y)))"
     }
