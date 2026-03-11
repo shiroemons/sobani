@@ -102,10 +102,11 @@ enum AppConstants {
 
     // Crop Editor
     static let cropEditorPanelWidth: CGFloat = 480
-    static let cropEditorPanelHeight: CGFloat = 640
-    static let cropEditorTopBarHeight: CGFloat = 80
+    static let cropEditorPanelHeight: CGFloat = 648
+    static let cropEditorTopBarHeight: CGFloat = 90
     static let cropEditorToolbarHeight: CGFloat = 130
     static let cropEditorCanvasPadding: CGFloat = 20
+    static let cropEditorCanvasGap: CGFloat = 4
     static let cropEditorHandleLength: CGFloat = 20
     static let cropEditorHandleThickness: CGFloat = 3
     static let cropEditorGridLineWidth: CGFloat = 0.5

@@ -20,7 +20,7 @@ final class CropEditorPanelController: NSObject {
 
     private static let panelGap: CGFloat = 20
     private static let topBarSidePadding: CGFloat = 16
-    private static let topBarRowSpacing: CGFloat = 4
+    private static let topBarRowSpacing: CGFloat = 8
     private static let separatorWidth: CGFloat = 1
     private static let pillIconPointSize: CGFloat = 14
     private static let revertPillWidth: CGFloat = 60
@@ -113,8 +113,11 @@ final class CropEditorPanelController: NSObject {
         }
 
         // Central canvas
-        let canvasY = AppConstants.cropEditorToolbarHeight
-        let canvasHeight = AppConstants.cropEditorPanelHeight - AppConstants.cropEditorTopBarHeight - AppConstants.cropEditorToolbarHeight
+        let canvasY = AppConstants.cropEditorToolbarHeight + AppConstants.cropEditorCanvasGap
+        let canvasHeight = AppConstants.cropEditorPanelHeight
+            - AppConstants.cropEditorTopBarHeight
+            - AppConstants.cropEditorToolbarHeight
+            - AppConstants.cropEditorCanvasGap * 2
         let canvas = CropEditorCanvasView(
             frame: NSRect(x: 0, y: canvasY, width: AppConstants.cropEditorPanelWidth, height: canvasHeight)
         )
