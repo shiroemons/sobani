@@ -2,7 +2,7 @@ import Cocoa
 import os.log
 
 /// クロップ確定時の画像処理ロジック
-/// 処理順序: quarterTurns回転 → isFlippedInCrop反転 → straightenAngle傾き補正 → クロップ矩形で切り出し
+/// 処理順序: quarterTurns回転 → isFlippedInCrop反転 → (傾き補正+クロップ統合 or クロップのみ)
 enum CropImageProcessor {
 
     private static let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "CropImageProcessor")
@@ -62,18 +62,18 @@ enum CropImageProcessor {
             current = flipped
         }
 
-        // 3. straightenAngle傾き補正 + 自動ズーム
+        // 3+4. 傾き補正 + クロップ（統合処理）
         if abs(cropRect.straightenAngle) > AppConstants.floatingPointTolerance {
-            guard let straightened = applyStraighten(
-                to: current, angleDegrees: cropRect.straightenAngle
-            ) else {
-                logger.error("applyStraighten failed for angle=\(cropRect.straightenAngle)")
-                return nil
+            let result = applyStraightenAndCrop(
+                to: current, angleDegrees: cropRect.straightenAngle, cropRect: cropRect
+            )
+            if result == nil {
+                logger.error("applyStraightenAndCrop failed")
             }
-            current = straightened
+            return result
         }
 
-        // 4. クロップ矩形で切り出し
+        // 傾き補正なし: クロップのみ
         let result = applyCropRect(to: current, cropRect: cropRect)
         if result == nil {
             logger.error("applyCropRect failed for rect=(\(cropRect.x), \(cropRect.y), \(cropRect.width), \(cropRect.height))")
@@ -182,7 +182,56 @@ enum CropImageProcessor {
         return fullImage.cropping(to: cropCGRect)
     }
 
+    /// 傾き補正とクロップを統合して実行
+    /// エディタのプレビューと同じ結果を生成するため、回転と切り出しを1ステップで処理
+    static func applyStraightenAndCrop(
+        to image: CGImage, angleDegrees: CGFloat, cropRect: CropRect
+    ) -> CGImage? {
+        let imgW = CGFloat(image.width)
+        let imgH = CGFloat(image.height)
+
+        let cropPixelW = cropRect.width * imgW
+        let cropPixelH = cropRect.height * imgH
+        let intW = Int(ceil(cropPixelW))
+        let intH = Int(ceil(cropPixelH))
+        guard intW > 0, intH > 0 else { return nil }
+
+        guard let context = CGContext(
+            data: nil, width: intW, height: intH,
+            bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+
+        context.clear(CGRect(x: 0, y: 0, width: intW, height: intH))
+
+        // クロップ領域の中心（画像ピクセル座標）
+        let cropCenterX = cropRect.x * imgW + cropPixelW / 2
+        let cropCenterY = cropRect.y * imgH + cropPixelH / 2
+
+        // 画像の中心
+        let imgCenterX = imgW / 2
+        let imgCenterY = imgH / 2
+
+        // エディタと同じ変換を再現:
+        // 1. コンテキストの原点をクロップ領域の中心に設定
+        context.translateBy(x: CGFloat(intW) / 2, y: CGFloat(intH) / 2)
+
+        // 2. 画像中心をクロップ中心からの相対位置に移動
+        context.translateBy(x: imgCenterX - cropCenterX, y: imgCenterY - cropCenterY)
+
+        // 3. 画像中心を軸に回転
+        let radians = angleDegrees * .pi / 180
+        context.rotate(by: -radians)
+
+        // 4. 画像を中心基準で描画
+        context.draw(image, in: CGRect(x: -imgW / 2, y: -imgH / 2, width: imgW, height: imgH))
+
+        return context.makeImage()
+    }
+
     /// 正規化座標のクロップ矩形で切り出し
+    /// クロップ領域が画像外にはみ出す場合、空白部分は透過（alpha=0）になる
     static func applyCropRect(to image: CGImage, cropRect: CropRect) -> CGImage? {
         let imgWidth = CGFloat(image.width)
         let imgHeight = CGFloat(image.height)
@@ -190,12 +239,46 @@ enum CropImageProcessor {
         let cropY = cropRect.y * imgHeight
         let cropW = cropRect.width * imgWidth
         let cropH = cropRect.height * imgHeight
-        // Y軸反転（CropRectはbottom-up、CGImageはtop-down）
-        let cropCGRect = CGRect(
-            x: cropX, y: imgHeight - cropY - cropH,
-            width: cropW, height: cropH
-        )
-        guard cropW > 0, cropH > 0 else { return nil }
-        return image.cropping(to: cropCGRect)
+
+        let intCropW = Int(ceil(cropW))
+        let intCropH = Int(ceil(cropH))
+        guard intCropW > 0, intCropH > 0 else { return nil }
+
+        // クロップ領域が完全に画像内に収まる場合は高速パスを使用
+        let isFullyInside = cropX >= 0
+            && cropY >= 0
+            && (cropX + cropW) <= imgWidth
+            && (cropY + cropH) <= imgHeight
+
+        if isFullyInside {
+            // Y軸反転（CropRectはbottom-up、CGImageはtop-down）
+            let cropCGRect = CGRect(
+                x: cropX, y: imgHeight - cropY - cropH,
+                width: cropW, height: cropH
+            )
+            return image.cropping(to: cropCGRect)
+        }
+
+        // クロップ領域が画像外にはみ出す場合：透過背景のコンテキストに描画
+        guard let context = CGContext(
+            data: nil, width: intCropW, height: intCropH,
+            bitsPerComponent: 8,
+            bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return nil
+        }
+
+        // 背景を透明にクリア
+        context.clear(CGRect(x: 0, y: 0, width: intCropW, height: intCropH))
+
+        // 画像をクロップ座標系で配置（Y軸反転を考慮）
+        // コンテキスト原点 = クロップ領域の左下
+        // 画像の左下 = コンテキスト上で (-cropX, -cropY)
+        let drawX = -cropX
+        let drawY = -(imgHeight - cropY - cropH)
+        context.draw(image, in: CGRect(x: drawX, y: drawY, width: imgWidth, height: imgHeight))
+
+        return context.makeImage()
     }
 }

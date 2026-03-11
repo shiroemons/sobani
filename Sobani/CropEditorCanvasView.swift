@@ -36,7 +36,9 @@ final class CropEditorCanvasView: NSView {
     // MARK: - Properties
 
     var cropRect: CropRect = .full {
-        didSet { needsDisplay = true }
+        didSet {
+            needsDisplay = true
+        }
     }
     var onCropRectChanged: ((CropRect) -> Void)?
     private(set) var displayImage: NSImage?
@@ -127,14 +129,23 @@ final class CropEditorCanvasView: NSView {
     /// 既存の CropRect からズーム/オフセットの初期状態を復元する
     func initializeFromCropRect(_ rect: CropRect) {
         cropRect = rect
-        let state = CropGeometry.initialStateFromCropRect(
-            cropRect: rect,
-            canvasSize: bounds.size,
-            imageSize: displayImage?.size ?? CGSize(width: 1, height: 1)
-        )
-        imageZoom = clamp(state.zoom, min: Self.minZoom, max: Self.maxZoom)
-        imageOffset = state.offset
-        clampImageOffset()
+        imageZoom = Self.minZoom
+
+        let cropFrame = calculateCropFrameRect()
+        guard cropFrame.width > 0, cropFrame.height > 0,
+              rect.width > AppConstants.floatingPointTolerance,
+              rect.height > AppConstants.floatingPointTolerance else {
+            imageOffset = .zero
+            needsDisplay = true
+            return
+        }
+
+        // baseWidth/baseHeight は calculateImageDrawRect と同じ計算
+        let baseWidth = cropFrame.width / rect.width
+        let baseHeight = cropFrame.height / rect.height
+        let offsetX = baseWidth * (0.5 - rect.x) - cropFrame.width / 2
+        let offsetY = baseHeight * (0.5 - rect.y) - cropFrame.height / 2
+        imageOffset = CGPoint(x: offsetX, y: offsetY)
         needsDisplay = true
     }
 
@@ -212,13 +223,8 @@ extension CropEditorCanvasView {
     }
 
     private func clampImageOffset() {
-        let cropFrame = calculateCropFrameRect()
-        let imgRect = calculateImageDrawRect(cropFrame: cropFrame)
-        imageOffset = CropGeometry.clampOffset(
-            offset: imageOffset,
-            imageSize: imgRect.size,
-            cropFrameSize: cropFrame.size
-        )
+        // パンクランプなし: 画像を自由に配置可能
+        // 空白領域は出力時に透過になる
     }
 }
 

@@ -122,11 +122,12 @@ enum CropGeometry {
         let height: CGFloat
     }
 
-    /// Converts a crop frame in view coordinates to normalized (0–1) crop coordinates.
+    /// Converts a crop frame in view coordinates to normalized crop coordinates.
+    /// Coordinates may exceed the 0–1 range when the image is freely positioned.
     /// - Parameters:
     ///   - cropFrame: The crop rectangle in view coordinate space
     ///   - imageRect: The image rectangle in view coordinate space
-    /// - Returns: Normalized (x, y, width, height) clamped to [0, 1]
+    /// - Returns: Normalized (x, y, width, height) — unclamped for free positioning
     static func viewRectToNormalizedCrop(
         cropFrame: CGRect, imageRect: CGRect
     ) -> NormalizedCrop {
@@ -135,10 +136,7 @@ enum CropGeometry {
         let w = cropFrame.width / imageRect.width
         let h = cropFrame.height / imageRect.height
         return NormalizedCrop(
-            x: max(0, min(1, x)),
-            y: max(0, min(1, y)),
-            width: max(0, min(1, w)),
-            height: max(0, min(1, h))
+            x: x, y: y, width: w, height: h
         )
     }
 
