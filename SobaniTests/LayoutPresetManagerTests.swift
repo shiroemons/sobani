@@ -306,4 +306,54 @@ import Testing
         #expect(isDirectory.boolValue)
     }
 
+    // MARK: - Cache Tests
+
+    /// 連続してloadPresetsを呼んだとき同一の結果を返すことを検証
+    @Test func loadPresetsReturnsCachedResult() {
+        presetManager.savePreset(name: "CachePreset1", states: [makeState(originX: 10)])
+        presetManager.savePreset(name: "CachePreset2", states: [makeState(originX: 20)])
+
+        let first = presetManager.loadPresets()
+        let second = presetManager.loadPresets()
+        #expect(first == second)
+        #expect(first.count == 2)
+    }
+
+    /// savePreset後にloadPresetsが新しいプリセットを含む結果を返すことを検証
+    @Test func cacheInvalidatedAfterSave() {
+        presetManager.savePreset(name: "BeforeSave", states: [makeState(originX: 1)])
+        let before = presetManager.loadPresets()
+        #expect(before.count == 1)
+
+        presetManager.savePreset(name: "AfterSave", states: [makeState(originX: 2)])
+        let after = presetManager.loadPresets()
+        #expect(after.count == 2)
+        #expect(after.contains(where: { $0.name == "AfterSave" }))
+    }
+
+    /// deletePreset後にloadPresetsが削除済みプリセットを含まないことを検証
+    @Test func cacheInvalidatedAfterDelete() {
+        presetManager.savePreset(name: "ToDeleteCache", states: [makeState()])
+        let before = presetManager.loadPresets()
+        #expect(before.contains(where: { $0.name == "ToDeleteCache" }))
+
+        presetManager.deletePreset(named: "ToDeleteCache")
+        let after = presetManager.loadPresets()
+        #expect(!after.contains(where: { $0.name == "ToDeleteCache" }))
+    }
+
+    /// renamePreset後にloadPresetsが新しい名前のプリセットを含むことを検証
+    @Test func cacheInvalidatedAfterRename() {
+        presetManager.savePreset(name: "OldCacheName", states: [makeState()])
+        let before = presetManager.loadPresets()
+        #expect(before.contains(where: { $0.name == "OldCacheName" }))
+
+        let result = presetManager.renamePreset(from: "OldCacheName", to: "NewCacheName")
+        #expect(result)
+
+        let after = presetManager.loadPresets()
+        #expect(!after.contains(where: { $0.name == "OldCacheName" }))
+        #expect(after.contains(where: { $0.name == "NewCacheName" }))
+    }
+
 }

@@ -19,6 +19,7 @@ final class LayoutPresetManager {
         category: "LayoutPresetManager"
     )
     private let baseDirectory: URL?
+    private var cachedPresets: [LayoutPreset]?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
@@ -62,12 +63,16 @@ final class LayoutPresetManager {
         do {
             let data = try encoder.encode(preset)
             try data.write(to: url, options: .atomic)
+            cachedPresets = nil
         } catch {
             logger.error("Failed to save layout preset: \(error.localizedDescription)")
         }
     }
 
     func loadPresets() -> [LayoutPreset] {
+        if let cached = cachedPresets {
+            return cached
+        }
         guard let layoutsDir = layoutsDirectoryURL else { return [] }
         let fm = FileManager.default
         let files = (try? fm.contentsOfDirectory(atPath: layoutsDir.path)) ?? []
@@ -84,7 +89,9 @@ final class LayoutPresetManager {
                 logger.warning("Skipping invalid layout file \(file): \(error.localizedDescription)")
             }
         }
-        return presets.sorted { $0.createdAt > $1.createdAt }
+        let result = presets.sorted { $0.createdAt > $1.createdAt }
+        cachedPresets = result
+        return result
     }
 
     func loadPreset(named name: String) -> LayoutPreset? {
@@ -104,6 +111,7 @@ final class LayoutPresetManager {
         guard let url = presetFileURL(for: name) else { return }
         do {
             try FileManager.default.removeItem(at: url)
+            cachedPresets = nil
         } catch {
             logger.error("Failed to delete layout preset '\(name)': \(error.localizedDescription)")
         }
@@ -127,6 +135,7 @@ final class LayoutPresetManager {
         do {
             let data = try encoder.encode(renamedPreset)
             try data.write(to: newURL, options: .atomic)
+            cachedPresets = nil
         } catch {
             logger.error("Failed to save renamed layout preset: \(error.localizedDescription)")
             return false
