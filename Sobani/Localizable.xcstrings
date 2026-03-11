@@ -2934,13 +2934,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "フリー"
+            "value": "自由形式"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free"
+            "value": "Freeform"
           }
         }
       }
@@ -2966,7 +2966,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "正方形"
+            "value": "スクエア"
           }
         },
         "en": {

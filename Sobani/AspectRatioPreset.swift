@@ -2,8 +2,8 @@ import Foundation
 
 /// クロップエディタで使用するアスペクト比プリセット
 enum AspectRatioPreset: String, CaseIterable, Sendable {
-    case free
     case original
+    case free
     case square
     case ratio16x9
     case ratio9x16
