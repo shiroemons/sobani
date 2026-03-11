@@ -104,8 +104,22 @@ final class CropEditorToolbarView: NSView {
                 let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .medium)
                 button.image = image.withSymbolConfiguration(config)
             }
+            button.contentTintColor = .secondaryLabelColor
             return button
         }
+    }
+
+    // MARK: - Helpers
+
+    private func updateAspectRatioButtonAppearance() {
+        guard buttons.count > 1 else { return }
+        let button = buttons[1]
+        let symbolName = isSelectorVisible ? "aspectratio.fill" : "aspectratio"
+        let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        if let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: L("crop_editor.aspect_ratio")) {
+            button.image = image.withSymbolConfiguration(config)
+        }
+        button.contentTintColor = isSelectorVisible ? .labelColor : .secondaryLabelColor
     }
 
     // MARK: - Layout
@@ -146,6 +160,7 @@ final class CropEditorToolbarView: NSView {
     @objc private func aspectRatioTapped() {
         isSelectorVisible.toggle()
         selectorView?.isHidden = !isSelectorVisible
+        updateAspectRatioButtonAppearance()
         onAspectRatioTapped?()
     }
 
@@ -162,5 +177,6 @@ final class CropEditorToolbarView: NSView {
     func hideAspectRatioSelector() {
         isSelectorVisible = false
         selectorView?.isHidden = true
+        updateAspectRatioButtonAppearance()
     }
 }

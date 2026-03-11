@@ -9,7 +9,7 @@ final class AspectRatioSelectorView: NSView {
     private static let viewHeight: CGFloat = 36
     private static let buttonSpacing: CGFloat = 8
     private static let cornerRadius: CGFloat = 6
-    private static let selectedBackgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15)
+    private static let selectedBackgroundColor = NSColor.labelColor.withAlphaComponent(0.1)
 
     // MARK: - Properties
 
@@ -105,7 +105,7 @@ final class AspectRatioSelectorView: NSView {
                     string: preset.localizedName,
                     attributes: [
                         .font: font,
-                        .foregroundColor: NSColor.controlAccentColor
+                        .foregroundColor: NSColor.labelColor
                     ]
                 )
                 button.layer?.backgroundColor = Self.selectedBackgroundColor.cgColor
