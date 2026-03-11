@@ -1,13 +1,13 @@
 import Cocoa
 import os.log
 
-private let screenRestorationLog = Logger(subsystem: AppConstants.loggerSubsystem, category: "ScreenRestoration")
+private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "ScreenRestoration")
 
 // MARK: - Screen Restoration
 
 extension AppDelegate {
     func setupScreenRestorationObservers() {
-        screenRestorationLog.debug("[ScreenRestoration] observers registered, screens=\(NSScreen.screens.count, privacy: .public)")
+        logger.debug("[ScreenRestoration] observers registered, screens=\(NSScreen.screens.count, privacy: .public)")
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleScreenChange),
@@ -50,7 +50,7 @@ extension AppDelegate {
     @objc func handleScreenChange() {
         let isWake = wakeContext.isActive
         let count = NSScreen.screens.count
-        screenRestorationLog.debug(
+        logger.debug(
             "screenChange: isWake=\(isWake, privacy: .public), screens=\(count, privacy: .public)"
         )
         screenChangeDebounceTimer?.invalidate()
@@ -90,13 +90,13 @@ extension AppDelegate {
             }
         }
         let savedCount = wakeContext.states.count
-        screenRestorationLog.info("[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows")
+        logger.info("[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows")
         for (wid, origin) in wakeContext.windowOrigins {
             let did = wakeContext.displayIDs[wid] ?? AppConstants.unknownDisplayID
             let sFrame = wakeContext.screenFrames[did]
             let sFrameDesc = sFrame.debugDescription
             let originDesc = NSStringFromPoint(origin)
-            screenRestorationLog.debug(
+            logger.debug(
                 "  #\(wid, privacy: .public): origin=\(originDesc, privacy: .public), displayID=\(did, privacy: .public), sf=\(sFrameDesc, privacy: .public)"
             )
         }
@@ -104,7 +104,7 @@ extension AppDelegate {
 
     @objc func handleDidWake() {
         let restoreCount = wakeContext.states.count
-        screenRestorationLog.info("[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore")
+        logger.info("[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore")
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
         wakeContext.isActive = true
@@ -128,7 +128,7 @@ extension AppDelegate {
         wakeContext.retryCount += 1
         let retryNum = wakeContext.retryCount
         let screenInfo = NSScreen.screens.map { "\($0.frame)" }.joined(separator: ", ")
-        screenRestorationLog.debug(
+        logger.debug(
             "attempt #\(retryNum, privacy: .public): restoredAll=\(restoredAll, privacy: .public), screens=[\(screenInfo, privacy: .public)]"
         )
 
@@ -173,13 +173,13 @@ extension AppDelegate {
                 let sizeDesc = NSStringFromSize(windowSize)
                 let frameDesc = NSStringFromRect(screenFrame)
                 let restoreMsg = "restore #\(wid): saved=\(savedDesc) -> \(computedDesc) -> \(clampedDesc)"
-                screenRestorationLog.debug("\(restoreMsg, privacy: .public)")
+                logger.debug("\(restoreMsg, privacy: .public)")
                 let detailMsg = "  winSize=\(sizeDesc), screen=\(frameDesc)"
-                screenRestorationLog.debug("\(detailMsg, privacy: .public)")
+                logger.debug("\(detailMsg, privacy: .public)")
             } else {
                 restoredAll = false
                 let displayIDValue = savedDisplayID ?? AppConstants.unknownDisplayID
-                screenRestorationLog.error(
+                logger.error(
                     "restore #\(charWindow.windowId, privacy: .public): screen not found (displayID=\(displayIDValue, privacy: .public))"
                 )
             }

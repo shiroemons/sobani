@@ -35,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
             }
             let charWindow = CharacterWindow(image: image)
             charWindow.delegate = self
-            charWindow.setWindowId(nextWindowId)
+            charWindow.windowId = nextWindowId
             nextWindowId += 1
             charWindow.window.center()
             characterWindows.append(charWindow)
@@ -59,8 +59,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
 
                 let charWindow = CharacterWindow(image: image)
                 charWindow.delegate = self
-                charWindow.setDisplayName(resolvedDisplayName)
-                charWindow.setWindowId(state.windowId)
+                charWindow.displayName = resolvedDisplayName
+                charWindow.windowId = state.windowId
                 let wasAdjusted = charWindow.restore(from: state)
                 if wasAdjusted {
                     let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
@@ -81,7 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
                 legacyId: 0
             )
             for assignment in migrationResult.assignments {
-                characterWindows[assignment.oldIndex].setWindowId(assignment.newId)
+                characterWindows[assignment.oldIndex].windowId = assignment.newId
             }
             nextWindowId = migrationResult.nextId
         }
@@ -282,8 +282,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         }
         let charWindow = CharacterWindow(image: image)
         charWindow.delegate = self
-        charWindow.setDisplayName(imageName ?? AppConstants.defaultImageName)
-        charWindow.setWindowId(nextWindowId)
+        charWindow.displayName = imageName ?? AppConstants.defaultImageName
+        charWindow.windowId = nextWindowId
         nextWindowId += 1
         addCharacterWindow(charWindow)
     }
@@ -326,7 +326,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     func characterWindowDidDeleteImage(named name: String) {
         guard let defaultImage = ImageManager.shared.defaultImage() else { return }
         for charWindow in characterWindows where charWindow.displayName == name {
-            charWindow.setDisplayName(AppConstants.defaultImageName)
+            charWindow.displayName = AppConstants.defaultImageName
             charWindow.applyImage(defaultImage)
         }
     }

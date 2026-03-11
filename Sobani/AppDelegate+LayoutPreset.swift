@@ -42,8 +42,8 @@ extension AppDelegate {
 
             let charWindow = CharacterWindow(image: image)
             charWindow.delegate = self
-            charWindow.setDisplayName(resolvedDisplayName)
-            charWindow.setWindowId(nextWindowId)
+            charWindow.displayName = resolvedDisplayName
+            charWindow.windowId = nextWindowId
             nextWindowId += 1
             charWindow.restore(from: state)
             characterWindows.append(charWindow)

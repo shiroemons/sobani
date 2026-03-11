@@ -135,8 +135,8 @@ extension AppDelegate {
         }
     }
 
-    func buildResetRotationMenuItem() -> NSMenuItem {
-        let hasRotation = MenuStateUtils.hasRotation(angles: characterWindows.map(\.imageView.rotationAngle))
+    func buildResetRotationMenuItem(angles: [CGFloat]) -> NSMenuItem {
+        let hasRotation = MenuStateUtils.hasRotation(angles: angles)
         let item = NSMenuItem(
             title: L("adjust.reset_all_rotation"),
             action: #selector(resetAllRotations),
@@ -148,8 +148,8 @@ extension AppDelegate {
         return item
     }
 
-    func buildResetOpacityMenuItem() -> NSMenuItem {
-        let hasOpacity = MenuStateUtils.hasNonDefaultOpacity(opacities: characterWindows.map(\.imageView.opacityLevel))
+    func buildResetOpacityMenuItem(opacities: [CGFloat]) -> NSMenuItem {
+        let hasOpacity = MenuStateUtils.hasNonDefaultOpacity(opacities: opacities)
         let item = NSMenuItem(
             title: L("adjust.reset_all_opacity"),
             action: #selector(resetAllOpacity),
@@ -167,10 +167,17 @@ extension AppDelegate {
         item.image = menuIcon("arrow.counterclockwise.circle")
         let submenu = NSMenu()
 
-        let rotationItem = buildResetRotationMenuItem()
+        var rotationAngles: [CGFloat] = []
+        var opacityLevels: [CGFloat] = []
+        for window in characterWindows {
+            rotationAngles.append(window.imageView.rotationAngle)
+            opacityLevels.append(window.imageView.opacityLevel)
+        }
+
+        let rotationItem = buildResetRotationMenuItem(angles: rotationAngles)
         submenu.addItem(rotationItem)
 
-        let opacityItem = buildResetOpacityMenuItem()
+        let opacityItem = buildResetOpacityMenuItem(opacities: opacityLevels)
         submenu.addItem(opacityItem)
 
         item.submenu = submenu
@@ -475,7 +482,7 @@ extension AppDelegate {
         let panel = ImageFileDialog.makeOpenPanel()
         if panel.runModal() == .OK, let url = panel.url, let newImage = NSImage(contentsOf: url) {
             let savedName = ImageManager.shared.registerImage(from: url)
-            charWindow.setDisplayName(savedName ?? url.deletingPathExtension().lastPathComponent)
+            charWindow.displayName = savedName ?? url.deletingPathExtension().lastPathComponent
             charWindow.applyImage(newImage)
         }
     }
@@ -484,14 +491,14 @@ extension AppDelegate {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag),
               let name = sender.representedObject as? String,
               let image = ImageManager.shared.loadRegisteredImage(named: name) else { return }
-        charWindow.setDisplayName(name)
+        charWindow.displayName = name
         charWindow.applyImage(image)
     }
 
     @objc func resetToDefaultByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag),
               let defaultImage = ImageManager.shared.defaultImage() else { return }
-        charWindow.setDisplayName(AppConstants.defaultImageName)
+        charWindow.displayName = AppConstants.defaultImageName
         charWindow.applyImage(defaultImage)
     }
 

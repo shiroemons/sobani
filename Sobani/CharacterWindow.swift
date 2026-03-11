@@ -17,8 +17,8 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
     let imageView: DraggableImageView
     weak var delegate: CharacterWindowDelegate?
-    private(set) var displayName: String = AppConstants.defaultImageName
-    private(set) var windowId: Int = 0
+    var displayName: String = AppConstants.defaultImageName
+    var windowId: Int = 0
     private(set) var adjustmentPanelController: AdjustmentPanelController?
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
@@ -737,13 +737,6 @@ extension CharacterWindow {
     nonisolated static func menuTitleLocalizationKey(forTag tag: Int) -> String? {
         return menuTitleMap[tag]
     }
-}
-
-// MARK: - CharacterWindow + Property Setters
-
-extension CharacterWindow {
-    func setDisplayName(_ name: String) { displayName = name }
-    func setWindowId(_ newId: Int) { windowId = newId }
 }
 
 // MARK: - CharacterWindow + Background Removal
