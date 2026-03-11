@@ -234,12 +234,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     @objc func quitFromMenu() {
-        let alert = NSAlert()
-        alert.messageText = L("quit.confirm_title")
-        alert.informativeText = L("quit.confirm_message")
-        alert.addButton(withTitle: L("quit.button"))
-        alert.addButton(withTitle: L("quit.cancel"))
-        alert.alertStyle = .warning
+        let alert = AlertFactory.confirmation(
+            messageText: L("quit.confirm_title"),
+            informativeText: L("quit.confirm_message"),
+            okTitle: L("quit.button"),
+            cancelTitle: L("quit.cancel")
+        )
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         shouldTerminate = true
         NSApplication.shared.terminate(nil)
@@ -299,6 +299,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     // MARK: CharacterWindowDelegate
+
+    var allCharacterWindows: [CharacterWindow] { characterWindows }
 
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?) {
         createNewWindow(imageName: imageName)

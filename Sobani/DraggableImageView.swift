@@ -13,6 +13,8 @@ final class DraggableImageView: NSImageView {
     private var dragStartLocation: NSPoint = .zero
     private var isDraggingAll = false
     private var isSnapEnabled = false
+    private var cachedOtherWindowFrames: [CGRect]?
+    private var cachedScreenFrames: [CGRect]?
     var isFlippedHorizontally: Bool = false {
         didSet { needsLayout = true }
     }
@@ -53,8 +55,12 @@ final class DraggableImageView: NSImageView {
         registerForDraggedTypes([.fileURL])
     }
 
-    private var allCharacterWindows: [NSWindow] {
-        NSApp.windows.filter { $0.isVisible && $0.styleMask.contains(.borderless) }
+    private var allCharacterWindows: [CharacterWindow] {
+        if let delegate = NSApp.delegate as? CharacterWindowDelegate {
+            return delegate.allCharacterWindows
+        }
+        // delegateが取得できない場合は空配列を返す（AppDelegateは常にCharacterWindowDelegateに準拠）
+        return []
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -67,6 +73,14 @@ final class DraggableImageView: NSImageView {
         isDraggingAll = event.modifierFlags.contains(.option)
         isSnapEnabled = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
         dragStartLocation = NSEvent.mouseLocation
+
+        if isSnapEnabled, !isDraggingAll, let currentWindow = window {
+            let allWindows = allCharacterWindows
+            cachedOtherWindowFrames = allWindows
+                .filter { $0.window !== currentWindow }
+                .map { $0.window.frame }
+            cachedScreenFrames = NSScreen.screens.map { $0.visibleFrame }
+        }
     }
 
     override func mouseDragged(with event: NSEvent) {
@@ -78,11 +92,11 @@ final class DraggableImageView: NSImageView {
 
         if isDraggingAll {
             let allWindows = allCharacterWindows
-            for targetWindow in allWindows {
-                var origin = targetWindow.frame.origin
+            for charWindow in allWindows {
+                var origin = charWindow.window.frame.origin
                 origin.x += deltaX
                 origin.y += deltaY
-                targetWindow.setFrameOrigin(origin)
+                charWindow.window.setFrameOrigin(origin)
             }
         } else if let currentWindow = window {
             var origin = currentWindow.frame.origin
@@ -91,10 +105,11 @@ final class DraggableImageView: NSImageView {
 
             if isSnapEnabled {
                 let proposedFrame = NSRect(origin: origin, size: currentWindow.frame.size)
-                let otherFrames = allCharacterWindows
-                    .filter { $0 !== currentWindow }
-                    .map { $0.frame }
+                let otherFrames = cachedOtherWindowFrames ?? allCharacterWindows
+                    .filter { $0.window !== currentWindow }
+                    .map { $0.window.frame }
                 let screenFrame = currentWindow.screen?.visibleFrame
+                    ?? cachedScreenFrames?.first
                     ?? NSScreen.main?.visibleFrame
                     ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
                 let snap = SnapUtils.calculateSnap(
@@ -114,6 +129,11 @@ final class DraggableImageView: NSImageView {
         }
     }
 
+    override func mouseUp(with event: NSEvent) {
+        cachedOtherWindowFrames = nil
+        cachedScreenFrames = nil
+    }
+
     override func scrollWheel(with event: NSEvent) {
         if isCropModeActive { return }
         let delta = event.scrollingDeltaY
@@ -125,9 +145,8 @@ final class DraggableImageView: NSImageView {
         let scaleFactor = Self.scaleFactor(fromScrollDelta: delta)
         if event.modifierFlags.contains(.option) {
             let allWindows = allCharacterWindows
-            for targetWindow in allWindows {
-                guard let targetImageView = targetWindow.contentView?.subviews.first as? Self else { continue }
-                resizeWindow(targetWindow, imageView: targetImageView, scaleFactor: scaleFactor)
+            for charWindow in allWindows {
+                resizeWindow(charWindow.window, imageView: charWindow.imageView, scaleFactor: scaleFactor)
             }
         } else {
             guard let window = window else { return }

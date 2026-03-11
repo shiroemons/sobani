@@ -22,6 +22,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private(set) var adjustmentPanelController: AdjustmentPanelController?
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
+    private var cachedHasAlpha: Bool?
     private var floatingMenuController: FloatingMenuController?
     private var cropEditorController: CropEditorPanelController?
     nonisolated(unsafe) private var windowMoveObserver: NSObjectProtocol?
@@ -106,6 +107,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.image = image
         imageView.aspectRatio = dims.aspectRatio
         imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
+        cachedHasAlpha = nil
         adjustWindowForRotation()
     }
 
@@ -433,6 +435,7 @@ extension CharacterWindow: AdjustmentPanelDelegate {
 
 @MainActor
 protocol CharacterWindowDelegate: AnyObject {
+    var allCharacterWindows: [CharacterWindow] { get }
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
     func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
     func characterWindowDidClose(_ sender: CharacterWindow)
@@ -448,23 +451,17 @@ extension CharacterWindow {
         menu.delegate = self
         menu.autoenablesItems = false
 
-        let symbolConfig = NSImage.SymbolConfiguration(pointSize: AppConstants.menuIconPointSize, weight: .regular)
-
         let registeredItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
         registeredItem.tag = MenuItemTag.changeImageSubmenu.rawValue
         registeredItem.submenu = NSMenu()
-        registeredItem.image = NSImage(systemSymbolName: "photo.on.rectangle", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        registeredItem.image = SFSymbolUtils.icon("photo.on.rectangle")
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
 
         let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlip), keyEquivalent: "")
         flipItem.tag = MenuItemTag.flipContext.rawValue
         flipItem.target = self
-        flipItem.image = NSImage(
-            systemSymbolName: "arrow.left.and.right.righttriangle.left.righttriangle.right",
-            accessibilityDescription: nil
-        )?.withSymbolConfiguration(symbolConfig)
+        flipItem.image = SFSymbolUtils.icon("arrow.left.and.right.righttriangle.left.righttriangle.right")
         menu.addItem(flipItem)
 
         let adjustPanelItem = NSMenuItem(
@@ -472,16 +469,14 @@ extension CharacterWindow {
         )
         adjustPanelItem.tag = MenuItemTag.adjustPanelContext.rawValue
         adjustPanelItem.target = self
-        adjustPanelItem.image = NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        adjustPanelItem.image = SFSymbolUtils.icon("slider.horizontal.3")
         menu.addItem(adjustPanelItem)
         menu.addItem(NSMenuItem.separator())
 
         let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
         newWindowItem.tag = MenuItemTag.addNewWindowSubmenu.rawValue
         newWindowItem.submenu = NSMenu()
-        newWindowItem.image = NSImage(systemSymbolName: "plus.rectangle.on.rectangle", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        newWindowItem.image = SFSymbolUtils.icon("plus.rectangle.on.rectangle")
         menu.addItem(newWindowItem)
         menu.addItem(NSMenuItem.separator())
 
@@ -490,23 +485,20 @@ extension CharacterWindow {
         let otherSubmenu = NSMenu()
         otherSubmenu.autoenablesItems = false
         otherItem.submenu = otherSubmenu
-        otherItem.image = NSImage(systemSymbolName: "ellipsis.circle", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        otherItem.image = SFSymbolUtils.icon("ellipsis.circle")
         menu.addItem(otherItem)
         menu.addItem(NSMenuItem.separator())
 
         let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.tag = MenuItemTag.close.rawValue
         closeItem.target = self
-        closeItem.image = NSImage(systemSymbolName: "xmark.circle", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        closeItem.image = SFSymbolUtils.icon("xmark.circle")
         menu.addItem(closeItem)
 
         let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
         quitItem.tag = MenuItemTag.quit.rawValue
         quitItem.target = self
-        quitItem.image = NSImage(systemSymbolName: "power", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        quitItem.image = SFSymbolUtils.icon("power")
         menu.addItem(quitItem)
         imageView.menu = menu
     }
@@ -536,19 +528,15 @@ extension CharacterWindow {
         submenu.delegate = self
         submenu.autoenablesItems = false
 
-        let symbolConfig = NSImage.SymbolConfiguration(pointSize: AppConstants.menuIconPointSize, weight: .regular)
-
         let changeItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImage), keyEquivalent: "o")
         changeItem.target = self
-        changeItem.image = NSImage(systemSymbolName: "photo", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        changeItem.image = SFSymbolUtils.icon("photo")
         submenu.addItem(changeItem)
 
         let defaultItem = NSMenuItem(title: L("image.default_reset"), action: #selector(resetToDefault), keyEquivalent: "d")
         defaultItem.target = self
         defaultItem.isEnabled = displayName != AppConstants.defaultImageName
-        defaultItem.image = NSImage(systemSymbolName: "arrow.counterclockwise", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfig)
+        defaultItem.image = SFSymbolUtils.icon("arrow.counterclockwise")
         submenu.addItem(defaultItem)
 
         if !names.isEmpty {
@@ -574,8 +562,7 @@ extension CharacterWindow {
             removeBackgroundItem.target = self
             removeBackgroundItem.tag = MenuItemTag.removeBackground.rawValue
             removeBackgroundItem.isEnabled = !isRemovingBackground && !imageHasAlpha()
-            removeBackgroundItem.image = NSImage(systemSymbolName: "eraser.fill", accessibilityDescription: nil)?
-                .withSymbolConfiguration(symbolConfig)
+            removeBackgroundItem.image = SFSymbolUtils.icon("eraser.fill")
             submenu.addItem(removeBackgroundItem)
         }
     }
@@ -784,12 +771,12 @@ extension CharacterWindow {
                         self.displayName = newName
                         self.applyImage(newImage)
                     case .failure(let error):
-                        let alert = NSAlert()
-                        alert.messageText = L("background_removal.error.title")
-                        alert.informativeText = error.localizedDescription
-                        alert.alertStyle = .warning
-                        alert.addButton(withTitle: L("update.ok"))
-                        alert.runModal()
+                        AlertFactory.make(
+                            style: .warning,
+                            messageText: L("background_removal.error.title"),
+                            informativeText: error.localizedDescription,
+                            buttonTitles: [L("update.ok")]
+                        ).runModal()
                     }
                 }
             }
@@ -817,6 +804,15 @@ extension CharacterWindow {
         spinnerOverlay = nil
     }
     func imageHasAlpha() -> Bool {
+        if let cached = cachedHasAlpha {
+            return cached
+        }
+        let result = computeImageHasAlpha()
+        cachedHasAlpha = result
+        return result
+    }
+
+    private func computeImageHasAlpha() -> Bool {
         guard let image = imageView.image,
               let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             return false
