@@ -617,20 +617,19 @@ extension AppDelegate {
 
         // Window highlight border (for character windows submenu)
         guard menu !== statusItem?.menu else { return }
-        for charWindow in characterWindows {
-            charWindow.hideHighlightBorder()
-        }
+        lastHighlightedWindow?.hideHighlightBorder()
+        lastHighlightedWindow = nil
         if let charWindow = item?.representedObject as? CharacterWindow {
             charWindow.showHighlightBorder()
+            lastHighlightedWindow = charWindow
         }
     }
 
     func menuDidClose(_ menu: NSMenu) {
         ImagePreviewPanel.shared.hide()
         guard menu === statusItem?.menu else { return }
-        for charWindow in characterWindows {
-            charWindow.hideHighlightBorder()
-        }
+        lastHighlightedWindow?.hideHighlightBorder()
+        lastHighlightedWindow = nil
     }
 
     func menuIcon(_ name: String) -> NSImage? {

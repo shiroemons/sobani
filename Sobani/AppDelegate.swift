@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     var wakeContext = WakeRestorationContext()
     var onboardingController: OnboardingWindowController?
     var isApplyingLayout = false
+    weak var lastHighlightedWindow: CharacterWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBar()
