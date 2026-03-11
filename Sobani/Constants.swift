@@ -77,6 +77,7 @@ enum AppConstants {
 
     // Menu
     static let menuWindowMinWidth: CGFloat = 10
+    static let menuIconPointSize: CGFloat = 14
 
     // Image Preview Panel
     static let previewMaxDimension: CGFloat = 256
@@ -135,6 +136,10 @@ enum AppConstants {
     static let straightenFadeDuration: CGFloat = 0.5
     static let straightenFadeHighlightHeight: CGFloat = 18
     static let straightenFadeHighlightWidth: CGFloat = 1.5
+
+    // Window Snap
+    static let snapThreshold: CGFloat = 8
+    static let snapEnabledKey = "windowSnapEnabled"
 
     // Floating Menu
     static let floatingMenuButtonSize: CGFloat = 32

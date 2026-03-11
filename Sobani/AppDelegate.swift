@@ -261,6 +261,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         }
     }
 
+    @objc func toggleWindowSnap(_ sender: NSMenuItem) {
+        let current = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
+        UserDefaults.standard.set(!current, forKey: AppConstants.snapEnabledKey)
+        sender.state = !current ? .on : .off
+    }
+
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
             areWindowsHidden = false

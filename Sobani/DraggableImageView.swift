@@ -12,6 +12,7 @@ final class DraggableImageView: NSImageView {
     let maxHeight: CGFloat = AppConstants.maxImageHeight
     private var dragStartLocation: NSPoint = .zero
     private var isDraggingAll = false
+    private var isSnapEnabled = false
     var isFlippedHorizontally: Bool = false {
         didSet { needsLayout = true }
     }
@@ -64,6 +65,7 @@ final class DraggableImageView: NSImageView {
         if isCropModeActive { return }
         onMouseDown?()
         isDraggingAll = event.modifierFlags.contains(.option)
+        isSnapEnabled = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
         dragStartLocation = NSEvent.mouseLocation
     }
 
@@ -73,12 +75,42 @@ final class DraggableImageView: NSImageView {
         let deltaX = currentLocation.x - dragStartLocation.x
         let deltaY = currentLocation.y - dragStartLocation.y
         dragStartLocation = currentLocation
-        let windows = isDraggingAll ? allCharacterWindows : (window.map { [$0] } ?? [])
-        for targetWindow in windows {
-            var origin = targetWindow.frame.origin
+
+        if isDraggingAll {
+            let allWindows = allCharacterWindows
+            for targetWindow in allWindows {
+                var origin = targetWindow.frame.origin
+                origin.x += deltaX
+                origin.y += deltaY
+                targetWindow.setFrameOrigin(origin)
+            }
+        } else if let currentWindow = window {
+            var origin = currentWindow.frame.origin
             origin.x += deltaX
             origin.y += deltaY
-            targetWindow.setFrameOrigin(origin)
+
+            if isSnapEnabled {
+                let proposedFrame = NSRect(origin: origin, size: currentWindow.frame.size)
+                let otherFrames = allCharacterWindows
+                    .filter { $0 !== currentWindow }
+                    .map { $0.frame }
+                let screenFrame = currentWindow.screen?.visibleFrame
+                    ?? NSScreen.main?.visibleFrame
+                    ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+                let snap = SnapUtils.calculateSnap(
+                    draggingFrame: proposedFrame,
+                    otherFrames: otherFrames,
+                    screenVisibleFrame: screenFrame
+                )
+                if abs(snap.deltaX) > AppConstants.floatingPointTolerance {
+                    origin.x += snap.deltaX
+                }
+                if abs(snap.deltaY) > AppConstants.floatingPointTolerance {
+                    origin.y += snap.deltaY
+                }
+            }
+
+            currentWindow.setFrameOrigin(origin)
         }
     }
 

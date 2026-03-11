@@ -113,6 +113,22 @@
         }
       }
     },
+    "menu.snap_placement": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スナップ配置"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snap to Edges"
+          }
+        }
+      }
+    },
     "status.showing": {
       "localizations": {
         "ja": {

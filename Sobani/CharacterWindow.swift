@@ -19,7 +19,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     weak var delegate: CharacterWindowDelegate?
     private(set) var displayName: String = AppConstants.defaultImageName
     private(set) var windowId: Int = 0
-    private var adjustmentPanelController: AdjustmentPanelController?
+    private(set) var adjustmentPanelController: AdjustmentPanelController?
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
     private var floatingMenuController: FloatingMenuController?
@@ -275,6 +275,26 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     @objc func quitApp() {
         (NSApp.delegate as? AppDelegate)?.quitApp()
     }
+
+    @objc func resetDisplay() {
+        imageView.isFlippedHorizontally = false
+        imageView.resetCrop()
+        imageView.rotationAngle = 0
+        imageView.opacityLevel = 1.0
+        adjustmentPanelController?.updateAngle(0)
+        adjustmentPanelController?.updateOpacity(1.0)
+
+        let defaultHeight: CGFloat = AppConstants.defaultWindowHeight
+        let defaultWidth = defaultHeight * imageView.aspectRatio
+
+        let screenFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+        let originX = screenFrame.minX + (screenFrame.width - defaultWidth) / 2
+        let originY = screenFrame.minY + (screenFrame.height - defaultHeight) / 2
+
+        window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
+        imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
+        imageView.needsLayout = true
+    }
 }
 
 // MARK: - Floating Menu
@@ -428,15 +448,23 @@ extension CharacterWindow {
         menu.delegate = self
         menu.autoenablesItems = false
 
+        let symbolConfig = NSImage.SymbolConfiguration(pointSize: AppConstants.menuIconPointSize, weight: .regular)
+
         let registeredItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
         registeredItem.tag = MenuItemTag.changeImageSubmenu.rawValue
         registeredItem.submenu = NSMenu()
+        registeredItem.image = NSImage(systemSymbolName: "photo.on.rectangle", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
 
         let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlip), keyEquivalent: "")
         flipItem.tag = MenuItemTag.flipContext.rawValue
         flipItem.target = self
+        flipItem.image = NSImage(
+            systemSymbolName: "arrow.left.and.right.righttriangle.left.righttriangle.right",
+            accessibilityDescription: nil
+        )?.withSymbolConfiguration(symbolConfig)
         menu.addItem(flipItem)
 
         let adjustPanelItem = NSMenuItem(
@@ -444,12 +472,16 @@ extension CharacterWindow {
         )
         adjustPanelItem.tag = MenuItemTag.adjustPanelContext.rawValue
         adjustPanelItem.target = self
+        adjustPanelItem.image = NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         menu.addItem(adjustPanelItem)
         menu.addItem(NSMenuItem.separator())
 
         let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
         newWindowItem.tag = MenuItemTag.addNewWindowSubmenu.rawValue
         newWindowItem.submenu = NSMenu()
+        newWindowItem.image = NSImage(systemSymbolName: "plus.rectangle.on.rectangle", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         menu.addItem(newWindowItem)
         menu.addItem(NSMenuItem.separator())
 
@@ -458,17 +490,23 @@ extension CharacterWindow {
         let otherSubmenu = NSMenu()
         otherSubmenu.autoenablesItems = false
         otherItem.submenu = otherSubmenu
+        otherItem.image = NSImage(systemSymbolName: "ellipsis.circle", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         menu.addItem(otherItem)
         menu.addItem(NSMenuItem.separator())
 
         let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.tag = MenuItemTag.close.rawValue
         closeItem.target = self
+        closeItem.image = NSImage(systemSymbolName: "xmark.circle", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         menu.addItem(closeItem)
 
         let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
         quitItem.tag = MenuItemTag.quit.rawValue
         quitItem.target = self
+        quitItem.image = NSImage(systemSymbolName: "power", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         menu.addItem(quitItem)
         imageView.menu = menu
     }
@@ -498,13 +536,19 @@ extension CharacterWindow {
         submenu.delegate = self
         submenu.autoenablesItems = false
 
+        let symbolConfig = NSImage.SymbolConfiguration(pointSize: AppConstants.menuIconPointSize, weight: .regular)
+
         let changeItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImage), keyEquivalent: "o")
         changeItem.target = self
+        changeItem.image = NSImage(systemSymbolName: "photo", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         submenu.addItem(changeItem)
 
         let defaultItem = NSMenuItem(title: L("image.default_reset"), action: #selector(resetToDefault), keyEquivalent: "d")
         defaultItem.target = self
         defaultItem.isEnabled = displayName != AppConstants.defaultImageName
+        defaultItem.image = NSImage(systemSymbolName: "arrow.counterclockwise", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
         submenu.addItem(defaultItem)
 
         if !names.isEmpty {
@@ -530,6 +574,8 @@ extension CharacterWindow {
             removeBackgroundItem.target = self
             removeBackgroundItem.tag = MenuItemTag.removeBackground.rawValue
             removeBackgroundItem.isEnabled = !isRemovingBackground && !imageHasAlpha()
+            removeBackgroundItem.image = NSImage(systemSymbolName: "eraser.fill", accessibilityDescription: nil)?
+                .withSymbolConfiguration(symbolConfig)
             submenu.addItem(removeBackgroundItem)
         }
     }
@@ -585,88 +631,6 @@ extension CharacterWindow {
 
     func menuDidClose(_ menu: NSMenu) {
         ImagePreviewPanel.shared.hide()
-    }
-}
-
-// MARK: - CharacterWindow + Other Submenu
-
-extension CharacterWindow {
-    func populateOtherSubmenu(_ otherSubmenu: NSMenu, names: [String]) {
-        otherSubmenu.removeAllItems()
-
-        let resetRotationItem = NSMenuItem(
-            title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: ""
-        )
-        resetRotationItem.target = self
-        resetRotationItem.isEnabled = abs(imageView.rotationAngle) > AppConstants.floatingPointTolerance
-        otherSubmenu.addItem(resetRotationItem)
-
-        let resetOpacityItem = NSMenuItem(
-            title: L("adjust.reset_opacity"), action: #selector(resetOpacity), keyEquivalent: ""
-        )
-        resetOpacityItem.target = self
-        resetOpacityItem.isEnabled = abs(imageView.opacityLevel - 1.0) > AppConstants.floatingPointTolerance
-        otherSubmenu.addItem(resetOpacityItem)
-
-        otherSubmenu.addItem(NSMenuItem.separator())
-
-        let resetDisplayItem = NSMenuItem(
-            title: L("adjust.reset_display"), action: #selector(resetDisplay), keyEquivalent: ""
-        )
-        resetDisplayItem.target = self
-        otherSubmenu.addItem(resetDisplayItem)
-
-        otherSubmenu.addItem(NSMenuItem.separator())
-
-        let cropItem = NSMenuItem(
-            title: L("menu.crop"), action: #selector(enterCropModeAction), keyEquivalent: ""
-        )
-        cropItem.tag = MenuItemTag.cropImage.rawValue
-        cropItem.target = self
-        otherSubmenu.addItem(cropItem)
-
-        let resetCropItem = NSMenuItem(
-            title: L("menu.reset_crop"), action: #selector(resetCrop), keyEquivalent: ""
-        )
-        resetCropItem.tag = MenuItemTag.resetCrop.rawValue
-        resetCropItem.target = self
-        resetCropItem.isEnabled = imageView.cropRect != nil
-        otherSubmenu.addItem(resetCropItem)
-
-        otherSubmenu.addItem(NSMenuItem.separator())
-
-        let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
-        let deleteSubmenu = NSMenu()
-        deleteSubmenu.delegate = self
-        for name in names {
-            let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = name
-            deleteSubmenu.addItem(item)
-        }
-        deleteRegisteredItem.submenu = deleteSubmenu
-        deleteRegisteredItem.isEnabled = !names.isEmpty
-        otherSubmenu.addItem(deleteRegisteredItem)
-    }
-
-    @objc func resetDisplay() {
-        imageView.isFlippedHorizontally = false
-        imageView.resetCrop()
-        imageView.rotationAngle = 0
-        imageView.opacityLevel = 1.0
-        adjustmentPanelController?.updateAngle(0)
-        adjustmentPanelController?.updateOpacity(1.0)
-
-        let defaultHeight: CGFloat = AppConstants.defaultWindowHeight
-        let defaultWidth = defaultHeight * imageView.aspectRatio
-
-        let screenFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
-        let originX = screenFrame.minX + (screenFrame.width - defaultWidth) / 2
-        let originY = screenFrame.minY + (screenFrame.height - defaultHeight) / 2
-
-        window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
-        imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
-        imageView.needsLayout = true
     }
 }
 
