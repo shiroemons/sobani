@@ -48,11 +48,32 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `rotationAngle` | `CGFloat` | 回転角度（0–360°） | `0` |
 | `opacityLevel` | `CGFloat` | 透明度（0.1–1.0） | `1.0` |
 | `windowId` | `Int` | ウィンドウ識別子（旧バージョン互換用デフォルト 0） | `0` |
-| `cropRect` | `CropRect?` | 切り取り領域（正規化座標、x/y/width/height各0.0〜1.0）、nilは切り取りなし | `nil` |
+| `cropRect` | `CropRect?` | クロップ状態（詳細は下記の CropRect 構造体を参照）、nilはクロップなし | `nil` |
 
 > **注**: `cropRect` は `decodeIfPresent` を使用してデコードされるため、cropRectフィールドが無い既存JSONも正常に読み込み可能です（後方互換性）。
 
 > **注**: Z-order はウィンドウ状態の配列順で表現されます（構造体のフィールドではありません）。保存時は背面→前面の順で格納され、復元時に逆順にすることで正しい重なり順を再現します。
+
+### CropRect の構造
+
+`CropRect` は画像のクロップ状態を表す構造体です。`WindowState` 内にオプショナルとして保持され、クロップ編集の全情報を永続化します。
+
+| フィールド | 型 | 説明 | デフォルト |
+|---|---|---|---|
+| `x` | `CGFloat` | クロップ領域の正規化 X 座標（0.0〜1.0） | — |
+| `y` | `CGFloat` | クロップ領域の正規化 Y 座標（0.0〜1.0） | — |
+| `width` | `CGFloat` | クロップ領域の正規化幅（0.0〜1.0） | — |
+| `height` | `CGFloat` | クロップ領域の正規化高さ（0.0〜1.0） | — |
+| `straightenAngle` | `CGFloat` | 傾き補正角度（-45°〜+45°） | `0` |
+| `quarterTurns` | `Int` | 90度回転回数（0〜3） | `0` |
+| `isFlippedInCrop` | `Bool` | クロップ内での水平反転フラグ | `false` |
+| `aspectRatioPreset` | `String?` | 選択中のアスペクト比プリセット名 | `nil` |
+| `verticalPerspective` | `CGFloat` | 垂直パースペクティブ補正（-45°〜+45°） | `0` |
+| `horizontalPerspective` | `CGFloat` | 水平パースペクティブ補正（-45°〜+45°） | `0` |
+
+> **注**: すべてのフィールドは `decodeIfPresent` でデコードされるため、旧バージョンで保存されたJSONファイル（フィールドが不足するもの）も正常に読み込めます（後方互換性）。
+
+> **注**: `CropRect.full`（x=0, y=0, width=1, height=1、その他デフォルト値）は画像全体を示す特別な値です。
 
 ### 保存・復元フロー
 
@@ -140,7 +161,7 @@ flowchart LR
     URL -->|setCustomDefault| DFLT
 ```
 
-> **注**: 切り取り（crop）は非破壊的です。元画像は `images/` にそのまま保持され、`cropRect` に基づいて表示領域のみが変更されます。
+> **注**: クロップ編集は非破壊的です。元画像は `images/` にそのまま保持され、`CropRect` の各フィールド（座標、回転、傾き補正、パースペクティブ補正、反転）に基づいて表示が変更されます。確定時に `CropImageProcessor` が画像処理パイプライン（90度回転 → 反転 → パース補正 → 傾き補正 → クロップ）を適用します。
 
 #### 主な操作
 
@@ -195,6 +216,76 @@ flowchart LR
 | `loadPreset(named:)` | 指定名のプリセットを1件読み込む |
 | `deletePreset(named:)` | 指定名のプリセットファイルを削除する |
 | `presetExists(named:)` | 指定名のプリセットが存在するか確認する |
+
+---
+
+## クロップエディタのデータフロー
+
+クロップエディタは `CropEditorPanelController` が統括し、キャンバス・ツールバー・履歴管理の各コンポーネントを連携させます。
+
+### コンポーネント構成
+
+```mermaid
+flowchart TD
+    CEP["CropEditorPanelController<br/>（統括コントローラ）"]
+    CCV["CropEditorCanvasView<br/>（画像プレビュー・クロップ枠）"]
+    CTV["CropEditorToolbarView<br/>（補正UI・モード切替）"]
+    CEH["CropEditHistory<br/>（Undo/Redo）"]
+    CIP["CropImageProcessor<br/>（画像処理パイプライン）"]
+    CR["CropRect<br/>（クロップ状態）"]
+    ASV["AspectRatioSelectorView<br/>（プリセット選択）"]
+    SSV["StraightenSliderView<br/>（ルーラーダイヤル）"]
+
+    CEP --> CCV
+    CEP --> CTV
+    CEP --> CEH
+    CTV --> ASV
+    CTV --> SSV
+    CCV --> CR
+    CEH --> CR
+    CEP -.-> |確定時| CIP
+```
+
+### 編集フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant CEP as CropEditorPanelController
+    participant CCV as CropEditorCanvasView
+    participant CTV as CropEditorToolbarView
+    participant CEH as CropEditHistory
+    participant CW as CharacterWindow
+
+    User->>CEP: クロップエディタを開く
+    CEP->>CCV: 画像と初期CropRectを設定
+    CEP->>CTV: 補正値を同期（syncAngles）
+
+    alt クロップ枠の調整
+        User->>CCV: ハンドルをドラッグ
+        CCV->>CEP: cropRectが更新
+        CEP->>CEH: record(newState)
+    else 補正の調整
+        User->>CTV: ルーラーダイヤルを操作
+        CTV->>CEP: onStraightenAngleChanged
+        CEP->>CCV: CropRectを更新・再描画
+        CEP->>CEH: record(newState)
+    else アスペクト比の選択
+        User->>CTV: プリセットを選択
+        CTV->>CEP: onAspectRatioSelected
+        CEP->>CCV: CropRectを更新・再描画
+        CEP->>CEH: record(newState)
+    else Undo/Redo
+        User->>CEP: Undo/Redoボタン
+        CEP->>CEH: undo() / redo()
+        CEH-->>CEP: 復元されたCropRect
+        CEP->>CCV: CropRectを反映・再描画
+        CEP->>CTV: 補正値を同期
+    end
+
+    User->>CEP: 確定（✓）
+    CEP->>CW: cropEditorDidConfirm(cropRect)
+```
 
 ---
 

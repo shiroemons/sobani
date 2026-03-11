@@ -6,7 +6,7 @@ Sobani の内部構造を解説します。
 
 ## 技術スタック
 
-- Swift 5.0 / Cocoa (AppKit)
+- Swift 6 / Cocoa (AppKit)
 - macOS 13.0+
 - 外部依存なし
 - LSUIElement（ドックアイコンなし）
@@ -81,14 +81,40 @@ classDiagram
         +show(near:)
         +dismiss()
     }
-    class CropModeController {
-        +startCrop()
-        +commitCrop()
-        +cancelCrop()
+    class CropEditorPanelController {
+        +delegate: CropEditorPanelDelegate
+        +currentCropRect: CropRect
+        +history: CropEditHistory
+        +show(image:near:)
+        +dismiss()
     }
-    class CropOverlayView {
+    class CropEditorCanvasView {
         +cropRect: CropRect
-        +handles: [DragHandle]
+        +image: NSImage
+    }
+    class CropEditorToolbarView {
+        +straightenMode: StraightenMode
+        +toolbarMode: ToolbarMode
+    }
+    class CropEditHistory {
+        +record(state:)
+        +undo()
+        +redo()
+    }
+    class CropRect {
+        +x: CGFloat
+        +y: CGFloat
+        +width: CGFloat
+        +height: CGFloat
+        +straightenAngle: CGFloat
+        +quarterTurns: Int
+        +isFlippedInCrop: Bool
+        +aspectRatioPreset: String?
+        +verticalPerspective: CGFloat
+        +horizontalPerspective: CGFloat
+    }
+    class AspectRatioSelectorView {
+        +selectedPreset: AspectRatioPreset
     }
 
     AppDelegate --> CharacterWindow : manages
@@ -108,9 +134,13 @@ classDiagram
     AppDelegate --> LayoutPresetManager : uses
     CharacterWindow --> UnconstrainedWindow : uses
     CharacterWindow --> FloatingMenuController : uses
-    CharacterWindow --> CropModeController : uses
+    CharacterWindow --> CropEditorPanelController : uses
+    CharacterWindow ..|> CropEditorPanelDelegate
     CharacterWindow ..|> FloatingMenuDelegate
-    CropModeController --> CropOverlayView : manages
+    CropEditorPanelController --> CropEditorCanvasView : contains
+    CropEditorPanelController --> CropEditorToolbarView : contains
+    CropEditorPanelController --> CropEditHistory : uses
+    CropEditorToolbarView --> AspectRatioSelectorView : contains
 ```
 
 `AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
@@ -136,8 +166,15 @@ classDiagram
 | `LayoutPresetManager.swift` | レイアウトプリセットの保存・読み込み・削除を管理するシングルトン。`layouts/` ディレクトリにプリセットごとのJSONファイルを保存 |
 | `UnconstrainedWindow.swift` | `NSWindow` サブクラス。`constrainFrameRect` をオーバーライドし画面端制約を無効化。透過PNG画像のメニューバー越え配置を実現 |
 | `FloatingMenuController.swift` | ダブルクリックで表示するSFシンボルアイコンのフローティングツールバー（NSPanel） |
-| `CropModeController.swift` | 切り取りモードのライフサイクル管理（オーバーレイ表示、確定/リセット/キャンセルツールバー、ESCキー対応） |
-| `CropOverlayView.swift` | CropRect構造体（正規化0-1座標）と8つのドラッグハンドル付き切り取りオーバーレイビュー |
+| `CropEditorPanelController.swift` | iPhone写真アプリ風クロップエディタのメインコントローラ。パネル管理、Undo/Redo、状態同期 |
+| `CropEditorCanvasView.swift` | クロップエディタのキャンバス。画像描画、クロップ枠のハンドル操作、パン・ズーム |
+| `CropEditorToolbarView.swift` | 補正モード切り替え（傾き・垂直パース・水平パース）、ルーラーダイヤル、アスペクト比セレクター |
+| `CropEditHistory.swift` | クロップ編集のUndo/Redo履歴管理。線形スタック構造 |
+| `CropGeometry.swift` | クロップ関連の幾何学計算ユーティリティ。座標変換、リサイズ制約、アスペクト比計算 |
+| `CropImageProcessor.swift` | CropRectを実画像に適用する画像処理パイプライン（回転→反転→パース→傾き→クロップ） |
+| `CropRect.swift` | クロップ状態の構造体（正規化0-1座標、回転・傾き・パース・反転・アスペクト比）。Codable対応 |
+| `AspectRatioSelectorView.swift` | アスペクト比プリセット選択UI（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
+| `StraightenSliderView.swift` | iPhone風ルーラーダイヤル。慣性スクロール・フェードトレイルエフェクト対応 |
 | `DragDropUtils.swift` | ドラッグ＆ドロップ操作のユーティリティ。ペーストボードから対応画像URLを抽出 |
 | `WakeRestorationContext.swift` | スリープ/復帰時の復元コンテキスト |
 
@@ -187,9 +224,19 @@ classDiagram
 |---|---|
 | `floatingMenuDidRequestFlip(_:)` | 反転ボタンの押下を通知 |
 | `floatingMenuDidRequestRotation(_:)` | 回転調整パネルの表示を要求 |
-| `floatingMenuDidRequestCrop(_:)` | 切り取りモードの開始を要求 |
+| `floatingMenuDidRequestCrop(_:)` | クロップエディタの表示を要求 |
 | `floatingMenuDidSelectResetDisplay(_:)` | 表示をリセット（回転・反転・透明度・切り取りを初期状態に戻す） |
 | `floatingMenuDidRequestClose(_:)` | ウィンドウの閉じるを要求 |
+
+### CropEditorPanelDelegate
+
+`CropEditorPanelController` から `CharacterWindow` へクロップ編集結果を通知します。`CharacterWindow` が準拠します。
+
+| メソッド | 用途 |
+|---|---|
+| `cropEditorDidConfirm(_:cropRect:)` | クロップ編集の確定を通知 |
+| `cropEditorDidCancel(_:)` | クロップ編集のキャンセルを通知 |
+| `cropEditorDidReset(_:)` | クロップのリセットを通知 |
 
 ### UpdateManagerDelegate
 
@@ -246,18 +293,20 @@ flowchart TD
     DIV["DraggableImageView<br/>(NSImageView)<br/>ドラッグ・リサイズ・反転・回転・透明度"]
     AP["AdjustmentPanelController<br/>(NSObject, NSPanel を保持)<br/>回転ダイアル・透明度スライダー"]
     FM["FloatingMenuController<br/>(NSObject, NSPanel を保持)<br/>ダブルクリックで表示するツールバー"]
-    CMC["CropModeController<br/>(NSObject)<br/>切り取りモード管理・ツールバー"]
-    COV["CropOverlayView<br/>(NSView)<br/>8つのドラッグハンドル付き切り取り領域"]
+    CEP["CropEditorPanelController<br/>(NSObject, NSPanel を保持)<br/>iPhone風クロップエディタ・Undo/Redo"]
+    CCV["CropEditorCanvasView<br/>(NSView)<br/>画像プレビュー・クロップ枠・パン/ズーム"]
+    CTV["CropEditorToolbarView<br/>(NSView)<br/>補正ダイヤル・アスペクト比セレクター"]
 
     CW --> |contentView| RC
     RC --> |subview| DIV
-    RC -.-> |subview（切り取り時）| COV
     CW -.-> |opens| AP
     AP -.-> |AdjustmentPanelDelegate| CW
     CW -.-> |opens（ダブルクリック）| FM
     FM -.-> |FloatingMenuDelegate| CW
-    CW -.-> |opens（切り取り時）| CMC
-    CMC --> |manages| COV
+    CW -.-> |opens（切り取り時）| CEP
+    CEP --> |contains| CCV
+    CEP --> |contains| CTV
+    CEP -.-> |CropEditorPanelDelegate| CW
 ```
 
 `CharacterWindow` は `NSObject` のサブクラスで、`NSWindow` インスタンスをプロパティとして保持します。ウィンドウはボーダーレスかつ透明で、全 Space に表示される常に最前面のウィンドウです。`contentView` として `RotatableContainer` を設定し、その子ビューとして `DraggableImageView` が配置されます。
