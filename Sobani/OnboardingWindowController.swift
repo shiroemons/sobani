@@ -83,7 +83,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     func close() {
         panel?.orderOut(nil)
-        cleanup()
+        teardown()
     }
 
     // MARK: - NSWindowDelegate
@@ -108,10 +108,6 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         teardown()
         onComplete?()
         logger.info("Onboarding completed")
-    }
-
-    private func cleanup() {
-        teardown()
     }
 
     private func rebuildForLanguageChange() {

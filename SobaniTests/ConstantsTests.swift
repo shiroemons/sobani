@@ -101,11 +101,6 @@ import os.log
         #expect(AppConstants.loggerSubsystem == "com.shiroemons.Sobani")
     }
 
-    /// legacyDefaultImageNameが正しい値であることを検証
-    @Test func legacyDefaultImageNameValue() {
-        #expect(AppConstants.legacyDefaultImageName == "デフォルト")
-    }
-
     // MARK: - AppSupportDirectory テスト
 
     /// カスタムbaseDirectoryが指定された場合にそのパスが返されることを検証

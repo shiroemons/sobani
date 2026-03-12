@@ -7,11 +7,13 @@ import os.log
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
     private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "AppDelegate")
-    var characterWindows: [CharacterWindow] = []
+    /// Z順（前面→背面）でウィンドウを管理する単一配列。characterWindows は computed alias。
+    var zOrderedWindows: [CharacterWindow] = []
+    /// zOrderedWindows への computed alias。後方互換性のために提供。
+    var characterWindows: [CharacterWindow] { zOrderedWindows }
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     var areWindowsHidden = false
-    var zOrderedWindows: [CharacterWindow] = []
     private var globalMonitor: Any?
     private var localMonitor: Any?
     var nextWindowId: Int = 1
@@ -39,29 +41,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
             charWindow.windowId = nextWindowId
             nextWindowId += 1
             charWindow.window.center()
-            characterWindows.append(charWindow)
+            zOrderedWindows.append(charWindow)
         } else {
+            var loadedWindows: [CharacterWindow] = []
             for state in savedStates {
-                let image: NSImage
-                let resolvedDisplayName: String
-
-                let registeredImage = ImageManager.shared.loadRegisteredImage(named: state.imageName)
-                let resolved = Self.resolveImageName(
-                    state.imageName,
-                    defaultImageName: AppConstants.defaultImageName,
-                    registeredImageExists: registeredImage != nil
-                )
-                resolvedDisplayName = resolved.resolvedName
-                if resolved.isDefault {
-                    image = ImageManager.shared.defaultImage() ?? NSImage()
-                } else {
-                    image = registeredImage ?? NSImage()
-                }
-
-                let charWindow = CharacterWindow(image: image)
-                charWindow.delegate = self
-                charWindow.displayName = resolvedDisplayName
-                charWindow.windowId = state.windowId
+                let charWindow = createCharacterWindow(from: state)
                 let wasAdjusted = charWindow.restore(from: state)
                 if wasAdjusted {
                     let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
@@ -73,21 +57,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
                         adjustedOriginY: adjusted.originY
                     )
                 }
-                characterWindows.append(charWindow)
+                loadedWindows.append(charWindow)
             }
 
             // Legacy states (windowId == 0) get new IDs assigned
             let migrationResult = Self.migrateWindowIds(
-                existingIds: characterWindows.map(\.windowId),
+                existingIds: loadedWindows.map(\.windowId),
                 legacyId: 0
             )
             for assignment in migrationResult.assignments {
-                characterWindows[assignment.oldIndex].windowId = assignment.newId
+                loadedWindows[assignment.oldIndex].windowId = assignment.newId
             }
             nextWindowId = migrationResult.nextId
-        }
 
-        zOrderedWindows = characterWindows.reversed()
+            zOrderedWindows = loadedWindows.reversed()
+        }
 
         NSApp.activate(ignoringOtherApps: true)
 
@@ -213,10 +197,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
 
     @objc func closeAllWindows() {
         areWindowsHidden = false
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             charWindow.window.orderOut(nil)
         }
-        characterWindows.removeAll()
         zOrderedWindows.removeAll()
         quitIfNoWindows()
     }
@@ -243,7 +226,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         NSApplication.shared.terminate(nil)
     }
 
-    @objc func quitApp() { quitFromMenu() }
+    func requestQuit() { quitFromMenu() }
 
     func prepareShouldTerminate() {
         shouldTerminate = true

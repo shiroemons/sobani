@@ -546,13 +546,7 @@ private extension UpdateManager {
     func replaceAndRestart(with newAppURL: URL) {
         let fm = FileManager.default
 
-        guard let currentAppURL = Bundle.main.bundleURL as URL? else {
-            DispatchQueue.main.async { @Sendable in
-                self.state = .error(code: .locationError, message: L("update.location_error"))
-            }
-            return
-        }
-
+        let currentAppURL = Bundle.main.bundleURL
         let parentDir = currentAppURL.deletingLastPathComponent()
         let backupURL = parentDir.appendingPathComponent("Sobani_backup.app")
 

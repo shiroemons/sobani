@@ -346,28 +346,6 @@ import Testing
         #expect(adjusted.windowId == 7)
     }
 
-    /// レガシー画像名「デフォルト」がAppConstants.defaultImageNameに正規化されることを検証
-    @Test func loadStatesNormalizesLegacyDefaultImageName() throws {
-        // Write JSON with legacy "デフォルト" imageName
-        let legacyJSON = """
-        [{\
-        "imageName":"デフォルト",\
-        "originX":100,"originY":200,\
-        "width":300,"height":400,\
-        "isFlippedHorizontally":false,\
-        "rotationAngle":0,\
-        "opacityLevel":1.0,\
-        "windowId":1\
-        }]
-        """
-        let jsonURL = tempDirectory.appendingPathComponent("window_states.json")
-        let jsonData = try #require(legacyJSON.data(using: .utf8))
-        try jsonData.write(to: jsonURL)
-
-        let states = stateManager.loadStates()
-        #expect(states.first?.imageName == AppConstants.defaultImageName)
-    }
-
     /// windowIdが保存・読み込みで保持されることを検証
     @Test func windowIdInSaveAndLoad() {
         let states = [

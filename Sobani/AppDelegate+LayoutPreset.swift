@@ -9,12 +9,10 @@ extension AppDelegate {
     // MARK: - Window Array Management
 
     func addCharacterWindow(_ window: CharacterWindow) {
-        characterWindows.append(window)
         zOrderedWindows.insert(window, at: 0)
     }
 
     func removeCharacterWindow(_ window: CharacterWindow) {
-        characterWindows.removeAll { $0 === window }
         zOrderedWindows.removeAll { $0 === window }
     }
 
@@ -27,37 +25,20 @@ extension AppDelegate {
         isApplyingLayout = true
         areWindowsHidden = false
 
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             charWindow.window.orderOut(nil)
         }
-        characterWindows.removeAll()
         zOrderedWindows.removeAll()
 
+        var loadedWindows: [CharacterWindow] = []
         for state in preset.states {
-            let registeredImage = ImageManager.shared.loadRegisteredImage(named: state.imageName)
-            let resolved = Self.resolveImageName(
-                state.imageName,
-                defaultImageName: AppConstants.defaultImageName,
-                registeredImageExists: registeredImage != nil
-            )
-            let resolvedDisplayName = resolved.resolvedName
-            let image: NSImage
-            if resolved.isDefault {
-                image = ImageManager.shared.defaultImage() ?? NSImage()
-            } else {
-                image = registeredImage ?? NSImage()
-            }
-
-            let charWindow = CharacterWindow(image: image)
-            charWindow.delegate = self
-            charWindow.displayName = resolvedDisplayName
-            charWindow.windowId = nextWindowId
+            let charWindow = createCharacterWindow(from: state, windowId: nextWindowId)
             nextWindowId += 1
             charWindow.restore(from: state)
-            characterWindows.append(charWindow)
+            loadedWindows.append(charWindow)
         }
 
-        zOrderedWindows = characterWindows.reversed()
+        zOrderedWindows = loadedWindows.reversed()
 
         isApplyingLayout = false
         quitIfNoWindows()

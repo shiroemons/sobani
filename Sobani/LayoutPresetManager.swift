@@ -18,21 +18,17 @@ final class LayoutPresetManager {
         subsystem: AppConstants.loggerSubsystem,
         category: "LayoutPresetManager"
     )
-    private let baseDirectory: URL?
     private var cachedPresets: [LayoutPreset]?
+    let layoutsDirectoryURL: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
-        self.baseDirectory = baseDirectory
-    }
-
-    private var appSupportURL: URL? {
-        AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
-    }
-
-    var layoutsDirectoryURL: URL? {
-        guard let appDir = appSupportURL else { return nil }
-        return AppSupportDirectory.ensureSubdirectory("layouts", in: appDir, logger: logger)
+        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LayoutPresetManager")
+        if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger) {
+            self.layoutsDirectoryURL = AppSupportDirectory.ensureSubdirectory("layouts", in: appDir, logger: initLogger)
+        } else {
+            self.layoutsDirectoryURL = nil
+        }
     }
 
     private func sanitizedFileName(for name: String) -> String {

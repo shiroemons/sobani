@@ -128,22 +128,22 @@ struct MenuStateUtilsTests {
 
     @Test("canMoveForward: 先頭要素（移動不可）")
     func canMoveForwardAtFront() {
-        #expect(!MenuStateUtils.canMoveForward(index: 0, count: 3, canReorder: true))
+        #expect(!MenuStateUtils.canMoveForward(index: 0, canReorder: true))
     }
 
     @Test("canMoveForward: 中間要素（移動可）")
     func canMoveForwardMiddle() {
-        #expect(MenuStateUtils.canMoveForward(index: 1, count: 3, canReorder: true))
+        #expect(MenuStateUtils.canMoveForward(index: 1, canReorder: true))
     }
 
     @Test("canMoveForward: 末尾要素（移動可）")
     func canMoveForwardAtBack() {
-        #expect(MenuStateUtils.canMoveForward(index: 2, count: 3, canReorder: true))
+        #expect(MenuStateUtils.canMoveForward(index: 2, canReorder: true))
     }
 
     @Test("canMoveForward: 並び替え不可")
     func canMoveForwardCannotReorder() {
-        #expect(!MenuStateUtils.canMoveForward(index: 1, count: 3, canReorder: false))
+        #expect(!MenuStateUtils.canMoveForward(index: 1, canReorder: false))
     }
 
     // MARK: - canMoveBackward Tests

@@ -241,61 +241,71 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         currentSize = state.size
         currentAspectRatio = state.aspectRatio
         currentScreen = NSScreen.screen(containing: window.frame)
-        close()
 
-        let panelWidth: CGFloat = Self.panelWidth
-        let panelHeight: CGFloat = Self.panelHeight
-        let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
+        // Lazy-initialize the panel on first show
+        if panel == nil {
+            let panelWidth: CGFloat = Self.panelWidth
+            let panelHeight: CGFloat = Self.panelHeight
+            let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
 
-        let newPanel = NSPanel(
-            contentRect: panelRect,
-            styleMask: [.titled, .closable, .nonactivatingPanel, .utilityWindow],
-            backing: .buffered,
-            defer: false
-        )
-        newPanel.title = L("adjust.panel_title")
-        newPanel.level = .modalPanel
-        newPanel.isFloatingPanel = true
-        newPanel.delegate = self
-        newPanel.becomesKeyOnlyIfNeeded = true
-        newPanel.hidesOnDeactivate = false
-        newPanel.isReleasedWhenClosed = false
-        newPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+            let newPanel = NSPanel(
+                contentRect: panelRect,
+                styleMask: [.titled, .closable, .nonactivatingPanel, .utilityWindow],
+                backing: .buffered,
+                defer: false
+            )
+            newPanel.title = L("adjust.panel_title")
+            newPanel.level = .modalPanel
+            newPanel.isFloatingPanel = true
+            newPanel.delegate = self
+            newPanel.becomesKeyOnlyIfNeeded = true
+            newPanel.configureForFloating()
 
-        // Position near the target window
+            let contentView = NSView(frame: panelRect)
+
+            setupRotationSection(in: contentView, angle: state.angle, offsetY: Self.rotationSectionOffsetY)
+
+            // Separator between rotation and opacity
+            let sep1 = NSBox(frame: NSRect(
+                x: SectionLayout.labelX, y: Self.rotationSectionOffsetY, width: SectionLayout.contentWidth, height: 1
+            ))
+            sep1.boxType = .separator
+            contentView.addSubview(sep1)
+
+            setupOpacitySection(in: contentView, opacity: state.opacity, offsetY: Self.opacitySectionOffsetY)
+
+            // Separator between opacity and position/size
+            let sep2 = NSBox(frame: NSRect(
+                x: SectionLayout.labelX, y: Self.opacitySectionOffsetY, width: SectionLayout.contentWidth, height: 1
+            ))
+            sep2.boxType = .separator
+            contentView.addSubview(sep2)
+
+            setupPositionSizeSection(in: contentView)
+
+            newPanel.contentView = contentView
+            panel = newPanel
+        } else {
+            // Update all control values for the new state
+            dialView?.angle = state.angle
+            textField?.stringValue = Self.formatAngle(state.angle)
+            opacitySlider?.doubleValue = Double(state.opacity)
+            opacityLabel?.stringValue = Self.formatOpacity(state.opacity)
+            populateMonitorPopup()
+            updateResolutionLabel()
+            updatePositionFields()
+            updateSizeFields()
+        }
+
+        // Reposition near the target window
         let windowFrame = window.frame
+        let panelHeight: CGFloat = Self.panelHeight
         let panelOrigin = NSPoint(
             x: windowFrame.maxX + Self.panelGap,
             y: windowFrame.midY - panelHeight / 2
         )
-        newPanel.setFrameOrigin(panelOrigin)
-
-        let contentView = NSView(frame: panelRect)
-
-        let rotationOffsetY: CGFloat = Self.rotationSectionOffsetY
-        setupRotationSection(in: contentView, angle: state.angle, offsetY: rotationOffsetY)
-
-        // Separator between rotation and opacity
-        let sep1 = NSBox(frame: NSRect(
-            x: SectionLayout.labelX, y: Self.rotationSectionOffsetY, width: SectionLayout.contentWidth, height: 1
-        ))
-        sep1.boxType = .separator
-        contentView.addSubview(sep1)
-
-        setupOpacitySection(in: contentView, opacity: state.opacity, offsetY: Self.opacitySectionOffsetY)
-
-        // Separator between opacity and position/size
-        let sep2 = NSBox(frame: NSRect(
-            x: SectionLayout.labelX, y: Self.opacitySectionOffsetY, width: SectionLayout.contentWidth, height: 1
-        ))
-        sep2.boxType = .separator
-        contentView.addSubview(sep2)
-
-        setupPositionSizeSection(in: contentView)
-
-        newPanel.contentView = contentView
-        newPanel.makeKeyAndOrderFront(nil)
-        panel = newPanel
+        panel?.setFrameOrigin(panelOrigin)
+        panel?.makeKeyAndOrderFront(nil)
     }
 
     private func setupRotationSection(in contentView: NSView, angle: CGFloat, offsetY: CGFloat) {
@@ -401,30 +411,19 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     // MARK: - Close / Cleanup
 
     func close() {
-        guard panel != nil else { return }
+        guard panel?.isVisible == true else { return }
         let savedOnClose = onClose
         onClose = nil
         panel?.orderOut(nil)
-        cleanup()
         savedOnClose?()
     }
 
     func windowWillClose(_ notification: Notification) {
-        close()
-    }
-
-    private func cleanup() {
-        panel = nil
-        dialView = nil
-        textField = nil
-        opacitySlider = nil
-        opacityLabel = nil
-        monitorPopup = nil
-        resolutionLabel = nil
-        xField = nil
-        yField = nil
-        wField = nil
-        hField = nil
+        // The user clicked the close button — hide the panel and fire the callback
+        let savedOnClose = onClose
+        onClose = nil
+        panel?.orderOut(nil)
+        savedOnClose?()
     }
 
     var isVisible: Bool {
@@ -738,7 +737,7 @@ extension AdjustmentPanelController {
 
     // MARK: Position/Size Field Handlers
 
-    @objc private func xFieldChanged(_ sender: NSTextField) {
+    private func handlePositionFieldChanged(_ sender: NSTextField, isXField: Bool) {
         guard let screen = currentScreen else { return }
         let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
         guard let value = Double(text) else {
@@ -747,57 +746,42 @@ extension AdjustmentPanelController {
         }
         let currentRelative = Self.globalToMonitorRelative(currentPosition, screenOrigin: screen.frame.origin)
         let relative = Self.updatedRelativePosition(
-            newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: true
+            newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: isXField
         )
         let global = Self.monitorRelativeToGlobal(relative, screenOrigin: screen.frame.origin)
         currentPosition = global
         delegate?.adjustmentPanel(self, didChangePosition: global)
+    }
+
+    @objc private func xFieldChanged(_ sender: NSTextField) {
+        handlePositionFieldChanged(sender, isXField: true)
     }
 
     @objc private func yFieldChanged(_ sender: NSTextField) {
-        guard let screen = currentScreen else { return }
+        handlePositionFieldChanged(sender, isXField: false)
+    }
+
+    private func handleSizeFieldChanged(_ sender: NSTextField, isWidth: Bool) {
         let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
         guard let value = Double(text) else {
-            updatePositionFields()
+            updateSizeFields()
             return
         }
-        let currentRelative = Self.globalToMonitorRelative(currentPosition, screenOrigin: screen.frame.origin)
-        let relative = Self.updatedRelativePosition(
-            newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: false
-        )
-        let global = Self.monitorRelativeToGlobal(relative, screenOrigin: screen.frame.origin)
-        currentPosition = global
-        delegate?.adjustmentPanel(self, didChangePosition: global)
+        guard let newSize = Self.clampedSize(newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: isWidth) else {
+            updateSizeFields()
+            return
+        }
+        currentSize = newSize
+        updateSizeFields()
+        delegate?.adjustmentPanel(self, didChangeSize: currentSize)
     }
 
     @objc private func wFieldChanged(_ sender: NSTextField) {
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text) else {
-            updateSizeFields()
-            return
-        }
-        guard let newSize = Self.clampedSize(newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: true) else {
-            updateSizeFields()
-            return
-        }
-        currentSize = newSize
-        updateSizeFields()
-        delegate?.adjustmentPanel(self, didChangeSize: currentSize)
+        handleSizeFieldChanged(sender, isWidth: true)
     }
 
     @objc private func hFieldChanged(_ sender: NSTextField) {
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text) else {
-            updateSizeFields()
-            return
-        }
-        guard let newSize = Self.clampedSize(newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: false) else {
-            updateSizeFields()
-            return
-        }
-        currentSize = newSize
-        updateSizeFields()
-        delegate?.adjustmentPanel(self, didChangeSize: currentSize)
+        handleSizeFieldChanged(sender, isWidth: false)
     }
 
     @objc private func resetPositionAndSize() {

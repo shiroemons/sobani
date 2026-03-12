@@ -61,18 +61,18 @@ final class ScreenRestorationManager {
     )
     private(set) var pendingRestorations: [PendingRestoration] = []
     private let timeout: TimeInterval
-    private let baseDirectory: URL?
+    let pendingFileURL: URL?
     var currentDate: @Sendable () -> Date = { Date() }
     var screenProvider: () -> [ScreenInfo] = { ScreenInfo.current() }
 
     init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
         self.timeout = timeout
-        self.baseDirectory = baseDirectory
-    }
-
-    var pendingFileURL: URL? {
-        guard let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger) else { return nil }
-        return appDir.appendingPathComponent("pending_restorations.json")
+        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "ScreenRestorationManager")
+        if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger) {
+            self.pendingFileURL = appDir.appendingPathComponent("pending_restorations.json")
+        } else {
+            self.pendingFileURL = nil
+        }
     }
 
     var hasPending: Bool {

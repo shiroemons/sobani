@@ -42,7 +42,6 @@ enum AppConstants {
     static let loggerSubsystem = "com.shiroemons.Sobani"
 
     static let defaultImageName = "default"
-    static let legacyDefaultImageName = "デフォルト"
 
     // Window
     static let defaultWindowHeight: CGFloat = 600
@@ -142,6 +141,9 @@ enum AppConstants {
     static let straightenFadeHighlightHeight: CGFloat = 18
     static let straightenFadeHighlightWidth: CGFloat = 1.5
 
+    // UserDefaults Keys
+    static let appLanguageKey = "AppLanguage"
+
     // Window Snap
     static let snapThreshold: CGFloat = 8
     static let snapEnabledKey = "windowSnapEnabled"
@@ -189,12 +191,10 @@ enum AppSupportDirectory {
             guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
             appDir = appSupport.appendingPathComponent(AppConstants.appName)
         }
-        if !fm.fileExists(atPath: appDir.path) {
-            do {
-                try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
-            } catch {
-                logger.error("Failed to create app support directory: \(error.localizedDescription)")
-            }
+        do {
+            try fm.createDirectory(at: appDir, withIntermediateDirectories: true)
+        } catch {
+            logger.error("Failed to create app support directory: \(error.localizedDescription)")
         }
         return appDir
     }
@@ -202,12 +202,10 @@ enum AppSupportDirectory {
     static func ensureSubdirectory(_ name: String, in baseURL: URL, logger: Logger) -> URL {
         let subdir = baseURL.appendingPathComponent(name)
         let fm = FileManager.default
-        if !fm.fileExists(atPath: subdir.path) {
-            do {
-                try fm.createDirectory(at: subdir, withIntermediateDirectories: true)
-            } catch {
-                logger.error("Failed to create \(name) directory: \(error.localizedDescription)")
-            }
+        do {
+            try fm.createDirectory(at: subdir, withIntermediateDirectories: true)
+        } catch {
+            logger.error("Failed to create \(name) directory: \(error.localizedDescription)")
         }
         return subdir
     }

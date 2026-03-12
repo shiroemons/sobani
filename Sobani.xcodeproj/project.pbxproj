@@ -90,6 +90,8 @@
 		F0AF000002000000000001 /* AlertFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AF000001000000000001 /* AlertFactory.swift */; };
 		F0JP000002000000000001 /* JSONPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0JP000001000000000001 /* JSONPersistence.swift */; };
 		F0JP000004000000000001 /* JSONPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0JP000003000000000001 /* JSONPersistenceTests.swift */; };
+		F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */; };
+		F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -190,6 +192,8 @@
 		F0EH000003000000000001 /* CropEditHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditHistoryTests.swift; sourceTree = "<group>"; };
 		F0AF000001000000000001 /* AlertFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertFactory.swift; sourceTree = "<group>"; };
 		F0JP000001000000000001 /* JSONPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPersistence.swift; sourceTree = "<group>"; };
+		F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPanel+FloatingConfig.swift"; sourceTree = "<group>"; };
+		F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSMenu+RegisteredImages.swift"; sourceTree = "<group>"; };
 		F0JP000003000000000001 /* JSONPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPersistenceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -265,6 +269,8 @@
 				F0EH000001000000000001 /* CropEditHistory.swift */,
 				F0AF000001000000000001 /* AlertFactory.swift */,
 				F0JP000001000000000001 /* JSONPersistence.swift */,
+				F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */,
+				F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */,
 				DD000010 /* WindowStateManager.swift */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -487,6 +493,8 @@
 				F0EH000002000000000001 /* CropEditHistory.swift in Sources */,
 				F0AF000002000000000001 /* AlertFactory.swift in Sources */,
 				F0JP000002000000000001 /* JSONPersistence.swift in Sources */,
+				F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */,
+				F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

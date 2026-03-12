@@ -28,7 +28,7 @@ enum MenuStateUtils {
     }
 
     /// 前面/最前面移動の有効判定
-    static func canMoveForward(index: Int, count: Int, canReorder: Bool) -> Bool {
+    static func canMoveForward(index: Int, canReorder: Bool) -> Bool {
         canReorder && index > 0
     }
 

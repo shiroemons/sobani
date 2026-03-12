@@ -222,10 +222,6 @@ extension CropEditorCanvasView {
         )
     }
 
-    private func clampImageOffset() {
-        // パンクランプなし: 画像を自由に配置可能
-        // 空白領域は出力時に透過になる
-    }
 }
 
 // MARK: - Image Drawing
@@ -480,7 +476,7 @@ extension CropEditorCanvasView {
                 x: dragStartImageOffset.x + deltaX,
                 y: dragStartImageOffset.y + deltaY
             )
-            clampImageOffset()
+            // パンクランプなし: 画像を自由に配置可能
             needsDisplay = true
         case .resizingHandle(let position):
             guard dragStartCropFrame.width > 0, dragStartCropFrame.height > 0 else { return }
@@ -505,7 +501,7 @@ extension CropEditorCanvasView {
     override func scrollWheel(with event: NSEvent) {
         let zoomDelta = event.deltaY * Self.zoomSensitivity
         imageZoom = Swift.min(Swift.max(imageZoom + zoomDelta, Self.minZoom), Self.maxZoom)
-        clampImageOffset()
+        // パンクランプなし: 画像を自由に配置可能
         needsDisplay = true
     }
 

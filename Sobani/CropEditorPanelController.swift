@@ -77,9 +77,7 @@ final class CropEditorPanelController: NSObject {
         )
         newPanel.title = L("crop_editor.title")
         newPanel.level = .floating
-        newPanel.hidesOnDeactivate = false
-        newPanel.isReleasedWhenClosed = false
-        newPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        newPanel.configureForFloating()
         newPanel.delegate = self
 
         let contentView = NSView(frame: panelRect)

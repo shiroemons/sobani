@@ -101,15 +101,12 @@ final class WindowStateManager {
         subsystem: AppConstants.loggerSubsystem,
         category: "WindowStateManager"
     )
-    private let baseDirectory: URL?
+    private let appSupportURL: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
-        self.baseDirectory = baseDirectory
-    }
-
-    private var appSupportURL: URL? {
-        AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
+        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "WindowStateManager")
+        self.appSupportURL = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger)
     }
 
     var statesFileURL: URL? {
@@ -130,16 +127,6 @@ final class WindowStateManager {
             notFoundMessage: "No saved states found",
             errorMessage: "Failed to decode window states"
         ) else { return [] }
-        // Backward compatibility: normalize legacy "デフォルト" to internal constant
-        // Introduced: v202502.0 — Can be removed after sufficient migration period (e.g. v202602.0+)
-        states = states.map { state in
-            if state.imageName == AppConstants.legacyDefaultImageName {
-                var normalized = state
-                normalized.imageName = AppConstants.defaultImageName
-                return normalized
-            }
-            return state
-        }
         return states
     }
 

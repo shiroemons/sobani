@@ -13,13 +13,24 @@ final class ImageManager {
     nonisolated static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
     private let baseDirectory: URL?
     private var cachedImageNames: [String]?
-    private var previewImageCache: [String: NSImage] = [:]
+    private var previewImageCache: [String: (image: NSImage, lastAccess: Date)] = [:]
     private static let previewCacheCountLimit = 20
+    private var cachedDefaultImage: NSImage?
+
+    let appSupportURL: URL?
+    let imagesDirectoryURL: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
-        // previewImageCache is a simple dictionary with manual eviction
+        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "ImageManager")
+        let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger)
+        self.appSupportURL = appDir
+        if let appDir {
+            self.imagesDirectoryURL = AppSupportDirectory.ensureSubdirectory("images", in: appDir, logger: initLogger)
+        } else {
+            self.imagesDirectoryURL = nil
+        }
     }
 
     private func insertIntoCache(_ name: String) {
@@ -31,15 +42,6 @@ final class ImageManager {
 
     private func removeFromCache(_ name: String) {
         cachedImageNames?.removeAll { $0 == name }
-    }
-
-    private var appSupportURL: URL? {
-        AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
-    }
-
-    var imagesDirectoryURL: URL? {
-        guard let appDir = appSupportURL else { return nil }
-        return AppSupportDirectory.ensureSubdirectory("images", in: appDir, logger: logger)
     }
 
     func registeredImageNames() -> [String] {
@@ -67,14 +69,17 @@ final class ImageManager {
     }
 
     func loadRegisteredImageCached(named name: String) -> NSImage? {
-        if let cached = previewImageCache[name] {
-            return cached
+        if let entry = previewImageCache[name] {
+            previewImageCache[name] = (image: entry.image, lastAccess: Date())
+            return entry.image
         }
         guard let image = loadRegisteredImage(named: name) else { return nil }
         if previewImageCache.count >= Self.previewCacheCountLimit {
-            previewImageCache.removeAll()
+            if let lruKey = previewImageCache.min(by: { $0.value.lastAccess < $1.value.lastAccess })?.key {
+                previewImageCache.removeValue(forKey: lruKey)
+            }
         }
-        previewImageCache[name] = image
+        previewImageCache[name] = (image: image, lastAccess: Date())
         return image
     }
 
@@ -146,14 +151,17 @@ final class ImageManager {
     }
 
     func defaultImage() -> NSImage? {
-        if let url = customDefaultURL, let image = NSImage(contentsOf: url) {
-            return image
+        if let cached = cachedDefaultImage {
+            return cached
         }
-        return NSImage(named: "character")
-    }
-
-    func originalDefaultImage() -> NSImage? {
-        return NSImage(named: "character")
+        let image: NSImage?
+        if let url = customDefaultURL, let customImage = NSImage(contentsOf: url) {
+            image = customImage
+        } else {
+            image = NSImage(named: "character")
+        }
+        cachedDefaultImage = image
+        return image
     }
 
     func setCustomDefault(from url: URL) {
@@ -164,6 +172,7 @@ final class ImageManager {
                 try fm.removeItem(at: destURL)
             }
             try fm.copyItem(at: url, to: destURL)
+            cachedDefaultImage = nil
         } catch {
             logger.error("Failed to set custom default: \(error.localizedDescription)")
         }
@@ -173,6 +182,7 @@ final class ImageManager {
         guard let url = customDefaultURL else { return }
         do {
             try FileManager.default.removeItem(at: url)
+            cachedDefaultImage = nil
         } catch {
             logger.error("Failed to reset custom default: \(error.localizedDescription)")
         }

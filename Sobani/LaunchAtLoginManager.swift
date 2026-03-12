@@ -1,10 +1,8 @@
 import ServiceManagement
-import os.log
 
 @MainActor
 final class LaunchAtLoginManager {
     static let shared = LaunchAtLoginManager()
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LaunchAtLoginManager")
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init() {}
 

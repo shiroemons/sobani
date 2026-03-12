@@ -21,8 +21,7 @@ final class ImagePreviewPanel {
         panel.backgroundColor = .clear
         panel.hasShadow = true
         panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.popUpMenuWindow)) + 1)
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        panel.hidesOnDeactivate = false
+        panel.configureForFloating()
         panel.isMovable = false
 
         let contentView = NSView()
@@ -157,10 +156,6 @@ final class ImagePreviewPanel {
     }
 
     // MARK: - Private
-
-    private func scaledSize(for image: NSImage) -> NSSize {
-        return Self.scaledSize(for: image.size)
-    }
 
     private func calculatePosition(menuItem: NSMenuItem, menu: NSMenu, panelSize: NSSize) -> NSPoint {
         let menuWindows = Self.findMenuWindows(excluding: panel)

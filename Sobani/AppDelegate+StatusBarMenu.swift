@@ -202,18 +202,7 @@ extension AppDelegate {
         defaultWindowItem.image = menuIcon("person.fill")
         submenu.addItem(defaultWindowItem)
 
-        if !imageNames.isEmpty {
-            submenu.addItem(NSMenuItem.separator())
-            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
-            registeredLabel.isEnabled = false
-            submenu.addItem(registeredLabel)
-            for name in imageNames {
-                let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImageFromMenu(_:)), keyEquivalent: "")
-                item.target = self
-                item.representedObject = name
-                submenu.addItem(item)
-            }
-        }
+        submenu.addRegisteredImageItems(names: imageNames, target: self, action: #selector(addNewWindowWithImageFromMenu(_:)))
 
         newWindowItem.submenu = submenu
         return newWindowItem
@@ -370,19 +359,13 @@ extension AppDelegate {
         resetItem.image = menuIcon("arrow.counterclockwise")
         changeSubmenu.addItem(resetItem)
 
-        if !imageNames.isEmpty {
-            changeSubmenu.addItem(NSMenuItem.separator())
-            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
-            registeredLabel.isEnabled = false
-            changeSubmenu.addItem(registeredLabel)
-            for name in imageNames {
-                let item = NSMenuItem(title: name, action: #selector(selectRegisteredImageByWindowNumber(_:)), keyEquivalent: "")
-                item.target = self
-                item.tag = windowNumber
-                item.representedObject = name
-                item.state = (name == charWindow.displayName) ? .on : .off
-                changeSubmenu.addItem(item)
-            }
+        changeSubmenu.addRegisteredImageItems(
+            names: imageNames,
+            target: self,
+            action: #selector(selectRegisteredImageByWindowNumber(_:))
+        ) { item, name in
+            item.tag = windowNumber
+            item.state = (name == charWindow.displayName) ? .on : .off
         }
 
         return changeSubmenu
@@ -392,14 +375,14 @@ extension AppDelegate {
         let toFrontItem = NSMenuItem(title: L("window.move_to_front"), action: #selector(moveWindowToFrontByWindowNumber(_:)), keyEquivalent: "")
         toFrontItem.target = self
         toFrontItem.tag = windowNumber
-        toFrontItem.isEnabled = MenuStateUtils.canMoveForward(index: index, count: count, canReorder: canReorder)
+        toFrontItem.isEnabled = MenuStateUtils.canMoveForward(index: index, canReorder: canReorder)
         toFrontItem.image = menuIcon("square.3.layers.3d.top.filled")
         menu.addItem(toFrontItem)
 
         let forwardItem = NSMenuItem(title: L("window.move_forward"), action: #selector(moveWindowForwardByWindowNumber(_:)), keyEquivalent: "")
         forwardItem.target = self
         forwardItem.tag = windowNumber
-        forwardItem.isEnabled = MenuStateUtils.canMoveForward(index: index, count: count, canReorder: canReorder)
+        forwardItem.isEnabled = MenuStateUtils.canMoveForward(index: index, canReorder: canReorder)
         forwardItem.image = menuIcon("chevron.up")
         menu.addItem(forwardItem)
 
@@ -480,10 +463,8 @@ extension AppDelegate {
     @objc func changeImageByWindowNumber(_ sender: NSMenuItem) {
         guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
         let panel = ImageFileDialog.makeOpenPanel()
-        if panel.runModal() == .OK, let url = panel.url, let newImage = NSImage(contentsOf: url) {
-            let savedName = ImageManager.shared.registerImage(from: url)
-            charWindow.displayName = savedName ?? url.deletingPathExtension().lastPathComponent
-            charWindow.applyImage(newImage)
+        if panel.runModal() == .OK, let url = panel.url {
+            charWindow.loadAndApplyImage(from: url)
         }
     }
 

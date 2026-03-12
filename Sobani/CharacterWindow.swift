@@ -212,18 +212,20 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 
     @objc func changeImage() {
         let panel = ImageFileDialog.makeOpenPanel()
-        if panel.runModal() == .OK, let url = panel.url, let newImage = NSImage(contentsOf: url) {
-            let savedName = ImageManager.shared.registerImage(from: url)
-            displayName = savedName ?? url.deletingPathExtension().lastPathComponent
-            applyImage(newImage)
+        if panel.runModal() == .OK, let url = panel.url {
+            loadAndApplyImage(from: url)
         }
     }
 
-    private func handleDroppedImage(url: URL) {
+    func loadAndApplyImage(from url: URL) {
         guard let newImage = NSImage(contentsOf: url) else { return }
         let savedName = ImageManager.shared.registerImage(from: url)
         displayName = savedName ?? url.deletingPathExtension().lastPathComponent
         applyImage(newImage)
+    }
+
+    private func handleDroppedImage(url: URL) {
+        loadAndApplyImage(from: url)
     }
 
     @objc func selectRegisteredImage(_ sender: NSMenuItem) {
@@ -268,7 +270,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     @objc func quitApp() {
-        (NSApp.delegate as? AppDelegate)?.quitApp()
+        delegate?.requestQuit()
     }
 
     @objc func resetDisplay() {
@@ -434,6 +436,7 @@ protocol CharacterWindowDelegate: AnyObject {
     func characterWindowDidClose(_ sender: CharacterWindow)
     func characterWindowDidDeleteImage(named name: String)
     func characterWindowDidBecomeActive(_ sender: CharacterWindow)
+    func requestQuit()
 }
 
 // MARK: - CharacterWindow + Context Menu
@@ -532,18 +535,7 @@ extension CharacterWindow {
         defaultItem.image = SFSymbolUtils.icon("arrow.counterclockwise")
         submenu.addItem(defaultItem)
 
-        if !names.isEmpty {
-            submenu.addItem(NSMenuItem.separator())
-            let registeredLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
-            registeredLabel.isEnabled = false
-            submenu.addItem(registeredLabel)
-            for name in names {
-                let item = NSMenuItem(title: name, action: #selector(selectRegisteredImage(_:)), keyEquivalent: "")
-                item.target = self
-                item.representedObject = name
-                submenu.addItem(item)
-            }
-        }
+        submenu.addRegisteredImageItems(names: names, target: self, action: #selector(selectRegisteredImage(_:)))
 
         if #available(macOS 14.0, *) {
             submenu.addItem(NSMenuItem.separator())
@@ -574,18 +566,7 @@ extension CharacterWindow {
         defaultWindowItem.target = self
         newWindowSubmenu.addItem(defaultWindowItem)
 
-        if !names.isEmpty {
-            newWindowSubmenu.addItem(NSMenuItem.separator())
-            let registeredWindowLabel = NSMenuItem(title: L("image.registered"), action: nil, keyEquivalent: "")
-            registeredWindowLabel.isEnabled = false
-            newWindowSubmenu.addItem(registeredWindowLabel)
-            for name in names {
-                let item = NSMenuItem(title: name, action: #selector(addNewWindowWithImage(_:)), keyEquivalent: "")
-                item.target = self
-                item.representedObject = name
-                newWindowSubmenu.addItem(item)
-            }
-        }
+        newWindowSubmenu.addRegisteredImageItems(names: names, target: self, action: #selector(addNewWindowWithImage(_:)))
     }
 
     // MARK: - Menu Highlight (Image Preview)

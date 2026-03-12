@@ -29,14 +29,13 @@ final class LanguageManager {
     private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LanguageManager")
     static let shared = LanguageManager()
 
-    private static let userDefaultsKey = "AppLanguage"
     private static let appleLanguagesKey = "AppleLanguages"
     private let defaults: UserDefaults
     private(set) var currentBundle: Bundle?
 
     var currentLanguage: Language {
         get {
-            guard let raw = defaults.string(forKey: Self.userDefaultsKey),
+            guard let raw = defaults.string(forKey: AppConstants.appLanguageKey),
                   let lang = Language(rawValue: raw) else {
                 return .system
             }
@@ -44,10 +43,10 @@ final class LanguageManager {
         }
         set {
             if newValue == .system {
-                defaults.removeObject(forKey: Self.userDefaultsKey)
+                defaults.removeObject(forKey: AppConstants.appLanguageKey)
                 defaults.removeObject(forKey: Self.appleLanguagesKey)
             } else {
-                defaults.set(newValue.rawValue, forKey: Self.userDefaultsKey)
+                defaults.set(newValue.rawValue, forKey: AppConstants.appLanguageKey)
                 defaults.set([newValue.rawValue], forKey: Self.appleLanguagesKey)
             }
             updateBundle()
@@ -60,7 +59,7 @@ final class LanguageManager {
         self.defaults = defaults
         // Restore AppleLanguages from saved preference on launch
         // This must happen before any UI is loaded so system strings respect the language
-        if let raw = defaults.string(forKey: Self.userDefaultsKey),
+        if let raw = defaults.string(forKey: AppConstants.appLanguageKey),
            let lang = Language(rawValue: raw), lang != .system {
             defaults.set([lang.rawValue], forKey: Self.appleLanguagesKey)
         }

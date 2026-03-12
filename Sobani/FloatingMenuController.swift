@@ -40,8 +40,6 @@ final class FloatingMenuController {
     // MARK: - Show / Dismiss
 
     func show(at point: NSPoint, in window: NSWindow) {
-        dismiss()
-
         let buttonCount = Self.buttonCount()
         let panelWidth = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuColumnWidth * CGFloat(buttonCount)
             + AppConstants.floatingMenuGap * CGFloat(buttonCount - 1)
@@ -65,38 +63,40 @@ final class FloatingMenuController {
             origin.x = max(screen.visibleFrame.minX, min(origin.x, screen.visibleFrame.maxX - panelWidth))
         }
 
-        let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
-        let newPanel = NSPanel(
-            contentRect: panelRect,
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        newPanel.isFloatingPanel = true
-        newPanel.becomesKeyOnlyIfNeeded = true
-        newPanel.level = .floating + 1
-        newPanel.hasShadow = true
-        newPanel.isOpaque = false
-        newPanel.backgroundColor = .clear
-        newPanel.hidesOnDeactivate = false
-        newPanel.isReleasedWhenClosed = false
-        newPanel.allowsToolTipsWhenApplicationIsInactive = true
-        newPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        // Lazy-initialize the panel on first show
+        if panel == nil {
+            let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
+            let newPanel = NSPanel(
+                contentRect: panelRect,
+                styleMask: [.borderless, .nonactivatingPanel],
+                backing: .buffered,
+                defer: false
+            )
+            newPanel.isFloatingPanel = true
+            newPanel.becomesKeyOnlyIfNeeded = true
+            newPanel.level = .floating + 1
+            newPanel.hasShadow = true
+            newPanel.isOpaque = false
+            newPanel.backgroundColor = .clear
+            newPanel.configureForFloating()
+            newPanel.allowsToolTipsWhenApplicationIsInactive = true
 
-        let contentView = NSVisualEffectView(frame: panelRect)
-        contentView.material = .menu
-        contentView.state = .active
-        contentView.blendingMode = .behindWindow
-        contentView.wantsLayer = true
-        contentView.layer?.cornerRadius = AppConstants.floatingMenuCornerRadius
-        contentView.layer?.masksToBounds = true
+            let contentView = NSVisualEffectView(frame: panelRect)
+            contentView.material = .menu
+            contentView.state = .active
+            contentView.blendingMode = .behindWindow
+            contentView.wantsLayer = true
+            contentView.layer?.cornerRadius = AppConstants.floatingMenuCornerRadius
+            contentView.layer?.masksToBounds = true
 
-        setupButtons(in: contentView)
+            setupButtons(in: contentView)
 
-        newPanel.contentView = contentView
-        newPanel.setFrameOrigin(origin)
-        newPanel.orderFront(nil)
-        panel = newPanel
+            newPanel.contentView = contentView
+            panel = newPanel
+        }
+
+        panel?.setFrameOrigin(origin)
+        panel?.orderFront(nil)
 
         installEventMonitors()
         logger.debug("Floating menu shown at (\(origin.x), \(origin.y))")
@@ -105,7 +105,6 @@ final class FloatingMenuController {
     func dismiss() {
         removeEventMonitors()
         panel?.orderOut(nil)
-        panel = nil
     }
 
     // MARK: - Button Setup
