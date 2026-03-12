@@ -130,36 +130,18 @@ final class ScreenRestorationManager {
 
     func savePending() {
         guard let url = pendingFileURL else { return }
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        do {
-            let data = try encoder.encode(pendingRestorations)
-            try data.write(to: url, options: .atomic)
-        } catch {
-            logger.error(
-                "Failed to save pending restorations: \(error.localizedDescription)")
-        }
+        JSONPersistence.save(pendingRestorations, to: url, logger: logger, errorMessage: "Failed to save pending restorations")
     }
 
     func loadPending() {
         guard let url = pendingFileURL else { return }
-        let data: Data
-        do {
-            data = try Data(contentsOf: url)
-        } catch {
-            logger.debug(
-                "No pending restorations found: \(error.localizedDescription)")
-            return
-        }
-        let loaded: [PendingRestoration]
-        do {
-            loaded = try JSONDecoder().decode(
-                [PendingRestoration].self, from: data)
-        } catch {
-            logger.error(
-                "Failed to decode pending restorations: \(error.localizedDescription)")
-            return
-        }
+        guard let loaded = JSONPersistence.load(
+            [PendingRestoration].self,
+            from: url,
+            logger: logger,
+            notFoundMessage: "No pending restorations found",
+            errorMessage: "Failed to decode pending restorations"
+        ) else { return }
         pendingRestorations = loaded
         purgeExpired()
     }

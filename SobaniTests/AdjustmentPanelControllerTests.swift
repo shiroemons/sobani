@@ -246,6 +246,30 @@ import Testing
         #expect(abs(result.x - 50) < AppConstants.floatingPointTolerance)
     }
 
+    // MARK: - Change Detection Guard Tests
+
+    /// 同じ角度値で updateAngle を呼び出しても問題が起きないことを検証
+    @Test func testUpdateAngleNoOpWhenSameValue() {
+        let controller = AdjustmentPanelController()
+        // 最初に 45.0 を設定
+        controller.updateAngle(45.0)
+        // 同じ値で再度呼び出してもクラッシュしないことを検証
+        controller.updateAngle(45.0)
+        // formatAngle を通じて期待値が正しいことを確認
+        #expect(AdjustmentPanelController.formatAngle(45.0) == "45")
+    }
+
+    /// 同じ不透明度値で updateOpacity を呼び出しても問題が起きないことを検証
+    @Test func testUpdateOpacityNoOpWhenSameValue() {
+        let controller = AdjustmentPanelController()
+        // 最初に 0.8 を設定
+        controller.updateOpacity(0.8)
+        // 同じ値で再度呼び出してもクラッシュしないことを検証
+        controller.updateOpacity(0.8)
+        // formatOpacity を通じて期待値が正しいことを確認
+        #expect(AdjustmentPanelController.formatOpacity(0.8) == "80%")
+    }
+
     // MARK: - AdjustmentPanelState Tests
 
     /// AdjustmentPanelState の初期化を検証

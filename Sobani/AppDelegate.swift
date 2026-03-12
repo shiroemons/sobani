@@ -142,24 +142,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         areWindowsHidden.toggle()
     }
 
+    private nonisolated func isToggleHotkey(_ event: NSEvent) -> Bool {
+        event.keyCode == AppConstants.optionHKeyCode
+            && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option
+    }
+
     func setupHotkeyMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
-                let weakSelf = self
-                DispatchQueue.main.async { @Sendable in
-                    weakSelf?.toggleAllWindowsVisibility()
-                }
+            guard let self, self.isToggleHotkey(event) else { return }
+            let weakSelf = self
+            DispatchQueue.main.async { @Sendable in
+                weakSelf.toggleAllWindowsVisibility()
             }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            if event.keyCode == AppConstants.optionHKeyCode && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
-                let weakSelf = self
-                DispatchQueue.main.async { @Sendable in
-                    weakSelf?.toggleAllWindowsVisibility()
-                }
-                return nil
+            guard let self, self.isToggleHotkey(event) else { return event }
+            let weakSelf = self
+            DispatchQueue.main.async { @Sendable in
+                weakSelf.toggleAllWindowsVisibility()
             }
-            return event
+            return nil
         }
     }
 

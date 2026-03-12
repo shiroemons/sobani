@@ -13,38 +13,31 @@ final class ImageManager {
     nonisolated static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
     private let baseDirectory: URL?
     private var cachedImageNames: [String]?
+    private var previewImageCache: [String: NSImage] = [:]
+    private static let previewCacheCountLimit = 20
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
+        // previewImageCache is a simple dictionary with manual eviction
     }
 
-    private func invalidateImageNamesCache() {
-        cachedImageNames = nil
+    private func insertIntoCache(_ name: String) {
+        cachedImageNames?.append(name)
+        cachedImageNames?.sort()
+    }
+
+    private func removeFromCache(_ name: String) {
+        cachedImageNames?.removeAll { $0 == name }
     }
 
     private var appSupportURL: URL? {
         AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
-    private var imagesDirectoryCreated = false
-
     var imagesDirectoryURL: URL? {
         guard let appDir = appSupportURL else { return nil }
-        let imagesDir = appDir.appendingPathComponent("images")
-        if !imagesDirectoryCreated {
-            let fm = FileManager.default
-            if !fm.fileExists(atPath: imagesDir.path) {
-                do {
-                    try fm.createDirectory(at: imagesDir, withIntermediateDirectories: true)
-                } catch {
-                    logger.error("Failed to create images directory: \(error.localizedDescription)")
-                    return imagesDir
-                }
-            }
-            imagesDirectoryCreated = true
-        }
-        return imagesDir
+        return AppSupportDirectory.ensureSubdirectory("images", in: appDir, logger: logger)
     }
 
     func registeredImageNames() -> [String] {
@@ -71,6 +64,18 @@ final class ImageManager {
         return NSImage(contentsOf: url)
     }
 
+    func loadRegisteredImageCached(named name: String) -> NSImage? {
+        if let cached = previewImageCache[name] {
+            return cached
+        }
+        guard let image = loadRegisteredImage(named: name) else { return nil }
+        if previewImageCache.count >= Self.previewCacheCountLimit {
+            previewImageCache.removeAll()
+        }
+        previewImageCache[name] = image
+        return image
+    }
+
     @discardableResult
     func registerImage(from url: URL) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
@@ -92,7 +97,7 @@ final class ImageManager {
         }
         do {
             try fm.copyItem(at: url, to: finalURL)
-            invalidateImageNamesCache()
+            insertIntoCache(finalName)
             return finalName
         } catch {
             logger.error("Failed to copy image: \(error.localizedDescription)")
@@ -109,7 +114,7 @@ final class ImageManager {
         guard let destURL = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
         do {
             try pngData.write(to: destURL)
-            invalidateImageNamesCache()
+            insertIntoCache(destURL.lastPathComponent)
         } catch {
             logger.error("Failed to write image data: \(error.localizedDescription)")
             return nil
@@ -122,7 +127,8 @@ final class ImageManager {
         guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return }
         do {
             try FileManager.default.removeItem(at: url)
-            invalidateImageNamesCache()
+            removeFromCache(name)
+            previewImageCache.removeValue(forKey: name)
         } catch {
             logger.error("Failed to remove image: \(error.localizedDescription)")
         }

@@ -98,6 +98,9 @@ enum AppConstants {
     static let opacityMin: CGFloat = 0.1
     static let opacityMax: CGFloat = 1.0
 
+    // Alpha Detection
+    static let alphaCheckRowSampleInterval = 64
+
     // Crop
     static let cropHandleSize: CGFloat = 8
     static let cropMinProportion: CGFloat = 0.1
@@ -194,6 +197,19 @@ enum AppSupportDirectory {
             }
         }
         return appDir
+    }
+
+    static func ensureSubdirectory(_ name: String, in baseURL: URL, logger: Logger) -> URL {
+        let subdir = baseURL.appendingPathComponent(name)
+        let fm = FileManager.default
+        if !fm.fileExists(atPath: subdir.path) {
+            do {
+                try fm.createDirectory(at: subdir, withIntermediateDirectories: true)
+            } catch {
+                logger.error("Failed to create \(name) directory: \(error.localizedDescription)")
+            }
+        }
+        return subdir
     }
 }
 

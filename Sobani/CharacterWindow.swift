@@ -595,7 +595,7 @@ extension CharacterWindow {
            item.action == #selector(selectRegisteredImage(_:))
             || item.action == #selector(addNewWindowWithImage(_:))
             || item.action == #selector(deleteRegisteredImage(_:)) {
-            if let image = ImageManager.shared.loadRegisteredImage(named: name) {
+            if let image = ImageManager.shared.loadRegisteredImageCached(named: name) {
                 ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
             }
         } else if let item = item,
@@ -651,7 +651,6 @@ extension CharacterWindow {
 
     func showHighlightBorder() {
         guard let contentView = window.contentView else { return }
-        contentView.wantsLayer = true
         contentView.layer?.borderWidth = Self.highlightBorderWidth
         contentView.layer?.borderColor = NSColor.systemBlue.cgColor
     }
@@ -818,7 +817,22 @@ extension CharacterWindow {
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
         guard let data = context.data else { return false }
         let ptr = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
-        let totalBytes = width * height * 4
-        return stride(from: 3, to: totalBytes, by: 4).contains { ptr[$0] < 255 }
+        let rowStride = width * 4
+        let interval = AppConstants.alphaCheckRowSampleInterval
+        // First pass: sample every N-th row for a fast check
+        for row in stride(from: 0, to: height, by: interval) {
+            let rowStart = row * rowStride
+            if stride(from: 3, to: rowStride, by: 4).contains(where: { ptr[rowStart + $0] < 255 }) {
+                return true
+            }
+        }
+        // Second pass: scan all remaining (non-sampled) rows
+        for row in 0..<height where row % interval != 0 {
+            let rowStart = row * rowStride
+            if stride(from: 3, to: rowStride, by: 4).contains(where: { ptr[rowStart + $0] < 255 }) {
+                return true
+            }
+        }
+        return false
     }
 }

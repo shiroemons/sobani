@@ -406,6 +406,42 @@ import Testing
         #expect(afterNames.contains("nsimage_cache.png"))
     }
 
+    // MARK: - Incremental Cache Update Tests
+
+    /// 画像登録後にキャッシュへ追加され一覧に反映されることを検証
+    @Test func testInsertIntoCacheAddsName() throws {
+        let sourceDir = try createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
+
+        // Populate cache first
+        let before = imageManager.registeredImageNames()
+        #expect(before.isEmpty)
+
+        let sourceURL = try createTestImageFile(named: "insert_cache_test.png", in: sourceDir)
+        imageManager.registerImage(from: sourceURL)
+
+        let after = imageManager.registeredImageNames()
+        #expect(after.contains("insert_cache_test.png"))
+    }
+
+    /// 画像削除後にキャッシュから除去され一覧に反映されることを検証
+    @Test func testRemoveFromCacheRemovesName() throws {
+        let sourceDir = try createSourceDirectory()
+        defer { try? FileManager.default.removeItem(at: sourceDir) }
+
+        let sourceURL = try createTestImageFile(named: "remove_cache_test.png", in: sourceDir)
+        imageManager.registerImage(from: sourceURL)
+
+        // Ensure cache is populated
+        let before = imageManager.registeredImageNames()
+        #expect(before.contains("remove_cache_test.png"))
+
+        imageManager.removeRegisteredImage(named: "remove_cache_test.png")
+
+        let after = imageManager.registeredImageNames()
+        #expect(!after.contains("remove_cache_test.png"))
+    }
+
     // MARK: - supportedExtensions Tests
 
     /// supportedExtensionsが全サポート形式を含むことを検証

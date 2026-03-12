@@ -30,24 +30,9 @@ final class LayoutPresetManager {
         AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
-    private var layoutsDirectoryCreated = false
-
     var layoutsDirectoryURL: URL? {
         guard let appDir = appSupportURL else { return nil }
-        let layoutsDir = appDir.appendingPathComponent("layouts")
-        if !layoutsDirectoryCreated {
-            let fm = FileManager.default
-            if !fm.fileExists(atPath: layoutsDir.path) {
-                do {
-                    try fm.createDirectory(at: layoutsDir, withIntermediateDirectories: true)
-                } catch {
-                    logger.error("Failed to create layouts directory: \(error.localizedDescription)")
-                    return layoutsDir
-                }
-            }
-            layoutsDirectoryCreated = true
-        }
-        return layoutsDir
+        return AppSupportDirectory.ensureSubdirectory("layouts", in: appDir, logger: logger)
     }
 
     private func sanitizedFileName(for name: String) -> String {
@@ -63,16 +48,10 @@ final class LayoutPresetManager {
     func savePreset(name: String, states: [WindowState]) {
         guard let url = presetFileURL(for: name) else { return }
         let preset = LayoutPreset(name: name, createdAt: Date(), states: states)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        encoder.dateEncodingStrategy = .iso8601
-        do {
-            let data = try encoder.encode(preset)
-            try data.write(to: url, options: .atomic)
-            cachedPresets = nil
-        } catch {
-            logger.error("Failed to save layout preset: \(error.localizedDescription)")
+        JSONPersistence.save(preset, to: url, logger: logger, errorMessage: "Failed to save layout preset") {
+            $0.dateEncodingStrategy = .iso8601
         }
+        cachedPresets = nil
     }
 
     func loadPresets() -> [LayoutPreset] {
@@ -82,17 +61,17 @@ final class LayoutPresetManager {
         guard let layoutsDir = layoutsDirectoryURL else { return [] }
         let fm = FileManager.default
         let files = (try? fm.contentsOfDirectory(atPath: layoutsDir.path)) ?? []
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
         var presets: [LayoutPreset] = []
         for file in files where file.hasSuffix(".json") {
             let url = layoutsDir.appendingPathComponent(file)
-            do {
-                let data = try Data(contentsOf: url)
-                let preset = try decoder.decode(LayoutPreset.self, from: data)
+            if let preset = JSONPersistence.load(
+                LayoutPreset.self,
+                from: url,
+                logger: logger,
+                errorMessage: "Skipping invalid layout file \(file)",
+                configure: { $0.dateDecodingStrategy = .iso8601 }
+            ) {
                 presets.append(preset)
-            } catch {
-                logger.warning("Skipping invalid layout file \(file): \(error.localizedDescription)")
             }
         }
         let result = presets.sorted { $0.createdAt > $1.createdAt }
@@ -102,15 +81,13 @@ final class LayoutPresetManager {
 
     func loadPreset(named name: String) -> LayoutPreset? {
         guard let url = presetFileURL(for: name) else { return nil }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        do {
-            let data = try Data(contentsOf: url)
-            return try decoder.decode(LayoutPreset.self, from: data)
-        } catch {
-            logger.error("Failed to load layout preset '\(name)': \(error.localizedDescription)")
-            return nil
-        }
+        return JSONPersistence.load(
+            LayoutPreset.self,
+            from: url,
+            logger: logger,
+            errorMessage: "Failed to load layout preset '\(name)'",
+            configure: { $0.dateDecodingStrategy = .iso8601 }
+        )
     }
 
     func deletePreset(named name: String) {

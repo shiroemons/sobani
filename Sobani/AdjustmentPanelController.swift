@@ -434,12 +434,14 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     // MARK: - Existing Update Methods
 
     func updateAngle(_ angle: CGFloat) {
+        guard abs(currentAngle - angle) >= AppConstants.floatingPointTolerance else { return }
         currentAngle = angle
         dialView?.angle = angle
         textField?.stringValue = Self.formatAngle(angle)
     }
 
     func updateOpacity(_ opacity: CGFloat) {
+        guard abs(currentOpacity - opacity) >= AppConstants.floatingPointTolerance else { return }
         currentOpacity = opacity
         opacitySlider?.doubleValue = Double(opacity)
         opacityLabel?.stringValue = Self.formatOpacity(opacity)

@@ -273,14 +273,19 @@ extension AppDelegate {
         ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
     }
 
+    /// 現在接続されているスクリーンの displayID とフレームのリストを返す
+    private var currentAvailableScreens: [(displayID: UInt32, frame: NSRect)] {
+        NSScreen.screens.compactMap { screen -> (displayID: UInt32, frame: NSRect)? in
+            guard let did = screen.displayID else { return nil }
+            return (displayID: did, frame: screen.frame)
+        }
+    }
+
     /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
     private func findTargetScreen(displayID: CGDirectDisplayID?, windowId: Int) -> NSScreen? {
         guard let savedID = displayID else { return nil }
         let savedFrame = wakeContext.screenFrames[savedID]
-        let availableScreens = NSScreen.screens.compactMap { screen -> (displayID: UInt32, frame: NSRect)? in
-            guard let did = screen.displayID else { return nil }
-            return (displayID: did, frame: screen.frame)
-        }
+        let availableScreens = currentAvailableScreens
         guard let result = ScreenRestorationUtils.findTargetScreen(
             savedDisplayID: savedID,
             savedScreenFrame: savedFrame,
@@ -296,10 +301,7 @@ extension AppDelegate {
             x: entry.originalState.originX, y: entry.originalState.originY,
             width: entry.originalState.width, height: entry.originalState.height
         )
-        let availableScreens = NSScreen.screens.compactMap { screen -> (displayID: UInt32, frame: NSRect)? in
-            guard let did = screen.displayID else { return nil }
-            return (displayID: did, frame: screen.frame)
-        }
+        let availableScreens = currentAvailableScreens
         let search = ScreenRestorationUtils.PendingScreenSearch(
             displayID: entry.displayID,
             savedScreenFrame: entry.preSleepScreenFrame,

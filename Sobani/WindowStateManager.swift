@@ -118,41 +118,18 @@ final class WindowStateManager {
 
     func saveStates(_ states: [WindowState]) {
         guard let url = statesFileURL else { return }
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        do {
-            let data = try encoder.encode(states)
-            try data.write(to: url, options: .atomic)
-        } catch {
-            logger.error(
-                "Failed to save window states: \(error.localizedDescription)"
-            )
-        }
+        JSONPersistence.save(states, to: url, logger: logger, errorMessage: "Failed to save window states")
     }
 
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
-        let data: Data
-        do {
-            data = try Data(contentsOf: url)
-        } catch {
-            logger.debug(
-                "No saved states found: \(error.localizedDescription)"
-            )
-            return []
-        }
-        var states: [WindowState]
-        do {
-            states = try JSONDecoder().decode(
-                [WindowState].self,
-                from: data
-            )
-        } catch {
-            logger.error(
-                "Failed to decode window states: \(error.localizedDescription)"
-            )
-            return []
-        }
+        guard var states = JSONPersistence.load(
+            [WindowState].self,
+            from: url,
+            logger: logger,
+            notFoundMessage: "No saved states found",
+            errorMessage: "Failed to decode window states"
+        ) else { return [] }
         // Backward compatibility: normalize legacy "デフォルト" to internal constant
         // Introduced: v202502.0 — Can be removed after sufficient migration period (e.g. v202602.0+)
         states = states.map { state in
