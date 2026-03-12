@@ -37,16 +37,6 @@ extension AppDelegate {
             currentId += 1
         }
 
-        // 新しく割り当てたIDも含めた最大値を基にnextIdを決定
-        let allIds = existingIds.enumerated().map { index, originalId in
-            if let assignment = assignments.first(where: { $0.oldIndex == index }) {
-                return assignment.newId
-            }
-            return originalId
-        }
-        let finalMaxId = allIds.max() ?? 0
-        let nextId = finalMaxId + 1
-
-        return (assignments, nextId)
+        return (assignments, currentId)
     }
 }

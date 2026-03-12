@@ -149,6 +149,7 @@ extension AppDelegate {
     private func restoreAllPreSleepWindows() -> Bool {
         // 注意: wakeContext.states から個別に除去しない。macOS はモニタ復帰時に
         // 全ウィンドウを再配置するため、リトライ毎に全ウィンドウを再復元する必要がある。
+        let availableScreens = currentAvailableScreens
         var restoredAll = true
 
         for charWindow in characterWindows {
@@ -156,14 +157,14 @@ extension AppDelegate {
             guard let savedOrigin = wakeContext.windowOrigins[charWindow.windowId] else { continue }
 
             let savedDisplayID = wakeContext.displayIDs[charWindow.windowId]
-            let targetScreen = findTargetScreen(displayID: savedDisplayID, windowId: charWindow.windowId)
+            let targetScreen = findTargetScreen(displayID: savedDisplayID, windowId: charWindow.windowId, availableScreens: availableScreens)
 
             if let screen = targetScreen {
                 let newOrigin = computeRestoredOrigin(
                     savedOrigin: savedOrigin, savedDisplayID: savedDisplayID, currentScreen: screen
                 )
                 let windowSize = charWindow.window.frame.size
-                let clamped = clampOrigin(newOrigin, windowSize: windowSize, to: screen.frame)
+                let clamped = ScreenRestorationUtils.clampOrigin(newOrigin, windowSize: windowSize, to: screen.frame)
                 charWindow.window.setFrameOrigin(clamped)
                 let wid = charWindow.windowId
                 let screenFrame = screen.frame
@@ -199,9 +200,10 @@ extension AppDelegate {
 
     /// 未復元ウィンドウをペンディングキューに移行
     private func moveUnrestoredToPendingQueue() {
+        let availableScreens = currentAvailableScreens
         for windowId in wakeContext.states.keys {
             let savedDisplayID = wakeContext.displayIDs[windowId]
-            guard findTargetScreen(displayID: savedDisplayID, windowId: windowId) == nil else { continue }
+            guard findTargetScreen(displayID: savedDisplayID, windowId: windowId, availableScreens: availableScreens) == nil else { continue }
             guard let savedState = wakeContext.states[windowId] else { continue }
 
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
@@ -248,6 +250,7 @@ extension AppDelegate {
         }
 
         // フェーズ2: モニター再接続後の復元（ペンディングキュー）
+        let pendingAvailableScreens = currentAvailableScreens
         let restorable = screenRestorationManager.restorableEntries()
         for entry in restorable {
             guard let charWindow = characterWindows.first(where: { $0.windowId == entry.windowId }) else {
@@ -255,7 +258,7 @@ extension AppDelegate {
                 continue
             }
             // 対象モニタが見つかったら無条件でクランプ位置に復元
-            let targetScreen = findTargetScreenForPending(entry)
+            let targetScreen = findTargetScreenForPending(entry, availableScreens: pendingAvailableScreens)
             if let screen = targetScreen {
                 let windowSize = charWindow.window.frame.size
                 let origin = NSPoint(x: entry.originalState.originX, y: entry.originalState.originY)
@@ -268,11 +271,6 @@ extension AppDelegate {
 
     // MARK: - Private Helpers
 
-    /// ウィンドウ原点をスクリーン内にクランプ
-    private func clampOrigin(_ origin: NSPoint, windowSize: NSSize, to screenFrame: NSRect) -> NSPoint {
-        ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
-    }
-
     /// 現在接続されているスクリーンの displayID とフレームのリストを返す
     private var currentAvailableScreens: [(displayID: UInt32, frame: NSRect)] {
         NSScreen.screens.compactMap { screen -> (displayID: UInt32, frame: NSRect)? in
@@ -282,10 +280,9 @@ extension AppDelegate {
     }
 
     /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
-    private func findTargetScreen(displayID: CGDirectDisplayID?, windowId: Int) -> NSScreen? {
+    private func findTargetScreen(displayID: CGDirectDisplayID?, windowId: Int, availableScreens: [(displayID: UInt32, frame: NSRect)]) -> NSScreen? {
         guard let savedID = displayID else { return nil }
         let savedFrame = wakeContext.screenFrames[savedID]
-        let availableScreens = currentAvailableScreens
         guard let result = ScreenRestorationUtils.findTargetScreen(
             savedDisplayID: savedID,
             savedScreenFrame: savedFrame,
@@ -296,12 +293,11 @@ extension AppDelegate {
     }
 
     /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置を含むスクリーン
-    private func findTargetScreenForPending(_ entry: PendingRestoration) -> NSScreen? {
+    private func findTargetScreenForPending(_ entry: PendingRestoration, availableScreens: [(displayID: UInt32, frame: NSRect)]) -> NSScreen? {
         let originalRect = NSRect(
             x: entry.originalState.originX, y: entry.originalState.originY,
             width: entry.originalState.width, height: entry.originalState.height
         )
-        let availableScreens = currentAvailableScreens
         let search = ScreenRestorationUtils.PendingScreenSearch(
             displayID: entry.displayID,
             savedScreenFrame: entry.preSleepScreenFrame,

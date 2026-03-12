@@ -392,21 +392,19 @@ final class UpdateManager: @unchecked Sendable {
     /// 形式: "<sha256hex>  <filename>" (複数行対応)
     static func parseChecksumLine(_ text: String, forAsset assetName: String) -> String? {
         guard !text.isEmpty else { return nil }
-        let lines = text.components(separatedBy: .newlines)
-        let matchedChecksum = lines
-            .compactMap { line -> String? in
-                let parts = line.split(separator: " ", omittingEmptySubsequences: true)
-                guard parts.count >= 2, String(parts[1]) == assetName else { return nil }
-                return String(parts[0])
+        var fallbackChecksum: String?
+        for line in text.components(separatedBy: .newlines) {
+            let parts = line.split(separator: " ", omittingEmptySubsequences: true)
+            guard !parts.isEmpty else { continue }
+            let checksum = String(parts[0])
+            if parts.count >= 2, String(parts[1]) == assetName {
+                return checksum
             }
-            .first
-        return matchedChecksum ?? lines
-            .compactMap { line -> String? in
-                let parts = line.split(separator: " ", omittingEmptySubsequences: true)
-                guard parts.count >= 1 else { return nil }
-                return String(parts[0])
+            if fallbackChecksum == nil {
+                fallbackChecksum = checksum
             }
-            .first
+        }
+        return fallbackChecksum
     }
 
     // MARK: - Restart App

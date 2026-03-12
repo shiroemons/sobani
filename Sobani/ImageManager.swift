@@ -23,8 +23,10 @@ final class ImageManager {
     }
 
     private func insertIntoCache(_ name: String) {
-        cachedImageNames?.append(name)
-        cachedImageNames?.sort()
+        guard var names = cachedImageNames else { return }
+        let index = names.firstIndex(where: { $0 >= name }) ?? names.count
+        names.insert(name, at: index)
+        cachedImageNames = names
     }
 
     private func removeFromCache(_ name: String) {

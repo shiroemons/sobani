@@ -116,13 +116,17 @@ final class LayoutPresetManager {
             $0.dateEncodingStrategy = .iso8601
         }
         guard FileManager.default.fileExists(atPath: newURL.path) else { return false }
-        cachedPresets = nil
         // Only delete old file if sanitized file names differ
         let oldFileName = sanitizedFileName(for: oldName)
         let newFileName = sanitizedFileName(for: newName)
         if oldFileName != newFileName {
-            deletePreset(named: oldName)
+            guard let oldURL = presetFileURL(for: oldName) else {
+                cachedPresets = nil
+                return true
+            }
+            try? FileManager.default.removeItem(at: oldURL)
         }
+        cachedPresets = nil
         return true
     }
 }

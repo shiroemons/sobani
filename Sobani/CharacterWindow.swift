@@ -617,14 +617,14 @@ extension CharacterWindow {
 // MARK: - CharacterWindow + Menu Title Update
 
 extension CharacterWindow {
-    nonisolated(unsafe) private static let menuTitleMap: [Int: String] = [
-        MenuItemTag.changeImageSubmenu.rawValue: "image.change",
-        MenuItemTag.flipContext.rawValue: "adjust.flip",
-        MenuItemTag.adjustPanelContext.rawValue: "adjust.open",
-        MenuItemTag.addNewWindowSubmenu.rawValue: "image.add_display",
-        MenuItemTag.otherSubmenu.rawValue: "menu.other",
-        MenuItemTag.close.rawValue: "menu.close_image",
-        MenuItemTag.quit.rawValue: "menu.quit"
+    nonisolated(unsafe) private static let menuTitleMap: [MenuItemTag: String] = [
+        .changeImageSubmenu: "image.change",
+        .flipContext: "adjust.flip",
+        .adjustPanelContext: "adjust.open",
+        .addNewWindowSubmenu: "image.add_display",
+        .otherSubmenu: "menu.other",
+        .close: "menu.close_image",
+        .quit: "menu.quit"
     ]
 
     var localizedDisplayName: String {
@@ -727,7 +727,8 @@ extension CharacterWindow {
 
     /// メニュータグに対応するローカライズキーを返す（該当なしならnil）
     nonisolated static func menuTitleLocalizationKey(forTag tag: Int) -> String? {
-        return menuTitleMap[tag]
+        guard let menuTag = MenuItemTag(rawValue: tag) else { return nil }
+        return menuTitleMap[menuTag]
     }
 }
 
