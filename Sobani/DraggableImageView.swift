@@ -72,7 +72,7 @@ final class DraggableImageView: NSImageView {
         isSnapEnabled = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
         dragStartLocation = NSEvent.mouseLocation
 
-        if isSnapEnabled, !isDraggingAll, let currentWindow = window {
+        if !isDraggingAll, let currentWindow = window {
             let allWindows = allCharacterWindows
             cachedOtherWindowFrames = allWindows
                 .filter { $0.window !== currentWindow }
@@ -103,9 +103,7 @@ final class DraggableImageView: NSImageView {
 
             if isSnapEnabled {
                 let proposedFrame = NSRect(origin: origin, size: currentWindow.frame.size)
-                let otherFrames = cachedOtherWindowFrames ?? allCharacterWindows
-                    .filter { $0.window !== currentWindow }
-                    .map { $0.window.frame }
+                let otherFrames = cachedOtherWindowFrames ?? []
                 let screenFrame = currentWindow.screen?.visibleFrame
                     ?? cachedScreenFrames?.first
                     ?? NSScreen.main?.visibleFrame

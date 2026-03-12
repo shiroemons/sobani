@@ -97,9 +97,6 @@ enum AppConstants {
     static let opacityMin: CGFloat = 0.1
     static let opacityMax: CGFloat = 1.0
 
-    // Alpha Detection
-    static let alphaCheckRowSampleInterval = 64
-
     // Crop
     static let cropHandleSize: CGFloat = 8
     static let cropMinProportion: CGFloat = 0.1

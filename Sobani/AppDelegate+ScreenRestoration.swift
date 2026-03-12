@@ -1,13 +1,13 @@
 import Cocoa
 import os.log
 
-private let logger = Logger(category: "ScreenRestoration")
-
 // MARK: - Screen Restoration
 
 extension AppDelegate {
+    private static let screenRestorationLogger = Logger(category: "ScreenRestoration")
+
     func setupScreenRestorationObservers() {
-        logger.debug("[ScreenRestoration] observers registered, screens=\(NSScreen.screens.count, privacy: .public)")
+        Self.screenRestorationLogger.debug("[ScreenRestoration] observers registered, screens=\(NSScreen.screens.count, privacy: .public)")
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleScreenChange),
@@ -50,7 +50,7 @@ extension AppDelegate {
     @objc func handleScreenChange() {
         let isWake = wakeContext.isActive
         let count = NSScreen.screens.count
-        logger.debug(
+        Self.screenRestorationLogger.debug(
             "screenChange: isWake=\(isWake, privacy: .public), screens=\(count, privacy: .public)"
         )
         screenChangeDebounceTimer?.invalidate()
@@ -78,7 +78,7 @@ extension AppDelegate {
         screenChangeDebounceTimer?.invalidate()
 
         screenRestorationManager.clearAll()
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             let state = WindowStateManager.captureState(from: charWindow)
             wakeContext.states[charWindow.windowId] = state
             // ウィンドウフレームの原点を直接保存（captureState のイメージ中心座標変換を回避）
@@ -90,13 +90,13 @@ extension AppDelegate {
             }
         }
         let savedCount = wakeContext.states.count
-        logger.info("[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows")
+        Self.screenRestorationLogger.info("[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows")
         for (wid, origin) in wakeContext.windowOrigins {
             let did = wakeContext.displayIDs[wid] ?? AppConstants.unknownDisplayID
             let sFrame = wakeContext.screenFrames[did]
             let sFrameDesc = sFrame.debugDescription
             let originDesc = NSStringFromPoint(origin)
-            logger.debug(
+            Self.screenRestorationLogger.debug(
                 "  #\(wid, privacy: .public): origin=\(originDesc, privacy: .public), displayID=\(did, privacy: .public), sf=\(sFrameDesc, privacy: .public)"
             )
         }
@@ -104,7 +104,7 @@ extension AppDelegate {
 
     @objc func handleDidWake() {
         let restoreCount = wakeContext.states.count
-        logger.info("[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore")
+        Self.screenRestorationLogger.info("[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore")
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
         wakeContext.isActive = true
@@ -128,7 +128,7 @@ extension AppDelegate {
         wakeContext.retryCount += 1
         let retryNum = wakeContext.retryCount
         let screenInfo = NSScreen.screens.map { "\($0.frame)" }.joined(separator: ", ")
-        logger.debug(
+        Self.screenRestorationLogger.debug(
             "attempt #\(retryNum, privacy: .public): restoredAll=\(restoredAll, privacy: .public), screens=[\(screenInfo, privacy: .public)]"
         )
 
@@ -152,7 +152,7 @@ extension AppDelegate {
         let availableScreens = currentAvailableScreens
         var restoredAll = true
 
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             guard wakeContext.states[charWindow.windowId] != nil else { continue }
             guard let savedOrigin = wakeContext.windowOrigins[charWindow.windowId] else { continue }
 
@@ -174,13 +174,13 @@ extension AppDelegate {
                 let sizeDesc = NSStringFromSize(windowSize)
                 let frameDesc = NSStringFromRect(screenFrame)
                 let restoreMsg = "restore #\(wid): saved=\(savedDesc) -> \(computedDesc) -> \(clampedDesc)"
-                logger.debug("\(restoreMsg, privacy: .public)")
+                Self.screenRestorationLogger.debug("\(restoreMsg, privacy: .public)")
                 let detailMsg = "  winSize=\(sizeDesc), screen=\(frameDesc)"
-                logger.debug("\(detailMsg, privacy: .public)")
+                Self.screenRestorationLogger.debug("\(detailMsg, privacy: .public)")
             } else {
                 restoredAll = false
                 let displayIDValue = savedDisplayID ?? AppConstants.unknownDisplayID
-                logger.error(
+                Self.screenRestorationLogger.error(
                     "restore #\(charWindow.windowId, privacy: .public): screen not found (displayID=\(displayIDValue, privacy: .public))"
                 )
             }
@@ -209,7 +209,7 @@ extension AppDelegate {
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
             let adjusted = savedState.adjustedToVisibleArea(on: ScreenInfo.current())
 
-            if let charWindow = characterWindows.first(where: { $0.windowId == windowId }) {
+            if let charWindow = zOrderedWindows.first(where: { $0.windowId == windowId }) {
                 charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
             }
             screenRestorationManager.addPending(
@@ -234,7 +234,7 @@ extension AppDelegate {
         // フェーズ0: スリープなしのモニター切断対応
         // wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
         let screens = ScreenInfo.current()
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             let currentState = WindowStateManager.captureState(from: charWindow)
             guard !currentState.isPositionVisible(on: screens) else { continue }
             let adjusted = currentState.adjustedToVisibleArea(on: screens)
@@ -253,7 +253,7 @@ extension AppDelegate {
         let pendingAvailableScreens = currentAvailableScreens
         let restorable = screenRestorationManager.restorableEntries()
         for entry in restorable {
-            guard let charWindow = characterWindows.first(where: { $0.windowId == entry.windowId }) else {
+            guard let charWindow = zOrderedWindows.first(where: { $0.windowId == entry.windowId }) else {
                 screenRestorationManager.removePending(windowId: entry.windowId)
                 continue
             }

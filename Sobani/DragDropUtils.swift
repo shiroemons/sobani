@@ -18,7 +18,6 @@ enum DragDropUtils {
     }
 
     nonisolated static func isSupportedImageURL(_ url: URL) -> Bool {
-        let ext = url.pathExtension.lowercased()
-        return ImageManager.supportedExtensions.contains(ext)
+        ImageManager.isSupportedExtension(url.pathExtension)
     }
 }

@@ -34,7 +34,7 @@ extension AppDelegate {
         menu.addItem(buildNewWindowMenuItem(imageNames: imageNames))
 
         let countTitle = MenuStateUtils.formatWindowCountText(
-            count: characterWindows.count,
+            count: zOrderedWindows.count,
             isHidden: areWindowsHidden,
             showingFormat: L("status.showing_count"),
             showingLabel: L("status.showing"),
@@ -45,7 +45,7 @@ extension AppDelegate {
             action: nil,
             keyEquivalent: ""
         )
-        if !characterWindows.isEmpty {
+        if !zOrderedWindows.isEmpty {
             countItem.submenu = buildCharacterWindowsSubmenu(imageNames: imageNames)
         } else {
             countItem.isEnabled = false
@@ -59,7 +59,7 @@ extension AppDelegate {
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleAllWindowsVisibility), keyEquivalent: "h")
         toggleItem.keyEquivalentModifierMask = [.option]
         toggleItem.target = self
-        toggleItem.isEnabled = !characterWindows.isEmpty
+        toggleItem.isEnabled = !zOrderedWindows.isEmpty
         toggleItem.image = menuIcon(areWindowsHidden ? "eye" : "eye.slash")
         menu.addItem(toggleItem)
 
@@ -166,8 +166,17 @@ extension AppDelegate {
         let submenu = NSMenu()
 
         let tolerance = AppConstants.floatingPointTolerance
-        let hasRotation = characterWindows.contains { abs($0.imageView.rotationAngle) > tolerance }
-        let hasOpacity = characterWindows.contains { abs($0.imageView.opacityLevel - 1.0) > tolerance }
+        var hasRotation = false
+        var hasOpacity = false
+        for win in zOrderedWindows {
+            if !hasRotation && abs(win.imageView.rotationAngle) > tolerance {
+                hasRotation = true
+            }
+            if !hasOpacity && abs(win.imageView.opacityLevel - 1.0) > tolerance {
+                hasOpacity = true
+            }
+            if hasRotation && hasOpacity { break }
+        }
 
         let rotationItem = buildResetRotationMenuItem(hasRotation: hasRotation)
         submenu.addItem(rotationItem)
@@ -627,7 +636,7 @@ extension AppDelegate {
 
     private func refreshDefaultImageWindows() {
         guard let newDefault = ImageManager.shared.defaultImage() else { return }
-        for charWindow in characterWindows where charWindow.displayName == AppConstants.defaultImageName {
+        for charWindow in zOrderedWindows where charWindow.displayName == AppConstants.defaultImageName {
             charWindow.applyImage(newDefault)
         }
     }
@@ -642,13 +651,13 @@ extension AppDelegate {
     }
 
     @objc func resetAllRotations() {
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             charWindow.applyRotation(0)
         }
     }
 
     @objc func resetAllOpacity() {
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             charWindow.applyOpacity(1.0)
         }
     }

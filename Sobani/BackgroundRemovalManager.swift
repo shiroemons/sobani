@@ -46,9 +46,12 @@ final class BackgroundRemovalManager: @unchecked Sendable {
         qos: .userInitiated
     )
 
-    private let ciContext = CIContext()
+    private let ciContext: CIContext
 
-    init() {}
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
+    init(ciContext: CIContext = CIContext()) {
+        self.ciContext = ciContext
+    }
 
     func removeBackground(
         from image: NSImage,

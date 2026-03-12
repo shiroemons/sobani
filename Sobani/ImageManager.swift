@@ -8,14 +8,19 @@ final class ImageManager {
     private let logger = Logger(category: "ImageManager")
     static let shared = ImageManager()
     nonisolated static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
+
+    nonisolated static func isSupportedExtension(_ ext: String) -> Bool {
+        supportedExtensions.contains(ext.lowercased())
+    }
+
     private let baseDirectory: URL?
     private var cachedImageNames: [String]?
     private var previewImageCache: [String: (image: NSImage, lastAccess: Date)] = [:]
     private static let previewCacheCountLimit = 20
     private var cachedDefaultImage: NSImage?
 
-    let appSupportURL: URL?
-    let imagesDirectoryURL: URL?
+    private let appSupportURL: URL?
+    private let imagesDirectoryURL: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
@@ -47,11 +52,10 @@ final class ImageManager {
         guard let imagesDir = imagesDirectoryURL else { return [] }
         let fm = FileManager.default
         let files = (try? fm.contentsOfDirectory(atPath: imagesDir.path)) ?? []
-        let imageExtensions = Self.supportedExtensions
         let result = files
             .filter { name in
-                let ext = URL(fileURLWithPath: name).pathExtension.lowercased()
-                return imageExtensions.contains(ext)
+                let ext = URL(fileURLWithPath: name).pathExtension
+                return Self.isSupportedExtension(ext)
             }
             .sorted()
         cachedImageNames = result
@@ -85,8 +89,7 @@ final class ImageManager {
     @discardableResult
     func registerImage(from url: URL) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
-        let ext = url.pathExtension.lowercased()
-        guard Self.supportedExtensions.contains(ext) else { return nil }
+        guard Self.isSupportedExtension(url.pathExtension) else { return nil }
         guard let name = PathSanitizer.safeName(from: url.lastPathComponent) else { return nil }
         let destURL = imagesDir.appendingPathComponent(name)
         let fm = FileManager.default

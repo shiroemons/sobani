@@ -57,7 +57,7 @@ extension AppDelegate {
         )
         saveItem.target = self
         saveItem.tag = MenuItemTag.saveLayout.rawValue
-        saveItem.isEnabled = !characterWindows.isEmpty
+        saveItem.isEnabled = !zOrderedWindows.isEmpty
         saveItem.image = menuIcon("square.and.arrow.down")
         submenu.addItem(saveItem)
 
@@ -96,7 +96,7 @@ extension AppDelegate {
                 title: L("layout.update"), tag: .updateLayout,
                 action: #selector(updateLayoutFromMenu(_:)), presets: presets
             )
-            updateItem.isEnabled = !characterWindows.isEmpty
+            updateItem.isEnabled = !zOrderedWindows.isEmpty
             updateItem.image = menuIcon("arrow.triangle.2.circlepath")
             submenu.addItem(updateItem)
 

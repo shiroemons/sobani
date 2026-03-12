@@ -7,10 +7,8 @@ import os.log
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
     private let logger = Logger(category: "AppDelegate")
-    /// Z順（前面→背面）でウィンドウを管理する単一配列。characterWindows は computed alias。
+    /// Z順（前面→背面）でウィンドウを管理する単一配列。
     var zOrderedWindows: [CharacterWindow] = []
-    /// zOrderedWindows への computed alias。後方互換性のために提供。
-    var characterWindows: [CharacterWindow] { zOrderedWindows }
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     var areWindowsHidden = false
@@ -105,21 +103,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     @objc func bringAllToFront() {
         areWindowsHidden = false
         NSApp.activate(ignoringOtherApps: true)
-        for charWindow in characterWindows {
+        for charWindow in zOrderedWindows {
             charWindow.window.orderFront(nil)
         }
         applyZOrderToWindows()
     }
 
     @objc func toggleAllWindowsVisibility() {
-        guard !characterWindows.isEmpty else { return }
+        guard !zOrderedWindows.isEmpty else { return }
         if areWindowsHidden {
-            for charWindow in characterWindows {
+            for charWindow in zOrderedWindows {
                 charWindow.window.orderFront(nil)
             }
             applyZOrderToWindows()
         } else {
-            for charWindow in characterWindows {
+            for charWindow in zOrderedWindows {
                 charWindow.window.orderOut(nil)
             }
         }
@@ -170,7 +168,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
 
     /// windowNumber から CharacterWindow を検索
     func characterWindow(forWindowNumber number: Int) -> CharacterWindow? {
-        return characterWindows.first { $0.window.windowNumber == number }
+        return zOrderedWindows.first { $0.window.windowNumber == number }
     }
 
     func moveWindowToFront(_ charWindow: CharacterWindow) {
@@ -206,7 +204,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     func quitIfNoWindows() {
-        if Self.shouldQuitApp(windowCount: characterWindows.count, isApplyingLayout: isApplyingLayout) {
+        if Self.shouldQuitApp(windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout) {
             shouldTerminate = true
             NSApp.terminate(nil)
         }
@@ -249,7 +247,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
             areWindowsHidden = false
-            for charWindow in characterWindows {
+            for charWindow in zOrderedWindows {
                 charWindow.window.orderFront(nil)
             }
         }
@@ -278,7 +276,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
 
     // MARK: CharacterWindowDelegate
 
-    var allCharacterWindows: [CharacterWindow] { characterWindows }
+    var allCharacterWindows: [CharacterWindow] { zOrderedWindows }
 
     func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?) {
         createNewWindow(imageName: imageName)
@@ -292,7 +290,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
 
     func characterWindowDidClose(_ sender: CharacterWindow) {
         removeCharacterWindow(sender)
-        if characterWindows.isEmpty {
+        if zOrderedWindows.isEmpty {
             areWindowsHidden = false
         }
         quitIfNoWindows()
@@ -304,7 +302,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
 
     func characterWindowDidDeleteImage(named name: String) {
         guard let defaultImage = ImageManager.shared.defaultImage() else { return }
-        for charWindow in characterWindows where charWindow.displayName == name {
+        for charWindow in zOrderedWindows where charWindow.displayName == name {
             charWindow.displayName = AppConstants.defaultImageName
             charWindow.applyImage(defaultImage)
         }

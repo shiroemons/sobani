@@ -794,22 +794,7 @@ extension CharacterWindow {
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
         guard let data = context.data else { return false }
         let ptr = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
-        let rowStride = width * 4
-        let interval = AppConstants.alphaCheckRowSampleInterval
-        // First pass: sample every N-th row for a fast check
-        for row in stride(from: 0, to: height, by: interval) {
-            let rowStart = row * rowStride
-            if stride(from: 3, to: rowStride, by: 4).contains(where: { ptr[rowStart + $0] < 255 }) {
-                return true
-            }
-        }
-        // Second pass: scan all remaining (non-sampled) rows
-        for row in 0..<height where row % interval != 0 {
-            let rowStart = row * rowStride
-            if stride(from: 3, to: rowStride, by: 4).contains(where: { ptr[rowStart + $0] < 255 }) {
-                return true
-            }
-        }
-        return false
+        let totalBytes = width * height * 4
+        return stride(from: 3, to: totalBytes, by: 4).contains { ptr[$0] < 255 }
     }
 }
