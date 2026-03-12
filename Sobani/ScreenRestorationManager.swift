@@ -114,10 +114,7 @@ final class ScreenRestorationManager {
                 if let savedFrame = entry.preSleepScreenFrame {
                     let tol = AppConstants.screenMatchTolerance
                     return screens.contains { screen in
-                        abs(screen.frame.origin.x - savedFrame.origin.x) <= tol
-                            && abs(screen.frame.origin.y - savedFrame.origin.y) <= tol
-                            && abs(screen.frame.size.width - savedFrame.size.width) <= tol
-                            && abs(screen.frame.size.height - savedFrame.size.height) <= tol
+                        ScreenRestorationUtils.isFrameMatch(screen.frame, savedFrame, tolerance: tol)
                     }
                 }
                 return false

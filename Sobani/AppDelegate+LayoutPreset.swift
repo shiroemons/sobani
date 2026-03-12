@@ -1,4 +1,7 @@
 import Cocoa
+import os.log
+
+private let layoutPresetLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LayoutPreset")
 
 // MARK: - AppDelegate + Layout Preset
 
@@ -15,6 +18,11 @@ extension AppDelegate {
         zOrderedWindows.removeAll { $0 === window }
     }
 
+    /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする
+    func captureCurrentWindowStates() -> [WindowState] {
+        Array(getZOrderedCharacterWindows().reversed()).map { WindowStateManager.captureState(from: $0) }
+    }
+
     func applyLayout(_ preset: LayoutPreset) {
         isApplyingLayout = true
         areWindowsHidden = false
@@ -26,18 +34,18 @@ extension AppDelegate {
         zOrderedWindows.removeAll()
 
         for state in preset.states {
+            let registeredImage = ImageManager.shared.loadRegisteredImage(named: state.imageName)
+            let resolved = Self.resolveImageName(
+                state.imageName,
+                defaultImageName: AppConstants.defaultImageName,
+                registeredImageExists: registeredImage != nil
+            )
+            let resolvedDisplayName = resolved.resolvedName
             let image: NSImage
-            let resolvedDisplayName: String
-
-            if state.imageName == AppConstants.defaultImageName {
+            if resolved.isDefault {
                 image = ImageManager.shared.defaultImage() ?? NSImage()
-                resolvedDisplayName = AppConstants.defaultImageName
-            } else if let registered = ImageManager.shared.loadRegisteredImage(named: state.imageName) {
-                image = registered
-                resolvedDisplayName = state.imageName
             } else {
-                image = ImageManager.shared.defaultImage() ?? NSImage()
-                resolvedDisplayName = AppConstants.defaultImageName
+                image = registeredImage ?? NSImage()
             }
 
             let charWindow = CharacterWindow(image: image)
@@ -144,18 +152,9 @@ extension AppDelegate {
         let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
 
-        if LayoutPresetManager.shared.presetExists(named: name) {
-            let overwriteAlert = AlertFactory.confirmation(
-                messageText: L("layout.overwrite_title"),
-                informativeText: String(format: L("layout.overwrite_message"), name),
-                okTitle: L("layout.overwrite_button"),
-                cancelTitle: L("quit.cancel")
-            )
-            guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
-        }
+        guard confirmOverwriteIfNeeded(name: name) else { return }
 
-        let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
-        let states = sortedWindows.map { WindowStateManager.captureState(from: $0) }
+        let states = captureCurrentWindowStates()
         LayoutPresetManager.shared.savePreset(name: name, states: states)
     }
 
@@ -173,15 +172,7 @@ extension AppDelegate {
         let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
 
-        if LayoutPresetManager.shared.presetExists(named: name) {
-            let overwriteAlert = AlertFactory.confirmation(
-                messageText: L("layout.overwrite_title"),
-                informativeText: String(format: L("layout.overwrite_message"), name),
-                okTitle: L("layout.overwrite_button"),
-                cancelTitle: L("quit.cancel")
-            )
-            guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
-        }
+        guard confirmOverwriteIfNeeded(name: name) else { return }
 
         let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
         let defaultState = WindowState(
@@ -216,8 +207,7 @@ extension AppDelegate {
         )
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
-        let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
-        let states = sortedWindows.map { WindowStateManager.captureState(from: $0) }
+        let states = captureCurrentWindowStates()
         LayoutPresetManager.shared.savePreset(name: name, states: states)
     }
 
@@ -253,17 +243,11 @@ extension AppDelegate {
         guard !newName.isEmpty else { return }
         guard newName != name else { return }
 
-        if LayoutPresetManager.shared.presetExists(named: newName) {
-            let overwriteAlert = AlertFactory.confirmation(
-                messageText: L("layout.overwrite_title"),
-                informativeText: String(format: L("layout.overwrite_message"), newName),
-                okTitle: L("layout.overwrite_button"),
-                cancelTitle: L("quit.cancel")
-            )
-            guard overwriteAlert.runModal() == .alertFirstButtonReturn else { return }
-        }
+        guard confirmOverwriteIfNeeded(name: newName) else { return }
 
-        _ = LayoutPresetManager.shared.renamePreset(from: name, to: newName)
+        if !LayoutPresetManager.shared.renamePreset(from: name, to: newName) {
+            layoutPresetLogger.warning("renamePreset failed: '\(name, privacy: .public)' -> '\(newName, privacy: .public)'")
+        }
     }
 
     private func buildLayoutPresetSubmenu(
@@ -293,6 +277,19 @@ extension AppDelegate {
         textField.placeholderString = L("layout.name_placeholder")
         alert.accessoryView = textField
         return textField
+    }
+
+    /// 指定された名前のプリセットが既に存在する場合、上書き確認ダイアログを表示する。
+    /// - Returns: 上書きOK（または存在しない）の場合は true、キャンセルの場合は false
+    private func confirmOverwriteIfNeeded(name: String) -> Bool {
+        guard LayoutPresetManager.shared.presetExists(named: name) else { return true }
+        let overwriteAlert = AlertFactory.confirmation(
+            messageText: L("layout.overwrite_title"),
+            informativeText: String(format: L("layout.overwrite_message"), name),
+            okTitle: L("layout.overwrite_button"),
+            cancelTitle: L("quit.cancel")
+        )
+        return overwriteAlert.runModal() == .alertFirstButtonReturn
     }
 
 }

@@ -162,7 +162,7 @@ import Testing
 
     /// FloatingMenu関連定数が正しい値であることを検証
     @Test func appConstants_floatingMenuValues() {
-        #expect(abs(AppConstants.floatingMenuButtonSize - 32) < AppConstants.floatingPointTolerance)
+        #expect(abs(AppConstants.floatingMenuButtonSize - 36) < AppConstants.floatingPointTolerance)
         #expect(abs(AppConstants.floatingMenuPadding - 8) < AppConstants.floatingPointTolerance)
         #expect(abs(AppConstants.floatingMenuGap - 4) < AppConstants.floatingPointTolerance)
         #expect(abs(AppConstants.floatingMenuCornerRadius - 10) < AppConstants.floatingPointTolerance)

@@ -342,8 +342,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        let sortedWindows = Array(getZOrderedCharacterWindows().reversed())
-        let states = sortedWindows.map { WindowStateManager.captureState(from: $0) }
+        let states = captureCurrentWindowStates()
         WindowStateManager.shared.saveStates(states)
         screenRestorationManager.savePending()
 

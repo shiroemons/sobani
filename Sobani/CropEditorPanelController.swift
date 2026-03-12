@@ -100,9 +100,6 @@ final class CropEditorPanelController: NSObject {
         toolbar.onAspectRatioSelected = { [weak self] preset in
             self?.handleAspectRatioSelected(preset)
         }
-        toolbar.onModeChanged = { [weak self] mode in
-            self?.handleModeChanged(mode)
-        }
         toolbar.onSliderDragEnded = { [weak self] in
             self?.recordCurrentState()
         }
@@ -307,10 +304,6 @@ extension CropEditorPanelController {
         currentCropRect = updated
         canvasView?.cropRect = currentCropRect
         updateRevertButtonVisibility()
-    }
-
-    private func handleModeChanged(_ mode: StraightenMode) {
-        // モード切り替え時はキャンバスの再描画不要（角度は変更しない）
     }
 
     private func handleRotate90() {

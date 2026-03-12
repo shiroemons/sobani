@@ -49,6 +49,8 @@ final class BackgroundRemovalManager: @unchecked Sendable {
         qos: .userInitiated
     )
 
+    private let ciContext = CIContext()
+
     init() {}
 
     func removeBackground(
@@ -107,8 +109,7 @@ final class BackgroundRemovalManager: @unchecked Sendable {
             throw BackgroundRemovalError.filterOutputFailed
         }
 
-        let context = CIContext()
-        guard let outputCGImage = context.createCGImage(outputCIImage, from: inputCIImage.extent) else {
+        guard let outputCGImage = ciContext.createCGImage(outputCIImage, from: inputCIImage.extent) else {
             throw BackgroundRemovalError.finalImageConversionFailed
         }
 

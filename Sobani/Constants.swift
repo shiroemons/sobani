@@ -22,7 +22,7 @@ struct ScreenInfo: Sendable {
         NSScreen.screens.map { screen in
             Self(
                 frame: screen.frame,
-                displayID: (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
+                displayID: (screen.deviceDescription[AppConstants.screenNumberKey]
                     as? CGDirectDisplayID) ?? 0,
                 isMain: screen == NSScreen.main
             )
@@ -72,6 +72,7 @@ enum AppConstants {
 
     // Display ID
     static let unknownDisplayID: CGDirectDisplayID = 0
+    static let screenNumberKey = NSDeviceDescriptionKey("NSScreenNumber")
 
     // Status Bar
     static let statusBarIconSize: CGFloat = 18
@@ -143,7 +144,8 @@ enum AppConstants {
     static let snapEnabledKey = "windowSnapEnabled"
 
     // Floating Menu
-    static let floatingMenuButtonSize: CGFloat = 32
+    static let floatingMenuButtonSize: CGFloat = 36
+    static let floatingMenuColumnWidth: CGFloat = 50
     static let floatingMenuPadding: CGFloat = 8
     static let floatingMenuGap: CGFloat = 4
     static let floatingMenuCornerRadius: CGFloat = 10

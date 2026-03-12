@@ -27,16 +27,22 @@ final class ImageManager {
         AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
+    private var imagesDirectoryCreated = false
+
     var imagesDirectoryURL: URL? {
         guard let appDir = appSupportURL else { return nil }
         let imagesDir = appDir.appendingPathComponent("images")
-        let fm = FileManager.default
-        if !fm.fileExists(atPath: imagesDir.path) {
-            do {
-                try fm.createDirectory(at: imagesDir, withIntermediateDirectories: true)
-            } catch {
-                logger.error("Failed to create images directory: \(error.localizedDescription)")
+        if !imagesDirectoryCreated {
+            let fm = FileManager.default
+            if !fm.fileExists(atPath: imagesDir.path) {
+                do {
+                    try fm.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+                } catch {
+                    logger.error("Failed to create images directory: \(error.localizedDescription)")
+                    return imagesDir
+                }
             }
+            imagesDirectoryCreated = true
         }
         return imagesDir
     }

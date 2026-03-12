@@ -401,14 +401,16 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     // MARK: - Close / Cleanup
 
     func close() {
-        onClose?()
+        guard panel != nil else { return }
+        let savedOnClose = onClose
+        onClose = nil
         panel?.orderOut(nil)
         cleanup()
+        savedOnClose?()
     }
 
     func windowWillClose(_ notification: Notification) {
-        onClose?()
-        cleanup()
+        close()
     }
 
     private func cleanup() {

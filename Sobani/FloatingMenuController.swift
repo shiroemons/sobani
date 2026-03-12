@@ -20,11 +20,6 @@ final class FloatingMenuController {
     private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "FloatingMenuController")
 
     // Layout constants
-    private static let buttonSize: CGFloat = 36
-    private static let columnWidth: CGFloat = 50
-    private static let buttonPadding: CGFloat = 4
-    private static let panelPadding: CGFloat = 8
-    private static let cornerRadius: CGFloat = 10
     private static let aboveOffset: CGFloat = 8
     private static let labelHeight: CGFloat = 12
     private static let labelTopGap: CGFloat = 2
@@ -48,9 +43,9 @@ final class FloatingMenuController {
         dismiss()
 
         let buttonCount = Self.buttonCount()
-        let panelWidth = Self.panelPadding * 2 + Self.columnWidth * CGFloat(buttonCount)
-            + Self.buttonPadding * CGFloat(buttonCount - 1)
-        let panelHeight = Self.panelPadding * 2 + Self.buttonSize + Self.labelTopGap + Self.labelHeight
+        let panelWidth = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuColumnWidth * CGFloat(buttonCount)
+            + AppConstants.floatingMenuGap * CGFloat(buttonCount - 1)
+        let panelHeight = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuButtonSize + Self.labelTopGap + Self.labelHeight
 
         // Convert window-local point to screen coordinates
         let screenPoint = window.convertPoint(toScreen: point)
@@ -93,7 +88,7 @@ final class FloatingMenuController {
         contentView.state = .active
         contentView.blendingMode = .behindWindow
         contentView.wantsLayer = true
-        contentView.layer?.cornerRadius = Self.cornerRadius
+        contentView.layer?.cornerRadius = AppConstants.floatingMenuCornerRadius
         contentView.layer?.masksToBounds = true
 
         setupButtons(in: contentView)
@@ -167,10 +162,10 @@ final class FloatingMenuController {
         ))
 
         for (index, spec) in buttons.enumerated() {
-            let columnX = Self.panelPadding + (Self.columnWidth + Self.buttonPadding) * CGFloat(index)
-            let buttonX = columnX + (Self.columnWidth - Self.buttonSize) / 2
-            let buttonY = Self.panelPadding + Self.labelHeight + Self.labelTopGap
-            let buttonFrame = NSRect(x: buttonX, y: buttonY, width: Self.buttonSize, height: Self.buttonSize)
+            let columnX = AppConstants.floatingMenuPadding + (AppConstants.floatingMenuColumnWidth + AppConstants.floatingMenuGap) * CGFloat(index)
+            let buttonX = columnX + (AppConstants.floatingMenuColumnWidth - AppConstants.floatingMenuButtonSize) / 2
+            let buttonY = AppConstants.floatingMenuPadding + Self.labelHeight + Self.labelTopGap
+            let buttonFrame = NSRect(x: buttonX, y: buttonY, width: AppConstants.floatingMenuButtonSize, height: AppConstants.floatingMenuButtonSize)
 
             let button = NSButton(frame: buttonFrame)
             button.bezelStyle = .regularSquare
@@ -196,7 +191,7 @@ final class FloatingMenuController {
             container.addSubview(button)
 
             // Label below button
-            let labelFrame = NSRect(x: columnX, y: Self.panelPadding, width: Self.columnWidth, height: Self.labelHeight)
+            let labelFrame = NSRect(x: columnX, y: AppConstants.floatingMenuPadding, width: AppConstants.floatingMenuColumnWidth, height: Self.labelHeight)
             let label = NSTextField(frame: labelFrame)
             label.stringValue = spec.label
             label.isEditable = false

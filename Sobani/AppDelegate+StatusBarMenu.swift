@@ -637,29 +637,25 @@ extension AppDelegate {
     }
 
     @objc func changeDefaultImageFromMenu() {
-        let panel = NSOpenPanel()
-        panel.title = L("dialog.select_default_image")
-        panel.message = L("dialog.select_default_image_message")
-        panel.prompt = L("dialog.select")
-        panel.allowedContentTypes = [.png, .jpeg, .gif, .tiff, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
+        let panel = ImageFileDialog.makeOpenPanel(
+            title: L("dialog.select_default_image"),
+            message: L("dialog.select_default_image_message")
+        )
         if panel.runModal() == .OK, let url = panel.url {
             ImageManager.shared.setCustomDefault(from: url)
-            if let newDefault = ImageManager.shared.defaultImage() {
-                for charWindow in characterWindows where charWindow.displayName == AppConstants.defaultImageName {
-                    charWindow.applyImage(newDefault)
-                }
-            }
+            refreshDefaultImageWindows()
         }
     }
 
     @objc func resetDefaultImage() {
         ImageManager.shared.resetCustomDefault()
-        if let newDefault = ImageManager.shared.defaultImage() {
-            for charWindow in characterWindows where charWindow.displayName == AppConstants.defaultImageName {
-                charWindow.applyImage(newDefault)
-            }
+        refreshDefaultImageWindows()
+    }
+
+    private func refreshDefaultImageWindows() {
+        guard let newDefault = ImageManager.shared.defaultImage() else { return }
+        for charWindow in characterWindows where charWindow.displayName == AppConstants.defaultImageName {
+            charWindow.applyImage(newDefault)
         }
     }
 

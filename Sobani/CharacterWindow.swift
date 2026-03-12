@@ -166,13 +166,6 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 
     private func closeAdjustmentPanel() {
         adjustmentPanelController?.close()
-        adjustmentPanelController = nil
-        imageView.scrollRotationHandler = nil
-        if let observer = windowMoveObserver {
-            NotificationCenter.default.removeObserver(observer)
-            windowMoveObserver = nil
-        }
-        imageView.onSizeChanged = nil
     }
 
     @objc func resetRotation() { applyRotation(0) }

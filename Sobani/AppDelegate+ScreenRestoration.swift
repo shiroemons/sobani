@@ -231,10 +231,11 @@ extension AppDelegate {
     func attemptPendingRestorations() {
         // フェーズ0: スリープなしのモニター切断対応
         // wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
+        let screens = ScreenInfo.current()
         for charWindow in characterWindows {
             let currentState = WindowStateManager.captureState(from: charWindow)
-            guard !currentState.isPositionVisible(on: ScreenInfo.current()) else { continue }
-            let adjusted = currentState.adjustedToVisibleArea(on: ScreenInfo.current())
+            guard !currentState.isPositionVisible(on: screens) else { continue }
+            let adjusted = currentState.adjustedToVisibleArea(on: screens)
             charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
             // displayID は切断後には取得不可のため 0 を使用（位置ベースで復元判定）
             screenRestorationManager.addPending(
@@ -256,13 +257,10 @@ extension AppDelegate {
             // 対象モニタが見つかったら無条件でクランプ位置に復元
             let targetScreen = findTargetScreenForPending(entry)
             if let screen = targetScreen {
-                let windowWidth = charWindow.window.frame.width
-                let windowHeight = charWindow.window.frame.height
-                let clampedX = max(screen.frame.minX,
-                    min(entry.originalState.originX, screen.frame.maxX - windowWidth))
-                let clampedY = max(screen.frame.minY,
-                    min(entry.originalState.originY, screen.frame.maxY - windowHeight))
-                charWindow.window.setFrameOrigin(NSPoint(x: clampedX, y: clampedY))
+                let windowSize = charWindow.window.frame.size
+                let origin = NSPoint(x: entry.originalState.originX, y: entry.originalState.originY)
+                let clamped = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screen.frame)
+                charWindow.window.setFrameOrigin(clamped)
             }
             screenRestorationManager.removePending(windowId: entry.windowId)
         }
@@ -322,7 +320,7 @@ extension AppDelegate {
 extension NSScreen {
     /// スクリーンの CGDirectDisplayID を取得
     var displayID: CGDirectDisplayID? {
-        deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+        deviceDescription[AppConstants.screenNumberKey] as? CGDirectDisplayID
     }
 
     /// 指定された displayID に一致するスクリーンを検索

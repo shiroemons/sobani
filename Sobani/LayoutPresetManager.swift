@@ -30,16 +30,22 @@ final class LayoutPresetManager {
         AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
+    private var layoutsDirectoryCreated = false
+
     var layoutsDirectoryURL: URL? {
         guard let appDir = appSupportURL else { return nil }
         let layoutsDir = appDir.appendingPathComponent("layouts")
-        let fm = FileManager.default
-        if !fm.fileExists(atPath: layoutsDir.path) {
-            do {
-                try fm.createDirectory(at: layoutsDir, withIntermediateDirectories: true)
-            } catch {
-                logger.error("Failed to create layouts directory: \(error.localizedDescription)")
+        if !layoutsDirectoryCreated {
+            let fm = FileManager.default
+            if !fm.fileExists(atPath: layoutsDir.path) {
+                do {
+                    try fm.createDirectory(at: layoutsDir, withIntermediateDirectories: true)
+                } catch {
+                    logger.error("Failed to create layouts directory: \(error.localizedDescription)")
+                    return layoutsDir
+                }
             }
+            layoutsDirectoryCreated = true
         }
         return layoutsDir
     }
