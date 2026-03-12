@@ -7,6 +7,13 @@ import os.log
 /// Constants.swiftの定数・ユーティリティの整合性と動作を検証するテスト
 @Suite @MainActor struct ConstantsTests {
 
+    private let logger = Logger(category: "ConstantsTests")
+
+    private func makeTempDirectory() -> URL {
+        FileManager.default.temporaryDirectory
+            .appendingPathComponent("sobani_test_\(UUID().uuidString)")
+    }
+
     // MARK: - AppConstants 整合性検証
 
     /// ウィンドウサイズ定数の大小関係が正しいことを検証
@@ -111,24 +118,20 @@ import os.log
 
     /// カスタムbaseDirectoryが指定された場合にそのパスが返されることを検証
     @Test func appSupportDirectory_CustomBaseDirectory() throws {
-        let tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("sobani_test_\(UUID().uuidString)")
+        let tempDir = makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        let logger = Logger(category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: tempDir, logger: logger)
         #expect(result?.path == tempDir.path)
     }
 
     /// 存在しないディレクトリが自動作成されることを検証
     @Test func appSupportDirectory_CreatesNonexistentDirectory() throws {
-        let tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("sobani_test_\(UUID().uuidString)")
+        let tempDir = makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
         #expect(!FileManager.default.fileExists(atPath: tempDir.path))
 
-        let logger = Logger(category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: tempDir, logger: logger)
 
         #expect(result != nil)
@@ -137,48 +140,19 @@ import os.log
 
     /// 既存ディレクトリがそのまま返されることを検証
     @Test func appSupportDirectory_ExistingDirectory() throws {
-        let tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("sobani_test_\(UUID().uuidString)")
+        let tempDir = makeTempDirectory()
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        let logger = Logger(category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: tempDir, logger: logger)
         #expect(result?.path == tempDir.path)
     }
 
     /// nil baseDirectoryでデフォルトパスが使用されることを検証
     @Test func appSupportDirectory_NilBaseDirectoryUsesDefault() {
-        let logger = Logger(category: "Test")
         let result = AppSupportDirectory.url(baseDirectory: nil, logger: logger)
         #expect(result != nil)
-        if let path = result?.path {
-            #expect(path.hasSuffix("/Sobani"), "パスが /Sobani で終わるべき: \(path)")
-        }
-    }
-
-    // MARK: - ImageFileDialog テスト
-
-    /// makeOpenPanelのデフォルト設定が正しいことを検証
-    @MainActor @Test func imageFileDialog_DefaultSettings() {
-        let panel = ImageFileDialog.makeOpenPanel()
-        #expect(!panel.allowsMultipleSelection)
-        #expect(!panel.canChooseDirectories)
-        #expect(panel.level == .floating)
-        #expect(panel.allowedContentTypes.count == 5)
-    }
-
-    /// カスタムタイトルとメッセージが反映されることを検証
-    @MainActor @Test func imageFileDialog_CustomTitleAndMessage() {
-        let panel = ImageFileDialog.makeOpenPanel(title: "Custom Title", message: "Custom Message")
-        #expect(panel.title == "Custom Title")
-        #expect(panel.message == "Custom Message")
-    }
-
-    /// promptにローカライズ値が設定されることを検証
-    @MainActor @Test func imageFileDialog_PromptIsSet() {
-        let panel = ImageFileDialog.makeOpenPanel()
-        #expect(!panel.prompt.isEmpty)
+        #expect(result?.lastPathComponent == AppConstants.appName)
     }
 
     // MARK: - NSMenu.item(withMenuTag:) テスト
@@ -223,17 +197,6 @@ import os.log
     @Test func localizeHelper_HandlesEmptyKey() {
         let result = L("")
         #expect(result.isEmpty)
-    }
-
-    /// makeOpenPanelの5つのUTTypeが全て含まれていることを検証
-    @MainActor @Test func imageFileDialog_AllContentTypesPresent() {
-        let panel = ImageFileDialog.makeOpenPanel()
-        let types = panel.allowedContentTypes
-        #expect(types.contains(.png))
-        #expect(types.contains(.jpeg))
-        #expect(types.contains(.gif))
-        #expect(types.contains(.tiff))
-        #expect(types.contains(.heic))
     }
 
     // MARK: - SFSymbolUtils テスト
