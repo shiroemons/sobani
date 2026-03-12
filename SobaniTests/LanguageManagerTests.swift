@@ -13,9 +13,8 @@ import Testing
     private let testDefaults: UserDefaults
     private let manager: LanguageManager
 
-    init() {
-        // swiftlint:disable:next force_unwrapping
-        let testDefaults = UserDefaults(suiteName: "test-language-\(UUID().uuidString)")!
+    init() throws {
+        let testDefaults = try #require(UserDefaults(suiteName: "test-language-\(UUID().uuidString)"))
         self.testDefaults = testDefaults
         self.manager = LanguageManager(defaults: testDefaults)
     }

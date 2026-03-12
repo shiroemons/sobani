@@ -247,7 +247,7 @@ final class UpdateManager: @unchecked Sendable {
                     : release.tagName
 
                 DispatchQueue.main.async { @Sendable in
-                    UserDefaults.standard.set(Date(), forKey: Self.lastCheckKey)
+                    self.defaults.set(Date(), forKey: Self.lastCheckKey)
 
                     if Self.isNewer(latestVersion, than: self.currentVersion),
                        let result = Self.selectAsset(from: release),
