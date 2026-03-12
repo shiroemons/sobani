@@ -94,25 +94,24 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     // MARK: - Private
 
-    private func complete() {
-        onboardingManager.markCompleted()
+    private func teardown() {
         if let observer = languageObserver {
             NotificationCenter.default.removeObserver(observer)
             languageObserver = nil
         }
-        onComplete?()
         panel = nil
         contentContainer = nil
+    }
+
+    private func complete() {
+        onboardingManager.markCompleted()
+        teardown()
+        onComplete?()
         logger.info("Onboarding completed")
     }
 
     private func cleanup() {
-        if let observer = languageObserver {
-            NotificationCenter.default.removeObserver(observer)
-            languageObserver = nil
-        }
-        panel = nil
-        contentContainer = nil
+        teardown()
     }
 
     private func rebuildForLanguageChange() {
@@ -378,32 +377,32 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
 extension OnboardingWindowController {
     // MARK: Step 共通
-    fileprivate static var smallFontSize: CGFloat { 12 }
+    fileprivate static let smallFontSize: CGFloat = 12
 
     // MARK: Step 1: メニューバーアイコンイラスト
-    fileprivate static var step1IconBackgroundWidth: CGFloat { 36 }
-    fileprivate static var step1IconBackgroundHeight: CGFloat { 28 }
-    fileprivate static var step1IconBackgroundY: CGFloat { 218 }
-    fileprivate static var step1IconBackgroundCornerRadius: CGFloat { 6 }
-    fileprivate static var step1StatusIconSize: CGFloat { 18 }
-    fileprivate static var step1StatusIconY: CGFloat { 223 }
-    fileprivate static var step1HintY: CGFloat { 160 }
-    fileprivate static var step1HintHeight: CGFloat { 50 }
+    fileprivate static let step1IconBackgroundWidth: CGFloat = 36
+    fileprivate static let step1IconBackgroundHeight: CGFloat = 28
+    fileprivate static let step1IconBackgroundY: CGFloat = 218
+    fileprivate static let step1IconBackgroundCornerRadius: CGFloat = 6
+    fileprivate static let step1StatusIconSize: CGFloat = 18
+    fileprivate static let step1StatusIconY: CGFloat = 223
+    fileprivate static let step1HintY: CGFloat = 160
+    fileprivate static let step1HintHeight: CGFloat = 50
 
     // MARK: Step 2: 操作一覧
-    fileprivate static var step2TitleY: CGFloat { 390 }
-    fileprivate static var step2StartY: CGFloat { 340 }
-    fileprivate static var step2IconX: CGFloat { 70 }
-    fileprivate static var step2LabelX: CGFloat { 110 }
-    fileprivate static var step2LabelYOffset: CGFloat { 4 }
-    fileprivate static var step2DescriptionYOffset: CGFloat { -14 }
-    fileprivate static var step2HintYOffset: CGFloat { -30 }
-    fileprivate static var step2SeparatorYOffset: CGFloat { -38 }
-    fileprivate static var step2ContentInset: CGFloat { 150 }
-    fileprivate static var step2SeparatorInset: CGFloat { 140 }
-    fileprivate static var step2SymbolSize: CGFloat { 24 }
-    fileprivate static var step2LabelFontSize: CGFloat { 13 }
-    fileprivate static var step2HintFontSize: CGFloat { 11 }
+    fileprivate static let step2TitleY: CGFloat = 390
+    fileprivate static let step2StartY: CGFloat = 340
+    fileprivate static let step2IconX: CGFloat = 70
+    fileprivate static let step2LabelX: CGFloat = 110
+    fileprivate static let step2LabelYOffset: CGFloat = 4
+    fileprivate static let step2DescriptionYOffset: CGFloat = -14
+    fileprivate static let step2HintYOffset: CGFloat = -30
+    fileprivate static let step2SeparatorYOffset: CGFloat = -38
+    fileprivate static let step2ContentInset: CGFloat = 150
+    fileprivate static let step2SeparatorInset: CGFloat = 140
+    fileprivate static let step2SymbolSize: CGFloat = 24
+    fileprivate static let step2LabelFontSize: CGFloat = 13
+    fileprivate static let step2HintFontSize: CGFloat = 11
 }
 
 // MARK: - View Helpers

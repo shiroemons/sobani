@@ -112,17 +112,11 @@ final class LayoutPresetManager {
         }
         guard let newURL = presetFileURL(for: newName) else { return false }
         let renamedPreset = LayoutPreset(name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        encoder.dateEncodingStrategy = .iso8601
-        do {
-            let data = try encoder.encode(renamedPreset)
-            try data.write(to: newURL, options: .atomic)
-            cachedPresets = nil
-        } catch {
-            logger.error("Failed to save renamed layout preset: \(error.localizedDescription)")
-            return false
+        JSONPersistence.save(renamedPreset, to: newURL, logger: logger, errorMessage: "Failed to save renamed layout preset") {
+            $0.dateEncodingStrategy = .iso8601
         }
+        guard FileManager.default.fileExists(atPath: newURL.path) else { return false }
+        cachedPresets = nil
         // Only delete old file if sanitized file names differ
         let oldFileName = sanitizedFileName(for: oldName)
         let newFileName = sanitizedFileName(for: newName)

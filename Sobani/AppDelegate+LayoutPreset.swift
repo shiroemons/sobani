@@ -20,7 +20,7 @@ extension AppDelegate {
 
     /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする
     func captureCurrentWindowStates() -> [WindowState] {
-        Array(getZOrderedCharacterWindows().reversed()).map { WindowStateManager.captureState(from: $0) }
+        Array(zOrderedWindows.reversed()).map { WindowStateManager.captureState(from: $0) }
     }
 
     func applyLayout(_ preset: LayoutPreset) {

@@ -172,11 +172,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         createNewWindow(imageName: name)
     }
 
-    /// Z-order順（前面が先頭）でCharacterWindow配列を返す
-    func getZOrderedCharacterWindows() -> [CharacterWindow] {
-        return zOrderedWindows
-    }
-
     /// zOrderedWindowsの順序をNSWindowに反映する（最背面から順に重ねる）
     func applyZOrderToWindows() {
         guard !areWindowsHidden else { return }

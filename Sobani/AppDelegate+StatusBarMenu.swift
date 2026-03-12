@@ -223,27 +223,13 @@ extension AppDelegate {
         let submenu = NSMenu()
         submenu.autoenablesItems = false
         submenu.delegate = self
-        let orderedWindows = getZOrderedCharacterWindows()
+        let orderedWindows = zOrderedWindows
 
         let font = NSFont.menuFont(ofSize: 0)
 
-        let maxLeftWidth: CGFloat = orderedWindows.enumerated().reduce(0) { maxWidth, pair in
-            let info = MenuStateUtils.buildWindowInfoText(
-                index: pair.offset, displayName: pair.element.localizedDisplayName,
-                windowId: pair.element.windowId,
-                imageSize: (Int(pair.element.imageView.frame.width), Int(pair.element.imageView.frame.height)),
-                screenName: ""
-            )
-            // swiftlint:disable:next legacy_objc_type
-            let width = (info.leftText as NSString).size(withAttributes: [.font: font]).width
-            return max(maxWidth, width)
-        }
-        let tabPosition = maxLeftWidth + AppConstants.menuTabPadding
-
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.tabStops = [NSTextTab(textAlignment: .left, location: tabPosition)]
-
-        for (index, charWindow) in orderedWindows.enumerated() {
+        // Build info text once per window to avoid calling buildWindowInfoText twice (width pass + render pass)
+        typealias WindowInfo = (charWindow: CharacterWindow, info: (leftText: String, rightText: String))
+        let windowInfoList: [WindowInfo] = orderedWindows.enumerated().map { index, charWindow in
             let rawName = charWindow.window.screen?.localizedName ?? ""
             let info = MenuStateUtils.buildWindowInfoText(
                 index: index, displayName: charWindow.localizedDisplayName,
@@ -251,6 +237,20 @@ extension AppDelegate {
                 imageSize: (Int(charWindow.imageView.frame.width), Int(charWindow.imageView.frame.height)),
                 screenName: rawName.isEmpty ? L("image.unknown") : rawName
             )
+            return (charWindow, info)
+        }
+
+        let maxLeftWidth: CGFloat = windowInfoList.reduce(0) { maxWidth, pair in
+            // swiftlint:disable:next legacy_objc_type
+            let width = (pair.info.leftText as NSString).size(withAttributes: [.font: font]).width
+            return max(maxWidth, width)
+        }
+        let tabPosition = maxLeftWidth + AppConstants.menuTabPadding
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.tabStops = [NSTextTab(textAlignment: .left, location: tabPosition)]
+
+        for (charWindow, info) in windowInfoList {
             let fullText = "\(info.leftText)\t\(info.rightText)"
 
             let attributedTitle = NSAttributedString(
@@ -602,7 +602,7 @@ extension AppDelegate {
         if let item = item, let name = item.representedObject as? String,
            item.action == #selector(addNewWindowWithImageFromMenu(_:))
             || item.action == #selector(selectRegisteredImageByWindowNumber(_:)) {
-            if let image = ImageManager.shared.loadRegisteredImage(named: name) {
+            if let image = ImageManager.shared.loadRegisteredImageCached(named: name) {
                 ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
             }
         } else if let item = item,

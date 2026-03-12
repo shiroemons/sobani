@@ -272,7 +272,7 @@ final class FloatingMenuController {
         }
     }
 
-    private func removeEventMonitors() {
+    nonisolated private func removeEventMonitors() {
         if let monitor = globalMonitor {
             NSEvent.removeMonitor(monitor)
             globalMonitor = nil
@@ -284,11 +284,6 @@ final class FloatingMenuController {
     }
 
     deinit {
-        if let monitor = globalMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        if let monitor = localMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
+        removeEventMonitors()
     }
 }
