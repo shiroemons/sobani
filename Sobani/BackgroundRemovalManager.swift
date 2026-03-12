@@ -39,10 +39,7 @@ enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
 final class BackgroundRemovalManager: @unchecked Sendable {
     static let shared = BackgroundRemovalManager()
 
-    private let logger = Logger(
-        subsystem: AppConstants.loggerSubsystem,
-        category: "BackgroundRemovalManager"
-    )
+    private let logger = Logger(category: "BackgroundRemovalManager")
 
     private let processingQueue = DispatchQueue(
         label: "\(AppConstants.loggerSubsystem).backgroundRemoval",

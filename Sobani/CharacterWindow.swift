@@ -16,7 +16,9 @@ private final class RotatableContainer: NSView {
 final class CharacterWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
     let imageView: DraggableImageView
-    weak var delegate: CharacterWindowDelegate?
+    weak var delegate: CharacterWindowDelegate? {
+        didSet { imageView.characterWindowDelegate = delegate }
+    }
     var displayName: String = AppConstants.defaultImageName
     var windowId: Int = 0
     private(set) var adjustmentPanelController: AdjustmentPanelController?
@@ -82,7 +84,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
             if isOption {
                 self.delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
             } else {
-                self.handleDroppedImage(url: url)
+                self.loadAndApplyImage(from: url)
             }
         }
         let screenCenter = NSScreen.main?.frame ?? NSRect.zero
@@ -224,10 +226,6 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         applyImage(newImage)
     }
 
-    private func handleDroppedImage(url: URL) {
-        loadAndApplyImage(from: url)
-    }
-
     @objc func selectRegisteredImage(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String,
               let image = ImageManager.shared.loadRegisteredImage(named: name) else { return }
@@ -284,7 +282,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         let defaultHeight: CGFloat = AppConstants.defaultWindowHeight
         let defaultWidth = defaultHeight * imageView.aspectRatio
 
-        let screenFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+        let screenFrame = NSScreen.mainFrameOrFallback
         let originX = screenFrame.minX + (screenFrame.width - defaultWidth) / 2
         let originY = screenFrame.minY + (screenFrame.height - defaultHeight) / 2
 
@@ -572,22 +570,19 @@ extension CharacterWindow {
     // MARK: - Menu Highlight (Image Preview)
 
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
-        if let item = item, let name = item.representedObject as? String,
-           item.action == #selector(selectRegisteredImage(_:))
-            || item.action == #selector(addNewWindowWithImage(_:))
-            || item.action == #selector(deleteRegisteredImage(_:)) {
-            if let image = ImageManager.shared.loadRegisteredImageCached(named: name) {
-                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
-            }
-        } else if let item = item,
-                  item.action == #selector(addNewWindow)
-                    || item.action == #selector(resetToDefault) {
-            if let image = ImageManager.shared.defaultImage() {
-                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
-            }
-        } else {
-            ImagePreviewPanel.shared.hide()
-        }
+        ImagePreviewPanel.shared.showPreviewIfApplicable(
+            for: item,
+            in: menu,
+            registeredImageActions: [
+                #selector(selectRegisteredImage(_:)),
+                #selector(addNewWindowWithImage(_:)),
+                #selector(deleteRegisteredImage(_:))
+            ],
+            defaultImageActions: [
+                #selector(addNewWindow),
+                #selector(resetToDefault)
+            ]
+        )
     }
 
     func menuDidClose(_ menu: NSMenu) {

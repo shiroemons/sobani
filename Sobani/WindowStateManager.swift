@@ -97,16 +97,12 @@ struct WindowState: Codable, Equatable, Sendable {
 @MainActor
 final class WindowStateManager {
     static let shared = WindowStateManager()
-    private let logger = Logger(
-        subsystem: AppConstants.loggerSubsystem,
-        category: "WindowStateManager"
-    )
+    private let logger = Logger(category: "WindowStateManager")
     private let appSupportURL: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
-        let initLogger = Logger(category: "WindowStateManager")
-        self.appSupportURL = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger)
+        self.appSupportURL = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
     }
 
     var statesFileURL: URL? {

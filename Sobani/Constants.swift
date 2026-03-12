@@ -319,6 +319,13 @@ extension NSMenu {
     }
 }
 
+extension NSScreen {
+    /// Returns the main screen frame, or a fallback rect when no screen is available.
+    static var mainFrameOrFallback: NSRect {
+        main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+    }
+}
+
 extension Logger {
     init(category: String) {
         self.init(subsystem: AppConstants.loggerSubsystem, category: category)

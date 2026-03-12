@@ -120,42 +120,24 @@ extension AppDelegate {
     }
 
     @objc func saveLayoutFromMenu() {
-        let alert = AlertFactory.make(
-            style: .informational,
+        guard let name = promptLayoutName(
             messageText: L("layout.save_title"),
             informativeText: L("layout.save_message"),
-            buttonTitles: [L("layout.save_button"), L("quit.cancel")]
-        )
-
-        let textField = makeLayoutNameField(for: alert)
-
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return }
-
-        guard confirmOverwriteIfNeeded(name: name) else { return }
+            okTitle: L("layout.save_button")
+        ) else { return }
 
         let states = captureCurrentWindowStates()
         LayoutPresetManager.shared.savePreset(name: name, states: states)
     }
 
     @objc func createNewLayoutFromMenu() {
-        let alert = AlertFactory.make(
-            style: .informational,
+        guard let name = promptLayoutName(
             messageText: L("layout.create_title"),
             informativeText: L("layout.create_message"),
-            buttonTitles: [L("layout.create_button"), L("quit.cancel")]
-        )
+            okTitle: L("layout.create_button")
+        ) else { return }
 
-        let textField = makeLayoutNameField(for: alert)
-
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return }
-
-        guard confirmOverwriteIfNeeded(name: name) else { return }
-
-        let mainFrame = NSScreen.main?.frame ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
+        let mainFrame = NSScreen.mainFrameOrFallback
         let defaultState = WindowState(
             imageName: AppConstants.defaultImageName,
             originX: mainFrame.midX - AppConstants.defaultWindowHeight / 2,
@@ -209,21 +191,14 @@ extension AppDelegate {
     @objc func renameLayoutFromMenu(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
 
-        let alert = AlertFactory.make(
-            style: .informational,
+        guard let newName = promptLayoutName(
             messageText: L("layout.rename_title"),
             informativeText: L("layout.rename_message"),
-            buttonTitles: [L("layout.rename_button"), L("quit.cancel")]
-        )
-
-        let textField = makeLayoutNameField(for: alert)
-        textField.stringValue = name
-
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        let newName = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !newName.isEmpty else { return }
+            okTitle: L("layout.rename_button"),
+            initialValue: name,
+            checkOverwrite: false
+        ) else { return }
         guard newName != name else { return }
-
         guard confirmOverwriteIfNeeded(name: newName) else { return }
 
         if !LayoutPresetManager.shared.renamePreset(from: name, to: newName) {
@@ -245,6 +220,40 @@ extension AppDelegate {
         }
         menuItem.submenu = sub
         return menuItem
+    }
+
+    /// レイアウト名を入力させるアラートを表示し、有効な名前を返す。
+    /// - Parameters:
+    ///   - messageText: アラートのタイトル
+    ///   - informativeText: アラートの説明文
+    ///   - okTitle: OKボタンのラベル
+    ///   - initialValue: テキストフィールドの初期値（デフォルト: 空文字）
+    ///   - checkOverwrite: 既存プリセットへの上書き確認を行うか（デフォルト: true）
+    /// - Returns: トリム済みの名前。キャンセル・空文字・上書きキャンセル時は nil
+    private func promptLayoutName(
+        messageText: String,
+        informativeText: String,
+        okTitle: String,
+        initialValue: String = "",
+        checkOverwrite: Bool = true
+    ) -> String? {
+        let alert = AlertFactory.make(
+            style: .informational,
+            messageText: messageText,
+            informativeText: informativeText,
+            buttonTitles: [okTitle, L("quit.cancel")]
+        )
+        let textField = makeLayoutNameField(for: alert)
+        if !initialValue.isEmpty {
+            textField.stringValue = initialValue
+        }
+        guard alert.runModal() == .alertFirstButtonReturn else { return nil }
+        let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return nil }
+        if checkOverwrite {
+            guard confirmOverwriteIfNeeded(name: name) else { return nil }
+        }
+        return name
     }
 
     private func makeLayoutNameField(for alert: NSAlert) -> NSTextField {

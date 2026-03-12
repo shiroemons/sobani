@@ -150,6 +150,7 @@ final class CropEditorPanelController: NSObject {
         redoButton = nil
         history = nil
         canvasView = nil
+        toolbarView?.cleanup()
         toolbarView = nil
         panel?.orderOut(nil)
         panel = nil

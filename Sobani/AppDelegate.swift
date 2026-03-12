@@ -134,16 +134,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     func setupHotkeyMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             guard let self, self.isToggleHotkey(event) else { return }
-            let weakSelf = self
-            DispatchQueue.main.async { @Sendable in
-                weakSelf.toggleAllWindowsVisibility()
+            DispatchQueue.main.async { @Sendable [weak self] in
+                self?.toggleAllWindowsVisibility()
             }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             guard let self, self.isToggleHotkey(event) else { return event }
-            let weakSelf = self
-            DispatchQueue.main.async { @Sendable in
-                weakSelf.toggleAllWindowsVisibility()
+            DispatchQueue.main.async { @Sendable [weak self] in
+                self?.toggleAllWindowsVisibility()
             }
             return nil
         }
@@ -159,14 +157,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     /// zOrderedWindowsの順序をNSWindowに反映する（最背面から順に重ねる）
     func applyZOrderToWindows() {
         guard !areWindowsHidden else { return }
-        let backToFront = Array(zOrderedWindows.reversed())
-        for (idx, charWindow) in backToFront.enumerated() {
-            if idx == 0 {
-                charWindow.window.orderFront(nil)
+        var previousWindow: CharacterWindow?
+        for charWindow in zOrderedWindows.reversed() {
+            if let prev = previousWindow {
+                charWindow.window.order(.above, relativeTo: prev.window.windowNumber)
             } else {
-                let windowBelow = backToFront[idx - 1]
-                charWindow.window.order(.above, relativeTo: windowBelow.window.windowNumber)
+                charWindow.window.orderFront(nil)
             }
+            previousWindow = charWindow
         }
     }
 
@@ -328,9 +326,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
 
         if let monitor = globalMonitor {
             NSEvent.removeMonitor(monitor)
+            globalMonitor = nil
         }
         if let monitor = localMonitor {
             NSEvent.removeMonitor(monitor)
+            localMonitor = nil
         }
 
         teardownScreenRestorationObservers()

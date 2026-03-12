@@ -135,8 +135,7 @@ extension AppDelegate {
         }
     }
 
-    func buildResetRotationMenuItem(angles: [CGFloat]) -> NSMenuItem {
-        let hasRotation = MenuStateUtils.hasRotation(angles: angles)
+    func buildResetRotationMenuItem(hasRotation: Bool) -> NSMenuItem {
         let item = NSMenuItem(
             title: L("adjust.reset_all_rotation"),
             action: #selector(resetAllRotations),
@@ -148,8 +147,7 @@ extension AppDelegate {
         return item
     }
 
-    func buildResetOpacityMenuItem(opacities: [CGFloat]) -> NSMenuItem {
-        let hasOpacity = MenuStateUtils.hasNonDefaultOpacity(opacities: opacities)
+    func buildResetOpacityMenuItem(hasOpacity: Bool) -> NSMenuItem {
         let item = NSMenuItem(
             title: L("adjust.reset_all_opacity"),
             action: #selector(resetAllOpacity),
@@ -167,22 +165,19 @@ extension AppDelegate {
         item.image = menuIcon("arrow.counterclockwise.circle")
         let submenu = NSMenu()
 
-        var rotationAngles: [CGFloat] = []
-        var opacityLevels: [CGFloat] = []
-        for window in characterWindows {
-            rotationAngles.append(window.imageView.rotationAngle)
-            opacityLevels.append(window.imageView.opacityLevel)
-        }
+        let tolerance = AppConstants.floatingPointTolerance
+        let hasRotation = characterWindows.contains { abs($0.imageView.rotationAngle) > tolerance }
+        let hasOpacity = characterWindows.contains { abs($0.imageView.opacityLevel - 1.0) > tolerance }
 
-        let rotationItem = buildResetRotationMenuItem(angles: rotationAngles)
+        let rotationItem = buildResetRotationMenuItem(hasRotation: hasRotation)
         submenu.addItem(rotationItem)
 
-        let opacityItem = buildResetOpacityMenuItem(opacities: opacityLevels)
+        let opacityItem = buildResetOpacityMenuItem(hasOpacity: hasOpacity)
         submenu.addItem(opacityItem)
 
         item.submenu = submenu
         // 両方 disabled なら親も disabled
-        item.isEnabled = MenuStateUtils.isBulkResetEnabled(hasRotation: rotationItem.isEnabled, hasOpacity: opacityItem.isEnabled)
+        item.isEnabled = MenuStateUtils.isBulkResetEnabled(hasRotation: hasRotation, hasOpacity: hasOpacity)
         return item
     }
 
@@ -580,21 +575,18 @@ extension AppDelegate {
 
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
         // Image preview for registered image items
-        if let item = item, let name = item.representedObject as? String,
-           item.action == #selector(addNewWindowWithImageFromMenu(_:))
-            || item.action == #selector(selectRegisteredImageByWindowNumber(_:)) {
-            if let image = ImageManager.shared.loadRegisteredImageCached(named: name) {
-                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
-            }
-        } else if let item = item,
-                  item.action == #selector(addNewWindowFromMenu)
-                    || item.action == #selector(resetToDefaultByWindowNumber(_:)) {
-            if let image = ImageManager.shared.defaultImage() {
-                ImagePreviewPanel.shared.show(image: image, relativeTo: item, ofMenu: menu)
-            }
-        } else {
-            ImagePreviewPanel.shared.hide()
-        }
+        ImagePreviewPanel.shared.showPreviewIfApplicable(
+            for: item,
+            in: menu,
+            registeredImageActions: [
+                #selector(addNewWindowWithImageFromMenu(_:)),
+                #selector(selectRegisteredImageByWindowNumber(_:))
+            ],
+            defaultImageActions: [
+                #selector(addNewWindowFromMenu),
+                #selector(resetToDefaultByWindowNumber(_:))
+            ]
+        )
 
         // Window highlight border (for character windows submenu)
         guard menu !== statusItem?.menu else { return }

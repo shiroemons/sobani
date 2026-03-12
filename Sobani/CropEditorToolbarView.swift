@@ -229,6 +229,10 @@ final class CropEditorToolbarView: NSView {
         angleForMode(straightenMode)
     }
 
+    func cleanup() {
+        sliderView?.stopTimers()
+    }
+
     /// 全モードの角度を一括同期する（初期化・Undo/Redo共通）
     func syncAngles(straighten: CGFloat, verticalPerspective: CGFloat, horizontalPerspective: CGFloat) {
         modeAngles[.straighten] = straighten

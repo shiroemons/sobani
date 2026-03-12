@@ -25,13 +25,13 @@ final class StraightenSliderView: NSView {
 
     // Inertia
     private var inertiaVelocity: CGFloat = 0
-    private var inertiaTimer: Timer?
+    nonisolated(unsafe) private var inertiaTimer: Timer?
     private var lastDragTime: TimeInterval = 0
     private var lastDragAngle: CGFloat = 0
 
     // Fade trail
     private var fadingTicks: [Int: TimeInterval] = [:]
-    private var fadeTimer: Timer?
+    nonisolated(unsafe) private var fadeTimer: Timer?
     private var previousAngle: CGFloat = 0
 
     // MARK: - Constants
@@ -223,7 +223,19 @@ final class StraightenSliderView: NSView {
         onAngleChanged?(angle)
     }
 
+    // MARK: - Lifecycle
+
+    deinit {
+        inertiaTimer?.invalidate()
+        fadeTimer?.invalidate()
+    }
+
     // MARK: - Public
+
+    func stopTimers() {
+        stopInertia()
+        stopFadeTrail()
+    }
 
     func reset() {
         stopInertia()

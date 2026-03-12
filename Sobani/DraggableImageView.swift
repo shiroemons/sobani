@@ -55,12 +55,10 @@ final class DraggableImageView: NSImageView {
         registerForDraggedTypes([.fileURL])
     }
 
+    weak var characterWindowDelegate: CharacterWindowDelegate?
+
     private var allCharacterWindows: [CharacterWindow] {
-        if let delegate = NSApp.delegate as? CharacterWindowDelegate {
-            return delegate.allCharacterWindows
-        }
-        logger.warning("NSApp.delegate could not be cast to CharacterWindowDelegate")
-        return []
+        characterWindowDelegate?.allCharacterWindows ?? []
     }
 
     override func mouseDown(with event: NSEvent) {

@@ -410,20 +410,20 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
     // MARK: - Close / Cleanup
 
-    func close() {
-        guard panel?.isVisible == true else { return }
+    private func performClose() {
         let savedOnClose = onClose
         onClose = nil
         panel?.orderOut(nil)
         savedOnClose?()
     }
 
+    func close() {
+        guard panel?.isVisible == true else { return }
+        performClose()
+    }
+
     func windowWillClose(_ notification: Notification) {
-        // The user clicked the close button — hide the panel and fire the callback
-        let savedOnClose = onClose
-        onClose = nil
-        panel?.orderOut(nil)
-        savedOnClose?()
+        performClose()
     }
 
     var isVisible: Bool {

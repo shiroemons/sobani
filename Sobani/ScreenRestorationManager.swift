@@ -66,10 +66,7 @@ struct PendingRestoration: Codable, Sendable {
 
 @MainActor
 final class ScreenRestorationManager {
-    private let logger = Logger(
-        subsystem: AppConstants.loggerSubsystem,
-        category: "ScreenRestorationManager"
-    )
+    private let logger = Logger(category: "ScreenRestorationManager")
     private(set) var pendingRestorations: [PendingRestoration] = []
     private let timeout: TimeInterval
     let pendingFileURL: URL?
@@ -78,8 +75,7 @@ final class ScreenRestorationManager {
 
     init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
         self.timeout = timeout
-        let initLogger = Logger(category: "ScreenRestorationManager")
-        if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger) {
+        if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger) {
             self.pendingFileURL = appDir.appendingPathComponent("pending_restorations.json")
         } else {
             self.pendingFileURL = nil

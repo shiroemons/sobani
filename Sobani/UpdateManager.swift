@@ -394,10 +394,22 @@ final class UpdateManager: @unchecked Sendable {
     // MARK: - Checksum Verification
 
     static func verifySHA256(of fileURL: URL, expectedHex: String) -> Bool {
-        guard let data = try? Data(contentsOf: fileURL) else { return false }
-        let digest = SHA256.hash(data: data)
-        let hexString = digest.map { String(format: "%02x", $0) }.joined()
-        return hexString == expectedHex.lowercased()
+        guard let stream = InputStream(url: fileURL) else { return false }
+        stream.open()
+        defer { stream.close() }
+        var hasher = SHA256()
+        let bufferSize = 1_048_576 // 1MB
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+        defer { buffer.deallocate() }
+        while stream.hasBytesAvailable {
+            let bytesRead = stream.read(buffer, maxLength: bufferSize)
+            if bytesRead < 0 { return false }
+            if bytesRead == 0 { break }
+            hasher.update(bufferPointer: UnsafeRawBufferPointer(start: buffer, count: bytesRead))
+        }
+        let digest = hasher.finalize()
+        let hex = digest.map { String(format: "%02x", $0) }.joined()
+        return hex == expectedHex.lowercased()
     }
 
     /// チェックサムテキストから指定アセット名のチェックサムを解析して返す
@@ -551,7 +563,7 @@ private extension UpdateManager {
 
         let currentAppURL = Bundle.main.bundleURL
         let parentDir = currentAppURL.deletingLastPathComponent()
-        let backupURL = parentDir.appendingPathComponent("Sobani_backup.app")
+        let backupURL = parentDir.appendingPathComponent("\(AppConstants.appName)_backup.app")
 
         try? fm.removeItem(at: backupURL)
 

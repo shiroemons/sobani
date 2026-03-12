@@ -5,10 +5,7 @@ import os.log
 
 @MainActor
 final class ImageManager {
-    private let logger = Logger(
-        subsystem: AppConstants.loggerSubsystem,
-        category: "ImageManager"
-    )
+    private let logger = Logger(category: "ImageManager")
     static let shared = ImageManager()
     nonisolated static let supportedExtensions = ["png", "jpg", "jpeg", "gif", "tiff", "heic"]
     private let baseDirectory: URL?
@@ -23,11 +20,10 @@ final class ImageManager {
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
-        let initLogger = Logger(category: "ImageManager")
-        let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger)
+        let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
         self.appSupportURL = appDir
         if let appDir {
-            self.imagesDirectoryURL = AppSupportDirectory.ensureSubdirectory("images", in: appDir, logger: initLogger)
+            self.imagesDirectoryURL = AppSupportDirectory.ensureSubdirectory("images", in: appDir, logger: logger)
         } else {
             self.imagesDirectoryURL = nil
         }

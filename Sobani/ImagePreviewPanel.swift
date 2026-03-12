@@ -189,3 +189,38 @@ final class ImagePreviewPanel {
         }
     }
 }
+
+// MARK: - Shared Preview Helper
+
+extension ImagePreviewPanel {
+    /// メニュー項目に応じてプレビューを表示または非表示にする共通ヘルパー。
+    ///
+    /// - Parameters:
+    ///   - item: ハイライトされたメニュー項目（nilの場合は非表示）
+    ///   - menu: 対象の NSMenu
+    ///   - registeredImageActions: 登録済み画像名をプレビューするセレクター群
+    ///   - defaultImageActions: デフォルト画像をプレビューするセレクター群
+    func showPreviewIfApplicable(
+        for item: NSMenuItem?,
+        in menu: NSMenu,
+        registeredImageActions: Set<Selector>,
+        defaultImageActions: Set<Selector>
+    ) {
+        if let item = item,
+           let name = item.representedObject as? String,
+           let action = item.action,
+           registeredImageActions.contains(action) {
+            if let image = ImageManager.shared.loadRegisteredImageCached(named: name) {
+                show(image: image, relativeTo: item, ofMenu: menu)
+            }
+        } else if let item = item,
+                  let action = item.action,
+                  defaultImageActions.contains(action) {
+            if let image = ImageManager.shared.defaultImage() {
+                show(image: image, relativeTo: item, ofMenu: menu)
+            }
+        } else {
+            hide()
+        }
+    }
+}

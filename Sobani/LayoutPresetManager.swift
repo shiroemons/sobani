@@ -14,18 +14,14 @@ struct LayoutPreset: Codable, Equatable, Sendable {
 @MainActor
 final class LayoutPresetManager {
     static let shared = LayoutPresetManager()
-    private let logger = Logger(
-        subsystem: AppConstants.loggerSubsystem,
-        category: "LayoutPresetManager"
-    )
+    private let logger = Logger(category: "LayoutPresetManager")
     private var cachedPresets: [LayoutPreset]?
     let layoutsDirectoryURL: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
-        let initLogger = Logger(category: "LayoutPresetManager")
-        if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger) {
-            self.layoutsDirectoryURL = AppSupportDirectory.ensureSubdirectory("layouts", in: appDir, logger: initLogger)
+        if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger) {
+            self.layoutsDirectoryURL = AppSupportDirectory.ensureSubdirectory("layouts", in: appDir, logger: logger)
         } else {
             self.layoutsDirectoryURL = nil
         }
