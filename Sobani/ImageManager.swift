@@ -23,7 +23,7 @@ final class ImageManager {
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         self.baseDirectory = baseDirectory
-        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "ImageManager")
+        let initLogger = Logger(category: "ImageManager")
         let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger)
         self.appSupportURL = appDir
         if let appDir {
@@ -71,15 +71,18 @@ final class ImageManager {
     func loadRegisteredImageCached(named name: String) -> NSImage? {
         if let entry = previewImageCache[name] {
             previewImageCache[name] = (image: entry.image, lastAccess: Date())
+            logger.debug("Cache hit: \(name)")
             return entry.image
         }
         guard let image = loadRegisteredImage(named: name) else { return nil }
         if previewImageCache.count >= Self.previewCacheCountLimit {
             if let lruKey = previewImageCache.min(by: { $0.value.lastAccess < $1.value.lastAccess })?.key {
                 previewImageCache.removeValue(forKey: lruKey)
+                logger.debug("Cache eviction: \(lruKey)")
             }
         }
         previewImageCache[name] = (image: image, lastAccess: Date())
+        logger.debug("Cache miss: \(name)")
         return image
     }
 

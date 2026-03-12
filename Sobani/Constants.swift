@@ -143,6 +143,7 @@ enum AppConstants {
 
     // UserDefaults Keys
     static let appLanguageKey = "AppLanguage"
+    static let appleLanguagesKey = "AppleLanguages"
 
     // Window Snap
     static let snapThreshold: CGFloat = 8
@@ -178,6 +179,16 @@ enum GeometryUtils {
         var result = angle.truncatingRemainder(dividingBy: 360)
         if result < 0 { result += 360 }
         return result
+    }
+
+    /// 値が実質的にゼロかどうかを判定
+    static func isApproximatelyZero(_ value: CGFloat) -> Bool {
+        abs(value) < AppConstants.floatingPointTolerance
+    }
+
+    /// 2つの値が実質的に等しいかどうかを判定
+    static func isApproximatelyEqual(_ lhs: CGFloat, _ rhs: CGFloat) -> Bool {
+        abs(lhs - rhs) < AppConstants.floatingPointTolerance
     }
 }
 
@@ -305,5 +316,11 @@ enum ImageFileDialog {
 extension NSMenu {
     func item(withMenuTag tag: MenuItemTag) -> NSMenuItem? {
         items.first { $0.tag == tag.rawValue }
+    }
+}
+
+extension Logger {
+    init(category: String) {
+        self.init(subsystem: AppConstants.loggerSubsystem, category: category)
     }
 }

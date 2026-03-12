@@ -6,7 +6,7 @@ final class OnboardingManager {
     static let shared = OnboardingManager()
 
     private let defaults: UserDefaults
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "OnboardingManager")
+    private let logger = Logger(category: "OnboardingManager")
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(defaults: UserDefaults = .standard) {

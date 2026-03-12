@@ -8,7 +8,7 @@ final class CropEditHistory {
     private var states: [CropRect]
     private var currentIndex: Int
 
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "CropEditHistory")
+    private let logger = Logger(category: "CropEditHistory")
 
     // MARK: - Computed Properties
 

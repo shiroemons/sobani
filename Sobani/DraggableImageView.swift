@@ -5,7 +5,7 @@ import os.log
 
 @MainActor
 final class DraggableImageView: NSImageView {
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "DraggableImageView")
+    private let logger = Logger(category: "DraggableImageView")
 
     var aspectRatio: CGFloat = 1.0
     let minHeight: CGFloat = AppConstants.minImageHeight
@@ -59,7 +59,7 @@ final class DraggableImageView: NSImageView {
         if let delegate = NSApp.delegate as? CharacterWindowDelegate {
             return delegate.allCharacterWindows
         }
-        // delegateが取得できない場合は空配列を返す（AppDelegateは常にCharacterWindowDelegateに準拠）
+        logger.warning("NSApp.delegate could not be cast to CharacterWindowDelegate")
         return []
     }
 
@@ -117,10 +117,10 @@ final class DraggableImageView: NSImageView {
                     otherFrames: otherFrames,
                     screenVisibleFrame: screenFrame
                 )
-                if abs(snap.deltaX) > AppConstants.floatingPointTolerance {
+                if !GeometryUtils.isApproximatelyZero(snap.deltaX) {
                     origin.x += snap.deltaX
                 }
-                if abs(snap.deltaY) > AppConstants.floatingPointTolerance {
+                if !GeometryUtils.isApproximatelyZero(snap.deltaY) {
                     origin.y += snap.deltaY
                 }
             }
@@ -137,7 +137,7 @@ final class DraggableImageView: NSImageView {
     override func scrollWheel(with event: NSEvent) {
         if isCropModeActive { return }
         let delta = event.scrollingDeltaY
-        if abs(delta) < AppConstants.floatingPointTolerance { return }
+        if GeometryUtils.isApproximatelyZero(delta) { return }
         if let handler = scrollRotationHandler {
             handler(delta)
             return
@@ -291,7 +291,7 @@ final class DraggableImageView: NSImageView {
         let centerX = boundsWidth / 2
         let centerY = boundsHeight / 2
 
-        if abs(rotationDegrees) > AppConstants.floatingPointTolerance {
+        if !GeometryUtils.isApproximatelyZero(rotationDegrees) {
             let radians = -rotationDegrees * .pi / 180
             transform = transform
                 .translatedBy(x: centerX, y: centerY)

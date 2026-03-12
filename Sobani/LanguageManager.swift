@@ -26,10 +26,9 @@ enum Language: String, CaseIterable, Sendable {
 
 @MainActor
 final class LanguageManager {
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LanguageManager")
+    private let logger = Logger(category: "LanguageManager")
     static let shared = LanguageManager()
 
-    private static let appleLanguagesKey = "AppleLanguages"
     private let defaults: UserDefaults
     private(set) var currentBundle: Bundle?
 
@@ -44,10 +43,10 @@ final class LanguageManager {
         set {
             if newValue == .system {
                 defaults.removeObject(forKey: AppConstants.appLanguageKey)
-                defaults.removeObject(forKey: Self.appleLanguagesKey)
+                defaults.removeObject(forKey: AppConstants.appleLanguagesKey)
             } else {
                 defaults.set(newValue.rawValue, forKey: AppConstants.appLanguageKey)
-                defaults.set([newValue.rawValue], forKey: Self.appleLanguagesKey)
+                defaults.set([newValue.rawValue], forKey: AppConstants.appleLanguagesKey)
             }
             updateBundle()
             NotificationCenter.default.post(name: .languageDidChange, object: nil)
@@ -61,7 +60,7 @@ final class LanguageManager {
         // This must happen before any UI is loaded so system strings respect the language
         if let raw = defaults.string(forKey: AppConstants.appLanguageKey),
            let lang = Language(rawValue: raw), lang != .system {
-            defaults.set([lang.rawValue], forKey: Self.appleLanguagesKey)
+            defaults.set([lang.rawValue], forKey: AppConstants.appleLanguagesKey)
         }
         updateBundle()
     }

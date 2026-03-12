@@ -5,7 +5,7 @@ import os.log
 /// 処理順序: quarterTurns回転 → isFlippedInCrop反転 → (傾き補正+クロップ統合 or クロップのみ)
 enum CropImageProcessor {
 
-    private static let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "CropImageProcessor")
+    private static let logger = Logger(category: "CropImageProcessor")
 
     // MARK: - Context Helpers
 
@@ -63,8 +63,8 @@ enum CropImageProcessor {
         }
 
         // 2.5. パース補正
-        if abs(cropRect.verticalPerspective) > AppConstants.floatingPointTolerance
-            || abs(cropRect.horizontalPerspective) > AppConstants.floatingPointTolerance {
+        if !GeometryUtils.isApproximatelyZero(cropRect.verticalPerspective)
+            || !GeometryUtils.isApproximatelyZero(cropRect.horizontalPerspective) {
             guard let perspectiveCorrected = applyPerspective(
                 to: current, vertical: cropRect.verticalPerspective, horizontal: cropRect.horizontalPerspective
             ) else {
@@ -75,7 +75,7 @@ enum CropImageProcessor {
         }
 
         // 3+4. 傾き補正 + クロップ（統合処理）
-        if abs(cropRect.straightenAngle) > AppConstants.floatingPointTolerance {
+        if !GeometryUtils.isApproximatelyZero(cropRect.straightenAngle) {
             let result = applyStraightenAndCrop(
                 to: current, angleDegrees: cropRect.straightenAngle, cropRect: cropRect
             )
@@ -151,8 +151,8 @@ enum CropImageProcessor {
 
     /// パース補正を適用する
     static func applyPerspective(to image: CGImage, vertical: CGFloat, horizontal: CGFloat) -> CGImage? {
-        guard abs(vertical) > AppConstants.floatingPointTolerance
-            || abs(horizontal) > AppConstants.floatingPointTolerance else {
+        guard !GeometryUtils.isApproximatelyZero(vertical)
+            || !GeometryUtils.isApproximatelyZero(horizontal) else {
             return image
         }
 
@@ -172,14 +172,14 @@ enum CropImageProcessor {
         context.translateBy(x: width / 2, y: height / 2)
 
         // Apply vertical perspective (X-axis rotation approximation)
-        if abs(vertical) > AppConstants.floatingPointTolerance {
+        if !GeometryUtils.isApproximatelyZero(vertical) {
             let angle = vertical * .pi / 180
             let scaleY = cos(angle)
             context.scaleBy(x: 1.0, y: scaleY)
         }
 
         // Apply horizontal perspective (Y-axis rotation approximation)
-        if abs(horizontal) > AppConstants.floatingPointTolerance {
+        if !GeometryUtils.isApproximatelyZero(horizontal) {
             let angle = horizontal * .pi / 180
             let scaleX = cos(angle)
             context.scaleBy(x: scaleX, y: 1.0)

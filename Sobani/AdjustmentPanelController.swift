@@ -118,7 +118,7 @@ final class RotationDialView: NSView {
 
     override func scrollWheel(with event: NSEvent) {
         let delta = event.scrollingDeltaY
-        if abs(delta) < AppConstants.floatingPointTolerance { return }
+        if GeometryUtils.isApproximatelyZero(delta) { return }
         let newAngle = GeometryUtils.normalizeAngle(angle + delta * scrollSensitivity)
         angle = newAngle
         onAngleChanged?(angle)
@@ -207,7 +207,7 @@ private enum PositionSizeLayout {
 
 @MainActor
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "AdjustmentPanelController")
+    private let logger = Logger(category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220
     private static let panelHeight: CGFloat = 460
     private static let rotationSectionOffsetY: CGFloat = 300
@@ -433,14 +433,14 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     // MARK: - Existing Update Methods
 
     func updateAngle(_ angle: CGFloat) {
-        guard abs(currentAngle - angle) >= AppConstants.floatingPointTolerance else { return }
+        guard !GeometryUtils.isApproximatelyEqual(currentAngle, angle) else { return }
         currentAngle = angle
         dialView?.angle = angle
         textField?.stringValue = Self.formatAngle(angle)
     }
 
     func updateOpacity(_ opacity: CGFloat) {
-        guard abs(currentOpacity - opacity) >= AppConstants.floatingPointTolerance else { return }
+        guard !GeometryUtils.isApproximatelyEqual(currentOpacity, opacity) else { return }
         currentOpacity = opacity
         opacitySlider?.doubleValue = Double(opacity)
         opacityLabel?.stringValue = Self.formatOpacity(opacity)
@@ -495,7 +495,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
     static func formatAngle(_ angle: CGFloat) -> String {
         let rounded = angle.rounded()
-        if abs(angle - rounded) < AppConstants.floatingPointTolerance {
+        if GeometryUtils.isApproximatelyEqual(angle, rounded) {
             return String(format: "%.0f", rounded)
         }
         return String(format: "%.1f", angle)

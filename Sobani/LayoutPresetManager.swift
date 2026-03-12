@@ -23,12 +23,16 @@ final class LayoutPresetManager {
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
-        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LayoutPresetManager")
+        let initLogger = Logger(category: "LayoutPresetManager")
         if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger) {
             self.layoutsDirectoryURL = AppSupportDirectory.ensureSubdirectory("layouts", in: appDir, logger: initLogger)
         } else {
             self.layoutsDirectoryURL = nil
         }
+    }
+
+    private func invalidateCache() {
+        cachedPresets = nil
     }
 
     private func sanitizedFileName(for name: String) -> String {
@@ -47,7 +51,7 @@ final class LayoutPresetManager {
         JSONPersistence.save(preset, to: url, logger: logger, errorMessage: "Failed to save layout preset") {
             $0.dateEncodingStrategy = .iso8601
         }
-        cachedPresets = nil
+        invalidateCache()
     }
 
     func loadPresets() -> [LayoutPreset] {
@@ -90,7 +94,7 @@ final class LayoutPresetManager {
         guard let url = presetFileURL(for: name) else { return }
         do {
             try FileManager.default.removeItem(at: url)
-            cachedPresets = nil
+            invalidateCache()
         } catch {
             logger.error("Failed to delete layout preset '\(name)': \(error.localizedDescription)")
         }
@@ -117,12 +121,12 @@ final class LayoutPresetManager {
         let newFileName = sanitizedFileName(for: newName)
         if oldFileName != newFileName {
             guard let oldURL = presetFileURL(for: oldName) else {
-                cachedPresets = nil
+                invalidateCache()
                 return true
             }
             try? FileManager.default.removeItem(at: oldURL)
         }
-        cachedPresets = nil
+        invalidateCache()
         return true
     }
 }

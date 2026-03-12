@@ -234,10 +234,10 @@ extension CropEditorCanvasView {
         let normalizedTurns = CropGeometry.normalizeQuarterTurns(cropRect.quarterTurns)
         let angle = cropRect.straightenAngle
         let hasQuarterTurns = normalizedTurns != 0
-        let hasStraighten = abs(angle) > AppConstants.floatingPointTolerance
+        let hasStraighten = !GeometryUtils.isApproximatelyZero(angle)
         let hasFlip = cropRect.isFlippedInCrop
-        let hasVertPerspective = abs(cropRect.verticalPerspective) > AppConstants.floatingPointTolerance
-        let hasHorizPerspective = abs(cropRect.horizontalPerspective) > AppConstants.floatingPointTolerance
+        let hasVertPerspective = !GeometryUtils.isApproximatelyZero(cropRect.verticalPerspective)
+        let hasHorizPerspective = !GeometryUtils.isApproximatelyZero(cropRect.horizontalPerspective)
 
         guard hasQuarterTurns || hasStraighten || hasFlip || hasVertPerspective || hasHorizPerspective else {
             image.draw(in: imageDrawRect)

@@ -293,7 +293,7 @@ final class StraightenSliderView: NSView {
     // MARK: - Fade Trail
 
     private func detectCrossedTicks(from oldAngle: CGFloat, to newAngle: CGFloat) {
-        guard abs(oldAngle - newAngle) > AppConstants.floatingPointTolerance else { return }
+        guard !GeometryUtils.isApproximatelyEqual(oldAngle, newAngle) else { return }
         let minDeg = Int(floor(min(oldAngle, newAngle)))
         let maxDeg = Int(ceil(max(oldAngle, newAngle)))
         guard minDeg <= maxDeg else { return }
@@ -302,7 +302,7 @@ final class StraightenSliderView: NSView {
             let degF = CGFloat(deg)
             if (oldAngle < degF && degF <= newAngle)
                 || (newAngle < degF && degF <= oldAngle)
-                || abs(degF - oldAngle) < AppConstants.floatingPointTolerance {
+                || GeometryUtils.isApproximatelyEqual(degF, oldAngle) {
                 fadingTicks[deg] = now
             }
         }

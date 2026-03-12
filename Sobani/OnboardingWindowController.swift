@@ -12,7 +12,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     var onAddImage: (() -> Void)?
     var onFinish: (() -> Void)?
     nonisolated(unsafe) private var languageObserver: NSObjectProtocol?
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "OnboardingWindowController")
+    private let logger = Logger(category: "OnboardingWindowController")
     private static let iconSize: CGFloat = 48
     private static let contentPadding: CGFloat = 40
     private static let dotSize: CGFloat = 8
@@ -31,9 +31,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     deinit {
-        if let observer = languageObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        assert(languageObserver == nil, "teardown() must be called before OnboardingWindowController is deallocated")
     }
 
     func show(onComplete: (() -> Void)? = nil) {
@@ -205,35 +203,21 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
         for index in 0..<symbols.count {
             let rowY = startY - CGFloat(index) * rowHeight
-
-            let icon = makeSymbolView(symbols[index], size: Self.step2SymbolSize, color: .controlAccentColor)
-            icon.frame.origin = CGPoint(x: iconX, y: rowY)
-            container.addSubview(icon)
-
-            let labelField = NSTextField(labelWithString: labels[index])
-            labelField.frame = NSRect(x: labelX, y: rowY + Self.step2LabelYOffset, width: contentWidth, height: 20)
-            labelField.font = NSFont.boldSystemFont(ofSize: Self.step2LabelFontSize)
-            container.addSubview(labelField)
-
-            let descField = NSTextField(labelWithString: descriptions[index])
-            descField.frame = NSRect(x: labelX, y: rowY + Self.step2DescriptionYOffset, width: contentWidth, height: 18)
-            descField.font = NSFont.systemFont(ofSize: Self.smallFontSize)
-            descField.textColor = .secondaryLabelColor
-            container.addSubview(descField)
-
-            if let hint = hints[index], !hint.isEmpty {
-                let hintField = NSTextField(labelWithString: hint)
-                hintField.frame = NSRect(x: labelX, y: rowY + Self.step2HintYOffset, width: contentWidth, height: 16)
-                hintField.font = NSFont.systemFont(ofSize: Self.step2HintFontSize)
-                hintField.textColor = .tertiaryLabelColor
-                container.addSubview(hintField)
-            }
-
-            if index < symbols.count - 1 {
-                let separator = NSBox(frame: NSRect(x: iconX, y: rowY + Self.step2SeparatorYOffset, width: width - Self.step2SeparatorInset, height: 1))
-                separator.boxType = .separator
-                container.addSubview(separator)
-            }
+            let content = StepRowContent(
+                symbol: symbols[index],
+                label: labels[index],
+                description: descriptions[index],
+                hint: hints[index]
+            )
+            let context = StepRowContext(
+                rowY: rowY,
+                iconX: iconX,
+                labelX: labelX,
+                contentWidth: contentWidth,
+                containerWidth: width,
+                addSeparator: index < symbols.count - 1
+            )
+            buildStepRow(in: container, content: content, context: context)
         }
     }
 
@@ -404,6 +388,54 @@ extension OnboardingWindowController {
 // MARK: - View Helpers
 
 extension OnboardingWindowController {
+    fileprivate struct StepRowContent {
+        let symbol: String
+        let label: String
+        let description: String
+        let hint: String?
+    }
+
+    fileprivate struct StepRowContext {
+        let rowY: CGFloat
+        let iconX: CGFloat
+        let labelX: CGFloat
+        let contentWidth: CGFloat
+        let containerWidth: CGFloat
+        let addSeparator: Bool
+    }
+
+    fileprivate func buildStepRow(in container: NSView, content: StepRowContent, context: StepRowContext) {
+        let icon = makeSymbolView(content.symbol, size: Self.step2SymbolSize, color: .controlAccentColor)
+        icon.frame.origin = CGPoint(x: context.iconX, y: context.rowY)
+        container.addSubview(icon)
+
+        let labelField = NSTextField(labelWithString: content.label)
+        labelField.frame = NSRect(x: context.labelX, y: context.rowY + Self.step2LabelYOffset, width: context.contentWidth, height: 20)
+        labelField.font = NSFont.boldSystemFont(ofSize: Self.step2LabelFontSize)
+        container.addSubview(labelField)
+
+        let descField = NSTextField(labelWithString: content.description)
+        descField.frame = NSRect(x: context.labelX, y: context.rowY + Self.step2DescriptionYOffset, width: context.contentWidth, height: 18)
+        descField.font = NSFont.systemFont(ofSize: Self.smallFontSize)
+        descField.textColor = .secondaryLabelColor
+        container.addSubview(descField)
+
+        if let hint = content.hint, !hint.isEmpty {
+            let hintField = NSTextField(labelWithString: hint)
+            hintField.frame = NSRect(x: context.labelX, y: context.rowY + Self.step2HintYOffset, width: context.contentWidth, height: 16)
+            hintField.font = NSFont.systemFont(ofSize: Self.step2HintFontSize)
+            hintField.textColor = .tertiaryLabelColor
+            container.addSubview(hintField)
+        }
+
+        if context.addSeparator {
+            let separatorWidth = context.containerWidth - Self.step2SeparatorInset
+            let separator = NSBox(frame: NSRect(x: context.iconX, y: context.rowY + Self.step2SeparatorYOffset, width: separatorWidth, height: 1))
+            separator.boxType = .separator
+            container.addSubview(separator)
+        }
+    }
+
     private func makeSymbolView(_ symbolName: String, size: CGFloat, color: NSColor) -> NSImageView {
         let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: size, height: size))
         imageView.image = SFSymbolUtils.icon(symbolName, pointSize: size)

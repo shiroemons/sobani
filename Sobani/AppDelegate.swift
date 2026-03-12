@@ -6,7 +6,7 @@ import os.log
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "AppDelegate")
+    private let logger = Logger(category: "AppDelegate")
     /// Z順（前面→背面）でウィンドウを管理する単一配列。characterWindows は computed alias。
     var zOrderedWindows: [CharacterWindow] = []
     /// zOrderedWindows への computed alias。後方互換性のために提供。

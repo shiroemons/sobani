@@ -4,7 +4,7 @@ import os.log
 @MainActor
 final class ImagePreviewPanel {
     static let shared = ImagePreviewPanel()
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "ImagePreviewPanel")
+    private let logger = Logger(category: "ImagePreviewPanel")
     private let panel: NSPanel
     private let imageView: NSImageView
     private static let padding: CGFloat = 8

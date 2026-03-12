@@ -10,15 +10,11 @@ struct PendingRestoration: Codable, Sendable {
     let adjustedOriginX: CGFloat
     let adjustedOriginY: CGFloat
     let createdAt: Date
-    let screenFrameX: CGFloat?
-    let screenFrameY: CGFloat?
-    let screenFrameWidth: CGFloat?
-    let screenFrameHeight: CGFloat?
+    let preSleepScreenFrame: NSRect?
 
-    var preSleepScreenFrame: NSRect? {
-        guard let x = screenFrameX, let y = screenFrameY,
-              let w = screenFrameWidth, let h = screenFrameHeight else { return nil }
-        return NSRect(x: x, y: y, width: w, height: h)
+    private enum CodingKeys: String, CodingKey {
+        case windowId, originalState, displayID, adjustedOriginX, adjustedOriginY, createdAt
+        case screenFrameX, screenFrameY, screenFrameWidth, screenFrameHeight
     }
 
     init(windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
@@ -30,10 +26,7 @@ struct PendingRestoration: Codable, Sendable {
         self.adjustedOriginX = adjustedOriginX
         self.adjustedOriginY = adjustedOriginY
         self.createdAt = createdAt
-        self.screenFrameX = preSleepScreenFrame?.origin.x
-        self.screenFrameY = preSleepScreenFrame?.origin.y
-        self.screenFrameWidth = preSleepScreenFrame?.size.width
-        self.screenFrameHeight = preSleepScreenFrame?.size.height
+        self.preSleepScreenFrame = preSleepScreenFrame
     }
 
     init(from decoder: Decoder) throws {
@@ -44,10 +37,28 @@ struct PendingRestoration: Codable, Sendable {
         adjustedOriginX = try container.decode(CGFloat.self, forKey: .adjustedOriginX)
         adjustedOriginY = try container.decode(CGFloat.self, forKey: .adjustedOriginY)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
-        screenFrameX = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameX)
-        screenFrameY = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameY)
-        screenFrameWidth = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameWidth)
-        screenFrameHeight = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameHeight)
+        if let x = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameX),
+           let y = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameY),
+           let w = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameWidth),
+           let h = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameHeight) {
+            preSleepScreenFrame = NSRect(x: x, y: y, width: w, height: h)
+        } else {
+            preSleepScreenFrame = nil
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(windowId, forKey: .windowId)
+        try container.encode(originalState, forKey: .originalState)
+        try container.encode(displayID, forKey: .displayID)
+        try container.encode(adjustedOriginX, forKey: .adjustedOriginX)
+        try container.encode(adjustedOriginY, forKey: .adjustedOriginY)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(preSleepScreenFrame?.origin.x, forKey: .screenFrameX)
+        try container.encodeIfPresent(preSleepScreenFrame?.origin.y, forKey: .screenFrameY)
+        try container.encodeIfPresent(preSleepScreenFrame?.size.width, forKey: .screenFrameWidth)
+        try container.encodeIfPresent(preSleepScreenFrame?.size.height, forKey: .screenFrameHeight)
     }
 }
 
@@ -67,7 +78,7 @@ final class ScreenRestorationManager {
 
     init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
         self.timeout = timeout
-        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "ScreenRestorationManager")
+        let initLogger = Logger(category: "ScreenRestorationManager")
         if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger) {
             self.pendingFileURL = appDir.appendingPathComponent("pending_restorations.json")
         } else {

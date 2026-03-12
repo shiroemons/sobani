@@ -13,7 +13,7 @@ enum CropGeometry {
     /// - Returns: 必要なズーム倍率（1.0 = ズームなし）
     static func zoomScaleForStraighten(angleDegrees: CGFloat, aspectRatio: CGFloat) -> CGFloat {
         // 角度0ならズーム不要
-        guard abs(angleDegrees) > AppConstants.floatingPointTolerance else { return 1.0 }
+        guard !GeometryUtils.isApproximatelyZero(angleDegrees) else { return 1.0 }
         let radians = abs(angleDegrees) * .pi / 180
         let sinA = sin(radians)
         let cosA = cos(radians)
@@ -316,8 +316,8 @@ enum CropGeometry {
     static func initialStateFromCropRect(
         cropRect: CropRect, canvasSize: CGSize, imageSize: CGSize
     ) -> (offset: CGPoint, zoom: CGFloat) {
-        guard cropRect.width > AppConstants.floatingPointTolerance,
-              cropRect.height > AppConstants.floatingPointTolerance else {
+        guard !GeometryUtils.isApproximatelyZero(cropRect.width),
+              !GeometryUtils.isApproximatelyZero(cropRect.height) else {
             return (offset: .zero, zoom: 1.0)
         }
 

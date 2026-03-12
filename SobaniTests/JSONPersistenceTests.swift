@@ -10,7 +10,7 @@ import os.log
         let value: Int
     }
 
-    private let logger = Logger(subsystem: "com.shiroemons.Sobani", category: "JSONPersistenceTests")
+    private let logger = Logger(category: "JSONPersistenceTests")
 
     private func makeTempDirectory() throws -> URL {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

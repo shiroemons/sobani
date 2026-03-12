@@ -1265,6 +1265,22 @@
         }
       }
     },
+    "update.download_timeout": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードがタイムアウトしました。ネットワーク接続を確認して再試行してください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download timed out. Please check your network connection and try again."
+          }
+        }
+      }
+    },
     "update.error_code_label": {
       "localizations": {
         "ja": {
@@ -1341,6 +1357,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Check your connection and try again. If using VPN/proxy, try disabling it temporarily."
+          }
+        }
+      }
+    },
+    "update.hint.U-204": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダウンロードがタイムアウトしました。ネットワーク接続を確認し、再試行してください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download timed out. Please check your network connection and try again."
           }
         }
       }
@@ -1517,6 +1549,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Check write permissions for the Applications folder. Make sure Sobani is not in use by another process."
+          }
+        }
+      }
+    },
+    "update.hint.U-504": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHubから手動でSobani.appをダウンロードして再インストールしてください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please download and reinstall Sobani.app manually from GitHub."
           }
         }
       }
@@ -1709,6 +1757,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed to update the app. Please try again."
+          }
+        }
+      }
+    },
+    "update.backup_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在のアプリのバックアップに失敗しました。更新を中止します。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to back up the current app. Update aborted."
+          }
+        }
+      }
+    },
+    "update.restore_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新に失敗し、バックアップからの復元も失敗しました。Sobani.appを再インストールしてください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update failed and restoring from backup also failed. Please reinstall Sobani.app."
           }
         }
       }

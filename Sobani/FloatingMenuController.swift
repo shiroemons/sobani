@@ -17,7 +17,7 @@ protocol FloatingMenuDelegate: AnyObject {
 
 @MainActor
 final class FloatingMenuController {
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "FloatingMenuController")
+    private let logger = Logger(category: "FloatingMenuController")
 
     // Layout constants
     private static let aboveOffset: CGFloat = 8
@@ -212,34 +212,33 @@ final class FloatingMenuController {
 
     // MARK: - Button Actions
 
-    @objc private func cropTapped() {
+    private func dismissAndNotify(_ action: (FloatingMenuDelegate) -> Void) {
         dismiss()
-        delegate?.floatingMenuDidSelectCrop(self)
+        if let delegate { action(delegate) }
+    }
+
+    @objc private func cropTapped() {
+        dismissAndNotify { $0.floatingMenuDidSelectCrop(self) }
     }
 
     @objc private func flipTapped() {
-        dismiss()
-        delegate?.floatingMenuDidSelectFlip(self)
+        dismissAndNotify { $0.floatingMenuDidSelectFlip(self) }
     }
 
     @objc private func adjustTapped() {
-        dismiss()
-        delegate?.floatingMenuDidSelectAdjust(self)
+        dismissAndNotify { $0.floatingMenuDidSelectAdjust(self) }
     }
 
     @objc private func removeBackgroundTapped() {
-        dismiss()
-        delegate?.floatingMenuDidSelectRemoveBackground(self)
+        dismissAndNotify { $0.floatingMenuDidSelectRemoveBackground(self) }
     }
 
     @objc private func resetDisplayTapped() {
-        dismiss()
-        delegate?.floatingMenuDidSelectResetDisplay(self)
+        dismissAndNotify { $0.floatingMenuDidSelectResetDisplay(self) }
     }
 
     @objc private func closeTapped() {
-        dismiss()
-        delegate?.floatingMenuDidSelectClose(self)
+        dismissAndNotify { $0.floatingMenuDidSelectClose(self) }
     }
 
     // MARK: - Event Monitors

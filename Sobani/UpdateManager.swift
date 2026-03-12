@@ -57,6 +57,7 @@ enum UpdateErrorCode: String, CaseIterable, Sendable {
     case parseError         = "U-103"
     // Download phase
     case downloadError      = "U-201"
+    case downloadTimeout    = "U-204"
     case fileNotFound       = "U-202"
     case checksumFailed     = "U-203"
     // Install phase - ZIP
@@ -71,6 +72,7 @@ enum UpdateErrorCode: String, CaseIterable, Sendable {
     case locationError      = "U-501"
     case backupFailed       = "U-502"
     case installFailed      = "U-503"
+    case restoreFailed      = "U-504"
 
     var troubleshootingKey: String {
         switch self {
@@ -78,6 +80,7 @@ enum UpdateErrorCode: String, CaseIterable, Sendable {
         case .fetchError:       return "update.hint.U-102"
         case .parseError:       return "update.hint.U-103"
         case .downloadError:    return "update.hint.U-201"
+        case .downloadTimeout:  return "update.hint.U-204"
         case .fileNotFound:     return "update.hint.U-202"
         case .checksumFailed:   return "update.hint.U-203"
         case .zipExtractFailed: return "update.hint.U-301"
@@ -89,6 +92,7 @@ enum UpdateErrorCode: String, CaseIterable, Sendable {
         case .locationError:    return "update.hint.U-501"
         case .backupFailed:     return "update.hint.U-502"
         case .installFailed:    return "update.hint.U-503"
+        case .restoreFailed:    return "update.hint.U-504"
         }
     }
 }
@@ -104,7 +108,7 @@ protocol UpdateManagerDelegate: AnyObject {
 
 final class UpdateManager: @unchecked Sendable {
     static let shared = UpdateManager()
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "UpdateManager")
+    private let logger = Logger(category: "UpdateManager")
 
     weak var delegate: UpdateManagerDelegate?
 
@@ -130,6 +134,7 @@ final class UpdateManager: @unchecked Sendable {
     private static let lastCheckKey = "LastUpdateCheckDate"
     private static let checkInterval: TimeInterval = 24 * 60 * 60 // 24 hours
     private static let requestTimeoutInterval: TimeInterval = 15
+    private static let downloadTimeoutInterval: TimeInterval = 300 // 5 minutes
     // swiftlint:disable:next force_unwrapping
     private static let defaultAPIURL = URL(string: "https://api.github.com/repos/shiroemons/sobani/releases/latest")!
 
@@ -338,14 +343,21 @@ final class UpdateManager: @unchecked Sendable {
 
     // アセットをダウンロードしてインストール
     private func downloadAsset(from url: URL, expectedChecksum: String?, format: UpdateAssetFormat) {
-        let downloadTask = session.downloadTask(with: url) { @Sendable [weak self] tempURL, _, error in
+        var request = URLRequest(url: url)
+        request.timeoutInterval = Self.downloadTimeoutInterval
+        let downloadTask = session.downloadTask(with: request) { @Sendable [weak self] tempURL, _, error in
             guard let self = self else { return }
 
             if let error = error {
                 // 内部エラーはログのみ
                 logger.error("Download error: \(error.localizedDescription)")
+                let isTimeout = (error as NSError).code == NSURLErrorTimedOut
                 DispatchQueue.main.async { @Sendable in
-                    self.state = .error(code: .downloadError, message: L("update.download_error"))
+                    if isTimeout {
+                        self.state = .error(code: .downloadTimeout, message: L("update.download_timeout"))
+                    } else {
+                        self.state = .error(code: .downloadError, message: L("update.download_error"))
+                    }
                 }
                 return
             }
@@ -438,33 +450,42 @@ final class UpdateManager: @unchecked Sendable {
 // MARK: - Install & Restart (private)
 
 private extension UpdateManager {
-    func installUpdateFromZip(_ zipURL: URL) {
+    func createTemporaryDirectory(prefix: String) throws -> URL {
         let fm = FileManager.default
-        let tempDir = fm.temporaryDirectory.appendingPathComponent("SobaniUpdate-\(UUID().uuidString)")
+        let url = fm.temporaryDirectory.appendingPathComponent("\(prefix)-\(UUID().uuidString)")
+        try fm.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
 
+    @discardableResult
+    func runProcess(executable: String, arguments: [String]) throws -> Int32 {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = arguments
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+        try process.run()
+        process.waitUntilExit()
+        return process.terminationStatus
+    }
+
+    func installUpdateFromZip(_ zipURL: URL) {
         do {
-            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            let tempDir = try createTemporaryDirectory(prefix: "SobaniUpdate")
 
             defer {
-                try? fm.removeItem(at: tempDir)
+                try? FileManager.default.removeItem(at: tempDir)
             }
 
-            // Extract ZIP using ditto
-            let extractProcess = Process()
-            extractProcess.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
-            extractProcess.arguments = ["-xk", zipURL.path, tempDir.path]
-            try extractProcess.run()
-            extractProcess.waitUntilExit()
-
-            guard extractProcess.terminationStatus == 0 else {
+            let status = try runProcess(executable: "/usr/bin/ditto", arguments: ["-xk", zipURL.path, tempDir.path])
+            guard status == 0 else {
                 DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .zipExtractFailed, message: L("update.zip_extract_failed"))
                 }
                 return
             }
 
-            // Find the .app in extracted contents
-            let contents = try fm.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
+            let contents = try FileManager.default.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
             guard let newAppURL = contents.first(where: { $0.pathExtension == "app" }) else {
                 DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .zipAppNotFound, message: L("update.app_not_found"))
@@ -482,42 +503,27 @@ private extension UpdateManager {
     }
 
     func installUpdateFromDMG(_ dmgURL: URL) {
-        let fm = FileManager.default
-        let mountPoint = fm.temporaryDirectory.appendingPathComponent("SobaniMount-\(UUID().uuidString)")
-
         do {
-            try fm.createDirectory(at: mountPoint, withIntermediateDirectories: true)
+            let mountPoint = try createTemporaryDirectory(prefix: "SobaniMount")
 
-            // hdiutil attach でマウント
-            let attachProcess = Process()
-            attachProcess.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
-            attachProcess.arguments = ["attach", dmgURL.path, "-mountpoint", mountPoint.path, "-nobrowse", "-readonly", "-noverify"]
-            let attachPipe = Pipe()
-            attachProcess.standardOutput = attachPipe
-            attachProcess.standardError = Pipe()
-            try attachProcess.run()
-            attachProcess.waitUntilExit()
-
-            guard attachProcess.terminationStatus == 0 else {
-                try? fm.removeItem(at: mountPoint)
+            let attachStatus = try runProcess(
+                executable: "/usr/bin/hdiutil",
+                arguments: ["attach", dmgURL.path, "-mountpoint", mountPoint.path, "-nobrowse", "-readonly", "-noverify"]
+            )
+            guard attachStatus == 0 else {
+                try? FileManager.default.removeItem(at: mountPoint)
                 DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .dmgMountFailed, message: L("update.dmg_mount_failed"))
                 }
                 return
             }
 
-            // defer で確実にアンマウント＆クリーンアップ
             defer {
-                let detachProcess = Process()
-                detachProcess.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
-                detachProcess.arguments = ["detach", mountPoint.path, "-force"]
-                try? detachProcess.run()
-                detachProcess.waitUntilExit()
-                try? fm.removeItem(at: mountPoint)
+                try? runProcess(executable: "/usr/bin/hdiutil", arguments: ["detach", mountPoint.path, "-force"])
+                try? FileManager.default.removeItem(at: mountPoint)
             }
 
-            // マウントポイント内の .app を探す
-            let contents = try fm.contentsOfDirectory(at: mountPoint, includingPropertiesForKeys: nil)
+            let contents = try FileManager.default.contentsOfDirectory(at: mountPoint, includingPropertiesForKeys: nil)
             guard let appInDMG = contents.first(where: { $0.pathExtension == "app" }) else {
                 DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .dmgAppNotFound, message: L("update.app_not_found"))
@@ -525,16 +531,13 @@ private extension UpdateManager {
                 return
             }
 
-            // .app を一時ディレクトリにコピー（マウント中は move 不可）
-            let tempDir = fm.temporaryDirectory.appendingPathComponent("SobaniUpdate-\(UUID().uuidString)")
-            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            let tempDir = try createTemporaryDirectory(prefix: "SobaniUpdate")
             let copiedAppURL = tempDir.appendingPathComponent(appInDMG.lastPathComponent)
-            try fm.copyItem(at: appInDMG, to: copiedAppURL)
+            try FileManager.default.copyItem(at: appInDMG, to: copiedAppURL)
 
             replaceAndRestart(with: copiedAppURL)
 
-            // コピー先のクリーンアップは replaceAndRestart 内で app が移動された後に行う
-            try? fm.removeItem(at: tempDir)
+            try? FileManager.default.removeItem(at: tempDir)
         } catch {
             logger.error("DMG install error: \(error.localizedDescription)")
             DispatchQueue.main.async { @Sendable in
@@ -550,38 +553,37 @@ private extension UpdateManager {
         let parentDir = currentAppURL.deletingLastPathComponent()
         let backupURL = parentDir.appendingPathComponent("Sobani_backup.app")
 
-        // Remove old backup if exists
         try? fm.removeItem(at: backupURL)
 
         do {
-            // Backup current app
             try fm.moveItem(at: currentAppURL, to: backupURL)
+        } catch {
+            logger.error("Backup failed: \(error.localizedDescription)")
+            DispatchQueue.main.async { @Sendable in
+                self.state = .error(code: .backupFailed, message: L("update.backup_failed"))
+            }
+            return
+        }
 
+        do {
+            try fm.moveItem(at: newAppURL, to: currentAppURL)
+            try? fm.removeItem(at: backupURL)
+            DispatchQueue.main.async { @Sendable in
+                self.restartApp(at: currentAppURL)
+            }
+        } catch {
+            logger.error("Install failed: \(error.localizedDescription)")
             do {
-                // Move new app to current location
-                try fm.moveItem(at: newAppURL, to: currentAppURL)
-
-                // Remove backup on success
-                try? fm.removeItem(at: backupURL)
-
-                // Restart
-                DispatchQueue.main.async { @Sendable in
-                    self.restartApp(at: currentAppURL)
-                }
-            } catch {
-                // Restore from backup
-                logger.error("Install error: \(error.localizedDescription)")
                 try? fm.removeItem(at: currentAppURL)
-                try? fm.moveItem(at: backupURL, to: currentAppURL)
-
+                try fm.moveItem(at: backupURL, to: currentAppURL)
                 DispatchQueue.main.async { @Sendable in
                     self.state = .error(code: .installFailed, message: L("update.install_failed"))
                 }
-            }
-        } catch {
-            logger.error("Backup error: \(error.localizedDescription)")
-            DispatchQueue.main.async { @Sendable in
-                self.state = .error(code: .backupFailed, message: L("update.prepare_failed"))
+            } catch let restoreError {
+                logger.error("Restore from backup failed: \(restoreError.localizedDescription)")
+                DispatchQueue.main.async { @Sendable in
+                    self.state = .error(code: .restoreFailed, message: L("update.restore_failed"))
+                }
             }
         }
     }

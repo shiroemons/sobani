@@ -14,7 +14,7 @@ protocol CropEditorPanelDelegate: AnyObject {
 
 @MainActor
 final class CropEditorPanelController: NSObject {
-    private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "CropEditorPanelController")
+    private let logger = Logger(category: "CropEditorPanelController")
 
     // MARK: - Constants
 

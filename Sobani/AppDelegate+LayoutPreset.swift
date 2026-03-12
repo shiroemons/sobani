@@ -1,7 +1,7 @@
 import Cocoa
 import os.log
 
-private let layoutPresetLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "LayoutPreset")
+private let layoutPresetLogger = Logger(category: "LayoutPreset")
 
 // MARK: - AppDelegate + Layout Preset
 

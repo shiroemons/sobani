@@ -303,7 +303,7 @@ private extension CropEditorToolbarView {
             if buttonView.isSelected != newSelected {
                 buttonView.isSelected = newSelected
             }
-            if abs(buttonView.angle - newAngle) > AppConstants.floatingPointTolerance {
+            if !GeometryUtils.isApproximatelyEqual(buttonView.angle, newAngle) {
                 buttonView.angle = newAngle
             }
         }
@@ -326,7 +326,7 @@ private class ModeButtonView: NSView {
 
     var angle: CGFloat = 0 {
         didSet {
-            if abs(angle - oldValue) > AppConstants.floatingPointTolerance {
+            if !GeometryUtils.isApproximatelyEqual(angle, oldValue) {
                 needsDisplay = true
             }
         }

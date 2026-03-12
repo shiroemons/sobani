@@ -105,7 +105,7 @@ final class WindowStateManager {
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
-        let initLogger = Logger(subsystem: AppConstants.loggerSubsystem, category: "WindowStateManager")
+        let initLogger = Logger(category: "WindowStateManager")
         self.appSupportURL = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: initLogger)
     }
 
@@ -156,7 +156,7 @@ extension CharacterWindow {
     @discardableResult
     func restore(from state: WindowState) -> Bool {
         let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
-        guard adjusted.height > 0 else { return false }
+        guard adjusted.width > 0, adjusted.height > 0 else { return false }
         let tolerance = AppConstants.floatingPointTolerance
         let wasAdjusted = abs(adjusted.originX - state.originX) > tolerance
             || abs(adjusted.originY - state.originY) > tolerance
@@ -180,10 +180,10 @@ extension CharacterWindow {
         // AppKit resets the backing layer's affineTransform during
         // the initial window display cycle. Defer re-application
         // to the next run loop so the transform sticks.
-        if adjusted.isFlippedHorizontally || abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
+        if adjusted.isFlippedHorizontally || !GeometryUtils.isApproximatelyZero(adjusted.rotationAngle) {
             DispatchQueue.main.async { @Sendable [weak self] in
                 MainActor.assumeIsolated {
-                    if abs(adjusted.rotationAngle) > AppConstants.floatingPointTolerance {
+                    if !GeometryUtils.isApproximatelyZero(adjusted.rotationAngle) {
                         self?.adjustWindowForRotation()
                     }
                     self?.imageView.needsLayout = true

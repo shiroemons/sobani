@@ -61,4 +61,48 @@ import Testing
                 < AppConstants.floatingPointTolerance
         )
     }
+
+    // MARK: - isApproximatelyZero Tests
+
+    @Test func isApproximatelyZero_ExactlyZero() {
+        #expect(GeometryUtils.isApproximatelyZero(0.0))
+    }
+
+    @Test func isApproximatelyZero_WithinTolerance() {
+        #expect(GeometryUtils.isApproximatelyZero(0.005))
+        #expect(GeometryUtils.isApproximatelyZero(-0.005))
+    }
+
+    @Test func isApproximatelyZero_AtToleranceBoundary() {
+        #expect(!GeometryUtils.isApproximatelyZero(AppConstants.floatingPointTolerance))
+        #expect(!GeometryUtils.isApproximatelyZero(-AppConstants.floatingPointTolerance))
+    }
+
+    @Test func isApproximatelyZero_BeyondTolerance() {
+        #expect(!GeometryUtils.isApproximatelyZero(0.1))
+        #expect(!GeometryUtils.isApproximatelyZero(-0.1))
+    }
+
+    // MARK: - isApproximatelyEqual Tests
+
+    @Test func isApproximatelyEqual_SameValues() {
+        #expect(GeometryUtils.isApproximatelyEqual(1.0, 1.0))
+        #expect(GeometryUtils.isApproximatelyEqual(0.0, 0.0))
+        #expect(GeometryUtils.isApproximatelyEqual(-5.0, -5.0))
+    }
+
+    @Test func isApproximatelyEqual_WithinTolerance() {
+        #expect(GeometryUtils.isApproximatelyEqual(1.0, 1.005))
+        #expect(GeometryUtils.isApproximatelyEqual(1.005, 1.0))
+    }
+
+    @Test func isApproximatelyEqual_AtToleranceBoundary() {
+        #expect(!GeometryUtils.isApproximatelyEqual(0.0, AppConstants.floatingPointTolerance))
+        #expect(!GeometryUtils.isApproximatelyEqual(AppConstants.floatingPointTolerance, 0.0))
+    }
+
+    @Test func isApproximatelyEqual_BeyondTolerance() {
+        #expect(!GeometryUtils.isApproximatelyEqual(1.0, 1.1))
+        #expect(!GeometryUtils.isApproximatelyEqual(1.0, 2.0))
+    }
 }

@@ -358,4 +358,28 @@ import Testing
         #expect(loaded[0].windowId == 1)
         #expect(loaded[1].windowId == 5)
     }
+
+    // MARK: - Size Validation Tests
+
+    /// width=0のWindowStateでisPositionVisibleがfalseを返すことを検証
+    @Test func zeroWidthIsNotVisible() {
+        let state = makeState(
+            originX: 500,
+            originY: 300,
+            width: 0,
+            height: 400
+        )
+        #expect(!state.isPositionVisible(on: fakeScreens()))
+    }
+
+    /// height=0のWindowStateでisPositionVisibleがfalseを返すことを検証
+    @Test func zeroHeightIsNotVisible() {
+        let state = makeState(
+            originX: 500,
+            originY: 300,
+            width: 300,
+            height: 0
+        )
+        #expect(!state.isPositionVisible(on: fakeScreens()))
+    }
 }

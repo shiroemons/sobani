@@ -1,7 +1,7 @@
 import Cocoa
 import os.log
 
-private let logger = Logger(subsystem: AppConstants.loggerSubsystem, category: "ScreenRestoration")
+private let logger = Logger(category: "ScreenRestoration")
 
 // MARK: - Screen Restoration
 

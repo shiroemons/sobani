@@ -28,6 +28,7 @@ import Testing
         #expect(UpdateErrorCode.locationError.rawValue == "U-501")
         #expect(UpdateErrorCode.backupFailed.rawValue == "U-502")
         #expect(UpdateErrorCode.installFailed.rawValue == "U-503")
+        #expect(UpdateErrorCode.restoreFailed.rawValue == "U-504")
     }
 
     // MARK: - Uniqueness Test
