@@ -98,10 +98,20 @@ enum AppConstants {
     static let opacityMax: CGFloat = 1.0
 
     // Ghost Mode
-    static let ghostModeAlpha: CGFloat = 0.3
+    static let ghostModeAlphaDefault: CGFloat = 0.3
+    static let ghostModeAlphaMin: CGFloat = 0.1
+    static let ghostModeAlphaMax: CGFloat = 0.9
+    static let ghostModeAlphaKey = "ghostModeAlpha"
     static let ghostModeAnimationDuration: TimeInterval = 0.3
     static let optionGKeyCode: UInt16 = 5
     static let ghostModeSymbol = "face.dashed"
+
+    // Ghost Mode Slider Layout
+    static let ghostAlphaSliderContainerWidth: CGFloat = 260
+    static let ghostAlphaSliderContainerHeight: CGFloat = 28
+    static let ghostAlphaSliderPercentWidth: CGFloat = 36
+    static let ghostAlphaSliderHeight: CGFloat = 21
+    static let ghostAlphaSliderTrailingMargin: CGFloat = 8
 
     // Crop
     static let cropHandleSize: CGFloat = 8
@@ -165,6 +175,22 @@ enum AppConstants {
         static let height: CGFloat = 480
         static let currentVersion = 1
         static let completedVersionKey = "onboardingCompletedVersion"
+    }
+}
+
+enum GhostModeSettings {
+    static var globalAlpha: CGFloat {
+        get {
+            guard UserDefaults.standard.object(forKey: AppConstants.ghostModeAlphaKey) != nil else {
+                return AppConstants.ghostModeAlphaDefault
+            }
+            let value = UserDefaults.standard.double(forKey: AppConstants.ghostModeAlphaKey)
+            return CGFloat(max(AppConstants.ghostModeAlphaMin, min(AppConstants.ghostModeAlphaMax, value)))
+        }
+        set {
+            let clamped = max(AppConstants.ghostModeAlphaMin, min(AppConstants.ghostModeAlphaMax, newValue))
+            UserDefaults.standard.set(Double(clamped), forKey: AppConstants.ghostModeAlphaKey)
+        }
     }
 }
 
@@ -287,6 +313,7 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case resetCrop = 1032
     case ghostModeToggle = 1033
     case ghostModeAllDisable = 1034
+    case ghostModeAlphaSlider = 1035
 }
 
 // MARK: - SF Symbol Utils

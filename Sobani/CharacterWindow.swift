@@ -26,6 +26,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private var isRemovingBackground = false
     private var cachedHasAlpha: Bool?
     private(set) var isGhostMode: Bool = false
+    private(set) var customGhostAlpha: CGFloat?
     private var floatingMenuController: FloatingMenuController?
     private var cropEditorController: CropEditorPanelController?
     nonisolated(unsafe) private var windowMoveObserver: NSObjectProtocol?
@@ -299,6 +300,10 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 // MARK: - Ghost Mode
 
 extension CharacterWindow {
+    var effectiveGhostAlpha: CGFloat {
+        customGhostAlpha ?? GhostModeSettings.globalAlpha
+    }
+
     @objc func toggleGhostMode() {
         setGhostMode(!isGhostMode)
     }
@@ -307,10 +312,18 @@ extension CharacterWindow {
         guard enabled != isGhostMode else { return }
         NSAnimationContext.runAnimationGroup { context in
             context.duration = AppConstants.ghostModeAnimationDuration
-            window.animator().alphaValue = enabled ? AppConstants.ghostModeAlpha : 1.0
+            window.animator().alphaValue = enabled ? effectiveGhostAlpha : 1.0
         }
         isGhostMode = enabled
         window.ignoresMouseEvents = enabled
+    }
+
+    func setCustomGhostAlpha(_ alpha: CGFloat?) {
+        guard alpha != customGhostAlpha else { return }
+        customGhostAlpha = alpha
+        if isGhostMode {
+            window.alphaValue = effectiveGhostAlpha
+        }
     }
 }
 
@@ -659,7 +672,7 @@ extension CharacterWindow {
 
     func hideHighlightBorder() {
         if isGhostMode {
-            window.alphaValue = AppConstants.ghostModeAlpha
+            window.alphaValue = effectiveGhostAlpha
         }
         window.contentView?.layer?.borderWidth = 0
         window.contentView?.layer?.borderColor = nil

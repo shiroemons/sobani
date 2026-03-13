@@ -61,7 +61,7 @@ import os.log
 
     /// MenuItemTagのケース数が想定通りであることを検証
     @Test func menuItemTag_CaseCount() {
-        #expect(MenuItemTag.allCases.count == 33)
+        #expect(MenuItemTag.allCases.count == 34)
     }
 
     // MARK: - Screen Restoration / Wake Retry 定数検証
@@ -223,5 +223,73 @@ import os.log
     @Test func sfSymbolUtils_CustomPointSizeAndWeightWork() {
         let image = SFSymbolUtils.icon("star", pointSize: 18, weight: .medium)
         #expect(image != nil)
+    }
+
+    // MARK: - GhostModeSettings テスト
+
+    /// ghostModeAlpha定数の範囲が正しいことを検証
+    @Test func appConstants_GhostModeAlphaRange() {
+        #expect(AppConstants.ghostModeAlphaMin < AppConstants.ghostModeAlphaMax)
+        #expect(AppConstants.ghostModeAlphaMin >= 0.0)
+        #expect(AppConstants.ghostModeAlphaMax <= 1.0)
+        #expect(AppConstants.ghostModeAlphaDefault >= AppConstants.ghostModeAlphaMin)
+        #expect(AppConstants.ghostModeAlphaDefault <= AppConstants.ghostModeAlphaMax)
+    }
+
+    /// 未設定時にデフォルト値が返されることを検証
+    @Test func ghostModeSettings_DefaultValue() {
+        let key = AppConstants.ghostModeAlphaKey
+        let hadValue = UserDefaults.standard.object(forKey: key) != nil
+        let saved = UserDefaults.standard.double(forKey: key)
+        defer {
+            if hadValue {
+                UserDefaults.standard.set(saved, forKey: key)
+            } else {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+
+        UserDefaults.standard.removeObject(forKey: key)
+        let alpha = GhostModeSettings.globalAlpha
+        #expect(abs(alpha - AppConstants.ghostModeAlphaDefault) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 範囲外の値がクランプされることを検証
+    @Test func ghostModeSettings_ClampsOutOfRange() {
+        let key = AppConstants.ghostModeAlphaKey
+        let hadValue = UserDefaults.standard.object(forKey: key) != nil
+        let saved = UserDefaults.standard.double(forKey: key)
+        defer {
+            if hadValue {
+                UserDefaults.standard.set(saved, forKey: key)
+            } else {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+
+        GhostModeSettings.globalAlpha = 0.0
+        #expect(abs(GhostModeSettings.globalAlpha - AppConstants.ghostModeAlphaMin) < AppConstants.floatingPointTolerance)
+
+        GhostModeSettings.globalAlpha = 1.0
+        #expect(abs(GhostModeSettings.globalAlpha - AppConstants.ghostModeAlphaMax) < AppConstants.floatingPointTolerance)
+    }
+
+    /// UserDefaultsへの保存・読み出しラウンドトリップを検証
+    @Test func ghostModeSettings_RoundTrip() {
+        let key = AppConstants.ghostModeAlphaKey
+        let hadValue = UserDefaults.standard.object(forKey: key) != nil
+        let saved = UserDefaults.standard.double(forKey: key)
+        defer {
+            if hadValue {
+                UserDefaults.standard.set(saved, forKey: key)
+            } else {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+
+        let testValue: CGFloat = 0.5
+        GhostModeSettings.globalAlpha = testValue
+        let readBack = GhostModeSettings.globalAlpha
+        #expect(abs(readBack - testValue) < AppConstants.floatingPointTolerance)
     }
 }

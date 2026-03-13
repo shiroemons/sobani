@@ -3345,6 +3345,22 @@
         }
       }
     },
+    "ghost.alpha_setting": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゴースト透明度"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghost Opacity"
+          }
+        }
+      }
+    },
     "ghost.disable_all": {
       "localizations": {
         "ja": {

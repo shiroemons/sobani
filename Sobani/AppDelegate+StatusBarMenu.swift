@@ -353,6 +353,10 @@ extension AppDelegate {
         ghostItem.image = menuIcon(AppConstants.ghostModeSymbol)
         submenu.addItem(ghostItem)
 
+        if charWindow.isGhostMode {
+            submenu.addItem(buildPerWindowGhostAlphaSliderItem(for: charWindow))
+        }
+
         if #available(macOS 14.0, *) {
             submenu.addItem(NSMenuItem.separator())
             let removeBackgroundItem = NSMenuItem(
@@ -537,6 +541,119 @@ extension AppDelegate {
         return languageItem
     }
 
+    private func makePercentLabel(alpha: CGFloat, containerWidth: CGFloat, containerHeight: CGFloat) -> NSTextField {
+        let percentWidth = AppConstants.ghostAlphaSliderPercentWidth
+        let margin = AppConstants.ghostAlphaSliderTrailingMargin
+        let label = NSTextField(labelWithString: AdjustmentPanelController.formatOpacity(alpha))
+        label.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        label.alignment = .right
+        label.frame = NSRect(
+            x: containerWidth - percentWidth - margin,
+            y: (containerHeight - label.frame.height) / 2,
+            width: percentWidth,
+            height: label.frame.height
+        )
+        return label
+    }
+
+    private func updatePercentLabel(in container: NSView, alpha: CGFloat) {
+        if let label = container.subviews.compactMap({ $0 as? NSTextField }).last {
+            label.stringValue = AdjustmentPanelController.formatOpacity(alpha)
+        }
+    }
+
+    func buildPerWindowGhostAlphaSliderItem(for charWindow: CharacterWindow) -> NSMenuItem {
+        let item = NSMenuItem()
+
+        let containerWidth = AppConstants.ghostAlphaSliderContainerWidth
+        let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: containerWidth, height: containerHeight))
+
+        let isCustom = charWindow.customGhostAlpha != nil
+        let currentAlpha = charWindow.effectiveGhostAlpha
+
+        // チェックボックス（インデントを深くして親項目との階層感を出す）
+        let checkboxX: CGFloat = 32
+        let checkboxSize: CGFloat = 18
+        let checkboxTrailingGap: CGFloat = 22
+        let checkbox = NSButton(checkboxWithTitle: "", target: self, action: #selector(togglePerWindowGhostAlphaCustom(_:)))
+        checkbox.frame = NSRect(x: checkboxX, y: (containerHeight - checkboxSize) / 2, width: checkboxSize, height: checkboxSize)
+        checkbox.state = isCustom ? .on : .off
+        checkbox.tag = charWindow.window.windowNumber
+        container.addSubview(checkbox)
+
+        // スライダー
+        let sliderX: CGFloat = checkboxX + checkboxTrailingGap
+        let sliderWidth = containerWidth - sliderX - AppConstants.ghostAlphaSliderPercentWidth - AppConstants.ghostAlphaSliderTrailingMargin
+        let slider = NSSlider(
+            value: Double(currentAlpha),
+            minValue: Double(AppConstants.ghostModeAlphaMin),
+            maxValue: Double(AppConstants.ghostModeAlphaMax),
+            target: self,
+            action: #selector(perWindowGhostAlphaSliderChanged(_:))
+        )
+        let sliderHeight = AppConstants.ghostAlphaSliderHeight
+        slider.frame = NSRect(x: sliderX, y: (containerHeight - sliderHeight) / 2,
+                              width: sliderWidth, height: sliderHeight)
+        slider.isContinuous = true
+        slider.tag = charWindow.window.windowNumber
+        slider.isEnabled = isCustom
+        container.addSubview(slider)
+
+        // パーセント表示
+        let percentLabel = makePercentLabel(alpha: currentAlpha, containerWidth: containerWidth, containerHeight: containerHeight)
+        percentLabel.alphaValue = isCustom ? 1.0 : 0.5
+        container.addSubview(percentLabel)
+
+        item.view = container
+        return item
+    }
+
+    func buildGhostAlphaSliderItem() -> NSMenuItem {
+        let item = NSMenuItem()
+        item.tag = MenuItemTag.ghostModeAlphaSlider.rawValue
+
+        let containerWidth = AppConstants.ghostAlphaSliderContainerWidth
+        let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: containerWidth, height: containerHeight))
+
+        let iconSize: CGFloat = 16
+        let iconX: CGFloat = 16
+        let iconPointSize: CGFloat = 12
+        let iconLabelGap: CGFloat = 4
+        let iconView = NSImageView(frame: NSRect(x: iconX, y: (containerHeight - iconSize) / 2, width: iconSize, height: iconSize))
+        iconView.image = SFSymbolUtils.icon(AppConstants.ghostModeSymbol, pointSize: iconPointSize)
+        iconView.imageScaling = .scaleProportionallyDown
+        container.addSubview(iconView)
+
+        let label = NSTextField(labelWithString: L("ghost.alpha_setting"))
+        label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        label.sizeToFit()
+        label.frame.origin = NSPoint(x: iconX + iconSize + iconLabelGap, y: (containerHeight - label.frame.height) / 2)
+        container.addSubview(label)
+
+        let sliderX = label.frame.maxX + AppConstants.ghostAlphaSliderTrailingMargin
+        let sliderWidth = containerWidth - sliderX - AppConstants.ghostAlphaSliderPercentWidth - AppConstants.ghostAlphaSliderTrailingMargin
+        let slider = NSSlider(
+            value: Double(GhostModeSettings.globalAlpha),
+            minValue: Double(AppConstants.ghostModeAlphaMin),
+            maxValue: Double(AppConstants.ghostModeAlphaMax),
+            target: self,
+            action: #selector(ghostAlphaSliderChanged(_:))
+        )
+        let sliderHeight = AppConstants.ghostAlphaSliderHeight
+        slider.frame = NSRect(x: sliderX, y: (containerHeight - sliderHeight) / 2,
+                              width: sliderWidth, height: sliderHeight)
+        slider.isContinuous = true
+        container.addSubview(slider)
+
+        let percentLabel = makePercentLabel(alpha: GhostModeSettings.globalAlpha, containerWidth: containerWidth, containerHeight: containerHeight)
+        container.addSubview(percentLabel)
+
+        item.view = container
+        return item
+    }
+
     func buildSettingsMenuItem() -> NSMenuItem {
         let item = NSMenuItem(title: L("menu.settings"), action: nil, keyEquivalent: "")
         item.tag = MenuItemTag.settingsSubmenu.rawValue
@@ -562,6 +679,9 @@ extension AppDelegate {
         snapItem.state = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey) ? .on : .off
         snapItem.image = menuIcon("rectangle.arrowtriangle.2.inward")
         submenu.addItem(snapItem)
+
+        submenu.addItem(NSMenuItem.separator())
+        submenu.addItem(buildGhostAlphaSliderItem())
 
         submenu.addItem(NSMenuItem.separator())
 
@@ -591,6 +711,59 @@ extension AppDelegate {
 
         item.submenu = submenu
         return item
+    }
+
+    @objc func perWindowGhostAlphaSliderChanged(_ sender: NSSlider) {
+        let value = CGFloat(sender.doubleValue)
+        let windowNumber = sender.tag
+
+        // パーセント表示を更新
+        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
+
+        // 対象ウィンドウのカスタム透明度を更新
+        if let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == windowNumber }) {
+            charWindow.setCustomGhostAlpha(value)
+        }
+    }
+
+    @objc func togglePerWindowGhostAlphaCustom(_ sender: NSButton) {
+        let windowNumber = sender.tag
+        guard let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == windowNumber }) else { return }
+
+        if sender.state == .on {
+            // カスタムに切り替え: 現在のグローバル値をカスタム初期値として設定
+            charWindow.setCustomGhostAlpha(GhostModeSettings.globalAlpha)
+        } else {
+            // グローバルに戻す
+            charWindow.setCustomGhostAlpha(nil)
+        }
+
+        // スライダーとパーセント表示を更新
+        if let container = sender.superview {
+            let isCustom = charWindow.customGhostAlpha != nil
+            let currentAlpha = charWindow.effectiveGhostAlpha
+            if let slider = container.subviews.compactMap({ $0 as? NSSlider }).first {
+                slider.doubleValue = Double(currentAlpha)
+                slider.isEnabled = isCustom
+            }
+            if let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
+                percentLabel.stringValue = AdjustmentPanelController.formatOpacity(currentAlpha)
+                percentLabel.alphaValue = isCustom ? 1.0 : 0.5
+            }
+        }
+    }
+
+    @objc func ghostAlphaSliderChanged(_ sender: NSSlider) {
+        let value = CGFloat(sender.doubleValue)
+        GhostModeSettings.globalAlpha = value
+
+        // パーセント表示を更新
+        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
+
+        // グローバル設定を使用中のゴーストモードウィンドウに即時反映
+        for charWindow in zOrderedWindows where charWindow.isGhostMode && charWindow.customGhostAlpha == nil {
+            charWindow.window.alphaValue = value
+        }
     }
 
     @objc func changeLanguage(_ sender: NSMenuItem) {
