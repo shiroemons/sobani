@@ -27,8 +27,11 @@ final class DraggableImageView: NSImageView {
     var onRotationChanged: (() -> Void)?
     var opacityLevel: CGFloat = 1.0 {
         didSet {
-            alphaValue = opacityLevel
-            onOpacityChanged?()
+            if onOpacityChanged != nil {
+                onOpacityChanged?()
+            } else {
+                alphaValue = opacityLevel
+            }
         }
     }
     var onOpacityChanged: (() -> Void)?

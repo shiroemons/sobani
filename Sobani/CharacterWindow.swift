@@ -77,6 +77,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
             self?.adjustmentPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
         }
         imageView.onOpacityChanged = { [weak self] in
+            self?.updateImageAlpha()
             self?.adjustmentPanelController?.updateOpacity(self?.imageView.opacityLevel ?? 1.0)
         }
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
@@ -305,17 +306,22 @@ extension CharacterWindow {
         customGhostAlpha ?? GhostModeSettings.globalAlpha
     }
 
+    private var composedImageAlpha: CGFloat {
+        let ghostFactor = isGhostMode ? effectiveGhostAlpha : 1.0
+        return imageView.opacityLevel * ghostFactor
+    }
+
     @objc func toggleGhostMode() {
         setGhostMode(!isGhostMode)
     }
 
     func setGhostMode(_ enabled: Bool) {
         guard enabled != isGhostMode else { return }
+        isGhostMode = enabled
         NSAnimationContext.runAnimationGroup { context in
             context.duration = AppConstants.ghostModeAnimationDuration
-            window.animator().alphaValue = enabled ? effectiveGhostAlpha : 1.0
+            imageView.animator().alphaValue = composedImageAlpha
         }
-        isGhostMode = enabled
         window.ignoresMouseEvents = enabled
     }
 
@@ -323,8 +329,12 @@ extension CharacterWindow {
         guard alpha != customGhostAlpha else { return }
         customGhostAlpha = alpha
         if isGhostMode {
-            window.alphaValue = effectiveGhostAlpha
+            updateImageAlpha()
         }
+    }
+
+    private func updateImageAlpha() {
+        imageView.alphaValue = composedImageAlpha
     }
 }
 
@@ -664,17 +674,11 @@ extension CharacterWindow {
 
     func showHighlightBorder() {
         guard let contentView = window.contentView else { return }
-        if isGhostMode {
-            window.alphaValue = 1.0
-        }
         contentView.layer?.borderWidth = Self.highlightBorderWidth
         contentView.layer?.borderColor = NSColor.systemBlue.cgColor
     }
 
     func hideHighlightBorder() {
-        if isGhostMode {
-            window.alphaValue = effectiveGhostAlpha
-        }
         window.contentView?.layer?.borderWidth = 0
         window.contentView?.layer?.borderColor = nil
     }
