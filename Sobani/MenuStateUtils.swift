@@ -23,8 +23,8 @@ enum MenuStateUtils {
     }
 
     /// 一括リセット親メニュー有効判定（いずれかがリセット可能ならtrue）
-    static func isBulkResetEnabled(hasRotation: Bool, hasOpacity: Bool) -> Bool {
-        hasRotation || hasOpacity
+    static func isBulkResetEnabled(hasRotation: Bool, hasOpacity: Bool, hasGhost: Bool = false) -> Bool {
+        hasRotation || hasOpacity || hasGhost
     }
 
     /// 前面/最前面移動の有効判定
@@ -50,11 +50,16 @@ enum MenuStateUtils {
         isHidden: Bool,
         showingFormat: String,
         showingLabel: String,
-        hiddenLabel: String
+        hiddenLabel: String,
+        ghostCount: Int = 0,
+        ghostFormat: String = ""
     ) -> String {
-        let base = String(format: showingFormat, "\(count)")
+        var base = String(format: showingFormat, "\(count)")
         if isHidden {
-            return base.replacingOccurrences(of: showingLabel, with: hiddenLabel)
+            base = base.replacingOccurrences(of: showingLabel, with: hiddenLabel)
+        }
+        if ghostCount > 0, !ghostFormat.isEmpty {
+            base += " " + String(format: ghostFormat, "\(ghostCount)")
         }
         return base
     }
@@ -65,9 +70,14 @@ enum MenuStateUtils {
         displayName: String,
         windowId: Int,
         imageSize: (width: Int, height: Int),
-        screenName: String
+        screenName: String,
+        isGhostMode: Bool = false,
+        ghostLabel: String = ""
     ) -> (leftText: String, rightText: String) {
-        let leftText = "\(index + 1): \(displayName) (#\(windowId))"
+        var leftText = "\(index + 1): \(displayName) (#\(windowId))"
+        if isGhostMode {
+            leftText += " \(ghostLabel)"
+        }
         let rightText = "[\(imageSize.width)\u{00d7}\(imageSize.height)] \(screenName)"
         return (leftText, rightText)
     }

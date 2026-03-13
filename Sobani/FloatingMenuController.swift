@@ -11,6 +11,7 @@ protocol FloatingMenuDelegate: AnyObject {
     func floatingMenuDidSelectRemoveBackground(_ menu: FloatingMenuController)
     func floatingMenuDidSelectClose(_ menu: FloatingMenuController)
     func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController)
+    func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController)
 }
 
 // MARK: - Floating Menu Controller
@@ -111,9 +112,9 @@ final class FloatingMenuController {
 
     private static func buttonCount() -> Int {
         if #available(macOS 14.0, *) {
-            return 6
+            return 7
         } else {
-            return 5
+            return 6
         }
     }
 
@@ -150,6 +151,10 @@ final class FloatingMenuController {
             ))
         }
 
+        buttons.append(ButtonSpec(
+            symbolName: "eye.slash.circle", tooltip: L("floating_menu.ghost_mode"),
+            label: L("floating_menu.label.ghost_mode"), action: #selector(ghostModeTapped)
+        ))
         buttons.append(ButtonSpec(
             symbolName: "arrow.counterclockwise", tooltip: L("floating_menu.reset_display"),
             label: L("floating_menu.label.reset_display"),
@@ -231,6 +236,10 @@ final class FloatingMenuController {
 
     @objc private func removeBackgroundTapped() {
         dismissAndNotify { $0.floatingMenuDidSelectRemoveBackground(self) }
+    }
+
+    @objc private func ghostModeTapped() {
+        dismissAndNotify { $0.floatingMenuDidSelectGhostMode(self) }
     }
 
     @objc private func resetDisplayTapped() {

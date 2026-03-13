@@ -2929,6 +2929,38 @@
         }
       }
     },
+    "floating_menu.ghost_mode": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゴースト"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghost"
+          }
+        }
+      }
+    },
+    "floating_menu.label.ghost_mode": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゴースト"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghost"
+          }
+        }
+      }
+    },
     "crop.confirm": {
       "localizations": {
         "ja": {
@@ -3293,6 +3325,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "2:3"
+          }
+        }
+      }
+    },
+    "ghost.toggle": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゴーストモード"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghost Mode"
+          }
+        }
+      }
+    },
+    "ghost.disable_all": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべてのゴーストモードを解除"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disable All Ghost Mode"
+          }
+        }
+      }
+    },
+    "ghost.label": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[ゴースト]"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Ghost]"
+          }
+        }
+      }
+    },
+    "status.ghost_count": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(ゴースト: %@)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(Ghost: %@)"
           }
         }
       }

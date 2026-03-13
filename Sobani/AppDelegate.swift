@@ -124,24 +124,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         areWindowsHidden.toggle()
     }
 
-    private nonisolated func isToggleHotkey(_ event: NSEvent) -> Bool {
-        event.keyCode == AppConstants.optionHKeyCode
+    private nonisolated func isOptionHotkey(_ event: NSEvent, keyCode: UInt16) -> Bool {
+        event.keyCode == keyCode
             && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option
     }
 
     func setupHotkeyMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            guard let self, self.isToggleHotkey(event) else { return }
-            DispatchQueue.main.async { @Sendable [weak self] in
-                self?.toggleAllWindowsVisibility()
+            guard let self else { return }
+            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
+                DispatchQueue.main.async { @Sendable [weak self] in
+                    self?.toggleAllWindowsVisibility()
+                }
+            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
+                DispatchQueue.main.async { @Sendable [weak self] in
+                    self?.toggleAllGhostMode()
+                }
             }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            guard let self, self.isToggleHotkey(event) else { return event }
-            DispatchQueue.main.async { @Sendable [weak self] in
-                self?.toggleAllWindowsVisibility()
+            guard let self else { return event }
+            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
+                DispatchQueue.main.async { @Sendable [weak self] in
+                    self?.toggleAllWindowsVisibility()
+                }
+                return nil
+            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
+                DispatchQueue.main.async { @Sendable [weak self] in
+                    self?.toggleAllGhostMode()
+                }
+                return nil
             }
-            return nil
+            return event
         }
     }
 
@@ -334,4 +348,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         teardownScreenRestorationObservers()
     }
 
+}
+
+// MARK: - Ghost Mode
+
+extension AppDelegate {
+    @objc func toggleAllGhostMode() {
+        guard !zOrderedWindows.isEmpty else { return }
+        let anyGhosted = zOrderedWindows.contains { $0.isGhostMode }
+        for charWindow in zOrderedWindows {
+            charWindow.setGhostMode(!anyGhosted)
+        }
+    }
+
+    @objc func disableAllGhostMode() {
+        for charWindow in zOrderedWindows {
+            charWindow.setGhostMode(false)
+        }
+    }
 }

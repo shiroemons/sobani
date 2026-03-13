@@ -65,6 +65,17 @@ extension CharacterWindow {
         deleteRegisteredItem.submenu = deleteSubmenu
         deleteRegisteredItem.isEnabled = !names.isEmpty
         otherSubmenu.addItem(deleteRegisteredItem)
+
+        otherSubmenu.addItem(NSMenuItem.separator())
+
+        let ghostItem = NSMenuItem(
+            title: L("ghost.toggle"), action: #selector(toggleGhostMode), keyEquivalent: ""
+        )
+        ghostItem.tag = MenuItemTag.ghostModeToggle.rawValue
+        ghostItem.target = self
+        ghostItem.state = isGhostMode ? .on : .off
+        ghostItem.image = SFSymbolUtils.icon("eye.slash.circle")
+        otherSubmenu.addItem(ghostItem)
     }
 
 }

@@ -97,6 +97,11 @@ enum AppConstants {
     static let opacityMin: CGFloat = 0.1
     static let opacityMax: CGFloat = 1.0
 
+    // Ghost Mode
+    static let ghostModeAlpha: CGFloat = 0.3
+    static let ghostModeAnimationDuration: TimeInterval = 0.3
+    static let optionGKeyCode: UInt16 = 5
+
     // Crop
     static let cropHandleSize: CGFloat = 8
     static let cropMinProportion: CGFloat = 0.1
@@ -279,6 +284,8 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case renameLayout = 1030
     case cropImage = 1031
     case resetCrop = 1032
+    case ghostModeToggle = 1033
+    case ghostModeAllDisable = 1034
 }
 
 // MARK: - SF Symbol Utils

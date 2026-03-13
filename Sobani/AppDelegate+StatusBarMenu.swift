@@ -33,12 +33,15 @@ extension AppDelegate {
         // 画像を追加表示 & 表示中
         menu.addItem(buildNewWindowMenuItem(imageNames: imageNames))
 
+        let ghostCount = zOrderedWindows.filter { $0.isGhostMode }.count
         let countTitle = MenuStateUtils.formatWindowCountText(
             count: zOrderedWindows.count,
             isHidden: areWindowsHidden,
             showingFormat: L("status.showing_count"),
             showingLabel: L("status.showing"),
-            hiddenLabel: L("status.hidden")
+            hiddenLabel: L("status.hidden"),
+            ghostCount: ghostCount,
+            ghostFormat: L("status.ghost_count")
         )
         let countItem = NSMenuItem(
             title: countTitle,
@@ -73,7 +76,7 @@ extension AppDelegate {
         menu.addItem(NSMenuItem.separator())
 
         // リセット & 閉じる
-        menu.addItem(buildBulkResetMenuItem())
+        menu.addItem(buildBulkResetMenuItem(ghostCount: ghostCount))
 
         let closeAllItem = NSMenuItem(title: L("menu.close_all"), action: #selector(closeAllWindows), keyEquivalent: "")
         closeAllItem.target = self
@@ -159,7 +162,7 @@ extension AppDelegate {
         return item
     }
 
-    func buildBulkResetMenuItem() -> NSMenuItem {
+    func buildBulkResetMenuItem(ghostCount: Int) -> NSMenuItem {
         let item = NSMenuItem(title: L("menu.bulk_reset"), action: nil, keyEquivalent: "")
         item.tag = MenuItemTag.bulkResetSubmenu.rawValue
         item.image = menuIcon("arrow.counterclockwise.circle")
@@ -184,9 +187,23 @@ extension AppDelegate {
         let opacityItem = buildResetOpacityMenuItem(hasOpacity: hasOpacity)
         submenu.addItem(opacityItem)
 
+        let hasGhost = ghostCount > 0
+
+        submenu.addItem(NSMenuItem.separator())
+
+        let ghostResetItem = NSMenuItem(
+            title: L("ghost.disable_all"),
+            action: #selector(disableAllGhostMode),
+            keyEquivalent: ""
+        )
+        ghostResetItem.target = self
+        ghostResetItem.tag = MenuItemTag.ghostModeAllDisable.rawValue
+        ghostResetItem.isEnabled = hasGhost
+        ghostResetItem.image = menuIcon("eye")
+        submenu.addItem(ghostResetItem)
+
         item.submenu = submenu
-        // 両方 disabled なら親も disabled
-        item.isEnabled = MenuStateUtils.isBulkResetEnabled(hasRotation: hasRotation, hasOpacity: hasOpacity)
+        item.isEnabled = MenuStateUtils.isBulkResetEnabled(hasRotation: hasRotation, hasOpacity: hasOpacity, hasGhost: hasGhost)
         return item
     }
 
@@ -228,7 +245,9 @@ extension AppDelegate {
                 index: index, displayName: charWindow.localizedDisplayName,
                 windowId: charWindow.windowId,
                 imageSize: (Int(charWindow.imageView.frame.width), Int(charWindow.imageView.frame.height)),
-                screenName: rawName.isEmpty ? L("image.unknown") : rawName
+                screenName: rawName.isEmpty ? L("image.unknown") : rawName,
+                isGhostMode: charWindow.isGhostMode,
+                ghostLabel: L("ghost.label")
             )
             return (charWindow, info)
         }
@@ -318,6 +337,19 @@ extension AppDelegate {
         resetDisplayItem.tag = windowNumber
         resetDisplayItem.image = menuIcon("arrow.counterclockwise.circle")
         submenu.addItem(resetDisplayItem)
+
+        submenu.addItem(NSMenuItem.separator())
+
+        let ghostItem = NSMenuItem(
+            title: L("ghost.toggle"),
+            action: #selector(toggleGhostModeByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
+        ghostItem.target = self
+        ghostItem.tag = windowNumber
+        ghostItem.state = charWindow.isGhostMode ? .on : .off
+        ghostItem.image = menuIcon("eye.slash.circle")
+        submenu.addItem(ghostItem)
 
         if #available(macOS 14.0, *) {
             submenu.addItem(NSMenuItem.separator())
@@ -660,6 +692,11 @@ extension AppDelegate {
         for charWindow in zOrderedWindows {
             charWindow.applyOpacity(1.0)
         }
+    }
+
+    @objc func toggleGhostModeByWindowNumber(_ sender: NSMenuItem) {
+        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
+        charWindow.setGhostMode(!charWindow.isGhostMode)
     }
 
 }

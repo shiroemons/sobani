@@ -81,6 +81,7 @@ import Testing
             func floatingMenuDidSelectRemoveBackground(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectClose(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) {}
+            func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController) {}
         }
 
         var delegate: MockDelegate? = MockDelegate()
@@ -102,6 +103,7 @@ import Testing
             func floatingMenuDidSelectRemoveBackground(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectClose(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) {}
+            func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController) {}
         }
 
         let delegate = MockDelegate()

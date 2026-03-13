@@ -25,6 +25,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
     private var cachedHasAlpha: Bool?
+    private(set) var isGhostMode: Bool = false
     private var floatingMenuController: FloatingMenuController?
     private var cropEditorController: CropEditorPanelController?
     nonisolated(unsafe) private var windowMoveObserver: NSObjectProtocol?
@@ -272,6 +273,9 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     @objc func resetDisplay() {
+        if isGhostMode {
+            setGhostMode(false)
+        }
         imageView.isFlippedHorizontally = false
         imageView.resetCrop()
         imageView.rotationAngle = 0
@@ -289,6 +293,24 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
         imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
         imageView.needsLayout = true
+    }
+}
+
+// MARK: - Ghost Mode
+
+extension CharacterWindow {
+    @objc func toggleGhostMode() {
+        setGhostMode(!isGhostMode)
+    }
+
+    func setGhostMode(_ enabled: Bool) {
+        guard enabled != isGhostMode else { return }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = AppConstants.ghostModeAnimationDuration
+            window.animator().alphaValue = enabled ? AppConstants.ghostModeAlpha : 1.0
+        }
+        isGhostMode = enabled
+        window.ignoresMouseEvents = enabled
     }
 }
 
@@ -312,6 +334,7 @@ extension CharacterWindow: FloatingMenuDelegate {
     func floatingMenuDidSelectRemoveBackground(_ menu: FloatingMenuController) { removeBackground() }
     func floatingMenuDidSelectClose(_ menu: FloatingMenuController) { closeThisWindow() }
     func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) { resetDisplay() }
+    func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController) { setGhostMode(true) }
 }
 
 // MARK: - Crop Mode
@@ -627,11 +650,17 @@ extension CharacterWindow {
 
     func showHighlightBorder() {
         guard let contentView = window.contentView else { return }
+        if isGhostMode {
+            window.alphaValue = 1.0
+        }
         contentView.layer?.borderWidth = Self.highlightBorderWidth
         contentView.layer?.borderColor = NSColor.systemBlue.cgColor
     }
 
     func hideHighlightBorder() {
+        if isGhostMode {
+            window.alphaValue = AppConstants.ghostModeAlpha
+        }
         window.contentView?.layer?.borderWidth = 0
         window.contentView?.layer?.borderColor = nil
     }

@@ -92,6 +92,7 @@
 		F0JP000004000000000001 /* JSONPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0JP000003000000000001 /* JSONPersistenceTests.swift */; };
 		F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */; };
 		F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */; };
+		F0GM000002000000000001 /* WindowStateGhostModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0GM000001000000000001 /* WindowStateGhostModeTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -195,6 +196,7 @@
 		F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPanel+FloatingConfig.swift"; sourceTree = "<group>"; };
 		F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSMenu+RegisteredImages.swift"; sourceTree = "<group>"; };
 		F0JP000003000000000001 /* JSONPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPersistenceTests.swift; sourceTree = "<group>"; };
+		F0GM000001000000000001 /* WindowStateGhostModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateGhostModeTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -330,6 +332,7 @@
 				F0CI000003000000000001 /* CropImageProcessorTests.swift */,
 				F0EH000003000000000001 /* CropEditHistoryTests.swift */,
 				F0JP000003000000000001 /* JSONPersistenceTests.swift */,
+				F0GM000001000000000001 /* WindowStateGhostModeTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -539,6 +542,7 @@
 				F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */,
 				F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */,
 				F0JP000004000000000001 /* JSONPersistenceTests.swift in Sources */,
+				F0GM000002000000000001 /* WindowStateGhostModeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
