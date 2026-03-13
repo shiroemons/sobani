@@ -109,7 +109,7 @@ enum AppConstants {
     // Ghost Mode Slider Layout
     static let ghostAlphaSliderContainerWidth: CGFloat = 260
     static let ghostAlphaSliderContainerHeight: CGFloat = 28
-    static let ghostAlphaSliderPercentWidth: CGFloat = 36
+    static let ghostAlphaSliderPercentWidth: CGFloat = 45
     static let ghostAlphaSliderHeight: CGFloat = 21
     static let ghostAlphaSliderTrailingMargin: CGFloat = 8
 
@@ -168,6 +168,14 @@ enum AppConstants {
     static let floatingMenuPadding: CGFloat = 8
     static let floatingMenuGap: CGFloat = 4
     static let floatingMenuCornerRadius: CGFloat = 10
+
+    // Floating Menu Opacity Slider
+    static let floatingMenuSliderRowHeight: CGFloat = 28
+    static let floatingMenuSeparatorHeight: CGFloat = 1
+
+    // Menu Opacity Slider (two-line layout)
+    static let opacitySliderContainerHeight: CGFloat = 44
+    static let opacitySliderTopRowHeight: CGFloat = 20
 
     // Onboarding
     enum Onboarding {
@@ -314,6 +322,16 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case ghostModeToggle = 1033
     case ghostModeAllDisable = 1034
     case ghostModeAlphaSlider = 1035
+    case opacitySliderContext = 1036
+}
+
+// MARK: - Format Utils
+
+enum FormatUtils {
+    /// 不透明度（0–1）をパーセント文字列に変換（例: 0.75 → "75%"）
+    static func formatOpacity(_ opacity: CGFloat) -> String {
+        "\(Int(round(opacity * 100)))%"
+    }
 }
 
 // MARK: - SF Symbol Utils

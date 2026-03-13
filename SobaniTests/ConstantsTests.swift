@@ -61,7 +61,7 @@ import os.log
 
     /// MenuItemTagのケース数が想定通りであることを検証
     @Test func menuItemTag_CaseCount() {
-        #expect(MenuItemTag.allCases.count == 34)
+        #expect(MenuItemTag.allCases.count == 35)
     }
 
     // MARK: - Screen Restoration / Wake Retry 定数検証
@@ -291,5 +291,32 @@ import os.log
         GhostModeSettings.globalAlpha = testValue
         let readBack = GhostModeSettings.globalAlpha
         #expect(abs(readBack - testValue) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - FormatUtils テスト
+
+    /// 100%不透明度のフォーマットを検証
+    @Test func formatUtils_formatOpacity_full() {
+        #expect(FormatUtils.formatOpacity(1.0) == "100%")
+    }
+
+    /// 50%不透明度のフォーマットを検証
+    @Test func formatUtils_formatOpacity_half() {
+        #expect(FormatUtils.formatOpacity(0.5) == "50%")
+    }
+
+    /// 最小不透明度のフォーマットを検証
+    @Test func formatUtils_formatOpacity_minimum() {
+        #expect(FormatUtils.formatOpacity(0.1) == "10%")
+    }
+
+    /// 0%不透明度のフォーマットを検証
+    @Test func formatUtils_formatOpacity_zero() {
+        #expect(FormatUtils.formatOpacity(0.0) == "0%")
+    }
+
+    /// 四捨五入が正しく行われることを検証
+    @Test func formatUtils_formatOpacity_rounding() {
+        #expect(FormatUtils.formatOpacity(0.555) == "56%")
     }
 }

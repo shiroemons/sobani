@@ -12,6 +12,7 @@ protocol FloatingMenuDelegate: AnyObject {
     func floatingMenuDidSelectClose(_ menu: FloatingMenuController)
     func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController)
     func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController)
+    func floatingMenu(_ menu: FloatingMenuController, didChangeOpacity opacity: CGFloat)
 }
 
 // MARK: - Floating Menu Controller
@@ -28,6 +29,9 @@ final class FloatingMenuController {
     private static let buttonIconPointSize: CGFloat = 18
 
     weak var delegate: FloatingMenuDelegate?
+    var currentOpacity: CGFloat = 1.0
+    private var opacitySlider: NSSlider?
+    private var opacityLabel: NSTextField?
     var isRemoveBackgroundEnabled: Bool = true
 
     private var panel: NSPanel?
@@ -45,6 +49,7 @@ final class FloatingMenuController {
         let panelWidth = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuColumnWidth * CGFloat(buttonCount)
             + AppConstants.floatingMenuGap * CGFloat(buttonCount - 1)
         let panelHeight = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuButtonSize + Self.labelTopGap + Self.labelHeight
+            + AppConstants.floatingMenuSeparatorHeight + AppConstants.floatingMenuSliderRowHeight
 
         // Convert window-local point to screen coordinates
         let screenPoint = window.convertPoint(toScreen: point)
@@ -91,6 +96,7 @@ final class FloatingMenuController {
             contentView.layer?.masksToBounds = true
 
             setupButtons(in: contentView)
+            setupOpacitySlider(in: contentView)
 
             newPanel.contentView = contentView
             panel = newPanel
@@ -99,6 +105,10 @@ final class FloatingMenuController {
         panel?.setFrameOrigin(origin)
         panel?.orderFront(nil)
 
+        opacitySlider?.doubleValue = Double(currentOpacity)
+        opacityLabel?.stringValue = FormatUtils.formatOpacity(currentOpacity)
+
+        removeEventMonitors()
         installEventMonitors()
         logger.debug("Floating menu shown at (\(origin.x), \(origin.y))")
     }
@@ -165,10 +175,11 @@ final class FloatingMenuController {
             label: L("floating_menu.label.close"), action: #selector(closeTapped)
         ))
 
+        let sliderAreaHeight = AppConstants.floatingMenuSliderRowHeight + AppConstants.floatingMenuSeparatorHeight
         for (index, spec) in buttons.enumerated() {
             let columnX = AppConstants.floatingMenuPadding + (AppConstants.floatingMenuColumnWidth + AppConstants.floatingMenuGap) * CGFloat(index)
             let buttonX = columnX + (AppConstants.floatingMenuColumnWidth - AppConstants.floatingMenuButtonSize) / 2
-            let buttonY = AppConstants.floatingMenuPadding + Self.labelHeight + Self.labelTopGap
+            let buttonY = sliderAreaHeight + AppConstants.floatingMenuPadding + Self.labelHeight + Self.labelTopGap
             let buttonFrame = NSRect(x: buttonX, y: buttonY, width: AppConstants.floatingMenuButtonSize, height: AppConstants.floatingMenuButtonSize)
 
             let button = NSButton(frame: buttonFrame)
@@ -195,7 +206,8 @@ final class FloatingMenuController {
             container.addSubview(button)
 
             // Label below button
-            let labelFrame = NSRect(x: columnX, y: AppConstants.floatingMenuPadding, width: AppConstants.floatingMenuColumnWidth, height: Self.labelHeight)
+            let labelY = sliderAreaHeight + AppConstants.floatingMenuPadding
+            let labelFrame = NSRect(x: columnX, y: labelY, width: AppConstants.floatingMenuColumnWidth, height: Self.labelHeight)
             let label = NSTextField(frame: labelFrame)
             label.stringValue = spec.label
             label.isEditable = false
@@ -213,6 +225,67 @@ final class FloatingMenuController {
 
             container.addSubview(label)
         }
+    }
+
+    private func setupOpacitySlider(in container: NSView) {
+        let containerBounds = container.bounds
+        let rowHeight = AppConstants.floatingMenuSliderRowHeight
+        let separatorY = AppConstants.floatingMenuSliderRowHeight
+        let sliderRowY: CGFloat = 0
+
+        // Separator line
+        let separatorWidth = containerBounds.width - AppConstants.floatingMenuPadding * 2
+        let separator = NSBox(frame: NSRect(
+            x: AppConstants.floatingMenuPadding, y: separatorY,
+            width: separatorWidth, height: AppConstants.floatingMenuSeparatorHeight
+        ))
+        separator.boxType = .separator
+        container.addSubview(separator)
+
+        // Icon
+        let iconSize: CGFloat = 16
+        let iconX = AppConstants.floatingMenuPadding + 4
+        let iconPointSize: CGFloat = 12
+        let iconView = NSImageView(frame: NSRect(x: iconX, y: sliderRowY + (rowHeight - iconSize) / 2, width: iconSize, height: iconSize))
+        iconView.image = SFSymbolUtils.icon("circle.lefthalf.filled", pointSize: iconPointSize)
+        iconView.imageScaling = .scaleProportionallyDown
+        container.addSubview(iconView)
+
+        // Label
+        let labelX = iconX + iconSize + 4
+        let label = NSTextField(labelWithString: L("floating_menu.label.opacity"))
+        label.font = NSFont.systemFont(ofSize: 10)
+        label.textColor = .secondaryLabelColor
+        label.sizeToFit()
+        label.frame.origin = NSPoint(x: labelX, y: sliderRowY + (rowHeight - label.frame.height) / 2)
+        container.addSubview(label)
+
+        // Percent label (right side)
+        let percentWidth: CGFloat = AppConstants.ghostAlphaSliderPercentWidth
+        let percentX = containerBounds.width - AppConstants.floatingMenuPadding - percentWidth
+        let percentLabel = NSTextField(labelWithString: FormatUtils.formatOpacity(currentOpacity))
+        percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
+        percentLabel.alignment = .right
+        let percentY = sliderRowY + (rowHeight - percentLabel.frame.height) / 2
+        percentLabel.frame = NSRect(x: percentX, y: percentY, width: percentWidth, height: percentLabel.frame.height)
+        container.addSubview(percentLabel)
+        opacityLabel = percentLabel
+
+        // Slider
+        let sliderX = label.frame.maxX + 6
+        let sliderWidth = percentX - sliderX - 4
+        let sliderHeight: CGFloat = AppConstants.ghostAlphaSliderHeight
+        let slider = NSSlider(
+            value: Double(currentOpacity),
+            minValue: Double(AppConstants.opacityMin),
+            maxValue: Double(AppConstants.opacityMax),
+            target: self,
+            action: #selector(opacitySliderChanged(_:))
+        )
+        slider.frame = NSRect(x: sliderX, y: sliderRowY + (rowHeight - sliderHeight) / 2, width: sliderWidth, height: sliderHeight)
+        slider.isContinuous = true
+        container.addSubview(slider)
+        opacitySlider = slider
     }
 
     // MARK: - Button Actions
@@ -248,6 +321,13 @@ final class FloatingMenuController {
 
     @objc private func closeTapped() {
         dismissAndNotify { $0.floatingMenuDidSelectClose(self) }
+    }
+
+    @objc private func opacitySliderChanged(_ sender: NSSlider) {
+        let value = CGFloat(sender.doubleValue)
+        opacityLabel?.stringValue = FormatUtils.formatOpacity(value)
+        currentOpacity = value
+        delegate?.floatingMenu(self, didChangeOpacity: value)
     }
 
     // MARK: - Event Monitors

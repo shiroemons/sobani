@@ -32,33 +32,6 @@ import Testing
         #expect(AdjustmentPanelController.formatAngle(360) == "360")
     }
 
-    // MARK: - formatOpacity Tests
-
-    /// 100%不透明度のフォーマットを検証
-    @Test func formatOpacity_full() {
-        #expect(AdjustmentPanelController.formatOpacity(1.0) == "100%")
-    }
-
-    /// 50%不透明度のフォーマットを検証
-    @Test func formatOpacity_half() {
-        #expect(AdjustmentPanelController.formatOpacity(0.5) == "50%")
-    }
-
-    /// 最小不透明度のフォーマットを検証
-    @Test func formatOpacity_minimum() {
-        #expect(AdjustmentPanelController.formatOpacity(0.1) == "10%")
-    }
-
-    /// 0%不透明度のフォーマットを検証
-    @Test func formatOpacity_zero() {
-        #expect(AdjustmentPanelController.formatOpacity(0.0) == "0%")
-    }
-
-    /// 四捨五入が正しく行われることを検証
-    @Test func formatOpacity_rounding() {
-        #expect(AdjustmentPanelController.formatOpacity(0.555) == "56%")
-    }
-
     // MARK: - globalToMonitorRelative Tests
 
     /// プライマリモニター（原点 0,0）での座標変換を検証
@@ -259,30 +232,17 @@ import Testing
         #expect(AdjustmentPanelController.formatAngle(45.0) == "45")
     }
 
-    /// 同じ不透明度値で updateOpacity を呼び出しても問題が起きないことを検証
-    @Test func testUpdateOpacityNoOpWhenSameValue() {
-        let controller = AdjustmentPanelController()
-        // 最初に 0.8 を設定
-        controller.updateOpacity(0.8)
-        // 同じ値で再度呼び出してもクラッシュしないことを検証
-        controller.updateOpacity(0.8)
-        // formatOpacity を通じて期待値が正しいことを確認
-        #expect(AdjustmentPanelController.formatOpacity(0.8) == "80%")
-    }
-
     // MARK: - AdjustmentPanelState Tests
 
     /// AdjustmentPanelState の初期化を検証
     @Test func adjustmentPanelState_initialization() {
         let state = AdjustmentPanelState(
             angle: 45,
-            opacity: 0.8,
             position: CGPoint(x: 100, y: 200),
             size: CGSize(width: 300, height: 400),
             aspectRatio: 0.75
         )
         #expect(abs(state.angle - 45) < AppConstants.floatingPointTolerance)
-        #expect(abs(state.opacity - 0.8) < AppConstants.floatingPointTolerance)
         #expect(abs(state.position.x - 100) < AppConstants.floatingPointTolerance)
         #expect(abs(state.position.y - 200) < AppConstants.floatingPointTolerance)
         #expect(abs(state.size.width - 300) < AppConstants.floatingPointTolerance)

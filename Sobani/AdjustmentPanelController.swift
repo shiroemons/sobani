@@ -10,10 +10,6 @@ protocol AdjustmentPanelDelegate: AnyObject {
     func rotationPanel(_ panel: AdjustmentPanelController, didChangeAngle angle: CGFloat)
     /// 回転角度がリセットされた
     func rotationPanelDidReset(_ panel: AdjustmentPanelController)
-    /// 不透明度が変更された
-    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeOpacity opacity: CGFloat)
-    /// 不透明度がリセットされた
-    func adjustmentPanelDidResetOpacity(_ panel: AdjustmentPanelController)
     /// 位置が変更された（グローバル座標）
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint)
     /// サイズが変更された（回転前 imageView サイズ）
@@ -144,7 +140,6 @@ final class RotationDialView: NSView {
 
 struct AdjustmentPanelState: Sendable {
     let angle: CGFloat
-    let opacity: CGFloat
     let position: CGPoint
     let size: CGSize
     let aspectRatio: CGFloat
@@ -174,14 +169,6 @@ private enum RotationLayout {
     static let resetButtonRelativeY: CGFloat = 60
 }
 
-private enum OpacityLayout {
-    static let labelRelativeY: CGFloat = 85
-    static let percentLabelX: CGFloat = 160
-    static let sliderRelativeY: CGFloat = 58
-    static let resetButtonX: CGFloat = 110
-    static let resetButtonRelativeY: CGFloat = 20
-}
-
 private enum PositionSizeLayout {
     static let monitorLabelY: CGFloat = 145
     static let monitorPopupX: CGFloat = 70
@@ -209,9 +196,8 @@ private enum PositionSizeLayout {
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     private let logger = Logger(category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220
-    private static let panelHeight: CGFloat = 460
-    private static let rotationSectionOffsetY: CGFloat = 300
-    private static let opacitySectionOffsetY: CGFloat = 180
+    private static let panelHeight: CGFloat = 340
+    private static let rotationSectionOffsetY: CGFloat = 180
     private static let panelGap: CGFloat = 8
 
     weak var delegate: AdjustmentPanelDelegate?
@@ -220,9 +206,6 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     private var dialView: RotationDialView?
     private var textField: NSTextField?
     private var currentAngle: CGFloat = 0
-    private var currentOpacity: CGFloat = 1.0
-    private var opacitySlider: NSSlider?
-    private var opacityLabel: NSTextField?
     private var monitorPopup: NSPopUpButton?
     private var resolutionLabel: NSTextField?
     private var xField: NSTextField?
@@ -236,7 +219,6 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
     func show(near window: NSWindow, state: AdjustmentPanelState) {
         currentAngle = state.angle
-        currentOpacity = state.opacity
         currentPosition = state.position
         currentSize = state.size
         currentAspectRatio = state.aspectRatio
@@ -265,21 +247,12 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
             setupRotationSection(in: contentView, angle: state.angle, offsetY: Self.rotationSectionOffsetY)
 
-            // Separator between rotation and opacity
+            // Separator between rotation and position/size
             let sep1 = NSBox(frame: NSRect(
                 x: SectionLayout.labelX, y: Self.rotationSectionOffsetY, width: SectionLayout.contentWidth, height: 1
             ))
             sep1.boxType = .separator
             contentView.addSubview(sep1)
-
-            setupOpacitySection(in: contentView, opacity: state.opacity, offsetY: Self.opacitySectionOffsetY)
-
-            // Separator between opacity and position/size
-            let sep2 = NSBox(frame: NSRect(
-                x: SectionLayout.labelX, y: Self.opacitySectionOffsetY, width: SectionLayout.contentWidth, height: 1
-            ))
-            sep2.boxType = .separator
-            contentView.addSubview(sep2)
 
             setupPositionSizeSection(in: contentView)
 
@@ -289,8 +262,6 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
             // Update all control values for the new state
             dialView?.angle = state.angle
             textField?.stringValue = Self.formatAngle(state.angle)
-            opacitySlider?.doubleValue = Double(state.opacity)
-            opacityLabel?.stringValue = Self.formatOpacity(state.opacity)
             populateMonitorPopup()
             updateResolutionLabel()
             updatePositionFields()
@@ -362,52 +333,6 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         contentView.addSubview(resetButton)
     }
 
-    private func setupOpacitySection(in contentView: NSView, opacity: CGFloat, offsetY: CGFloat = 0) {
-        let opacitySectionLabel = NSTextField(labelWithString: L("adjust.opacity"))
-        opacitySectionLabel.frame = NSRect(
-            x: SectionLayout.labelX, y: OpacityLayout.labelRelativeY + offsetY, width: 50, height: 20
-        )
-        opacitySectionLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(opacitySectionLabel)
-
-        let percentLabel = NSTextField(labelWithString: Self.formatOpacity(opacity))
-        percentLabel.frame = NSRect(
-            x: OpacityLayout.percentLabelX, y: OpacityLayout.labelRelativeY + offsetY, width: 50, height: 20
-        )
-        percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
-        percentLabel.alignment = .right
-        contentView.addSubview(percentLabel)
-        opacityLabel = percentLabel
-
-        let slider = NSSlider(
-            value: Double(opacity),
-            minValue: Double(AppConstants.opacityMin),
-            maxValue: Double(AppConstants.opacityMax),
-            target: self,
-            action: #selector(opacitySliderChanged(_:))
-        )
-        slider.frame = NSRect(
-            x: SectionLayout.labelX, y: OpacityLayout.sliderRelativeY + offsetY,
-            width: SectionLayout.contentWidth, height: 20
-        )
-        slider.numberOfTickMarks = 0
-        contentView.addSubview(slider)
-        opacitySlider = slider
-
-        let opacityResetButton = NSButton(
-            title: L("adjust.reset"),
-            target: self,
-            action: #selector(resetOpacity)
-        )
-        opacityResetButton.frame = NSRect(
-            x: OpacityLayout.resetButtonX, y: OpacityLayout.resetButtonRelativeY + offsetY,
-            width: SectionLayout.resetButtonWidth, height: SectionLayout.resetButtonHeight
-        )
-        opacityResetButton.bezelStyle = .rounded
-        opacityResetButton.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(opacityResetButton)
-    }
-
     // MARK: - Close / Cleanup
 
     private func performClose() {
@@ -439,13 +364,6 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         textField?.stringValue = Self.formatAngle(angle)
     }
 
-    func updateOpacity(_ opacity: CGFloat) {
-        guard !GeometryUtils.isApproximatelyEqual(currentOpacity, opacity) else { return }
-        currentOpacity = opacity
-        opacitySlider?.doubleValue = Double(opacity)
-        opacityLabel?.stringValue = Self.formatOpacity(opacity)
-    }
-
     // MARK: - Rotation Handlers
 
     private func angleChanged(_ newAngle: CGFloat) {
@@ -475,22 +393,6 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         delegate?.rotationPanelDidReset(self)
     }
 
-    // MARK: - Opacity Handlers
-
-    @objc private func opacitySliderChanged(_ sender: NSSlider) {
-        let opacity = CGFloat(sender.doubleValue)
-        currentOpacity = opacity
-        opacityLabel?.stringValue = Self.formatOpacity(opacity)
-        delegate?.adjustmentPanel(self, didChangeOpacity: opacity)
-    }
-
-    @objc private func resetOpacity() {
-        currentOpacity = 1.0
-        opacitySlider?.doubleValue = 1.0
-        opacityLabel?.stringValue = Self.formatOpacity(1.0)
-        delegate?.adjustmentPanelDidResetOpacity(self)
-    }
-
     // MARK: - Static Helpers
 
     static func formatAngle(_ angle: CGFloat) -> String {
@@ -499,10 +401,6 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
             return String(format: "%.0f", rounded)
         }
         return String(format: "%.1f", angle)
-    }
-
-    static func formatOpacity(_ opacity: CGFloat) -> String {
-        return "\(Int(round(opacity * 100)))%"
     }
 
     static func clampedSize(newValue: CGFloat, aspectRatio: CGFloat, isWidth: Bool) -> CGSize? {

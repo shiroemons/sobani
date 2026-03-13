@@ -566,7 +566,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "透明度をリセット"
+            "value": "不透明度をリセット"
           }
         },
         "en": {
@@ -614,7 +614,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "すべての画像の透明度をリセット"
+            "value": "すべての画像の不透明度をリセット"
           }
         },
         "en": {
@@ -678,7 +678,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "透明度:"
+            "value": "不透明度:"
           }
         },
         "en": {
@@ -2945,6 +2945,22 @@
         }
       }
     },
+    "floating_menu.label.opacity": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不透明度"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opacity"
+          }
+        }
+      }
+    },
     "floating_menu.label.ghost_mode": {
       "localizations": {
         "ja": {
@@ -3350,7 +3366,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ゴースト透明度"
+            "value": "ゴースト不透明度"
           }
         },
         "en": {

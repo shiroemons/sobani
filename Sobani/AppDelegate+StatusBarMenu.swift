@@ -21,7 +21,6 @@ extension AppDelegate {
 
         let imageNames = ImageManager.shared.registeredImageNames()
 
-        // About & Update
         let aboutItem = NSMenuItem(title: L("menu.about"), action: #selector(showAbout), keyEquivalent: "")
         aboutItem.target = self
         aboutItem.image = menuIcon("info.circle")
@@ -30,7 +29,6 @@ extension AppDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // 画像を追加表示 & 表示中
         menu.addItem(buildNewWindowMenuItem(imageNames: imageNames))
 
         let ghostCount = zOrderedWindows.filter { $0.isGhostMode }.count
@@ -57,7 +55,6 @@ extension AppDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // 操作グループ
         let toggleTitle = areWindowsHidden ? L("window.show_all") : L("window.hide_all")
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleAllWindowsVisibility), keyEquivalent: "h")
         toggleItem.keyEquivalentModifierMask = [.option]
@@ -75,7 +72,6 @@ extension AppDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // リセット & 閉じる
         menu.addItem(buildBulkResetMenuItem(ghostCount: ghostCount))
 
         let closeAllItem = NSMenuItem(title: L("menu.close_all"), action: #selector(closeAllWindows), keyEquivalent: "")
@@ -85,7 +81,6 @@ extension AppDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // 設定 & ガイド
         menu.addItem(buildSettingsMenuItem())
 
         let onboardingItem = NSMenuItem(
@@ -237,7 +232,6 @@ extension AppDelegate {
 
         let font = NSFont.menuFont(ofSize: 0)
 
-        // Build info text once per window to avoid calling buildWindowInfoText twice (width pass + render pass)
         typealias WindowInfo = (charWindow: CharacterWindow, info: (leftText: String, rightText: String))
         let windowInfoList: [WindowInfo] = orderedWindows.enumerated().map { index, charWindow in
             let rawName = charWindow.window.screen?.localizedName ?? ""
@@ -308,6 +302,7 @@ extension AppDelegate {
         flipItem.isEnabled = !areWindowsHidden
         flipItem.image = menuIcon("arrow.left.and.right.righttriangle.left.righttriangle.right")
         submenu.addItem(flipItem)
+        submenu.addItem(buildPerWindowOpacitySliderItem(for: charWindow))
 
         submenu.addItem(NSMenuItem.separator())
 
@@ -340,13 +335,24 @@ extension AppDelegate {
         resetDisplayItem.image = menuIcon("arrow.counterclockwise.circle")
         submenu.addItem(resetDisplayItem)
 
+        buildGhostAndBackgroundItems(into: submenu, for: charWindow)
+
         submenu.addItem(NSMenuItem.separator())
 
-        let ghostItem = NSMenuItem(
-            title: L("ghost.toggle"),
-            action: #selector(toggleGhostModeByWindowNumber(_:)),
-            keyEquivalent: ""
-        )
+        let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
+        closeItem.target = self
+        closeItem.tag = windowNumber
+        closeItem.image = menuIcon("xmark.circle")
+        submenu.addItem(closeItem)
+
+        return submenu
+    }
+
+    private func buildGhostAndBackgroundItems(into submenu: NSMenu, for charWindow: CharacterWindow) {
+        let windowNumber = charWindow.window.windowNumber
+        submenu.addItem(NSMenuItem.separator())
+
+        let ghostItem = NSMenuItem(title: L("ghost.toggle"), action: #selector(toggleGhostModeByWindowNumber(_:)), keyEquivalent: "")
         ghostItem.target = self
         ghostItem.tag = windowNumber
         ghostItem.state = charWindow.isGhostMode ? .on : .off
@@ -359,27 +365,13 @@ extension AppDelegate {
 
         if #available(macOS 14.0, *) {
             submenu.addItem(NSMenuItem.separator())
-            let removeBackgroundItem = NSMenuItem(
-                title: L("image.remove_background"),
-                action: #selector(removeBackgroundByWindowNumber(_:)),
-                keyEquivalent: ""
-            )
+            let removeBackgroundItem = NSMenuItem(title: L("image.remove_background"), action: #selector(removeBackgroundByWindowNumber(_:)), keyEquivalent: "")
             removeBackgroundItem.target = self
             removeBackgroundItem.tag = windowNumber
             removeBackgroundItem.isEnabled = !areWindowsHidden && !charWindow.imageHasAlpha()
             removeBackgroundItem.image = menuIcon("eraser.fill")
             submenu.addItem(removeBackgroundItem)
         }
-
-        submenu.addItem(NSMenuItem.separator())
-
-        let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
-        closeItem.target = self
-        closeItem.tag = windowNumber
-        closeItem.image = menuIcon("xmark.circle")
-        submenu.addItem(closeItem)
-
-        return submenu
     }
 
     func buildChangeImageSubmenuForWindow(charWindow: CharacterWindow, imageNames: [String]) -> NSMenu {
@@ -544,7 +536,7 @@ extension AppDelegate {
     private func makePercentLabel(alpha: CGFloat, containerWidth: CGFloat, containerHeight: CGFloat) -> NSTextField {
         let percentWidth = AppConstants.ghostAlphaSliderPercentWidth
         let margin = AppConstants.ghostAlphaSliderTrailingMargin
-        let label = NSTextField(labelWithString: AdjustmentPanelController.formatOpacity(alpha))
+        let label = NSTextField(labelWithString: FormatUtils.formatOpacity(alpha))
         label.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
         label.alignment = .right
         label.frame = NSRect(
@@ -558,21 +550,18 @@ extension AppDelegate {
 
     private func updatePercentLabel(in container: NSView, alpha: CGFloat) {
         if let label = container.subviews.compactMap({ $0 as? NSTextField }).last {
-            label.stringValue = AdjustmentPanelController.formatOpacity(alpha)
+            label.stringValue = FormatUtils.formatOpacity(alpha)
         }
     }
 
     func buildPerWindowGhostAlphaSliderItem(for charWindow: CharacterWindow) -> NSMenuItem {
         let item = NSMenuItem()
-
         let containerWidth = AppConstants.ghostAlphaSliderContainerWidth
         let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
         let container = NSView(frame: NSRect(x: 0, y: 0, width: containerWidth, height: containerHeight))
-
         let isCustom = charWindow.customGhostAlpha != nil
         let currentAlpha = charWindow.effectiveGhostAlpha
 
-        // チェックボックス（インデントを深くして親項目との階層感を出す）
         let checkboxX: CGFloat = 32
         let checkboxSize: CGFloat = 18
         let checkboxTrailingGap: CGFloat = 22
@@ -582,7 +571,6 @@ extension AppDelegate {
         checkbox.tag = charWindow.window.windowNumber
         container.addSubview(checkbox)
 
-        // スライダー
         let sliderX: CGFloat = checkboxX + checkboxTrailingGap
         let sliderWidth = containerWidth - sliderX - AppConstants.ghostAlphaSliderPercentWidth - AppConstants.ghostAlphaSliderTrailingMargin
         let slider = NSSlider(
@@ -598,9 +586,9 @@ extension AppDelegate {
         slider.isContinuous = true
         slider.tag = charWindow.window.windowNumber
         slider.isEnabled = isCustom
+        slider.trackFillColor = .systemGray
         container.addSubview(slider)
 
-        // パーセント表示
         let percentLabel = makePercentLabel(alpha: currentAlpha, containerWidth: containerWidth, containerHeight: containerHeight)
         percentLabel.alphaValue = isCustom ? 1.0 : 0.5
         container.addSubview(percentLabel)
@@ -609,47 +597,88 @@ extension AppDelegate {
         return item
     }
 
-    func buildGhostAlphaSliderItem() -> NSMenuItem {
-        let item = NSMenuItem()
-        item.tag = MenuItemTag.ghostModeAlphaSlider.rawValue
-
+    private func makeSliderContainerBase(iconSymbol: String, labelText: String) -> (container: NSView, labelMaxX: CGFloat) {
         let containerWidth = AppConstants.ghostAlphaSliderContainerWidth
         let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
         let container = NSView(frame: NSRect(x: 0, y: 0, width: containerWidth, height: containerHeight))
-
         let iconSize: CGFloat = 16
         let iconX: CGFloat = 16
-        let iconPointSize: CGFloat = 12
-        let iconLabelGap: CGFloat = 4
         let iconView = NSImageView(frame: NSRect(x: iconX, y: (containerHeight - iconSize) / 2, width: iconSize, height: iconSize))
-        iconView.image = SFSymbolUtils.icon(AppConstants.ghostModeSymbol, pointSize: iconPointSize)
+        iconView.image = SFSymbolUtils.icon(iconSymbol, pointSize: 12)
         iconView.imageScaling = .scaleProportionallyDown
         container.addSubview(iconView)
 
-        let label = NSTextField(labelWithString: L("ghost.alpha_setting"))
+        let label = NSTextField(labelWithString: labelText)
         label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
         label.sizeToFit()
-        label.frame.origin = NSPoint(x: iconX + iconSize + iconLabelGap, y: (containerHeight - label.frame.height) / 2)
+        label.frame.origin = NSPoint(x: iconX + iconSize + 4, y: (containerHeight - label.frame.height) / 2)
         container.addSubview(label)
 
-        let sliderX = label.frame.maxX + AppConstants.ghostAlphaSliderTrailingMargin
-        let sliderWidth = containerWidth - sliderX - AppConstants.ghostAlphaSliderPercentWidth - AppConstants.ghostAlphaSliderTrailingMargin
-        let slider = NSSlider(
-            value: Double(GhostModeSettings.globalAlpha),
-            minValue: Double(AppConstants.ghostModeAlphaMin),
-            maxValue: Double(AppConstants.ghostModeAlphaMax),
-            target: self,
-            action: #selector(ghostAlphaSliderChanged(_:))
-        )
+        return (container, label.frame.maxX)
+    }
+
+    private func makeSlider(value: CGFloat, range: ClosedRange<CGFloat>, sliderX: CGFloat,
+                            tag: Int, action: Selector) -> NSSlider {
+        let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
+        let sliderWidth = AppConstants.ghostAlphaSliderContainerWidth - sliderX
+            - AppConstants.ghostAlphaSliderPercentWidth - AppConstants.ghostAlphaSliderTrailingMargin
         let sliderHeight = AppConstants.ghostAlphaSliderHeight
-        slider.frame = NSRect(x: sliderX, y: (containerHeight - sliderHeight) / 2,
-                              width: sliderWidth, height: sliderHeight)
+        let slider = NSSlider(value: Double(value), minValue: Double(range.lowerBound),
+                              maxValue: Double(range.upperBound), target: self, action: action)
+        slider.frame = NSRect(x: sliderX, y: (containerHeight - sliderHeight) / 2, width: sliderWidth, height: sliderHeight)
         slider.isContinuous = true
+        slider.tag = tag
+        slider.trackFillColor = .systemGray
+        return slider
+    }
+
+    func buildPerWindowOpacitySliderItem(for charWindow: CharacterWindow) -> NSMenuItem {
+        let item = NSMenuItem()
+        let containerHeight = AppConstants.opacitySliderContainerHeight
+        let topRowH = AppConstants.opacitySliderTopRowHeight
+        let bottomRowH = containerHeight - topRowH
+        let (container, labelMaxX) = makeSliderContainerBase(iconSymbol: "circle.lefthalf.filled", labelText: L("adjust.opacity"))
+        // makeSliderContainerBase が生成するコンテナは ghostAlphaSliderContainerHeight (1行) のため、
+        // 2行レイアウト用の高さに拡張し、アイコン・ラベルを上段に移動する。
+        container.frame.size.height = containerHeight
+        let iconSize: CGFloat = 16
+        let iconX: CGFloat = 16
+        let topRowIconY = containerHeight - topRowH + (topRowH - iconSize) / 2
+        for subview in container.subviews {
+            if let iconView = subview as? NSImageView {
+                iconView.frame.origin.y = topRowIconY
+            } else if let labelView = subview as? NSTextField {
+                labelView.frame.origin.y = topRowIconY + (iconSize - labelView.frame.height) / 2
+            }
+        }
+
+        let opacity = charWindow.imageView.opacityLevel
+        let sliderX: CGFloat = iconX + iconSize + 4
+        let slider = makeSlider(value: opacity, range: AppConstants.opacityMin...AppConstants.opacityMax,
+                                sliderX: sliderX, tag: charWindow.window.windowNumber,
+                                action: #selector(perWindowOpacitySliderChanged(_:)))
+        slider.frame.origin.y = (bottomRowH - AppConstants.ghostAlphaSliderHeight) / 2
         container.addSubview(slider)
 
-        let percentLabel = makePercentLabel(alpha: GhostModeSettings.globalAlpha, containerWidth: containerWidth, containerHeight: containerHeight)
-        container.addSubview(percentLabel)
+        container.addSubview(makePercentLabel(alpha: opacity, containerWidth: AppConstants.ghostAlphaSliderContainerWidth,
+                                              containerHeight: bottomRowH))
 
+        item.view = container
+        return item
+    }
+
+    func buildGhostAlphaSliderItem() -> NSMenuItem {
+        let item = NSMenuItem()
+        item.tag = MenuItemTag.ghostModeAlphaSlider.rawValue
+        let (container, labelMaxX) = makeSliderContainerBase(iconSymbol: AppConstants.ghostModeSymbol, labelText: L("ghost.alpha_setting"))
+        let sliderX = labelMaxX + AppConstants.ghostAlphaSliderTrailingMargin
+        container.addSubview(makeSlider(value: GhostModeSettings.globalAlpha,
+                                        range: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax,
+                                        sliderX: sliderX, tag: 0,
+                                        action: #selector(ghostAlphaSliderChanged(_:))))
+        container.addSubview(makePercentLabel(alpha: GhostModeSettings.globalAlpha,
+                                              containerWidth: AppConstants.ghostAlphaSliderContainerWidth,
+                                              containerHeight: AppConstants.ghostAlphaSliderContainerHeight))
         item.view = container
         return item
     }
@@ -713,54 +742,46 @@ extension AppDelegate {
         return item
     }
 
-    @objc func perWindowGhostAlphaSliderChanged(_ sender: NSSlider) {
+    @objc func perWindowOpacitySliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
         let windowNumber = sender.tag
 
-        // パーセント表示を更新
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
 
-        // 対象ウィンドウのカスタム透明度を更新
         if let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == windowNumber }) {
+            charWindow.applyOpacity(value)
+        }
+    }
+
+    @objc func perWindowGhostAlphaSliderChanged(_ sender: NSSlider) {
+        let value = CGFloat(sender.doubleValue)
+        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
+        if let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == sender.tag }) {
             charWindow.setCustomGhostAlpha(value)
         }
     }
 
     @objc func togglePerWindowGhostAlphaCustom(_ sender: NSButton) {
-        let windowNumber = sender.tag
-        guard let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == windowNumber }) else { return }
+        guard let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == sender.tag }) else { return }
+        charWindow.setCustomGhostAlpha(sender.state == .on ? GhostModeSettings.globalAlpha : nil)
 
-        if sender.state == .on {
-            // カスタムに切り替え: 現在のグローバル値をカスタム初期値として設定
-            charWindow.setCustomGhostAlpha(GhostModeSettings.globalAlpha)
-        } else {
-            // グローバルに戻す
-            charWindow.setCustomGhostAlpha(nil)
+        guard let container = sender.superview else { return }
+        let isCustom = charWindow.customGhostAlpha != nil
+        let currentAlpha = charWindow.effectiveGhostAlpha
+        if let slider = container.subviews.compactMap({ $0 as? NSSlider }).first {
+            slider.doubleValue = Double(currentAlpha)
+            slider.isEnabled = isCustom
         }
-
-        // スライダーとパーセント表示を更新
-        if let container = sender.superview {
-            let isCustom = charWindow.customGhostAlpha != nil
-            let currentAlpha = charWindow.effectiveGhostAlpha
-            if let slider = container.subviews.compactMap({ $0 as? NSSlider }).first {
-                slider.doubleValue = Double(currentAlpha)
-                slider.isEnabled = isCustom
-            }
-            if let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
-                percentLabel.stringValue = AdjustmentPanelController.formatOpacity(currentAlpha)
-                percentLabel.alphaValue = isCustom ? 1.0 : 0.5
-            }
+        if let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
+            percentLabel.stringValue = FormatUtils.formatOpacity(currentAlpha)
+            percentLabel.alphaValue = isCustom ? 1.0 : 0.5
         }
     }
 
     @objc func ghostAlphaSliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
         GhostModeSettings.globalAlpha = value
-
-        // パーセント表示を更新
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-
-        // グローバル設定を使用中のゴーストモードウィンドウに即時反映
         for charWindow in zOrderedWindows where charWindow.isGhostMode && charWindow.customGhostAlpha == nil {
             charWindow.window.alphaValue = value
         }
@@ -774,7 +795,6 @@ extension AppDelegate {
         guard language != currentLanguage else { return }
 
         LanguageManager.shared.currentLanguage = language
-        // Menu will rebuild automatically on next open via menuNeedsUpdate
     }
 
     @objc func showAbout() {
@@ -790,7 +810,6 @@ extension AppDelegate {
     // MARK: - Menu Highlight
 
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
-        // Image preview for registered image items
         ImagePreviewPanel.shared.showPreviewIfApplicable(
             for: item,
             in: menu,
@@ -804,7 +823,6 @@ extension AppDelegate {
             ]
         )
 
-        // Window highlight border (for character windows submenu)
         guard menu !== statusItem?.menu else { return }
         lastHighlightedWindow?.hideHighlightBorder()
         lastHighlightedWindow = nil

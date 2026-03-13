@@ -78,7 +78,6 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         }
         imageView.onOpacityChanged = { [weak self] in
             self?.updateImageAlpha()
-            self?.adjustmentPanelController?.updateOpacity(self?.imageView.opacityLevel ?? 1.0)
         }
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
         imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
@@ -140,7 +139,6 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
             near: window,
             state: AdjustmentPanelState(
                 angle: imageView.rotationAngle,
-                opacity: imageView.opacityLevel,
                 position: currentImageOrigin(),
                 size: imageView.frame.size,
                 aspectRatio: imageView.aspectRatio
@@ -174,13 +172,12 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     @objc func resetRotation() { applyRotation(0) }
-
     @objc func resetOpacity() { applyOpacity(1.0) }
 
     func applyOpacity(_ opacity: CGFloat) {
         let clamped = min(max(opacity, AppConstants.opacityMin), AppConstants.opacityMax)
+        guard !GeometryUtils.isApproximatelyEqual(clamped, imageView.opacityLevel) else { return }
         imageView.opacityLevel = clamped
-        adjustmentPanelController?.updateOpacity(clamped)
     }
 
     func applyRotation(_ angle: CGFloat) {
@@ -282,9 +279,8 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.isFlippedHorizontally = false
         imageView.resetCrop()
         imageView.rotationAngle = 0
-        imageView.opacityLevel = 1.0
         adjustmentPanelController?.updateAngle(0)
-        adjustmentPanelController?.updateOpacity(1.0)
+        applyOpacity(1.0)
 
         let defaultHeight: CGFloat = AppConstants.defaultWindowHeight
         let defaultWidth = defaultHeight * imageView.aspectRatio
@@ -349,6 +345,7 @@ extension CharacterWindow: FloatingMenuDelegate {
         }
         floatingMenuController?.isRemoveBackgroundEnabled = !isRemovingBackground && !imageHasAlpha()
         let windowPoint = window.convertPoint(fromScreen: screenPoint)
+        floatingMenuController?.currentOpacity = imageView.opacityLevel
         floatingMenuController?.show(at: windowPoint, in: window)
     }
 
@@ -359,6 +356,10 @@ extension CharacterWindow: FloatingMenuDelegate {
     func floatingMenuDidSelectClose(_ menu: FloatingMenuController) { closeThisWindow() }
     func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) { resetDisplay() }
     func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController) { setGhostMode(true) }
+
+    func floatingMenu(_ menu: FloatingMenuController, didChangeOpacity opacity: CGFloat) {
+        applyOpacity(opacity)
+    }
 }
 
 // MARK: - Crop Mode
@@ -420,14 +421,6 @@ extension CharacterWindow: AdjustmentPanelDelegate {
         applyRotation(0)
     }
 
-    func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeOpacity opacity: CGFloat) {
-        applyOpacity(opacity)
-    }
-
-    func adjustmentPanelDidResetOpacity(_ panel: AdjustmentPanelController) {
-        applyOpacity(1.0)
-    }
-
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
         let origin = Self.windowOrigin(
             forImageOrigin: position, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle
@@ -465,9 +458,8 @@ extension CharacterWindow: AdjustmentPanelDelegate {
     }
 
     // MARK: Helpers
-
     private func currentImageOrigin() -> CGPoint {
-        return Self.imageOrigin(windowFrame: window.frame, imageViewSize: imageView.frame.size)
+        Self.imageOrigin(windowFrame: window.frame, imageViewSize: imageView.frame.size)
     }
 }
 
@@ -504,6 +496,7 @@ extension CharacterWindow {
         flipItem.target = self
         flipItem.image = SFSymbolUtils.icon("arrow.left.and.right.righttriangle.left.righttriangle.right")
         menu.addItem(flipItem)
+        menu.addItem(buildOpacitySliderMenuItem())
 
         let adjustPanelItem = NSMenuItem(
             title: L("adjust.open"), action: #selector(showAdjustmentPanel), keyEquivalent: ""
@@ -544,6 +537,73 @@ extension CharacterWindow {
         imageView.menu = menu
     }
 
+    private func buildOpacitySliderMenuItem() -> NSMenuItem {
+        let item = NSMenuItem()
+        item.tag = MenuItemTag.opacitySliderContext.rawValue
+
+        let containerW = AppConstants.ghostAlphaSliderContainerWidth
+        let containerH = AppConstants.opacitySliderContainerHeight
+        let topRowH = AppConstants.opacitySliderTopRowHeight
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: containerW, height: containerH))
+
+        // Top row: icon + label
+        let iconSize: CGFloat = 16
+        let iconX: CGFloat = 16
+        let iconY = containerH - topRowH + (topRowH - iconSize) / 2
+        let iconView = NSImageView(frame: NSRect(x: iconX, y: iconY, width: iconSize, height: iconSize))
+        iconView.image = SFSymbolUtils.icon("circle.lefthalf.filled", pointSize: 12)
+        iconView.imageScaling = .scaleProportionallyDown
+        container.addSubview(iconView)
+
+        let label = NSTextField(labelWithString: L("adjust.opacity"))
+        label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        label.sizeToFit()
+        label.frame.origin = NSPoint(x: iconX + iconSize + 4, y: iconY + (iconSize - label.frame.height) / 2)
+        container.addSubview(label)
+
+        // Bottom row: slider + percent
+        let bottomRowH = containerH - topRowH
+        let trailing = AppConstants.ghostAlphaSliderTrailingMargin
+        let pctWidth = AppConstants.ghostAlphaSliderPercentWidth
+        let sliderX: CGFloat = iconX + iconSize + 4
+        let sliderH = AppConstants.ghostAlphaSliderHeight
+        let slider = NSSlider(
+            value: Double(imageView.opacityLevel),
+            minValue: Double(AppConstants.opacityMin),
+            maxValue: Double(AppConstants.opacityMax),
+            target: self,
+            action: #selector(contextMenuOpacitySliderChanged(_:))
+        )
+        slider.frame = NSRect(x: sliderX, y: (bottomRowH - sliderH) / 2,
+                              width: containerW - sliderX - pctWidth - trailing, height: sliderH)
+        slider.isContinuous = true
+        slider.trackFillColor = .systemGray
+        container.addSubview(slider)
+
+        let percentLabel = NSTextField(labelWithString: FormatUtils.formatOpacity(imageView.opacityLevel))
+        percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        percentLabel.alignment = .right
+        percentLabel.frame = NSRect(
+            x: containerW - pctWidth - trailing,
+            y: (bottomRowH - percentLabel.frame.height) / 2,
+            width: pctWidth,
+            height: percentLabel.frame.height
+        )
+        container.addSubview(percentLabel)
+
+        item.view = container
+        return item
+    }
+
+    @objc private func contextMenuOpacitySliderChanged(_ sender: NSSlider) {
+        let value = CGFloat(sender.doubleValue)
+        applyOpacity(value)
+        if let container = sender.superview,
+           let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
+            percentLabel.stringValue = FormatUtils.formatOpacity(value)
+        }
+    }
+
     func menuNeedsUpdate(_ menu: NSMenu) {
         guard let registeredItem = menu.item(withMenuTag: .changeImageSubmenu),
               let submenu = registeredItem.submenu else { return }
@@ -556,6 +616,16 @@ extension CharacterWindow {
 
         if let flipItem = menu.item(withMenuTag: .flipContext) {
             flipItem.state = imageView.isFlippedHorizontally ? .on : .off
+        }
+
+        if let opacityItem = menu.item(withMenuTag: .opacitySliderContext),
+           let container = opacityItem.view {
+            if let slider = container.subviews.compactMap({ $0 as? NSSlider }).first {
+                slider.doubleValue = Double(imageView.opacityLevel)
+            }
+            if let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
+                percentLabel.stringValue = FormatUtils.formatOpacity(imageView.opacityLevel)
+            }
         }
 
         if let otherItem = menu.item(withMenuTag: .otherSubmenu),
@@ -689,10 +759,7 @@ extension CharacterWindow {
 extension CharacterWindow {
     /// ウィンドウフレームから画像の原点座標を計算
     nonisolated static func imageOrigin(windowFrame: NSRect, imageViewSize: NSSize) -> CGPoint {
-        return CGPoint(
-            x: windowFrame.midX - imageViewSize.width / 2,
-            y: windowFrame.midY - imageViewSize.height / 2
-        )
+        CGPoint(x: windowFrame.midX - imageViewSize.width / 2, y: windowFrame.midY - imageViewSize.height / 2)
     }
 
     /// 画像原点座標からウィンドウ原点座標を計算（逆変換）
@@ -704,47 +771,35 @@ extension CharacterWindow {
         )
         let centerX = imageOrigin.x + imageViewSize.width / 2
         let centerY = imageOrigin.y + imageViewSize.height / 2
-        return NSPoint(
-            x: round(centerX - bbSize.width / 2),
-            y: round(centerY - bbSize.height / 2)
-        )
+        return NSPoint(x: round(centerX - bbSize.width / 2), y: round(centerY - bbSize.height / 2))
     }
 
     /// 画像サイズからウィンドウサイズを計算（maxHeight以下にアスペクト比維持で縮小）
     nonisolated static func calculateWindowSize(imageSize: NSSize, maxHeight: CGFloat) -> NSSize {
-        let imageHeight = max(imageSize.height, 1)
-        let scale = maxHeight / imageHeight
-        let windowWidth = imageSize.width * scale
-        return NSSize(width: windowWidth, height: maxHeight)
+        let scale = maxHeight / max(imageSize.height, 1)
+        return NSSize(width: imageSize.width * scale, height: maxHeight)
     }
 
     /// baseHeightに基づいてアスペクト比を維持した画像寸法を計算
     nonisolated static func calculateImageDimensions(
         baseHeight: CGFloat, imageSize: NSSize
     ) -> (width: CGFloat, aspectRatio: CGFloat) {
-        let scale = baseHeight / imageSize.height
-        let baseWidth = imageSize.width * scale
-        let aspectRatio = baseWidth / baseHeight
-        return (width: baseWidth, aspectRatio: aspectRatio)
+        let baseWidth = imageSize.width * (baseHeight / imageSize.height)
+        return (width: baseWidth, aspectRatio: baseWidth / baseHeight)
     }
 
     /// 表示名のローカライズ処理（デフォルト名と一致する場合はローカライズ名を返す）
     nonisolated static func formatLocalizedDisplayName(
         displayName: String, defaultName: String, localizedDefault: String
     ) -> String {
-        if displayName == defaultName {
-            return localizedDefault
-        }
-        return displayName
+        displayName == defaultName ? localizedDefault : displayName
     }
 
     /// CGImageAlphaInfoが透明情報を持つかどうかを判定
     nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
         switch alphaInfo {
-        case .first, .last, .premultipliedFirst, .premultipliedLast:
-            return true
-        default:
-            return false
+        case .first, .last, .premultipliedFirst, .premultipliedLast: return true
+        default: return false
         }
     }
 
@@ -760,33 +815,32 @@ extension CharacterWindow {
 extension CharacterWindow {
     @objc func removeBackground() {
         guard !isRemovingBackground else { return }
-        if #available(macOS 14.0, *) {
-            isRemovingBackground = true
-            guard let currentImage = imageView.image else {
-                isRemovingBackground = false
-                return
-            }
-            showSpinner()
-            BackgroundRemovalManager.shared.removeBackground(from: currentImage) { [weak self] result in
-                MainActor.assumeIsolated {
-                    guard let self = self else { return }
-                    self.hideSpinner()
-                    self.isRemovingBackground = false
-                    switch result {
-                    case .success(let newImage):
-                        let baseName = URL(fileURLWithPath: self.displayName).deletingPathExtension().lastPathComponent
-                        let newName = "\(baseName)_nobg.png"
-                        ImageManager.shared.registerImage(newImage, name: newName)
-                        self.displayName = newName
-                        self.applyImage(newImage)
-                    case .failure(let error):
-                        AlertFactory.make(
-                            style: .warning,
-                            messageText: L("background_removal.error.title"),
-                            informativeText: error.localizedDescription,
-                            buttonTitles: [L("update.ok")]
-                        ).runModal()
-                    }
+        guard #available(macOS 14.0, *) else { return }
+        isRemovingBackground = true
+        guard let currentImage = imageView.image else {
+            isRemovingBackground = false
+            return
+        }
+        showSpinner()
+        BackgroundRemovalManager.shared.removeBackground(from: currentImage) { [weak self] result in
+            MainActor.assumeIsolated {
+                guard let self = self else { return }
+                self.hideSpinner()
+                self.isRemovingBackground = false
+                switch result {
+                case .success(let newImage):
+                    let baseName = URL(fileURLWithPath: self.displayName).deletingPathExtension().lastPathComponent
+                    let newName = "\(baseName)_nobg.png"
+                    ImageManager.shared.registerImage(newImage, name: newName)
+                    self.displayName = newName
+                    self.applyImage(newImage)
+                case .failure(let error):
+                    AlertFactory.make(
+                        style: .warning,
+                        messageText: L("background_removal.error.title"),
+                        informativeText: error.localizedDescription,
+                        buttonTitles: [L("update.ok")]
+                    ).runModal()
                 }
             }
         }
@@ -800,22 +854,23 @@ extension CharacterWindow {
         if let contentView = window.contentView {
             spinner.frame.origin = NSPoint(
                 x: (contentView.bounds.width - spinner.frame.width) / 2,
-                y: (contentView.bounds.height - spinner.frame.height) / 2)
+                y: (contentView.bounds.height - spinner.frame.height) / 2
+            )
             spinner.autoresizingMask = [.minXMargin, .maxXMargin, .minYMargin, .maxYMargin]
             contentView.addSubview(spinner)
             spinner.startAnimation(nil)
         }
         spinnerOverlay = spinner
     }
+
     private func hideSpinner() {
         spinnerOverlay?.stopAnimation(nil)
         spinnerOverlay?.removeFromSuperview()
         spinnerOverlay = nil
     }
+
     func imageHasAlpha() -> Bool {
-        if let cached = cachedHasAlpha {
-            return cached
-        }
+        if let cached = cachedHasAlpha { return cached }
         let result = computeImageHasAlpha()
         cachedHasAlpha = result
         return result
@@ -823,25 +878,18 @@ extension CharacterWindow {
 
     private func computeImageHasAlpha() -> Bool {
         guard let image = imageView.image,
-              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
-            return false
-        }
-        let alphaInfo = cgImage.alphaInfo
-        if !Self.isAlphaInfoTransparent(alphaInfo) {
-            return false
-        }
-        let width = cgImage.width
-        let height = cgImage.height
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
+              Self.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
+        let (w, h) = (cgImage.width, cgImage.height)
         guard let context = CGContext(
-            data: nil, width: width, height: height,
-            bitsPerComponent: 8, bytesPerRow: width * 4,
+            data: nil, width: w, height: h,
+            bitsPerComponent: 8, bytesPerRow: w * 4,
             space: CGColorSpaceCreateDeviceRGB(),
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
         ) else { return false }
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: w, height: h))
         guard let data = context.data else { return false }
-        let ptr = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
-        let totalBytes = width * height * 4
-        return stride(from: 3, to: totalBytes, by: 4).contains { ptr[$0] < 255 }
+        let ptr = data.bindMemory(to: UInt8.self, capacity: w * h * 4)
+        return stride(from: 3, to: w * h * 4, by: 4).contains { ptr[$0] < 255 }
     }
 }
