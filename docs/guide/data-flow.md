@@ -49,8 +49,12 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `opacityLevel` | `CGFloat` | 透明度（0.1–1.0） | `1.0` |
 | `windowId` | `Int` | ウィンドウ識別子（旧バージョン互換用デフォルト 0） | `0` |
 | `cropRect` | `CropRect?` | クロップ状態（詳細は下記の CropRect 構造体を参照）、nilはクロップなし | `nil` |
+| `isGhostMode` | `Bool` | ゴーストモード（クリックスルー）の状態 | `false` |
+| `customGhostAlpha` | `CGFloat?` | ゴーストモード個別透明度（nilはグローバル設定に従う） | `nil` |
 
 > **注**: `cropRect` は `decodeIfPresent` を使用してデコードされるため、cropRectフィールドが無い既存JSONも正常に読み込み可能です（後方互換性）。
+
+> **注**: `isGhostMode` と `customGhostAlpha` も `decodeIfPresent` でデコードされるため、旧バージョンのJSONとの後方互換性があります。
 
 > **注**: Z-order はウィンドウ状態の配列順で表現されます（構造体のフィールドではありません）。保存時は背面→前面の順で格納され、復元時に逆順にすることで正しい重なり順を再現します。
 

@@ -150,22 +150,21 @@ classDiagram
 | ファイル | 説明 |
 |---|---|
 | `main.swift` | エントリポイント。`LanguageManager` を UI ロード前に初期化 |
+| `AlertFactory.swift` | アラートダイアログの生成ユーティリティ |
 | `AppDelegate.swift` | アプリケーション全体の管理。ウィンドウライフサイクル、Z-order、ホットキー |
-| `AppDelegate+StatusBarMenu.swift` | ステータスバーメニューの構築 |
+| `AppDelegate+LayoutPreset.swift` | レイアウトプリセット操作のAppDelegate拡張 |
 | `AppDelegate+ScreenRestoration.swift` | モニター切断・スリープ/復帰時のウィンドウ位置復元 |
-| `CharacterWindow.swift` | ボーダーレス透明ウィンドウ。`RotatableContainer`、コンテキストメニュー |
-| `DraggableImageView.swift` | ドラッグ移動、スクロールリサイズ、反転/回転/透明度 |
+| `AppDelegate+Services.swift` | サービス初期化・管理のAppDelegate拡張 |
+| `AppDelegate+StatusBarMenu.swift` | ステータスバーメニューの構築 |
+| `AppDelegate+TestableLogic.swift` | テスト可能なビジネスロジックのAppDelegate拡張 |
+| `AppSupportDirectory.swift` | Application Supportディレクトリ取得ユーティリティ（`AppSupportDirectory.url(baseDirectory:logger:)`） |
+| `AspectRatioPreset.swift` | アスペクト比プリセットの定義（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
+| `AspectRatioSelectorView.swift` | アスペクト比プリセット選択UI（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
 | `AdjustmentPanelController.swift` | 回転ダイアル・透明度スライダーのパネル |
-| `ImageManager.swift` | 画像の登録・読み込み・削除（シングルトン） |
-| `WindowStateManager.swift` | ウィンドウ状態の永続化（シングルトン） |
-| `UpdateManager.swift` | GitHub Releases 経由の自動アップデート（シングルトン） |
-| `LaunchAtLoginManager.swift` | ログイン時自動起動の管理（`SMAppService`、シングルトン） |
-| `ScreenRestorationManager.swift` | 復元待ちキューの管理（シングルトンではなく `AppDelegate` が所有）。`PendingRestoration` 構造体も同ファイルに定義 |
-| `LanguageManager.swift` | ランタイム言語切り替え（シングルトン） |
+| `BackgroundRemovalManager.swift` | Vision フレームワークによる背景除去（macOS 14以降、シングルトン） |
+| `CharacterWindow.swift` | ボーダーレス透明ウィンドウ。`RotatableContainer`、コンテキストメニュー |
+| `CharacterWindow+OtherSubmenu.swift` | 「その他」コンテキストサブメニューのCharacterWindow拡張 |
 | `Constants.swift` | `AppConstants`、`GeometryUtils`、`MenuItemTag`、`L()` ヘルパー |
-| `LayoutPresetManager.swift` | レイアウトプリセットの保存・読み込み・削除を管理するシングルトン。`layouts/` ディレクトリにプリセットごとのJSONファイルを保存 |
-| `UnconstrainedWindow.swift` | `NSWindow` サブクラス。`constrainFrameRect` をオーバーライドし画面端制約を無効化。透過PNG画像のメニューバー越え配置を実現 |
-| `FloatingMenuController.swift` | ダブルクリックで表示するSFシンボルアイコンのフローティングツールバー（NSPanel） |
 | `CropEditorPanelController.swift` | iPhone写真アプリ風クロップエディタのメインコントローラ。パネル管理、Undo/Redo、状態同期 |
 | `CropEditorCanvasView.swift` | クロップエディタのキャンバス。画像描画、クロップ枠のハンドル操作、パン・ズーム |
 | `CropEditorToolbarView.swift` | 補正モード切り替え（傾き・垂直パース・水平パース）、ルーラーダイヤル、アスペクト比セレクター |
@@ -173,10 +172,30 @@ classDiagram
 | `CropGeometry.swift` | クロップ関連の幾何学計算ユーティリティ。座標変換、リサイズ制約、アスペクト比計算 |
 | `CropImageProcessor.swift` | CropRectを実画像に適用する画像処理パイプライン（回転→反転→パース→傾き→クロップ） |
 | `CropRect.swift` | クロップ状態の構造体（正規化0-1座標、回転・傾き・パース・反転・アスペクト比）。Codable対応 |
-| `AspectRatioSelectorView.swift` | アスペクト比プリセット選択UI（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
-| `StraightenSliderView.swift` | iPhone風ルーラーダイヤル。慣性スクロール・フェードトレイルエフェクト対応 |
 | `DragDropUtils.swift` | ドラッグ＆ドロップ操作のユーティリティ。ペーストボードから対応画像URLを抽出 |
+| `DraggableImageView.swift` | ドラッグ移動、スクロールリサイズ、反転/回転/透明度 |
+| `FloatingMenuController.swift` | ダブルクリックで表示するSFシンボルアイコンのフローティングツールバー（NSPanel） |
+| `ImageManager.swift` | 画像の登録・読み込み・削除（シングルトン） |
+| `ImagePreviewPanel.swift` | 画像プレビューパネル |
+| `JSONPersistence.swift` | JSON永続化の共通ユーティリティ（アトミック書き込み、読み込み） |
+| `LaunchAtLoginManager.swift` | ログイン時自動起動の管理（`SMAppService`、シングルトン） |
+| `LanguageManager.swift` | ランタイム言語切り替え（シングルトン） |
+| `LayoutPresetManager.swift` | レイアウトプリセットの保存・読み込み・削除を管理するシングルトン。`layouts/` ディレクトリにプリセットごとのJSONファイルを保存 |
+| `MenuStateUtils.swift` | メニュー状態管理のユーティリティ |
+| `NSMenu+RegisteredImages.swift` | NSMenu拡張 — 登録画像メニュー項目の構築 |
+| `NSPanel+FloatingConfig.swift` | NSPanel拡張 — フローティングパネルの共通設定 |
+| `OnboardingManager.swift` | オンボーディング表示状態の管理（シングルトン） |
+| `OnboardingWindowController.swift` | 初回起動時のオンボーディングガイド（3ステップ） |
+| `PathSanitizer.swift` | パストラバーサル防止ユーティリティ（`safeURL(name:in:)`, `safeName(from:)`） |
+| `ScreenRestorationManager.swift` | 復元待ちキューの管理（シングルトンではなく `AppDelegate` が所有）。`PendingRestoration` 構造体も同ファイルに定義 |
+| `ScreenRestorationUtils.swift` | 画面復元関連のユーティリティ関数 |
+| `SnapUtils.swift` | スナップ（吸着）関連のユーティリティ |
+| `StraightenSliderView.swift` | iPhone風ルーラーダイヤル。慣性スクロール・フェードトレイルエフェクト対応 |
+| `UnconstrainedWindow.swift` | `NSWindow` サブクラス。`constrainFrameRect` をオーバーライドし画面端制約を無効化。透過PNG画像のメニューバー越え配置を実現 |
+| `UpdateManager.swift` | GitHub Releases 経由の自動アップデート（シングルトン） |
 | `WakeRestorationContext.swift` | スリープ/復帰時の復元コンテキスト |
+| `WindowStateManager.swift` | ウィンドウ状態の永続化（シングルトン） |
+| `ZOrderUtils.swift` | Z-order配列操作ユーティリティ（`moveToFront`, `moveForward`, `moveBackward`, `moveToBack`, `nextId`） |
 
 ## シングルトン一覧
 
@@ -314,5 +333,14 @@ flowchart TD
 `RotatableContainer` は `CharacterWindow.swift` 内に定義された `private class` であり、外部からは参照できません。`CharacterWindow` のプロパティとしては保持されず、`init` 内でローカル変数として生成され `window.contentView` に設定されます。回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・透明度の状態を保持します。
 
 `AdjustmentPanelController` は別の `NSPanel` として表示されるフローティングパネルで、`AdjustmentPanelDelegate` を通じて `CharacterWindow` に変更を伝えます。
+
+## ゴーストモード
+
+ゴーストモード（`ignoresMouseEvents = true`）はウィンドウをクリックスルーにする機能です。有効時はウィンドウの`imageView`に透明度（デフォルト0.3）を適用し、ホバー時の枠線は不透明を維持します。
+
+- **状態管理**: `CharacterWindow` が `isGhostMode` と `customGhostAlpha` をプロパティとして保持
+- **永続化**: `WindowState` 構造体の `isGhostMode`/`customGhostAlpha` フィールドで `window_states.json` に保存
+- **グローバル設定**: `UserDefaults` に `ghostAlpha` キーでグローバルデフォルト透明度を保存
+- **トグル方法**: Option+G グローバルホットキー、右クリックメニュー、フローティングメニュー、ステータスバーメニュー
 
 [← 目次](README.md)
