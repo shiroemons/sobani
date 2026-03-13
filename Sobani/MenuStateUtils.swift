@@ -52,7 +52,9 @@ enum MenuStateUtils {
         showingLabel: String,
         hiddenLabel: String,
         ghostCount: Int = 0,
-        ghostFormat: String = ""
+        ghostFormat: String = "",
+        hiddenCount: Int = 0,
+        hiddenFormat: String = ""
     ) -> String {
         var base = String(format: showingFormat, "\(count)")
         if isHidden {
@@ -60,6 +62,9 @@ enum MenuStateUtils {
         }
         if ghostCount > 0, !ghostFormat.isEmpty {
             base += " " + String(format: ghostFormat, "\(ghostCount)")
+        }
+        if hiddenCount > 0, !hiddenFormat.isEmpty {
+            base += " " + String(format: hiddenFormat, "\(hiddenCount)")
         }
         return base
     }

@@ -26,6 +26,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private var isRemovingBackground = false
     private var cachedHasAlpha: Bool?
     private(set) var isGhostMode: Bool = false
+    private(set) var isHidden: Bool = false
     private(set) var customGhostAlpha: CGFloat?
     private var floatingMenuController: FloatingMenuController?
     private var cropEditorController: CropEditorPanelController?
@@ -334,6 +335,28 @@ extension CharacterWindow {
     }
 }
 
+// MARK: - Hidden Window
+
+extension CharacterWindow {
+    func setHidden(_ hidden: Bool) {
+        guard hidden != isHidden else { return }
+        isHidden = hidden
+        if hidden {
+            floatingMenuController?.dismiss()
+            adjustmentPanelController?.close()
+            cropEditorController?.close()
+            window.orderOut(nil)
+        } else {
+            window.orderFront(nil)
+        }
+        delegate?.characterWindowDidChangeHidden(self)
+    }
+
+    @objc func hideThisWindow() {
+        setHidden(true)
+    }
+}
+
 // MARK: - Floating Menu
 
 extension CharacterWindow: FloatingMenuDelegate {
@@ -356,6 +379,7 @@ extension CharacterWindow: FloatingMenuDelegate {
     func floatingMenuDidSelectClose(_ menu: FloatingMenuController) { closeThisWindow() }
     func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) { resetDisplay() }
     func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController) { setGhostMode(true) }
+    func floatingMenuDidSelectHide(_ menu: FloatingMenuController) { setHidden(true) }
 
     func floatingMenu(_ menu: FloatingMenuController, didChangeOpacity opacity: CGFloat) {
         applyOpacity(opacity)
@@ -473,6 +497,7 @@ protocol CharacterWindowDelegate: AnyObject {
     func characterWindowDidClose(_ sender: CharacterWindow)
     func characterWindowDidDeleteImage(named name: String)
     func characterWindowDidBecomeActive(_ sender: CharacterWindow)
+    func characterWindowDidChangeHidden(_ sender: CharacterWindow)
     func requestQuit()
 }
 
@@ -735,6 +760,12 @@ extension CharacterWindow {
             }
         }
     }
+
+    /// メニュータグに対応するローカライズキーを返す（該当なしならnil）
+    nonisolated static func menuTitleLocalizationKey(forTag tag: Int) -> String? {
+        guard let menuTag = MenuItemTag(rawValue: tag) else { return nil }
+        return menuTitleMap[menuTag]
+    }
 }
 
 // MARK: - CharacterWindow + Highlight Border
@@ -751,62 +782,6 @@ extension CharacterWindow {
     func hideHighlightBorder() {
         window.contentView?.layer?.borderWidth = 0
         window.contentView?.layer?.borderColor = nil
-    }
-}
-
-// MARK: - Testable Static Methods
-
-extension CharacterWindow {
-    /// ウィンドウフレームから画像の原点座標を計算
-    nonisolated static func imageOrigin(windowFrame: NSRect, imageViewSize: NSSize) -> CGPoint {
-        CGPoint(x: windowFrame.midX - imageViewSize.width / 2, y: windowFrame.midY - imageViewSize.height / 2)
-    }
-
-    /// 画像原点座標からウィンドウ原点座標を計算（逆変換）
-    nonisolated static func windowOrigin(
-        forImageOrigin imageOrigin: CGPoint, imageViewSize: NSSize, rotationAngle: CGFloat
-    ) -> NSPoint {
-        let bbSize = GeometryUtils.rotatedBoundingBox(
-            width: imageViewSize.width, height: imageViewSize.height, angleDegrees: rotationAngle
-        )
-        let centerX = imageOrigin.x + imageViewSize.width / 2
-        let centerY = imageOrigin.y + imageViewSize.height / 2
-        return NSPoint(x: round(centerX - bbSize.width / 2), y: round(centerY - bbSize.height / 2))
-    }
-
-    /// 画像サイズからウィンドウサイズを計算（maxHeight以下にアスペクト比維持で縮小）
-    nonisolated static func calculateWindowSize(imageSize: NSSize, maxHeight: CGFloat) -> NSSize {
-        let scale = maxHeight / max(imageSize.height, 1)
-        return NSSize(width: imageSize.width * scale, height: maxHeight)
-    }
-
-    /// baseHeightに基づいてアスペクト比を維持した画像寸法を計算
-    nonisolated static func calculateImageDimensions(
-        baseHeight: CGFloat, imageSize: NSSize
-    ) -> (width: CGFloat, aspectRatio: CGFloat) {
-        let baseWidth = imageSize.width * (baseHeight / imageSize.height)
-        return (width: baseWidth, aspectRatio: baseWidth / baseHeight)
-    }
-
-    /// 表示名のローカライズ処理（デフォルト名と一致する場合はローカライズ名を返す）
-    nonisolated static func formatLocalizedDisplayName(
-        displayName: String, defaultName: String, localizedDefault: String
-    ) -> String {
-        displayName == defaultName ? localizedDefault : displayName
-    }
-
-    /// CGImageAlphaInfoが透明情報を持つかどうかを判定
-    nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
-        switch alphaInfo {
-        case .first, .last, .premultipliedFirst, .premultipliedLast: return true
-        default: return false
-        }
-    }
-
-    /// メニュータグに対応するローカライズキーを返す（該当なしならnil）
-    nonisolated static func menuTitleLocalizationKey(forTag tag: Int) -> String? {
-        guard let menuTag = MenuItemTag(rawValue: tag) else { return nil }
-        return menuTitleMap[menuTag]
     }
 }
 

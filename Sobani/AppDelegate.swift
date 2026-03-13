@@ -5,7 +5,7 @@ import os.log
 // MARK: - App Delegate
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegate, NSMenuDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let logger = Logger(category: "AppDelegate")
     /// Z順（前面→背面）でウィンドウを管理する単一配列。
     var zOrderedWindows: [CharacterWindow] = []
@@ -103,8 +103,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     @objc func bringAllToFront() {
         areWindowsHidden = false
         NSApp.activate(ignoringOtherApps: true)
-        for charWindow in zOrderedWindows {
-            charWindow.window.orderFront(nil)
+        for charWindow in zOrderedWindows where charWindow.isHidden {
+            charWindow.setHidden(false)
         }
         applyZOrderToWindows()
     }
@@ -112,8 +112,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
     @objc func toggleAllWindowsVisibility() {
         guard !zOrderedWindows.isEmpty else { return }
         if areWindowsHidden {
-            for charWindow in zOrderedWindows {
-                charWindow.window.orderFront(nil)
+            for charWindow in zOrderedWindows where charWindow.isHidden {
+                charWindow.setHidden(false)
             }
             applyZOrderToWindows()
         } else {
@@ -171,6 +171,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         guard !areWindowsHidden else { return }
         var previousWindow: CharacterWindow?
         for charWindow in zOrderedWindows.reversed() {
+            guard !charWindow.isHidden else { continue }
             if let prev = previousWindow {
                 charWindow.window.order(.above, relativeTo: prev.window.windowNumber)
             } else {
@@ -242,22 +243,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         shouldTerminate = true
     }
 
-    @objc func toggleLaunchAtLogin() {
-        do {
-            try LaunchAtLoginManager.shared.toggle()
-        } catch {
-            if LaunchAtLoginManager.shared.status == .requiresApproval {
-                SMAppService.openSystemSettingsLoginItems()
-            }
-        }
-    }
-
-    @objc func toggleWindowSnap(_ sender: NSMenuItem) {
-        let current = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
-        UserDefaults.standard.set(!current, forKey: AppConstants.snapEnabledKey)
-        sender.state = !current ? .on : .off
-    }
-
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
             areWindowsHidden = false
@@ -288,40 +273,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         }
     }
 
-    // MARK: CharacterWindowDelegate
-
-    var allCharacterWindows: [CharacterWindow] { zOrderedWindows }
-
-    func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?) {
-        createNewWindow(imageName: imageName)
-    }
-
-    func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL) {
-        if let savedName = ImageManager.shared.registerImage(from: fileURL) {
-            createNewWindow(imageName: savedName)
-        }
-    }
-
-    func characterWindowDidClose(_ sender: CharacterWindow) {
-        removeCharacterWindow(sender)
-        if zOrderedWindows.isEmpty {
-            areWindowsHidden = false
-        }
-        quitIfNoWindows()
-    }
-
-    func characterWindowDidBecomeActive(_ sender: CharacterWindow) {
-        moveWindowToFront(sender)
-    }
-
-    func characterWindowDidDeleteImage(named name: String) {
-        guard let defaultImage = ImageManager.shared.defaultImage() else { return }
-        for charWindow in zOrderedWindows where charWindow.displayName == name {
-            charWindow.displayName = AppConstants.defaultImageName
-            charWindow.applyImage(defaultImage)
-        }
-    }
-
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -348,6 +299,66 @@ final class AppDelegate: NSObject, NSApplicationDelegate, CharacterWindowDelegat
         teardownScreenRestorationObservers()
     }
 
+}
+
+// MARK: - CharacterWindowDelegate
+
+extension AppDelegate: CharacterWindowDelegate {
+    var allCharacterWindows: [CharacterWindow] { zOrderedWindows }
+
+    func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?) {
+        createNewWindow(imageName: imageName)
+    }
+
+    func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL) {
+        if let savedName = ImageManager.shared.registerImage(from: fileURL) {
+            createNewWindow(imageName: savedName)
+        }
+    }
+
+    func characterWindowDidClose(_ sender: CharacterWindow) {
+        removeCharacterWindow(sender)
+        if zOrderedWindows.isEmpty {
+            areWindowsHidden = false
+        }
+        quitIfNoWindows()
+    }
+
+    func characterWindowDidBecomeActive(_ sender: CharacterWindow) {
+        moveWindowToFront(sender)
+    }
+
+    func characterWindowDidChangeHidden(_ sender: CharacterWindow) {
+        // Status menu will rebuild on next open
+    }
+
+    func characterWindowDidDeleteImage(named name: String) {
+        guard let defaultImage = ImageManager.shared.defaultImage() else { return }
+        for charWindow in zOrderedWindows where charWindow.displayName == name {
+            charWindow.displayName = AppConstants.defaultImageName
+            charWindow.applyImage(defaultImage)
+        }
+    }
+}
+
+// MARK: - Settings Actions
+
+extension AppDelegate {
+    @objc func toggleLaunchAtLogin() {
+        do {
+            try LaunchAtLoginManager.shared.toggle()
+        } catch {
+            if LaunchAtLoginManager.shared.status == .requiresApproval {
+                SMAppService.openSystemSettingsLoginItems()
+            }
+        }
+    }
+
+    @objc func toggleWindowSnap(_ sender: NSMenuItem) {
+        let current = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
+        UserDefaults.standard.set(!current, forKey: AppConstants.snapEnabledKey)
+        sender.state = !current ? .on : .off
+    }
 }
 
 // MARK: - Ghost Mode

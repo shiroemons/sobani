@@ -16,12 +16,14 @@ struct WindowState: Codable, Equatable, Sendable {
     var cropRect: CropRect?
     var isGhostMode: Bool
     var customGhostAlpha: CGFloat?
+    var isHidden: Bool
 
     enum CodingKeys: String, CodingKey {
         case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle, opacityLevel, windowId
         case cropRect
         case isGhostMode
         case customGhostAlpha
+        case isHidden
     }
 
     init(
@@ -36,7 +38,8 @@ struct WindowState: Codable, Equatable, Sendable {
         windowId: Int = 0,
         cropRect: CropRect? = nil,
         isGhostMode: Bool = false,
-        customGhostAlpha: CGFloat? = nil
+        customGhostAlpha: CGFloat? = nil,
+        isHidden: Bool = false
     ) {
         self.imageName = imageName
         self.originX = originX
@@ -50,6 +53,7 @@ struct WindowState: Codable, Equatable, Sendable {
         self.cropRect = cropRect
         self.isGhostMode = isGhostMode
         self.customGhostAlpha = customGhostAlpha
+        self.isHidden = isHidden
     }
 
     init(from decoder: Decoder) throws {
@@ -66,6 +70,7 @@ struct WindowState: Codable, Equatable, Sendable {
         cropRect = try container.decodeIfPresent(CropRect.self, forKey: .cropRect)
         isGhostMode = try container.decodeIfPresent(Bool.self, forKey: .isGhostMode) ?? false
         customGhostAlpha = try container.decodeIfPresent(CGFloat.self, forKey: .customGhostAlpha)
+        isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
     }
 
     func isPositionVisible(on screens: [ScreenInfo]) -> Bool {
@@ -99,7 +104,8 @@ struct WindowState: Codable, Equatable, Sendable {
             windowId: windowId,
             cropRect: cropRect,
             isGhostMode: isGhostMode,
-            customGhostAlpha: customGhostAlpha
+            customGhostAlpha: customGhostAlpha,
+            isHidden: isHidden
         )
     }
 }
@@ -154,7 +160,8 @@ final class WindowStateManager {
             windowId: charWindow.windowId,
             cropRect: charWindow.imageView.cropRect,
             isGhostMode: charWindow.isGhostMode,
-            customGhostAlpha: charWindow.customGhostAlpha
+            customGhostAlpha: charWindow.customGhostAlpha,
+            isHidden: charWindow.isHidden
         )
     }
 
@@ -180,7 +187,9 @@ extension CharacterWindow {
             height: adjusted.height
         )
         window.setFrame(frame, display: true)
-        window.makeKeyAndOrderFront(nil)
+        if !adjusted.isHidden {
+            window.makeKeyAndOrderFront(nil)
+        }
 
         imageView.isFlippedHorizontally = adjusted.isFlippedHorizontally
         imageView.rotationAngle = adjusted.rotationAngle
@@ -205,6 +214,9 @@ extension CharacterWindow {
         setCustomGhostAlpha(adjusted.customGhostAlpha)
         if adjusted.isGhostMode {
             setGhostMode(true)
+        }
+        if adjusted.isHidden {
+            setHidden(true)
         }
 
         return wasAdjusted

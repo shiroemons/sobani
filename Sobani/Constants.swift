@@ -105,6 +105,8 @@ enum AppConstants {
     static let ghostModeAnimationDuration: TimeInterval = 0.3
     static let optionGKeyCode: UInt16 = 5
     static let ghostModeSymbol = "face.dashed"
+    static let hiddenWindowSymbol = "eye.slash"
+    static let visibleWindowSymbol = "eye"
 
     // Ghost Mode Slider Layout
     static let ghostAlphaSliderContainerWidth: CGFloat = 260
@@ -323,6 +325,7 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case ghostModeAllDisable = 1034
     case ghostModeAlphaSlider = 1035
     case opacitySliderContext = 1036
+    case hideWindowToggle = 1037
 }
 
 // MARK: - Format Utils

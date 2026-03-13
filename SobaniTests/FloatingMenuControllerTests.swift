@@ -82,6 +82,7 @@ import Testing
             func floatingMenuDidSelectClose(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController) {}
+            func floatingMenuDidSelectHide(_ menu: FloatingMenuController) {}
             func floatingMenu(_ menu: FloatingMenuController, didChangeOpacity opacity: CGFloat) {}
         }
 
@@ -105,6 +106,7 @@ import Testing
             func floatingMenuDidSelectClose(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController) {}
             func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController) {}
+            func floatingMenuDidSelectHide(_ menu: FloatingMenuController) {}
             func floatingMenu(_ menu: FloatingMenuController, didChangeOpacity opacity: CGFloat) {}
         }
 

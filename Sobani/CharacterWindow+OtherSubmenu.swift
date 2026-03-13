@@ -76,6 +76,16 @@ extension CharacterWindow {
         ghostItem.state = isGhostMode ? .on : .off
         ghostItem.image = SFSymbolUtils.icon(AppConstants.ghostModeSymbol)
         otherSubmenu.addItem(ghostItem)
+
+        otherSubmenu.addItem(NSMenuItem.separator())
+
+        let hideItem = NSMenuItem(
+            title: L("window.hide"), action: #selector(hideThisWindow), keyEquivalent: ""
+        )
+        hideItem.tag = MenuItemTag.hideWindowToggle.rawValue
+        hideItem.target = self
+        hideItem.image = SFSymbolUtils.icon(AppConstants.hiddenWindowSymbol)
+        otherSubmenu.addItem(hideItem)
     }
 
 }

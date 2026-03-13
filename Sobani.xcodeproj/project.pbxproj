@@ -93,6 +93,9 @@
 		F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */; };
 		F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */; };
 		F0GM000002000000000001 /* WindowStateGhostModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0GM000001000000000001 /* WindowStateGhostModeTests.swift */; };
+		F0HW000002000000000001 /* CharacterWindow+HiddenWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HW000001000000000001 /* CharacterWindow+HiddenWindow.swift */; };
+		F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */; };
+		F0WH000002000000000001 /* WindowStateHiddenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0WH000001000000000001 /* WindowStateHiddenTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -197,6 +200,9 @@
 		F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSMenu+RegisteredImages.swift"; sourceTree = "<group>"; };
 		F0JP000003000000000001 /* JSONPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPersistenceTests.swift; sourceTree = "<group>"; };
 		F0GM000001000000000001 /* WindowStateGhostModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateGhostModeTests.swift; sourceTree = "<group>"; };
+		F0HW000001000000000001 /* CharacterWindow+HiddenWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+HiddenWindow.swift"; sourceTree = "<group>"; };
+		F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuSliders.swift"; sourceTree = "<group>"; };
+		F0WH000001000000000001 /* WindowStateHiddenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateHiddenTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -232,9 +238,11 @@
 				AA000008 /* main.swift */,
 				DD000008 /* AppDelegate.swift */,
 				DD000014 /* AppDelegate+StatusBarMenu.swift */,
+				F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */,
 				F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */,
 				DD000006 /* CharacterWindow.swift */,
 				F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */,
+				F0HW000001000000000001 /* CharacterWindow+HiddenWindow.swift */,
 				DD000004 /* DraggableImageView.swift */,
 				DD000002 /* ImageManager.swift */,
 				CC000011 /* UpdateManager.swift */,
@@ -333,6 +341,7 @@
 				F0EH000003000000000001 /* CropEditHistoryTests.swift */,
 				F0JP000003000000000001 /* JSONPersistenceTests.swift */,
 				F0GM000001000000000001 /* WindowStateGhostModeTests.swift */,
+				F0WH000001000000000001 /* WindowStateHiddenTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -498,6 +507,8 @@
 				F0JP000002000000000001 /* JSONPersistence.swift in Sources */,
 				F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */,
 				F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */,
+				F0HW000002000000000001 /* CharacterWindow+HiddenWindow.swift in Sources */,
+				F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -543,6 +554,7 @@
 				F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */,
 				F0JP000004000000000001 /* JSONPersistenceTests.swift in Sources */,
 				F0GM000002000000000001 /* WindowStateGhostModeTests.swift in Sources */,
+				F0WH000002000000000001 /* WindowStateHiddenTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

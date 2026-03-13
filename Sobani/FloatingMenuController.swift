@@ -13,6 +13,7 @@ protocol FloatingMenuDelegate: AnyObject {
     func floatingMenuDidSelectResetDisplay(_ menu: FloatingMenuController)
     func floatingMenuDidSelectGhostMode(_ menu: FloatingMenuController)
     func floatingMenu(_ menu: FloatingMenuController, didChangeOpacity opacity: CGFloat)
+    func floatingMenuDidSelectHide(_ menu: FloatingMenuController)
 }
 
 // MARK: - Floating Menu Controller
@@ -122,9 +123,9 @@ final class FloatingMenuController {
 
     private static func buttonCount() -> Int {
         if #available(macOS 14.0, *) {
-            return 7
+            return 8
         } else {
-            return 6
+            return 7
         }
     }
 
@@ -171,60 +172,68 @@ final class FloatingMenuController {
             action: #selector(resetDisplayTapped)
         ))
         buttons.append(ButtonSpec(
+            symbolName: AppConstants.hiddenWindowSymbol, tooltip: L("floating_menu.hide"),
+            label: L("floating_menu.label.hide"), action: #selector(hideTapped)
+        ))
+        buttons.append(ButtonSpec(
             symbolName: "xmark.circle", tooltip: L("floating_menu.close"),
             label: L("floating_menu.label.close"), action: #selector(closeTapped)
         ))
 
         let sliderAreaHeight = AppConstants.floatingMenuSliderRowHeight + AppConstants.floatingMenuSeparatorHeight
         for (index, spec) in buttons.enumerated() {
-            let columnX = AppConstants.floatingMenuPadding + (AppConstants.floatingMenuColumnWidth + AppConstants.floatingMenuGap) * CGFloat(index)
-            let buttonX = columnX + (AppConstants.floatingMenuColumnWidth - AppConstants.floatingMenuButtonSize) / 2
-            let buttonY = sliderAreaHeight + AppConstants.floatingMenuPadding + Self.labelHeight + Self.labelTopGap
-            let buttonFrame = NSRect(x: buttonX, y: buttonY, width: AppConstants.floatingMenuButtonSize, height: AppConstants.floatingMenuButtonSize)
-
-            let button = NSButton(frame: buttonFrame)
-            button.bezelStyle = .regularSquare
-            button.isBordered = false
-            button.imagePosition = .imageOnly
-            button.imageScaling = .scaleProportionallyDown
-            button.toolTip = spec.tooltip
-            button.target = self
-            button.action = spec.action
-
-            button.image = SFSymbolUtils.icon(spec.symbolName, pointSize: Self.buttonIconPointSize, weight: .medium)
-
-            // Hover effect via tracking area
-            button.wantsLayer = true
-            let trackingArea = NSTrackingArea(
-                rect: button.bounds,
-                options: [.mouseEnteredAndExited, .activeAlways],
-                owner: button,
-                userInfo: nil
-            )
-            button.addTrackingArea(trackingArea)
-
-            container.addSubview(button)
-
-            // Label below button
-            let labelY = sliderAreaHeight + AppConstants.floatingMenuPadding
-            let labelFrame = NSRect(x: columnX, y: labelY, width: AppConstants.floatingMenuColumnWidth, height: Self.labelHeight)
-            let label = NSTextField(frame: labelFrame)
-            label.stringValue = spec.label
-            label.isEditable = false
-            label.isBordered = false
-            label.drawsBackground = false
-            label.alignment = .center
-            label.font = .systemFont(ofSize: Self.labelFontSize)
-            label.textColor = .secondaryLabelColor
-            label.lineBreakMode = .byTruncatingTail
-
-            if index == removeBackgroundIndex && !isRemoveBackgroundEnabled {
-                button.isEnabled = false
-                label.textColor = .tertiaryLabelColor
-            }
-
-            container.addSubview(label)
+            createButtonView(spec: spec, index: index, removeBackgroundIndex: removeBackgroundIndex, sliderAreaHeight: sliderAreaHeight, in: container)
         }
+    }
+
+    private func createButtonView(spec: ButtonSpec, index: Int, removeBackgroundIndex: Int?, sliderAreaHeight: CGFloat, in container: NSView) {
+        let columnX = AppConstants.floatingMenuPadding + (AppConstants.floatingMenuColumnWidth + AppConstants.floatingMenuGap) * CGFloat(index)
+        let buttonX = columnX + (AppConstants.floatingMenuColumnWidth - AppConstants.floatingMenuButtonSize) / 2
+        let buttonY = sliderAreaHeight + AppConstants.floatingMenuPadding + Self.labelHeight + Self.labelTopGap
+        let buttonFrame = NSRect(x: buttonX, y: buttonY, width: AppConstants.floatingMenuButtonSize, height: AppConstants.floatingMenuButtonSize)
+
+        let button = NSButton(frame: buttonFrame)
+        button.bezelStyle = .regularSquare
+        button.isBordered = false
+        button.imagePosition = .imageOnly
+        button.imageScaling = .scaleProportionallyDown
+        button.toolTip = spec.tooltip
+        button.target = self
+        button.action = spec.action
+
+        button.image = SFSymbolUtils.icon(spec.symbolName, pointSize: Self.buttonIconPointSize, weight: .medium)
+
+        // Hover effect via tracking area
+        button.wantsLayer = true
+        let trackingArea = NSTrackingArea(
+            rect: button.bounds,
+            options: [.mouseEnteredAndExited, .activeAlways],
+            owner: button,
+            userInfo: nil
+        )
+        button.addTrackingArea(trackingArea)
+
+        container.addSubview(button)
+
+        // Label below button
+        let labelY = sliderAreaHeight + AppConstants.floatingMenuPadding
+        let labelFrame = NSRect(x: columnX, y: labelY, width: AppConstants.floatingMenuColumnWidth, height: Self.labelHeight)
+        let label = NSTextField(frame: labelFrame)
+        label.stringValue = spec.label
+        label.isEditable = false
+        label.isBordered = false
+        label.drawsBackground = false
+        label.alignment = .center
+        label.font = .systemFont(ofSize: Self.labelFontSize)
+        label.textColor = .secondaryLabelColor
+        label.lineBreakMode = .byTruncatingTail
+
+        if index == removeBackgroundIndex && !isRemoveBackgroundEnabled {
+            button.isEnabled = false
+            label.textColor = .tertiaryLabelColor
+        }
+
+        container.addSubview(label)
     }
 
     private func setupOpacitySlider(in container: NSView) {
@@ -317,6 +326,10 @@ final class FloatingMenuController {
 
     @objc private func resetDisplayTapped() {
         dismissAndNotify { $0.floatingMenuDidSelectResetDisplay(self) }
+    }
+
+    @objc private func hideTapped() {
+        dismissAndNotify { $0.floatingMenuDidSelectHide(self) }
     }
 
     @objc private func closeTapped() {
