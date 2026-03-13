@@ -348,7 +348,7 @@ extension AppDelegate {
         ghostItem.target = self
         ghostItem.tag = windowNumber
         ghostItem.state = charWindow.isGhostMode ? .on : .off
-        ghostItem.image = menuIcon("eye.slash.circle")
+        ghostItem.image = menuIcon("face.dashed")
         submenu.addItem(ghostItem)
 
         if #available(macOS 14.0, *) {

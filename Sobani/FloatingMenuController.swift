@@ -152,7 +152,7 @@ final class FloatingMenuController {
         }
 
         buttons.append(ButtonSpec(
-            symbolName: "eye.slash.circle", tooltip: L("floating_menu.ghost_mode"),
+            symbolName: "face.dashed", tooltip: L("floating_menu.ghost_mode"),
             label: L("floating_menu.label.ghost_mode"), action: #selector(ghostModeTapped)
         ))
         buttons.append(ButtonSpec(

@@ -74,7 +74,7 @@ extension CharacterWindow {
         ghostItem.tag = MenuItemTag.ghostModeToggle.rawValue
         ghostItem.target = self
         ghostItem.state = isGhostMode ? .on : .off
-        ghostItem.image = SFSymbolUtils.icon("eye.slash.circle")
+        ghostItem.image = SFSymbolUtils.icon("face.dashed")
         otherSubmenu.addItem(ghostItem)
     }
 
