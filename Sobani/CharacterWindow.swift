@@ -276,6 +276,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     @objc func resetDisplay() {
         if isGhostMode {
             setGhostMode(false)
+            setCustomGhostAlpha(nil)
         }
         imageView.isFlippedHorizontally = false
         imageView.resetCrop()

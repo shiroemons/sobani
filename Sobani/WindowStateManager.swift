@@ -15,11 +15,13 @@ struct WindowState: Codable, Equatable, Sendable {
     var windowId: Int
     var cropRect: CropRect?
     var isGhostMode: Bool
+    var customGhostAlpha: CGFloat?
 
     enum CodingKeys: String, CodingKey {
         case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle, opacityLevel, windowId
         case cropRect
         case isGhostMode
+        case customGhostAlpha
     }
 
     init(
@@ -33,7 +35,8 @@ struct WindowState: Codable, Equatable, Sendable {
         opacityLevel: CGFloat = 1.0,
         windowId: Int = 0,
         cropRect: CropRect? = nil,
-        isGhostMode: Bool = false
+        isGhostMode: Bool = false,
+        customGhostAlpha: CGFloat? = nil
     ) {
         self.imageName = imageName
         self.originX = originX
@@ -46,6 +49,7 @@ struct WindowState: Codable, Equatable, Sendable {
         self.windowId = windowId
         self.cropRect = cropRect
         self.isGhostMode = isGhostMode
+        self.customGhostAlpha = customGhostAlpha
     }
 
     init(from decoder: Decoder) throws {
@@ -61,6 +65,7 @@ struct WindowState: Codable, Equatable, Sendable {
         windowId = try container.decodeIfPresent(Int.self, forKey: .windowId) ?? 0
         cropRect = try container.decodeIfPresent(CropRect.self, forKey: .cropRect)
         isGhostMode = try container.decodeIfPresent(Bool.self, forKey: .isGhostMode) ?? false
+        customGhostAlpha = try container.decodeIfPresent(CGFloat.self, forKey: .customGhostAlpha)
     }
 
     func isPositionVisible(on screens: [ScreenInfo]) -> Bool {
@@ -93,7 +98,8 @@ struct WindowState: Codable, Equatable, Sendable {
             opacityLevel: opacityLevel,
             windowId: windowId,
             cropRect: cropRect,
-            isGhostMode: isGhostMode
+            isGhostMode: isGhostMode,
+            customGhostAlpha: customGhostAlpha
         )
     }
 }
@@ -147,7 +153,8 @@ final class WindowStateManager {
             opacityLevel: charWindow.imageView.opacityLevel,
             windowId: charWindow.windowId,
             cropRect: charWindow.imageView.cropRect,
-            isGhostMode: charWindow.isGhostMode
+            isGhostMode: charWindow.isGhostMode,
+            customGhostAlpha: charWindow.customGhostAlpha
         )
     }
 
@@ -195,6 +202,7 @@ extension CharacterWindow {
             }
         }
 
+        setCustomGhostAlpha(adjusted.customGhostAlpha)
         if adjusted.isGhostMode {
             setGhostMode(true)
         }
