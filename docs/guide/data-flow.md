@@ -46,11 +46,11 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `height` | `CGFloat` | 表示中の画像高さ | — |
 | `isFlippedHorizontally` | `Bool` | 左右反転状態 | `false` |
 | `rotationAngle` | `CGFloat` | 回転角度（0–360°） | `0` |
-| `opacityLevel` | `CGFloat` | 透明度（0.1–1.0） | `1.0` |
+| `opacityLevel` | `CGFloat` | 不透明度（0.1–1.0） | `1.0` |
 | `windowId` | `Int` | ウィンドウ識別子（旧バージョン互換用デフォルト 0） | `0` |
 | `cropRect` | `CropRect?` | クロップ状態（詳細は下記の CropRect 構造体を参照）、nilはクロップなし | `nil` |
 | `isGhostMode` | `Bool` | ゴーストモード（クリックスルー）の状態 | `false` |
-| `customGhostAlpha` | `CGFloat?` | ゴーストモード個別透明度（nilはグローバル設定に従う） | `nil` |
+| `customGhostAlpha` | `CGFloat?` | ゴーストモード個別不透明度（nilはグローバル設定に従う） | `nil` |
 
 > **注**: `cropRect` は `decodeIfPresent` を使用してデコードされるため、cropRectフィールドが無い既存JSONも正常に読み込み可能です（後方互換性）。
 

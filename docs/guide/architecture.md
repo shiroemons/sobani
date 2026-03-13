@@ -143,7 +143,7 @@ classDiagram
     CropEditorToolbarView --> AspectRatioSelectorView : contains
 ```
 
-`AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
+`AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・不透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
 
 ## ソースファイル一覧
 
@@ -160,7 +160,7 @@ classDiagram
 | `AppSupportDirectory.swift` | Application Supportディレクトリ取得ユーティリティ（`AppSupportDirectory.url(baseDirectory:logger:)`） |
 | `AspectRatioPreset.swift` | アスペクト比プリセットの定義（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
 | `AspectRatioSelectorView.swift` | アスペクト比プリセット選択UI（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
-| `AdjustmentPanelController.swift` | 回転ダイアル・透明度スライダーのパネル |
+| `AdjustmentPanelController.swift` | 回転ダイアル・不透明度スライダーのパネル |
 | `BackgroundRemovalManager.swift` | Vision フレームワークによる背景除去（macOS 14以降、シングルトン） |
 | `CharacterWindow.swift` | ボーダーレス透明ウィンドウ。`RotatableContainer`、コンテキストメニュー |
 | `CharacterWindow+OtherSubmenu.swift` | 「その他」コンテキストサブメニューのCharacterWindow拡張 |
@@ -173,7 +173,7 @@ classDiagram
 | `CropImageProcessor.swift` | CropRectを実画像に適用する画像処理パイプライン（回転→反転→パース→傾き→クロップ） |
 | `CropRect.swift` | クロップ状態の構造体（正規化0-1座標、回転・傾き・パース・反転・アスペクト比）。Codable対応 |
 | `DragDropUtils.swift` | ドラッグ＆ドロップ操作のユーティリティ。ペーストボードから対応画像URLを抽出 |
-| `DraggableImageView.swift` | ドラッグ移動、スクロールリサイズ、反転/回転/透明度 |
+| `DraggableImageView.swift` | ドラッグ移動、スクロールリサイズ、反転/回転/不透明度 |
 | `FloatingMenuController.swift` | ダブルクリックで表示するSFシンボルアイコンのフローティングツールバー（NSPanel） |
 | `ImageManager.swift` | 画像の登録・読み込み・削除（シングルトン） |
 | `ImagePreviewPanel.swift` | 画像プレビューパネル |
@@ -232,8 +232,8 @@ classDiagram
 |---|---|
 | `rotationPanel(_:didChangeAngle:)` | 回転ダイアルの角度変更を通知 |
 | `rotationPanelDidReset(_:)` | 回転のリセットを通知 |
-| `adjustmentPanel(_:didChangeOpacity:)` | 透明度スライダーの変更を通知 |
-| `adjustmentPanelDidResetOpacity(_:)` | 透明度のリセットを通知 |
+| `adjustmentPanel(_:didChangeOpacity:)` | 不透明度スライダーの変更を通知 |
+| `adjustmentPanelDidResetOpacity(_:)` | 不透明度のリセットを通知 |
 
 ### FloatingMenuDelegate
 
@@ -244,7 +244,7 @@ classDiagram
 | `floatingMenuDidRequestFlip(_:)` | 反転ボタンの押下を通知 |
 | `floatingMenuDidRequestRotation(_:)` | 回転調整パネルの表示を要求 |
 | `floatingMenuDidRequestCrop(_:)` | クロップエディタの表示を要求 |
-| `floatingMenuDidSelectResetDisplay(_:)` | 表示をリセット（回転・反転・透明度・切り取りを初期状態に戻す） |
+| `floatingMenuDidSelectResetDisplay(_:)` | 表示をリセット（回転・反転・不透明度・切り取りを初期状態に戻す） |
 | `floatingMenuDidRequestClose(_:)` | ウィンドウの閉じるを要求 |
 
 ### CropEditorPanelDelegate
@@ -309,8 +309,8 @@ stateDiagram-v2
 flowchart TD
     CW["CharacterWindow<br/>(NSObject)<br/>NSWindow を保持<br/>ボーダーレス・透明・常に最前面"]
     RC["RotatableContainer<br/>(NSView)<br/>回転時のバウンディングボックス調整"]
-    DIV["DraggableImageView<br/>(NSImageView)<br/>ドラッグ・リサイズ・反転・回転・透明度"]
-    AP["AdjustmentPanelController<br/>(NSObject, NSPanel を保持)<br/>回転ダイアル・透明度スライダー"]
+    DIV["DraggableImageView<br/>(NSImageView)<br/>ドラッグ・リサイズ・反転・回転・不透明度"]
+    AP["AdjustmentPanelController<br/>(NSObject, NSPanel を保持)<br/>回転ダイアル・不透明度スライダー"]
     FM["FloatingMenuController<br/>(NSObject, NSPanel を保持)<br/>ダブルクリックで表示するツールバー"]
     CEP["CropEditorPanelController<br/>(NSObject, NSPanel を保持)<br/>iPhone風クロップエディタ・Undo/Redo"]
     CCV["CropEditorCanvasView<br/>(NSView)<br/>画像プレビュー・クロップ枠・パン/ズーム"]
@@ -330,17 +330,17 @@ flowchart TD
 
 `CharacterWindow` は `NSObject` のサブクラスで、`NSWindow` インスタンスをプロパティとして保持します。ウィンドウはボーダーレスかつ透明で、全 Space に表示される常に最前面のウィンドウです。`contentView` として `RotatableContainer` を設定し、その子ビューとして `DraggableImageView` が配置されます。
 
-`RotatableContainer` は `CharacterWindow.swift` 内に定義された `private class` であり、外部からは参照できません。`CharacterWindow` のプロパティとしては保持されず、`init` 内でローカル変数として生成され `window.contentView` に設定されます。回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・透明度の状態を保持します。
+`RotatableContainer` は `CharacterWindow.swift` 内に定義された `private class` であり、外部からは参照できません。`CharacterWindow` のプロパティとしては保持されず、`init` 内でローカル変数として生成され `window.contentView` に設定されます。回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・不透明度の状態を保持します。
 
 `AdjustmentPanelController` は別の `NSPanel` として表示されるフローティングパネルで、`AdjustmentPanelDelegate` を通じて `CharacterWindow` に変更を伝えます。
 
 ## ゴーストモード
 
-ゴーストモード（`ignoresMouseEvents = true`）はウィンドウをクリックスルーにする機能です。有効時はウィンドウの`imageView`に透明度（デフォルト0.3）を適用し、ホバー時の枠線は不透明を維持します。
+ゴーストモード（`ignoresMouseEvents = true`）はウィンドウをクリックスルーにする機能です。有効時はウィンドウの`imageView`に不透明度（デフォルト0.3）を適用し、ホバー時の枠線は不透明を維持します。
 
 - **状態管理**: `CharacterWindow` が `isGhostMode` と `customGhostAlpha` をプロパティとして保持
 - **永続化**: `WindowState` 構造体の `isGhostMode`/`customGhostAlpha` フィールドで `window_states.json` に保存
-- **グローバル設定**: `UserDefaults` に `ghostAlpha` キーでグローバルデフォルト透明度を保存
+- **グローバル設定**: `UserDefaults` に `ghostAlpha` キーでグローバルデフォルト不透明度を保存
 - **トグル方法**: Option+G グローバルホットキー、右クリックメニュー、フローティングメニュー、ステータスバーメニュー
 
 [← 目次](README.md)
