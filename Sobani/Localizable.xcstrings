@@ -3361,22 +3361,6 @@
         }
       }
     },
-    "ghost.label": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[ゴースト]"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[Ghost]"
-          }
-        }
-      }
-    },
     "status.ghost_count": {
       "localizations": {
         "ja": {

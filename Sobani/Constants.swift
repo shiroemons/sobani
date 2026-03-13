@@ -101,6 +101,7 @@ enum AppConstants {
     static let ghostModeAlpha: CGFloat = 0.3
     static let ghostModeAnimationDuration: TimeInterval = 0.3
     static let optionGKeyCode: UInt16 = 5
+    static let ghostModeSymbol = "face.dashed"
 
     // Crop
     static let cropHandleSize: CGFloat = 8

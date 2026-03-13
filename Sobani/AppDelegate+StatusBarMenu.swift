@@ -245,9 +245,7 @@ extension AppDelegate {
                 index: index, displayName: charWindow.localizedDisplayName,
                 windowId: charWindow.windowId,
                 imageSize: (Int(charWindow.imageView.frame.width), Int(charWindow.imageView.frame.height)),
-                screenName: rawName.isEmpty ? L("image.unknown") : rawName,
-                isGhostMode: charWindow.isGhostMode,
-                ghostLabel: L("ghost.label")
+                screenName: rawName.isEmpty ? L("image.unknown") : rawName
             )
             return (charWindow, info)
         }
@@ -262,6 +260,7 @@ extension AppDelegate {
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.tabStops = [NSTextTab(textAlignment: .left, location: tabPosition)]
 
+        let ghostIcon = menuIcon(AppConstants.ghostModeSymbol)
         for (charWindow, info) in windowInfoList {
             let fullText = "\(info.leftText)\t\(info.rightText)"
 
@@ -272,6 +271,9 @@ extension AppDelegate {
 
             let item = NSMenuItem(title: info.leftText, action: nil, keyEquivalent: "")
             item.attributedTitle = attributedTitle
+            if charWindow.isGhostMode {
+                item.image = ghostIcon
+            }
             item.representedObject = charWindow
             item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows, imageNames: imageNames)
             submenu.addItem(item)
@@ -348,7 +350,7 @@ extension AppDelegate {
         ghostItem.target = self
         ghostItem.tag = windowNumber
         ghostItem.state = charWindow.isGhostMode ? .on : .off
-        ghostItem.image = menuIcon("face.dashed")
+        ghostItem.image = menuIcon(AppConstants.ghostModeSymbol)
         submenu.addItem(ghostItem)
 
         if #available(macOS 14.0, *) {

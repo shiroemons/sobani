@@ -70,14 +70,9 @@ enum MenuStateUtils {
         displayName: String,
         windowId: Int,
         imageSize: (width: Int, height: Int),
-        screenName: String,
-        isGhostMode: Bool = false,
-        ghostLabel: String = ""
+        screenName: String
     ) -> (leftText: String, rightText: String) {
-        var leftText = "\(index + 1): \(displayName) (#\(windowId))"
-        if isGhostMode {
-            leftText += " \(ghostLabel)"
-        }
+        let leftText = "\(index + 1): \(displayName) (#\(windowId))"
         let rightText = "[\(imageSize.width)\u{00d7}\(imageSize.height)] \(screenName)"
         return (leftText, rightText)
     }
