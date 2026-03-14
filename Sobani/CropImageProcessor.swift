@@ -75,20 +75,25 @@ enum CropImageProcessor {
         }
 
         // 3+4. 傾き補正 + クロップ（統合処理）
+        let result: CGImage?
         if !GeometryUtils.isApproximatelyZero(cropRect.straightenAngle) {
-            let result = applyStraightenAndCrop(
+            result = applyStraightenAndCrop(
                 to: current, angleDegrees: cropRect.straightenAngle, cropRect: cropRect
             )
             if result == nil {
                 logger.error("applyStraightenAndCrop failed")
             }
-            return result
+        } else {
+            // 傾き補正なし: クロップのみ
+            result = applyCropRect(to: current, cropRect: cropRect)
+            if result == nil {
+                logger.error("applyCropRect failed for rect=(\(cropRect.x), \(cropRect.y), \(cropRect.width), \(cropRect.height))")
+            }
         }
 
-        // 傾き補正なし: クロップのみ
-        let result = applyCropRect(to: current, cropRect: cropRect)
-        if result == nil {
-            logger.error("applyCropRect failed for rect=(\(cropRect.x), \(cropRect.y), \(cropRect.width), \(cropRect.height))")
+        // 5. 形状マスクを適用（rectangle以外の場合）
+        if let croppedImage = result, cropRect.shape != .rectangle {
+            return applyShapeMask(to: croppedImage, cropRect: cropRect)
         }
         return result
     }
@@ -282,6 +287,47 @@ enum CropImageProcessor {
         return context.makeImage()
     }
 
+    // MARK: - Shape Mask
+
+    /// クロップ後の画像に形状マスクを適用（rectangle以外の場合）
+    /// circle: 内接する楕円でクリッピング
+    /// roundedRectangle: 4隅個別の角丸でクリッピング
+    /// 形状外のピクセルは透明（alpha=0）になる
+    static func applyShapeMask(to image: CGImage, cropRect: CropRect) -> CGImage? {
+        let shape = cropRect.shape
+        guard shape != .rectangle else { return image }
+
+        let width = image.width
+        let height = image.height
+        guard width > 0, height > 0 else { return nil }
+
+        guard let context = CGContext(
+            data: nil, width: width, height: height,
+            bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+
+        let fullRect = CGRect(x: 0, y: 0, width: width, height: height)
+        context.clear(fullRect)
+
+        // 形状パスを構築してクリッピング
+        switch shape {
+        case .circle:
+            context.addEllipse(in: fullRect)
+        case .roundedRectangle:
+            let shorterSide = CGFloat(min(width, height))
+            let path = CropGeometry.roundedRectPath(rect: fullRect, radii: cropRect.cornerRadii, shorterSide: shorterSide)
+            context.addPath(path)
+        case .rectangle:
+            break // already handled by guard
+        }
+
+        context.clip()
+        context.draw(image, in: fullRect)
+        return context.makeImage()
+    }
+
     /// 正規化座標のクロップ矩形で切り出し
     /// クロップ領域が画像外にはみ出す場合、空白部分は透過（alpha=0）になる
     static func applyCropRect(to image: CGImage, cropRect: CropRect) -> CGImage? {
@@ -324,11 +370,11 @@ enum CropImageProcessor {
         // 背景を透明にクリア
         context.clear(CGRect(x: 0, y: 0, width: intCropW, height: intCropH))
 
-        // 画像をクロップ座標系で配置（Y軸反転を考慮）
+        // 画像をクロップ座標系で配置
         // コンテキスト原点 = クロップ領域の左下
         // 画像の左下 = コンテキスト上で (-cropX, -cropY)
         let drawX = -cropX
-        let drawY = -(imgHeight - cropY - cropH)
+        let drawY = -cropY
         context.draw(image, in: CGRect(x: drawX, y: drawY, width: imgWidth, height: imgHeight))
 
         return context.makeImage()

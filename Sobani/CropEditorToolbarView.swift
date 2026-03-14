@@ -53,6 +53,8 @@ final class CropEditorToolbarView: NSView {
     var onAspectRatioSelected: ((AspectRatioPreset) -> Void)?
     var onModeChanged: ((StraightenMode) -> Void)?
     var onSliderDragEnded: (() -> Void)?
+    var onShapeSelected: ((CropShape) -> Void)?
+    var onCornersLinkedToggled: ((Bool) -> Void)?
 
     // MARK: - State
 
@@ -69,6 +71,7 @@ final class CropEditorToolbarView: NSView {
 
     private var sliderView: StraightenSliderView?
     private var selectorView: AspectRatioSelectorView?
+    private var shapeSelectorView: CropShapeSelectorView?
     private var modeButtonViews: [ModeButtonView] = []
 
     // MARK: - Init
@@ -107,6 +110,18 @@ final class CropEditorToolbarView: NSView {
         selector.isHidden = true
         addSubview(selector)
         selectorView = selector
+
+        // 形状セレクター（非表示で開始）
+        let shapeSelector = CropShapeSelectorView(frame: .zero)
+        shapeSelector.onShapeSelected = { [weak self] shape in
+            self?.onShapeSelected?(shape)
+        }
+        shapeSelector.onCornersLinkedToggled = { [weak self] linked in
+            self?.onCornersLinkedToggled?(linked)
+        }
+        shapeSelector.isHidden = true
+        addSubview(shapeSelector)
+        shapeSelectorView = shapeSelector
 
         // モードボタン行（下部）
         let created = createModeButtonViews()
@@ -229,6 +244,18 @@ final class CropEditorToolbarView: NSView {
         angleForMode(straightenMode)
     }
 
+    func updateShapeSelection(_ shape: CropShape) {
+        shapeSelectorView?.selectedShape = shape
+    }
+
+    func setCornersLinked(_ linked: Bool) {
+        shapeSelectorView?.setCornersLinked(linked)
+    }
+
+    func updateShapeAspectOrientation(_ orientation: CropGeometry.AspectOrientation) {
+        shapeSelectorView?.updateAspectOrientation(orientation)
+    }
+
     func cleanup() {
         sliderView?.stopTimers()
     }
@@ -255,7 +282,7 @@ private extension CropEditorToolbarView {
         let buttonY: CGFloat = 82
 
         // ボタン行: 選択中ボタンが中央に来るようにオフセット
-        let modes: [StraightenMode] = [.straighten, .verticalPerspective, .horizontalPerspective]
+        let modes = StraightenMode.allCases
         let selectedIndex = CGFloat(modes.firstIndex(of: straightenMode) ?? 0)
         let startX = bounds.midX - Self.modeButtonSize / 2
             - selectedIndex * (Self.modeButtonSize + Self.modeButtonSpacing)
@@ -277,6 +304,7 @@ private extension CropEditorToolbarView {
 
         // セレクターを隠す
         selectorView?.isHidden = true
+        shapeSelectorView?.isHidden = true
     }
 
     func layoutAspectRatioMode() {
@@ -286,9 +314,15 @@ private extension CropEditorToolbarView {
         }
         sliderView?.isHidden = true
 
-        // セレクターを垂直中央配置
+        // 上段: 形状セレクタ
+        let shapeHeight = CropShapeSelectorView.viewHeight
+        let shapeY = bounds.height - shapeHeight - 8
+        shapeSelectorView?.frame = NSRect(x: 0, y: shapeY, width: bounds.width, height: shapeHeight)
+        shapeSelectorView?.isHidden = false
+
+        // 下段: アスペクト比セレクタ
         let selectorHeight = AspectRatioSelectorView.viewHeight
-        let selectorY = (bounds.height - selectorHeight) / 2
+        let selectorY: CGFloat = 8
         selectorView?.frame = NSRect(x: 0, y: selectorY, width: bounds.width, height: selectorHeight)
         selectorView?.isHidden = false
     }
@@ -299,7 +333,7 @@ private extension CropEditorToolbarView {
 private extension CropEditorToolbarView {
 
     func updateModeButtonViews() {
-        let modes: [StraightenMode] = [.straighten, .verticalPerspective, .horizontalPerspective]
+        let modes = StraightenMode.allCases
         for (index, buttonView) in modeButtonViews.enumerated() {
             guard index < modes.count else { continue }
             let newSelected = modes[index] == straightenMode

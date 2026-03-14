@@ -101,6 +101,12 @@ final class CropEditorPanelController: NSObject {
         toolbar.onSliderDragEnded = { [weak self] in
             self?.recordCurrentState()
         }
+        toolbar.onShapeSelected = { [weak self] shape in
+            self?.handleShapeSelected(shape)
+        }
+        toolbar.onCornersLinkedToggled = { [weak self] linked in
+            self?.handleCornersLinkedToggled(linked)
+        }
         contentView.addSubview(toolbar)
         toolbarView = toolbar
         syncToolbarState(to: currentCropRect)
@@ -177,7 +183,7 @@ final class CropEditorPanelController: NSObject {
         canvasView?.resetZoomAndOffset()
         toolbarView?.resetStraightenAngle()
         toolbarView?.hideAspectRatioSelector()
-        toolbarView?.updateAspectRatioSelection(.free)
+        syncToolbarState(to: currentCropRect)
         delegate?.cropEditorDidReset(self)
         recordCurrentState()
         updateRevertButtonVisibility()
@@ -248,6 +254,20 @@ final class CropEditorPanelController: NSObject {
         if let preset = AspectRatioPreset.from(presetName: cropRect.aspectRatioPreset) {
             toolbarView?.updateAspectRatioSelection(preset)
         }
+        toolbarView?.updateShapeSelection(cropRect.shape)
+        toolbarView?.setCornersLinked(cropRect.cornersLinked)
+        toolbarView?.updateShapeAspectOrientation(currentAspectOrientation(cropRect))
+    }
+
+    /// 現在のクロップ領域のアスペクト比の向きを判定
+    private func currentAspectOrientation(_ cropRect: CropRect) -> CropGeometry.AspectOrientation {
+        let imageSize = effectiveImageSize()
+        let pixelWidth = cropRect.width * imageSize.width
+        let pixelHeight = cropRect.height * imageSize.height
+        if GeometryUtils.isApproximatelyEqual(pixelWidth, pixelHeight) {
+            return .square
+        }
+        return pixelWidth > pixelHeight ? .landscape : .portrait
     }
 
     // MARK: - Revert Button Visibility
@@ -329,6 +349,7 @@ extension CropEditorPanelController {
         }
         canvasView?.initializeFromCropRect(currentCropRect)
         toolbarView?.updateAspectRatioSelection(preset)
+        toolbarView?.updateShapeAspectOrientation(currentAspectOrientation(currentCropRect))
         recordCurrentState()
         updateRevertButtonVisibility()
     }
@@ -576,6 +597,32 @@ extension CropEditorPanelController {
         }
 
         return (container, buttons)
+    }
+}
+
+// MARK: - Shape Handlers
+
+extension CropEditorPanelController {
+
+    private func handleShapeSelected(_ shape: CropShape) {
+        var updated = currentCropRect.with(shape: shape)
+
+        if shape == .roundedRectangle && updated.cornerRadii == .zero {
+            // 角丸初回選択: デフォルト角丸を設定
+            updated = updated.with(cornerRadii: CornerRadii.defaultLinked)
+        }
+
+        currentCropRect = updated
+        canvasView?.initializeFromCropRect(updated)
+        syncToolbarState(to: updated)
+        recordCurrentState()
+        updateRevertButtonVisibility()
+    }
+
+    private func handleCornersLinkedToggled(_ linked: Bool) {
+        currentCropRect = currentCropRect.with(cornersLinked: linked)
+        canvasView?.cropRect = currentCropRect
+        recordCurrentState()
     }
 }
 

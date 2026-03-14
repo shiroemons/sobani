@@ -7,9 +7,6 @@ final class AspectRatioSelectorView: NSView {
     // MARK: - Constants
 
     static let viewHeight: CGFloat = 36
-    private static let buttonSpacing: CGFloat = 8
-    private static let cornerRadius: CGFloat = 6
-    private static let selectedBackgroundColor = NSColor.labelColor.withAlphaComponent(0.1)
 
     // MARK: - Properties
 
@@ -49,7 +46,7 @@ final class AspectRatioSelectorView: NSView {
         stackView.orientation = .horizontal
         stackView.alignment = .centerY
         stackView.distribution = .gravityAreas
-        stackView.spacing = Self.buttonSpacing
+        stackView.spacing = AppConstants.selectorButtonSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
 
@@ -108,8 +105,8 @@ final class AspectRatioSelectorView: NSView {
                         .foregroundColor: NSColor.labelColor
                     ]
                 )
-                button.layer?.backgroundColor = Self.selectedBackgroundColor.cgColor
-                button.layer?.cornerRadius = Self.cornerRadius
+                button.layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(AppConstants.selectorSelectedAlpha).cgColor
+                button.layer?.cornerRadius = AppConstants.selectorCornerRadius
             } else {
                 let font = NSFont.systemFont(ofSize: 12, weight: .regular)
                 button.attributedTitle = NSAttributedString(

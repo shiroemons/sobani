@@ -134,43 +134,6 @@ import Testing
         #expect(abs(result.height - 0.5) < AppConstants.floatingPointTolerance)
     }
 
-    // MARK: - clampOffset テスト
-
-    @Test func clampOffset_withinBounds() {
-        let offset = CGPoint(x: 10, y: 10)
-        let result = CropGeometry.clampOffset(
-            offset: offset,
-            imageSize: CGSize(width: 400, height: 300),
-            cropFrameSize: CGSize(width: 200, height: 150)
-        )
-        #expect(abs(result.x - 10) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 10) < AppConstants.floatingPointTolerance)
-    }
-
-    @Test func clampOffset_exceedsBounds() {
-        let offset = CGPoint(x: 200, y: 200)
-        let result = CropGeometry.clampOffset(
-            offset: offset,
-            imageSize: CGSize(width: 400, height: 300),
-            cropFrameSize: CGSize(width: 200, height: 150)
-        )
-        // maxOffsetX = (400-200)/2 = 100, maxOffsetY = (300-150)/2 = 75
-        #expect(abs(result.x - 100) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 75) < AppConstants.floatingPointTolerance)
-    }
-
-    @Test func clampOffset_imageSmallerThanCrop() {
-        let offset = CGPoint(x: 50, y: 50)
-        let result = CropGeometry.clampOffset(
-            offset: offset,
-            imageSize: CGSize(width: 100, height: 100),
-            cropFrameSize: CGSize(width: 200, height: 200)
-        )
-        // imageSize < cropFrameSize → maxOffset = 0
-        #expect(abs(result.x - 0) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 0) < AppConstants.floatingPointTolerance)
-    }
-
     // MARK: - initialStateFromCropRect テスト
 
     @Test func initialStateFromCropRect_fullCrop() {
@@ -311,5 +274,154 @@ import Testing
         #expect(abs(resultRightEdge - rightEdge) < AppConstants.floatingPointTolerance)
         // 下端固定
         #expect(abs(result.originY - start.y) < AppConstants.floatingPointTolerance)
+    }
+
+}
+
+// MARK: - clampOffset / pixelCornerRadius / cornerRadiusHandlePosition / cornerRadiusFromDrag / viewRectToNormalizedCrop ラウンドトリップ
+
+extension CropGeometryTests {
+
+    // MARK: - clampOffset テスト
+
+    @Test func clampOffset_withinBounds() {
+        let offset = CGPoint(x: 10, y: 10)
+        let result = CropGeometry.clampOffset(
+            offset: offset,
+            imageSize: CGSize(width: 400, height: 300),
+            cropFrameSize: CGSize(width: 200, height: 150)
+        )
+        #expect(abs(result.x - 10) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - 10) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func clampOffset_exceedsBounds() {
+        let offset = CGPoint(x: 200, y: 200)
+        let result = CropGeometry.clampOffset(
+            offset: offset,
+            imageSize: CGSize(width: 400, height: 300),
+            cropFrameSize: CGSize(width: 200, height: 150)
+        )
+        // maxOffsetX = (400-200)/2 = 100, maxOffsetY = (300-150)/2 = 75
+        #expect(abs(result.x - 100) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - 75) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func clampOffset_imageSmallerThanCrop() {
+        let offset = CGPoint(x: 50, y: 50)
+        let result = CropGeometry.clampOffset(
+            offset: offset,
+            imageSize: CGSize(width: 100, height: 100),
+            cropFrameSize: CGSize(width: 200, height: 200)
+        )
+        // imageSize < cropFrameSize → maxOffset = 0
+        #expect(abs(result.x - 0) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - 0) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - pixelCornerRadius テスト
+
+    @Test func pixelCornerRadius_zero_returnsZero() {
+        let result = CropGeometry.pixelCornerRadius(normalized: 0, shorterSide: 200)
+        #expect(abs(result) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func pixelCornerRadius_one_returnsHalfShorterSide() {
+        let result = CropGeometry.pixelCornerRadius(normalized: 1.0, shorterSide: 200)
+        #expect(abs(result - 100) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func pixelCornerRadius_clampsAboveOne() {
+        let result = CropGeometry.pixelCornerRadius(normalized: 1.5, shorterSide: 200)
+        #expect(abs(result - 100) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func pixelCornerRadius_clampsBelowZero() {
+        let result = CropGeometry.pixelCornerRadius(normalized: -0.5, shorterSide: 200)
+        #expect(abs(result) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - cornerRadiusHandlePosition テスト
+
+    @Test func cornerRadiusHandlePosition_topLeft() {
+        let frame = NSRect(x: 100, y: 100, width: 200, height: 200)
+        let pos = CropGeometry.cornerRadiusHandlePosition(
+            corner: .topLeft, cropFrame: frame, normalizedRadius: 0.5
+        )
+        // pixelRadius = 0.5 * 200 / 2 = 50
+        #expect(abs(pos.x - 150) < AppConstants.floatingPointTolerance)
+        #expect(abs(pos.y - 250) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func cornerRadiusHandlePosition_bottomRight() {
+        let frame = NSRect(x: 100, y: 100, width: 200, height: 200)
+        let pos = CropGeometry.cornerRadiusHandlePosition(
+            corner: .bottomRight, cropFrame: frame, normalizedRadius: 0.5
+        )
+        #expect(abs(pos.x - 250) < AppConstants.floatingPointTolerance)
+        #expect(abs(pos.y - 150) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - cornerRadiusFromDrag テスト
+
+    @Test func cornerRadiusFromDrag_atCorner_returnsZero() {
+        let frame = NSRect(x: 100, y: 100, width: 200, height: 200)
+        let result = CropGeometry.cornerRadiusFromDrag(
+            corner: .topLeft, cropFrame: frame, dragPoint: CGPoint(x: 100, y: 300)
+        )
+        #expect(abs(result) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func cornerRadiusFromDrag_atCenter_returnsOne() {
+        let frame = NSRect(x: 100, y: 100, width: 200, height: 200)
+        let result = CropGeometry.cornerRadiusFromDrag(
+            corner: .topLeft, cropFrame: frame, dragPoint: CGPoint(x: 200, y: 200)
+        )
+        #expect(abs(result - 1.0) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test func cornerRadiusFromDrag_clampsToMax() {
+        let frame = NSRect(x: 100, y: 100, width: 200, height: 200)
+        let result = CropGeometry.cornerRadiusFromDrag(
+            corner: .topLeft, cropFrame: frame, dragPoint: CGPoint(x: 300, y: 100)
+        )
+        #expect(result <= AppConstants.cornerRadiusMax + AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - viewRectToNormalizedCrop ラウンドトリップテスト
+
+    /// パン操作後のCropRect計算のラウンドトリップを確認する
+    /// recalculateImageOffset の計算を手動で再現し、viewRectToNormalizedCrop が元の値を復元できることを検証
+    @Test func viewRectToNormalizedCrop_roundTrip_withOffset() throws {
+        let originalX: CGFloat = 0.2
+        let originalY: CGFloat = 0.3
+        let originalW: CGFloat = 0.6
+        let originalH: CGFloat = 0.5
+        let cropRect = CropRect(x: originalX, y: originalY, width: originalW, height: originalH)
+
+        let cropFrame = NSRect(x: 50, y: 50, width: 200, height: 150)
+
+        // recalculateImageOffset の計算を手動再現（zoom=1 と仮定）
+        let baseWidth = cropFrame.width / cropRect.width
+        let baseHeight = cropFrame.height / cropRect.height
+        let offsetX = baseWidth * (0.5 - cropRect.x) - cropFrame.width / 2
+        let offsetY = baseHeight * (0.5 - cropRect.y) - cropFrame.height / 2
+        let drawWidth = baseWidth
+        let drawHeight = baseHeight
+        let centerX = cropFrame.midX + offsetX
+        let centerY = cropFrame.midY + offsetY
+        let imageRect = NSRect(
+            x: centerX - drawWidth / 2,
+            y: centerY - drawHeight / 2,
+            width: drawWidth,
+            height: drawHeight
+        )
+
+        let result = CropGeometry.viewRectToNormalizedCrop(cropFrame: cropFrame, imageRect: imageRect)
+
+        #expect(abs(result.x - originalX) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - originalY) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - originalW) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.height - originalH) < AppConstants.floatingPointTolerance)
     }
 }

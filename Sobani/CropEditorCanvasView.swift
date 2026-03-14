@@ -27,6 +27,7 @@ final class CropEditorCanvasView: NSView {
         case idle
         case movingImage
         case resizingHandle(HandlePosition)
+        case adjustingCornerRadius(CropGeometry.Corner)
     }
 
     // MARK: - Properties
@@ -50,6 +51,10 @@ final class CropEditorCanvasView: NSView {
     private var dragStartCropFrame: NSRect = .zero
     private var activeDragCropFrame: NSRect?
     private var dragStartImageDrawRect: NSRect = .zero
+
+    var cropShape: CropShape { cropRect.shape }
+    var cornerRadii: CornerRadii { cropRect.cornerRadii }
+    var cornersLinked: Bool { cropRect.cornersLinked }
 
     // MARK: - Setup
 
@@ -78,15 +83,32 @@ final class CropEditorCanvasView: NSView {
         }
         guard cropFrame.width > 0, cropFrame.height > 0 else { return }
 
+        // 形状パスを一度だけ計算
+        let shapePath: CGPath?
+        switch cropShape {
+        case .rectangle:
+            shapePath = nil
+        case .circle:
+            let path = CGMutablePath()
+            path.addEllipse(in: cropFrame)
+            shapePath = path
+        case .roundedRectangle:
+            let shorterSide = min(cropFrame.width, cropFrame.height)
+            shapePath = CropGeometry.roundedRectPath(rect: cropFrame, radii: cornerRadii, shorterSide: shorterSide)
+        }
+
         // 画像がキャンバス領域外に描画されないようクリッピング
         context.saveGState()
         context.clip(to: bounds)
         drawTransformedImage(context: context, imageDrawRect: imgDrawRect)
         context.restoreGState()
-        drawOverlay(context: context, cropFrame: cropFrame)
-        drawCropBorder(context: context, cropFrame: cropFrame)
+        drawOverlay(context: context, cropFrame: cropFrame, shapePath: shapePath)
+        drawCropBorder(context: context, cropFrame: cropFrame, shapePath: shapePath)
         drawGrid(context: context, cropFrame: cropFrame)
         drawHandles(context: context, cropFrame: cropFrame)
+        if cropShape == .roundedRectangle {
+            drawCornerRadiusHandles(context: context, cropFrame: cropFrame)
+        }
     }
 
     // MARK: - Coordinate Helpers
@@ -325,30 +347,52 @@ extension CropEditorCanvasView {
 
 extension CropEditorCanvasView {
 
-    private func drawOverlay(context: CGContext, cropFrame: NSRect) {
+    private func drawOverlay(context: CGContext, cropFrame: NSRect, shapePath: CGPath?) {
         context.saveGState()
         context.setFillColor(NSColor.black.withAlphaComponent(AppConstants.cropEditorOverlayAlpha).cgColor)
 
-        // bounds全体からクロップ枠を除外して塗る
-        // 上
-        context.fill(NSRect(x: bounds.minX, y: cropFrame.maxY,
-                            width: bounds.width, height: bounds.maxY - cropFrame.maxY))
-        // 下
-        context.fill(NSRect(x: bounds.minX, y: bounds.minY,
-                            width: bounds.width, height: cropFrame.minY - bounds.minY))
-        // 左
-        context.fill(NSRect(x: bounds.minX, y: cropFrame.minY,
-                            width: cropFrame.minX - bounds.minX, height: cropFrame.height))
-        // 右
-        context.fill(NSRect(x: cropFrame.maxX, y: cropFrame.minY,
-                            width: bounds.maxX - cropFrame.maxX, height: cropFrame.height))
+        switch cropShape {
+        case .rectangle:
+            // 既存: bounds全体からクロップ枠を除外して塗る
+            // 上
+            context.fill(NSRect(x: bounds.minX, y: cropFrame.maxY,
+                                width: bounds.width, height: bounds.maxY - cropFrame.maxY))
+            // 下
+            context.fill(NSRect(x: bounds.minX, y: bounds.minY,
+                                width: bounds.width, height: cropFrame.minY - bounds.minY))
+            // 左
+            context.fill(NSRect(x: bounds.minX, y: cropFrame.minY,
+                                width: cropFrame.minX - bounds.minX, height: cropFrame.height))
+            // 右
+            context.fill(NSRect(x: cropFrame.maxX, y: cropFrame.minY,
+                                width: bounds.maxX - cropFrame.maxX, height: cropFrame.height))
+
+        case .circle, .roundedRectangle:
+            // Even-Odd: bounds全体 - 形状 → 外側のみ塗る
+            if let path = shapePath {
+                let outerPath = CGMutablePath()
+                outerPath.addRect(bounds)
+                outerPath.addPath(path)
+                context.addPath(outerPath)
+                context.fillPath(using: .evenOdd)
+            }
+        }
         context.restoreGState()
     }
 
-    private func drawCropBorder(context: CGContext, cropFrame: NSRect) {
+    private func drawCropBorder(context: CGContext, cropFrame: NSRect, shapePath: CGPath?) {
         context.setStrokeColor(NSColor.white.cgColor)
         context.setLineWidth(1.0)
-        context.stroke(cropFrame)
+
+        switch cropShape {
+        case .rectangle:
+            context.stroke(cropFrame)
+        case .circle, .roundedRectangle:
+            if let path = shapePath {
+                context.addPath(path)
+                context.strokePath()
+            }
+        }
     }
 
     private func drawGrid(context: CGContext, cropFrame: NSRect) {
@@ -438,6 +482,40 @@ extension CropEditorCanvasView {
         }
         context.strokePath()
     }
+
+    private func drawCornerRadiusHandles(context: CGContext, cropFrame: NSRect) {
+        let handleSize = AppConstants.cornerRadiusHandleSize
+        context.setFillColor(NSColor.systemYellow.cgColor)
+
+        for corner in CropGeometry.Corner.allCases {
+            let radius = cornerRadii.radius(for: corner)
+            let pos = CropGeometry.cornerRadiusHandlePosition(
+                corner: corner, cropFrame: cropFrame, normalizedRadius: radius
+            )
+            let handleRect = NSRect(
+                x: pos.x - handleSize / 2,
+                y: pos.y - handleSize / 2,
+                width: handleSize,
+                height: handleSize
+            )
+            context.fillEllipse(in: handleRect)
+        }
+    }
+
+    private func hitTestCornerRadiusHandle(point: NSPoint, cropFrame: NSRect) -> CropGeometry.Corner? {
+        let tolerance = AppConstants.cornerRadiusHandleHitTolerance
+        for corner in CropGeometry.Corner.allCases {
+            let radius = cornerRadii.radius(for: corner)
+            let pos = CropGeometry.cornerRadiusHandlePosition(
+                corner: corner, cropFrame: cropFrame, normalizedRadius: radius
+            )
+            let dist = hypot(point.x - pos.x, point.y - pos.y)
+            if dist <= tolerance {
+                return corner
+            }
+        }
+        return nil
+    }
 }
 
 // MARK: - Mouse Events & Resize
@@ -453,6 +531,14 @@ extension CropEditorCanvasView {
         let cropFrame = calculateCropFrameRect()
         dragStartCropFrame = cropFrame
         dragStartImageDrawRect = calculateImageDrawRect(cropFrame: cropFrame)
+
+        // 角丸ハンドルのヒット判定（roundedRectangle時のみ、通常ハンドルより先に判定）
+        if cropShape == .roundedRectangle {
+            if let corner = hitTestCornerRadiusHandle(point: point, cropFrame: cropFrame) {
+                dragState = .adjustingCornerRadius(corner)
+                return
+            }
+        }
 
         if let handlePosition = hitTestHandle(point: point, cropFrame: cropFrame) {
             dragState = .resizingHandle(handlePosition)
@@ -481,6 +567,8 @@ extension CropEditorCanvasView {
         case .resizingHandle(let position):
             guard dragStartCropFrame.width > 0, dragStartCropFrame.height > 0 else { return }
             handleResize(position: position, currentPoint: point)
+        case .adjustingCornerRadius(let corner):
+            handleCornerRadiusDrag(corner: corner, currentPoint: point)
         }
     }
 
@@ -626,6 +714,24 @@ extension CropEditorCanvasView {
                 width: normalized.width, height: normalized.height
             )
         }
+        onCropRectChanged?(cropRect)
+    }
+
+    // MARK: - Corner Radius Drag
+
+    private func handleCornerRadiusDrag(corner: CropGeometry.Corner, currentPoint: NSPoint) {
+        let cropFrame = dragStartCropFrame
+        let newRadius = CropGeometry.cornerRadiusFromDrag(
+            corner: corner, cropFrame: cropFrame, dragPoint: currentPoint
+        )
+
+        let newRadii: CornerRadii
+        if cornersLinked {
+            newRadii = CornerRadii.uniform(newRadius)
+        } else {
+            newRadii = cornerRadii.with(corner: corner, radius: newRadius)
+        }
+        cropRect = cropRect.with(cornerRadii: newRadii)
         onCropRectChanged?(cropRect)
     }
 

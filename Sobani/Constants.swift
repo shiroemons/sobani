@@ -165,6 +165,18 @@ enum AppConstants {
     static let straightenFadeHighlightHeight: CGFloat = 18
     static let straightenFadeHighlightWidth: CGFloat = 1.5
 
+    // Selector View (shared by AspectRatio and CropShape selectors)
+    static let selectorButtonSpacing: CGFloat = 8
+    static let selectorCornerRadius: CGFloat = 6
+    static let selectorSelectedAlpha: CGFloat = 0.1
+
+    // Crop Shape
+    static let cornerRadiusHandleSize: CGFloat = 8
+    static let cornerRadiusHandleHitTolerance: CGFloat = 14
+    static let cornerRadiusMin: CGFloat = 0.0
+    static let cornerRadiusMax: CGFloat = 1.0
+    static let cornerRadiusDefault: CGFloat = 0.3
+    static let shapeButtonSize: CGFloat = 28
     // UserDefaults Keys
     static let appLanguageKey = "AppLanguage"
     static let appleLanguagesKey = "AppleLanguages"

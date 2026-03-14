@@ -84,6 +84,7 @@
 		F0CV000002000000000001 /* CropEditorCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CV000001000000000001 /* CropEditorCanvasView.swift */; };
 		F0SS000002000000000001 /* StraightenSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SS000001000000000001 /* StraightenSliderView.swift */; };
 		F0ARS00002000000000001 /* AspectRatioSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ARS00001000000000001 /* AspectRatioSelectorView.swift */; };
+		F0CSS00002000000000001 /* CropShapeSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CSS00001000000000001 /* CropShapeSelectorView.swift */; };
 		F0TB000002000000000001 /* CropEditorToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TB000001000000000001 /* CropEditorToolbarView.swift */; };
 		F0EH000002000000000001 /* CropEditHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0EH000001000000000001 /* CropEditHistory.swift */; };
 		F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0EH000003000000000001 /* CropEditHistoryTests.swift */; };
@@ -191,6 +192,7 @@
 		F0CV000001000000000001 /* CropEditorCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorCanvasView.swift; sourceTree = "<group>"; };
 		F0SS000001000000000001 /* StraightenSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StraightenSliderView.swift; sourceTree = "<group>"; };
 		F0ARS00001000000000001 /* AspectRatioSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AspectRatioSelectorView.swift; sourceTree = "<group>"; };
+		F0CSS00001000000000001 /* CropShapeSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropShapeSelectorView.swift; sourceTree = "<group>"; };
 		F0TB000001000000000001 /* CropEditorToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorToolbarView.swift; sourceTree = "<group>"; };
 		F0EH000001000000000001 /* CropEditHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditHistory.swift; sourceTree = "<group>"; };
 		F0EH000003000000000001 /* CropEditHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditHistoryTests.swift; sourceTree = "<group>"; };
@@ -275,6 +277,7 @@
 				F0CV000001000000000001 /* CropEditorCanvasView.swift */,
 				F0SS000001000000000001 /* StraightenSliderView.swift */,
 				F0ARS00001000000000001 /* AspectRatioSelectorView.swift */,
+				F0CSS00001000000000001 /* CropShapeSelectorView.swift */,
 				F0TB000001000000000001 /* CropEditorToolbarView.swift */,
 				F0EH000001000000000001 /* CropEditHistory.swift */,
 				F0AF000001000000000001 /* AlertFactory.swift */,
@@ -501,6 +504,7 @@
 				F0CV000002000000000001 /* CropEditorCanvasView.swift in Sources */,
 				F0SS000002000000000001 /* StraightenSliderView.swift in Sources */,
 				F0ARS00002000000000001 /* AspectRatioSelectorView.swift in Sources */,
+				F0CSS00002000000000001 /* CropShapeSelectorView.swift in Sources */,
 				F0TB000002000000000001 /* CropEditorToolbarView.swift in Sources */,
 				F0EH000002000000000001 /* CropEditHistory.swift in Sources */,
 				F0AF000002000000000001 /* AlertFactory.swift in Sources */,

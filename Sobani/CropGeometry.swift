@@ -1,5 +1,6 @@
 import CoreGraphics
 
+// swiftlint:disable type_body_length
 /// クロップ関連の幾何学計算ユーティリティ
 enum CropGeometry {
 
@@ -360,4 +361,123 @@ enum CropGeometry {
     static func clampStraightenAngle(_ angle: CGFloat) -> CGFloat {
         min(max(angle, AppConstants.straightenMinAngle), AppConstants.straightenMaxAngle)
     }
+
+    // MARK: - Corner Radius
+
+    /// 角丸ハンドルの角
+    enum Corner: CaseIterable {
+        case topLeft, topRight, bottomLeft, bottomRight
+    }
+
+    /// 4隅個別の角丸矩形パスを構築
+    static func roundedRectPath(rect: CGRect, radii: CornerRadii, shorterSide: CGFloat) -> CGPath {
+        let radiusTopLeft = pixelCornerRadius(normalized: radii.topLeft, shorterSide: shorterSide)
+        let radiusTopRight = pixelCornerRadius(normalized: radii.topRight, shorterSide: shorterSide)
+        let radiusBottomLeft = pixelCornerRadius(normalized: radii.bottomLeft, shorterSide: shorterSide)
+        let radiusBottomRight = pixelCornerRadius(normalized: radii.bottomRight, shorterSide: shorterSide)
+
+        let path = CGMutablePath()
+        // Start from top-left corner, moving clockwise
+        // Top edge (from top-left to top-right)
+        path.move(to: CGPoint(x: rect.minX + radiusTopLeft, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX - radiusTopRight, y: rect.maxY))
+        // Top-right corner
+        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.maxY),
+                    tangent2End: CGPoint(x: rect.maxX, y: rect.maxY - radiusTopRight),
+                    radius: radiusTopRight)
+        // Right edge (top-right to bottom-right)
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + radiusBottomRight))
+        // Bottom-right corner
+        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.minY),
+                    tangent2End: CGPoint(x: rect.maxX - radiusBottomRight, y: rect.minY),
+                    radius: radiusBottomRight)
+        // Bottom edge (bottom-right to bottom-left)
+        path.addLine(to: CGPoint(x: rect.minX + radiusBottomLeft, y: rect.minY))
+        // Bottom-left corner
+        path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.minY),
+                    tangent2End: CGPoint(x: rect.minX, y: rect.minY + radiusBottomLeft),
+                    radius: radiusBottomLeft)
+        // Left edge (bottom-left to top-left)
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - radiusTopLeft))
+        // Top-left corner
+        path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.maxY),
+                    tangent2End: CGPoint(x: rect.minX + radiusTopLeft, y: rect.maxY),
+                    radius: radiusTopLeft)
+        path.closeSubpath()
+        return path
+    }
+
+    /// 正規化された角丸半径をピクセル値に変換
+    /// normalizedRadius 1.0 = 短辺の半分（最大丸み）
+    static func pixelCornerRadius(normalized: CGFloat, shorterSide: CGFloat) -> CGFloat {
+        let clamped = max(AppConstants.cornerRadiusMin, min(AppConstants.cornerRadiusMax, normalized))
+        return clamped * shorterSide / 2
+    }
+
+    /// 角のドラッグハンドル位置を計算（角から対角線方向に内側へオフセット）
+    static func cornerRadiusHandlePosition(
+        corner: Corner, cropFrame: CGRect, normalizedRadius: CGFloat
+    ) -> CGPoint {
+        let shorterSide = min(cropFrame.width, cropFrame.height)
+        let pixelRadius = pixelCornerRadius(normalized: normalizedRadius, shorterSide: shorterSide)
+        switch corner {
+        case .topLeft:
+            return CGPoint(
+                x: cropFrame.minX + pixelRadius,
+                y: cropFrame.maxY - pixelRadius
+            )
+        case .topRight:
+            return CGPoint(
+                x: cropFrame.maxX - pixelRadius,
+                y: cropFrame.maxY - pixelRadius
+            )
+        case .bottomLeft:
+            return CGPoint(
+                x: cropFrame.minX + pixelRadius,
+                y: cropFrame.minY + pixelRadius
+            )
+        case .bottomRight:
+            return CGPoint(
+                x: cropFrame.maxX - pixelRadius,
+                y: cropFrame.minY + pixelRadius
+            )
+        }
+    }
+
+    /// ドラッグ操作から正規化された角丸半径を算出
+    static func cornerRadiusFromDrag(
+        corner: Corner, cropFrame: CGRect, dragPoint: CGPoint
+    ) -> CGFloat {
+        let shorterSide = min(cropFrame.width, cropFrame.height)
+        guard shorterSide > 0 else { return 0 }
+        let halfShorter = shorterSide / 2
+
+        let pixelDistance: CGFloat
+        switch corner {
+        case .topLeft:
+            let deltaX = dragPoint.x - cropFrame.minX
+            let deltaY = cropFrame.maxY - dragPoint.y
+            pixelDistance = min(deltaX, deltaY)
+        case .topRight:
+            let deltaX = cropFrame.maxX - dragPoint.x
+            let deltaY = cropFrame.maxY - dragPoint.y
+            pixelDistance = min(deltaX, deltaY)
+        case .bottomLeft:
+            let deltaX = dragPoint.x - cropFrame.minX
+            let deltaY = dragPoint.y - cropFrame.minY
+            pixelDistance = min(deltaX, deltaY)
+        case .bottomRight:
+            let deltaX = cropFrame.maxX - dragPoint.x
+            let deltaY = dragPoint.y - cropFrame.minY
+            pixelDistance = min(deltaX, deltaY)
+        }
+        let normalized = pixelDistance / halfShorter
+        return max(AppConstants.cornerRadiusMin, min(AppConstants.cornerRadiusMax, normalized))
+    }
+
+    /// クロップ領域のアスペクト比の向き
+    enum AspectOrientation {
+        case square, landscape, portrait
+    }
 }
+// swiftlint:enable type_body_length

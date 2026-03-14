@@ -3201,6 +3201,86 @@
         }
       }
     },
+    "crop_editor.shape_rectangle": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "四角形"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rectangle"
+          }
+        }
+      }
+    },
+    "crop_editor.shape_circle": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "円形"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circle"
+          }
+        }
+      }
+    },
+    "crop_editor.shape_rounded_rect": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "角丸四角形"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rounded Rect"
+          }
+        }
+      }
+    },
+    "crop_editor.corners_linked": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連動"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linked"
+          }
+        }
+      }
+    },
+    "crop_editor.corners_unlinked": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "個別"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Independent"
+          }
+        }
+      }
+    },
     "aspect_ratio.free": {
       "localizations": {
         "ja": {
@@ -3238,13 +3318,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "スクエア"
+            "value": "1:1"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Square"
+            "value": "1:1"
           }
         }
       }

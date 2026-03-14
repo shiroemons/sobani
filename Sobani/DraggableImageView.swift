@@ -214,19 +214,47 @@ final class DraggableImageView: NSImageView {
     }
 
     /// NSImage から CGImage を安全に取得する
-    /// cgImage(forProposedRect:) が nil を返す場合は tiffRepresentation 経由でフォールバック
+    /// cgImage(forProposedRect:) が nil を返す場合は NSBitmapImageRep に描画してフォールバック
     nonisolated static func extractCGImage(from nsImage: NSImage) -> CGImage? {
-        // 最初に直接取得を試みる
+        // 高速パス: 埋め込みCGImageを直接取得
         if let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil) {
             return cgImage
         }
-        // フォールバック: tiffRepresentation → NSBitmapImageRep → CGImage
-        guard let tiffData = nsImage.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData),
-              let cgImage = bitmap.cgImage else {
+
+        // 低速パス: NSBitmapImageRep に描画して向きを正規化
+        // ピクセル寸法を使用（Retina対応）
+        let pixelWidth: Int
+        let pixelHeight: Int
+        if let rep = nsImage.bestRepresentation(for: .infinite, context: nil, hints: nil),
+           rep.pixelsWide > 0, rep.pixelsHigh > 0 {
+            pixelWidth = rep.pixelsWide
+            pixelHeight = rep.pixelsHigh
+        } else {
+            pixelWidth = Int(nsImage.size.width)
+            pixelHeight = Int(nsImage.size.height)
+        }
+        guard pixelWidth > 0, pixelHeight > 0 else { return nil }
+
+        guard let bitmapRep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: pixelWidth, pixelsHigh: pixelHeight,
+            bitsPerSample: 8, samplesPerPixel: 4,
+            hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0, bitsPerPixel: 0
+        ) else {
             return nil
         }
-        return cgImage
+
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
+        nsImage.draw(
+            in: NSRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight),
+            from: .zero, operation: .copy, fraction: 1.0
+        )
+        NSGraphicsContext.restoreGraphicsState()
+
+        return bitmapRep.cgImage
     }
 
     func setOriginalImage(_ newImage: NSImage) {
