@@ -14,9 +14,9 @@
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <title>FAQ - Sobani</title>
-  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全44項目を掲載。">
+  <meta name="description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全47項目を掲載。">
   <meta property="og:title" content="FAQ - Sobani">
-  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全44項目を掲載。">
+  <meta property="og:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全47項目を掲載。">
   <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -25,7 +25,7 @@
   <meta property="og:site_name" content="Sobani">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:title" content="FAQ - Sobani">
-  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全44項目を掲載。">
+  <meta name="twitter:description" content="Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全47項目を掲載。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta name="twitter:site" content="@shiroemons">
   <meta name="twitter:creator" content="@shiroemons">
@@ -431,6 +431,30 @@
           "@type": "Answer",
           "text": "はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。キャラクターが画面の端から顔を出しているような演出が可能です。アプリを再起動した際も、配置位置は正確に復元されます。"
         }
+      },
+      {
+        "@type": "Question",
+        "name": "ウィンドウを個別に非表示にするには？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "フローティングメニュー（ダブルクリックで表示）または右クリックメニューの「その他」から「非表示」を選択すると、そのウィンドウだけを非表示にできます。非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H ですべてのウィンドウをまとめて再表示することも可能です。非表示状態はアプリを終了しても保持されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "円形や角丸矩形で画像をクロップできますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい、クロップエディタの形状セレクタから矩形・円形・角丸矩形の3種類の形状を選択してクロップできます。形状クロップはアスペクト比プリセットや傾き補正などの他の機能と併用できます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "外観モード（テーマ）を変更するには？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ステータスバーメニューの「設定」から「外観モード」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。"
+        }
       }
     ]
   }
@@ -724,7 +748,7 @@
               <span data-i18n="faq.q9">非表示にしたウィンドウを再表示するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a9">Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a9">Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。<br><br>個別に非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H でまとめて再表示することもできます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -732,7 +756,7 @@
               <span data-i18n="faq.q32">仕事中にすばやく非表示にしたい</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a32">ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。<br><br>Web会議、画面共有、オンライン授業、配信中の画面共有など、さまざまな場面で活用できます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a32">ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。特定のウィンドウだけを非表示にしたい場合は、フローティングメニューや右クリックメニューから個別に非表示にすることもできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。<br><br>Web会議、画面共有、オンライン授業、配信中の画面共有など、さまざまな場面で活用できます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -764,7 +788,7 @@
               <span data-i18n="faq.q46">画像をトリミング（切り取り）するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a46">ダブルクリックでフローティングメニューを表示し「切り取り」を選択するか、右クリック →「その他」→「切り取り」でクロップエディタが開きます。iPhone写真アプリ風のエディタで、アスペクト比プリセット（1:1、3:2、4:3、16:9等）、傾き補正、パースペクティブ補正、Undo/Redo に対応しています。編集は非破壊的で、いつでもリセットできます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a46">右クリックメニューの「画像の切り取り」またはフローティングメニューのクロップボタンからクロップエディタを開けます。iPhone写真アプリのようなインターフェースで、アスペクト比プリセット（1:1、4:3、16:9など）を選択でき、傾き補正やパースペクティブ補正も可能です。<br><br>形状セレクタから矩形・円形・角丸矩形の3種類の形状を選んでクロップできます。すべての編集はUndo/Redo対応の非破壊編集で、元の画像はそのまま保持されます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -772,7 +796,31 @@
               <span data-i18n="faq.q47">フローティングメニューとは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a47">キャラクターウィンドウをダブルクリックすると表示されるツールバーです。切り取り・反転・調整・ゴーストモード・背景削除（macOS 14以降）・表示をリセット・閉じるの操作にワンクリックでアクセスできます。メニュー外をクリックするかESCキーで閉じます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a47">キャラクターウィンドウをダブルクリックすると表示されるツールバーです。切り取り・反転・調整・ゴーストモード・背景削除（macOS 14以降）・非表示・表示をリセット・閉じるの操作にワンクリックでアクセスできます。メニュー外をクリックするかESCキーで閉じます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q48">ウィンドウを個別に非表示にするには？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a48">フローティングメニュー（ダブルクリックで表示）または右クリックメニューの「その他」から「非表示」を選択すると、そのウィンドウだけを非表示にできます。<br><br>非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H ですべてのウィンドウをまとめて再表示することも可能です。非表示状態はアプリを終了しても保持されます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q49">円形や角丸矩形で画像をクロップできますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a49">はい、クロップエディタの形状セレクタから矩形・円形・角丸矩形の3種類の形状を選択してクロップできます。形状クロップはアスペクト比プリセットや傾き補正などの他の機能と併用できます。</div>
+          </details>
+
+          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q50">外観モード（テーマ）を変更するには？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a50">ステータスバーメニューの「設定」から「外観モード」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。</div>
           </details>
 
           <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
@@ -1009,7 +1057,7 @@
       ja: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全44項目を掲載。",
+          description: "Sobaniに関するよくある質問と回答。インストール方法、使い方、カスタマイズ、トラブルシューティングなど全47項目を掲載。",
           keywords: "Sobani,FAQ,よくある質問,macOS,デスクトップアクスタ,デスクトップマスコット,インストール,使い方,カスタマイズ,トラブルシューティング,画像表示"
         },
         nav: {
@@ -1051,7 +1099,7 @@
           q8: "キーボードショートカットは？",
           a8: "Option + H で全ウィンドウの表示/非表示を切り替え、Option + G でゴーストモード（クリック透過）を一括切り替えできます。Option + ドラッグで全ウィンドウを同時に移動、Option + スクロールで全ウィンドウを同時にリサイズできます。",
           q9: "非表示にしたウィンドウを再表示するには？",
-          a9: "Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。",
+          a9: "Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。<br><br>個別に非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H でまとめて再表示することもできます。",
           q10: "データはどこに保存されますか？",
           a10: "すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。",
           q11: "プライバシーについて",
@@ -1079,9 +1127,9 @@
           q45: "\u30B4\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u3068\u306F\u4F55\u3067\u3059\u304B\uFF1F",
           a45: "\u30B4\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u306F\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u30AF\u30EA\u30C3\u30AF\u900F\u904E\u306B\u3059\u308B\u6A5F\u80FD\u3067\u3059\u3002\u6709\u52B9\u306B\u3059\u308B\u3068\u3001\u30A6\u30A3\u30F3\u30C9\u30A6\u304C\u534A\u900F\u660E\u306B\u306A\u308A\u3001\u30DE\u30A6\u30B9\u64CD\u4F5C\u306F\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u901A\u904E\u3057\u3066\u80CC\u5F8C\u306E\u30A2\u30D7\u30EA\u306B\u5C4A\u304D\u307E\u3059\u3002Option + G \u3067\u5168\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u4E00\u62EC\u5207\u308A\u66FF\u3048\u3067\u304D\u307E\u3059\u3002\u53F3\u30AF\u30EA\u30C3\u30AF\u30E1\u30CB\u30E5\u30FC\u3084\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u304B\u3089\u500B\u5225\u306B\u5207\u308A\u66FF\u3048\u308B\u3053\u3068\u3082\u3067\u304D\u307E\u3059\u3002\u900F\u660E\u5EA6\u306F\u30E1\u30CB\u30E5\u30FC\u30D0\u30FC\u306E\u300C\u8A2D\u5B9A\u300D\u304B\u3089\u30AB\u30B9\u30BF\u30DE\u30A4\u30BA\u53EF\u80FD\u3067\u3059\u3002",
           q46: "\u753B\u50CF\u3092\u30C8\u30EA\u30DF\u30F3\u30B0\uFF08\u5207\u308A\u53D6\u308A\uFF09\u3059\u308B\u306B\u306F\uFF1F",
-          a46: "\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u3092\u8868\u793A\u3057\u300C\u5207\u308A\u53D6\u308A\u300D\u3092\u9078\u629E\u3059\u308B\u304B\u3001\u53F3\u30AF\u30EA\u30C3\u30AF \u2192\u300C\u305D\u306E\u4ED6\u300D\u2192\u300C\u5207\u308A\u53D6\u308A\u300D\u3067\u30AF\u30ED\u30C3\u30D7\u30A8\u30C7\u30A3\u30BF\u304C\u958B\u304D\u307E\u3059\u3002iPhone\u5199\u771F\u30A2\u30D7\u30EA\u98A8\u306E\u30A8\u30C7\u30A3\u30BF\u3067\u3001\u30A2\u30B9\u30DA\u30AF\u30C8\u6BD4\u30D7\u30EA\u30BB\u30C3\u30C8\uFF081:1\u30013:2\u30014:3\u300116:9\u7B49\uFF09\u3001\u50BE\u304D\u88DC\u6B63\u3001\u30D1\u30FC\u30B9\u30DA\u30AF\u30C6\u30A3\u30D6\u88DC\u6B63\u3001Undo/Redo \u306B\u5BFE\u5FDC\u3057\u3066\u3044\u307E\u3059\u3002\u7DE8\u96C6\u306F\u975E\u7834\u58CA\u7684\u3067\u3001\u3044\u3064\u3067\u3082\u30EA\u30BB\u30C3\u30C8\u3067\u304D\u307E\u3059\u3002",
+          a46: "\u53F3\u30AF\u30EA\u30C3\u30AF\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u753B\u50CF\u306E\u5207\u308A\u53D6\u308A\u300D\u307E\u305F\u306F\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u306E\u30AF\u30ED\u30C3\u30D7\u30DC\u30BF\u30F3\u304B\u3089\u30AF\u30ED\u30C3\u30D7\u30A8\u30C7\u30A3\u30BF\u3092\u958B\u3051\u307E\u3059\u3002iPhone\u5199\u771F\u30A2\u30D7\u30EA\u306E\u3088\u3046\u306A\u30A4\u30F3\u30BF\u30FC\u30D5\u30A7\u30FC\u30B9\u3067\u3001\u30A2\u30B9\u30DA\u30AF\u30C8\u6BD4\u30D7\u30EA\u30BB\u30C3\u30C8\uFF081:1\u30014:3\u300116:9\u306A\u3069\uFF09\u3092\u9078\u629E\u3067\u304D\u3001\u50BE\u304D\u88DC\u6B63\u3084\u30D1\u30FC\u30B9\u30DA\u30AF\u30C6\u30A3\u30D6\u88DC\u6B63\u3082\u53EF\u80FD\u3067\u3059\u3002<br><br>\u5F62\u72B6\u30BB\u30EC\u30AF\u30BF\u304B\u3089\u77E9\u5F62\u30FB\u5186\u5F62\u30FB\u89D2\u4E38\u77E9\u5F62\u306E3\u7A2E\u985E\u306E\u5F62\u72B6\u3092\u9078\u3093\u3067\u30AF\u30ED\u30C3\u30D7\u3067\u304D\u307E\u3059\u3002\u3059\u3079\u3066\u306E\u7DE8\u96C6\u306FUndo/Redo\u5BFE\u5FDC\u306E\u975E\u7834\u58CA\u7DE8\u96C6\u3067\u3001\u5143\u306E\u753B\u50CF\u306F\u305D\u306E\u307E\u307E\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002",
           q47: "\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u3068\u306F\u4F55\u3067\u3059\u304B\uFF1F",
-          a47: "\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3059\u308B\u3068\u8868\u793A\u3055\u308C\u308B\u30C4\u30FC\u30EB\u30D0\u30FC\u3067\u3059\u3002\u5207\u308A\u53D6\u308A\u30FB\u53CD\u8EE2\u30FB\u8ABF\u6574\u30FB\u30B4\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u30FB\u80CC\u666F\u524A\u9664\uFF08macOS 14\u4EE5\u964D\uFF09\u30FB\u8868\u793A\u3092\u30EA\u30BB\u30C3\u30C8\u30FB\u9589\u3058\u308B\u306E\u64CD\u4F5C\u306B\u30EF\u30F3\u30AF\u30EA\u30C3\u30AF\u3067\u30A2\u30AF\u30BB\u30B9\u3067\u304D\u307E\u3059\u3002\u30E1\u30CB\u30E5\u30FC\u5916\u3092\u30AF\u30EA\u30C3\u30AF\u3059\u308B\u304BESC\u30AD\u30FC\u3067\u9589\u3058\u307E\u3059\u3002",
+          a47: "\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3059\u308B\u3068\u8868\u793A\u3055\u308C\u308B\u30C4\u30FC\u30EB\u30D0\u30FC\u3067\u3059\u3002\u5207\u308A\u53D6\u308A\u30FB\u53CD\u8EE2\u30FB\u8ABF\u6574\u30FB\u30B4\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u30FB\u80CC\u666F\u524A\u9664\uFF08macOS 14\u4EE5\u964D\uFF09\u30FB\u975E\u8868\u793A\u30FB\u8868\u793A\u3092\u30EA\u30BB\u30C3\u30C8\u30FB\u9589\u3058\u308B\u306E\u64CD\u4F5C\u306B\u30EF\u30F3\u30AF\u30EA\u30C3\u30AF\u3067\u30A2\u30AF\u30BB\u30B9\u3067\u304D\u307E\u3059\u3002\u30E1\u30CB\u30E5\u30FC\u5916\u3092\u30AF\u30EA\u30C3\u30AF\u3059\u308B\u304BESC\u30AD\u30FC\u3067\u9589\u3058\u307E\u3059\u3002",
           q22: "動画ファイル（MP4等）には対応していますか？",
           a22: "Sobaniは「デスクトップアクスタ」をコンセプトとしたアプリです。実物のアクリルスタンドと同じように、お気に入りの画像をそのままデスクトップに飾ることを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。",
           q23: "アプリ終了後にウィンドウの配置は保存されますか？",
@@ -1103,7 +1151,7 @@
           q31: "デフォルト画像を変更するには？",
           a31: 'メニューバーのSobaniアイコンをクリックし、「設定」>「デフォルト画像を変更...」を選択してください。ファイル選択ダイアログが開くので、好きな画像を選ぶだけです。<br><br>デフォルト画像をリセットしたい場合は、「設定」メニューから「デフォルト画像をリセット」を選択すると初期画像に戻ります。',
           q32: "仕事中にすばやく非表示にしたい",
-          a32: 'ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。<br><br>Web会議、画面共有、オンライン授業、配信中の画面共有など、さまざまな場面で活用できます。',
+          a32: 'ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。特定のウィンドウだけを非表示にしたい場合は、フローティングメニューや右クリックメニューから個別に非表示にすることもできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。<br><br>Web会議、画面共有、オンライン授業、配信中の画面共有など、さまざまな場面で活用できます。',
           q33: "一眼レフやミラーレスの高解像度写真も使えますか？",
           a33: 'はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。',
           q34: "背景除去機能とは何ですか？",
@@ -1127,7 +1175,13 @@
           q43: "レイアウトプリセットはどこに保存されますか？",
           a43: 'レイアウトプリセットは ~/Library/Application Support/Sobani/layouts/ フォルダに、プリセットごとに個別のJSONファイルとして保存されます。ファイルを別のMacにコピーすることで、レイアウトを移行することもできます。ただし、使用している画像も同じパスに存在する必要があります。',
           q44: "画像を画面の端やメニューバーの上まで配置できますか？",
-          a44: 'はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。キャラクターが画面の端から顔を出しているような演出が可能です。アプリを再起動した際も、配置位置は正確に復元されます。'
+          a44: 'はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。キャラクターが画面の端から顔を出しているような演出が可能です。アプリを再起動した際も、配置位置は正確に復元されます。',
+          q48: "\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u500B\u5225\u306B\u975E\u8868\u793A\u306B\u3059\u308B\u306B\u306F\uFF1F",
+          a48: '\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\uFF08\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u8868\u793A\uFF09\u307E\u305F\u306F\u53F3\u30AF\u30EA\u30C3\u30AF\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u305D\u306E\u4ED6\u300D\u304B\u3089\u300C\u975E\u8868\u793A\u300D\u3092\u9078\u629E\u3059\u308B\u3068\u3001\u305D\u306E\u30A6\u30A3\u30F3\u30C9\u30A6\u3060\u3051\u3092\u975E\u8868\u793A\u306B\u3067\u304D\u307E\u3059\u3002<br><br>\u975E\u8868\u793A\u306B\u3057\u305F\u30A6\u30A3\u30F3\u30C9\u30A6\u306F\u3001\u30B9\u30C6\u30FC\u30BF\u30B9\u30D0\u30FC\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u975E\u8868\u793A\u306E\u30A6\u30A3\u30F3\u30C9\u30A6\u300D\u304B\u3089\u500B\u5225\u306B\u518D\u8868\u793A\u3067\u304D\u307E\u3059\u3002Option + H \u3067\u3059\u3079\u3066\u306E\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u307E\u3068\u3081\u3066\u518D\u8868\u793A\u3059\u308B\u3053\u3068\u3082\u53EF\u80FD\u3067\u3059\u3002\u975E\u8868\u793A\u72B6\u614B\u306F\u30A2\u30D7\u30EA\u3092\u7D42\u4E86\u3057\u3066\u3082\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002',
+          q49: "\u5186\u5F62\u3084\u89D2\u4E38\u77E9\u5F62\u3067\u753B\u50CF\u3092\u30AF\u30ED\u30C3\u30D7\u3067\u304D\u307E\u3059\u304B\uFF1F",
+          a49: "\u306F\u3044\u3001\u30AF\u30ED\u30C3\u30D7\u30A8\u30C7\u30A3\u30BF\u306E\u5F62\u72B6\u30BB\u30EC\u30AF\u30BF\u304B\u3089\u77E9\u5F62\u30FB\u5186\u5F62\u30FB\u89D2\u4E38\u77E9\u5F62\u306E3\u7A2E\u985E\u306E\u5F62\u72B6\u3092\u9078\u629E\u3057\u3066\u30AF\u30ED\u30C3\u30D7\u3067\u304D\u307E\u3059\u3002\u5F62\u72B6\u30AF\u30ED\u30C3\u30D7\u306F\u30A2\u30B9\u30DA\u30AF\u30C8\u6BD4\u30D7\u30EA\u30BB\u30C3\u30C8\u3084\u50BE\u304D\u88DC\u6B63\u306A\u3069\u306E\u4ED6\u306E\u6A5F\u80FD\u3068\u4F75\u7528\u3067\u304D\u307E\u3059\u3002",
+          q50: "\u5916\u89B3\u30E2\u30FC\u30C9\uFF08\u30C6\u30FC\u30DE\uFF09\u3092\u5909\u66F4\u3059\u308B\u306B\u306F\uFF1F",
+          a50: "\u30B9\u30C6\u30FC\u30BF\u30B9\u30D0\u30FC\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u8A2D\u5B9A\u300D\u304B\u3089\u300C\u5916\u89B3\u30E2\u30FC\u30C9\u300D\u3092\u9078\u629E\u3057\u3001\u81EA\u52D5\u30FB\u30E9\u30A4\u30C8\u30FB\u30C0\u30FC\u30AF\u306E3\u3064\u306E\u30E2\u30FC\u30C9\u304B\u3089\u9078\u3079\u307E\u3059\u3002\u300C\u81EA\u52D5\u300D\u306F\u30B7\u30B9\u30C6\u30E0\u306E\u8A2D\u5B9A\u306B\u5F93\u3044\u307E\u3059\u3002\u9078\u629E\u3057\u305F\u8A2D\u5B9A\u306F\u30A2\u30D7\u30EA\u3092\u518D\u8D77\u52D5\u3057\u3066\u3082\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002"
         },
         footer: {
           hashtagCta: 'Sobaniを使っている様子をぜひ共有してください！ <strong>#SobaniApp</strong> <strong>#デスクトップアクスタ</strong>'
@@ -1136,7 +1190,7 @@
       en: {
         meta: {
           title: "FAQ - Sobani",
-          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 44 items total.",
+          description: "Frequently asked questions about Sobani. Covers installation, usage, customization, troubleshooting, and more — 47 items total.",
           keywords: "Sobani,FAQ,frequently asked questions,macOS,desktop acrylic stand,desktop mascot,installation,usage,customization,troubleshooting,image display"
         },
         nav: {
@@ -1178,7 +1232,7 @@
           q8: "What keyboard shortcuts are available?",
           a8: "Option + H toggles all windows visible/hidden, and Option + G toggles ghost mode (click-through) for all windows. Option + drag moves all windows simultaneously, Option + scroll resizes all windows at once.",
           q9: "How do I show hidden windows again?",
-          a9: "After hiding windows with Option + H, if focus has moved to another application, pressing Option + H again may not show them. In that case, click the Sobani icon in the menu bar and select \"Show All.\" Menu bar operations work reliably regardless of which application has focus.",
+          a9: "After hiding with Option + H, if another app has focus, pressing Option + H again may not work. In that case, click the Sobani icon in the menu bar and select \"Show All.\" Menu bar operations work reliably regardless of which app is focused.<br><br>Individually hidden windows can be restored from \"Hidden Windows\" in the status bar menu. You can also use Option + H to show all at once.",
           q10: "Where is my data stored?",
           a10: "All data is stored in ~/Library/Application Support/Sobani/. Registered images are in the images/ folder, and window states are saved in window_states.json.",
           q11: "About privacy",
@@ -1206,9 +1260,9 @@
           q45: "What is Ghost Mode?",
           a45: "Ghost Mode makes windows click-through. When enabled, windows become semi-transparent and mouse events pass through to the apps behind them. Press Option + G to toggle all windows at once. You can also toggle individual windows from the right-click menu or floating menu. Opacity can be customized from the Settings menu.",
           q46: "How do I crop (trim) an image?",
-          a46: "Double-click to show the floating menu and select 'Crop', or right-click → 'More' → 'Crop' to open the crop editor. It features an iPhone Photos-style editor with aspect ratio presets (1:1, 3:2, 4:3, 16:9, etc.), straighten correction, perspective correction, and Undo/Redo. Editing is non-destructive and can be reset anytime.",
+          a46: "Open the crop editor from the right-click menu \"Crop Image\" or the floating menu's crop button. With an iPhone Photos-like interface, you can select aspect ratio presets (1:1, 4:3, 16:9, etc.), and adjust straighten and perspective correction.<br><br>Use the shape selector to crop in rectangle, circle, or rounded rectangle shapes. All edits are non-destructive with Undo/Redo support — your original image is always preserved.",
           q47: "What is the floating menu?",
-          a47: "A toolbar that appears when you double-click a character window. It provides one-click access to crop, flip, adjust, ghost mode, background removal (macOS 14+), reset display, and close. Click outside the menu or press ESC to dismiss it.",
+          a47: "A toolbar that appears when you double-click a character window. One-click access to crop, flip, adjust, ghost mode, background removal (macOS 14+), hide, reset display, and close. Click outside or press ESC to dismiss.",
           q22: "Does Sobani support video files (MP4, etc.)?",
           a22: "Sobani is built around the concept of a \"desktop acrylic stand.\" Just like a real acrylic stand, it's designed to display your favorite images as-is on your desktop, so it does not support video files such as MP4 or MOV. By focusing on still images, Sobani keeps CPU and memory usage minimal, ensuring lightweight operation even when running continuously. Note that animated GIFs and animated PNGs (APNG) are supported, so simple animations can be displayed.",
           q23: "Are window positions saved after quitting?",
@@ -1230,7 +1284,7 @@
           q31: "How do I change the default image?",
           a31: 'Click the Sobani icon in the menu bar, open "Settings" and select "Change Default Image...". A file picker dialog will open — just choose any image you like.<br><br>To reset the default image, select "Reset Default Image" from the "Settings" menu to return to the initial image.',
           q32: "How do I quickly hide windows during work?",
-          a32: 'Before a video call or screen share, press <strong>Option + H</strong> to instantly hide all windows. For details on showing them again, see "What keyboard shortcuts are available?" and "How do I show hidden windows again?"<br><br>Useful in many situations: video meetings, screen sharing, online classes, streaming screen shares, and more.',
+          a32: 'Before video calls or screen sharing, use <strong>Option + H</strong> to instantly hide all windows. To hide specific windows only, you can hide them individually from the floating menu or right-click menu. For details on how to show them again, see "Keyboard shortcuts?" and "How to show hidden windows?"<br><br>Great for video calls, screen sharing, online classes, and streaming.',
           q33: "Can I use high-resolution DSLR/mirrorless photos?",
           a33: 'Yes, they work right out of the camera. See "What image formats are supported?" for the full list.<br><br>The display size can be freely adjusted from 100px to 6000px using scroll, so even large photos can be scaled down to fit comfortably on screen.',
           q34: "What is the background removal feature?",
@@ -1254,7 +1308,13 @@
           q43: "Where are Layout Presets saved?",
           a43: 'Layout presets are saved as individual JSON files in the ~/Library/Application Support/Sobani/layouts/ folder. You can copy these files to another Mac to migrate your layouts. Note that the images used in the layout must also exist at the same paths.',
           q44: "Can I position images beyond screen edges or above the menu bar?",
-          a44: 'Yes. Transparent PNG images can be freely positioned beyond screen edges, including above the menu bar. This allows creative arrangements like a character peeking from the edge of the screen. The position is accurately restored when the app is restarted.'
+          a44: 'Yes. Transparent PNG images can be freely positioned beyond screen edges, including above the menu bar. This allows creative arrangements like a character peeking from the edge of the screen. The position is accurately restored when the app is restarted.',
+          q48: "How do I hide individual windows?",
+          a48: 'Select "Hide" from the floating menu (shown on double-click) or from "More" in the right-click menu to hide just that window.<br><br>Hidden windows can be restored individually from "Hidden Windows" in the status bar menu. You can also use Option + H to show all windows at once. The hidden state is preserved even after quitting the app.',
+          q49: "Can I crop images in circle or rounded rectangle shapes?",
+          a49: "Yes, you can select from rectangle, circle, or rounded rectangle shapes using the shape selector in the crop editor. Shape cropping works alongside other features like aspect ratio presets and straighten correction.",
+          q50: "How do I change the appearance mode (theme)?",
+          a50: 'Select "Appearance Mode" from "Settings" in the status bar menu. Choose from three modes: Auto, Light, or Dark. "Auto" follows the system setting. Your selection is preserved even after restarting the app.'
         },
         footer: {
           hashtagCta: 'Share your Sobani setup! <strong>#SobaniApp</strong> <strong>#DesktopAcsta</strong>'
