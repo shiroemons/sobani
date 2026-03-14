@@ -146,6 +146,14 @@ enum AppConstants {
     static let cropEditorPillButtonSize: CGFloat = 36
     static let cropEditorPillCornerRadius: CGFloat = 18
 
+    // Crop Editor - Apple-style colors
+    static let cropEditorToolbarBackgroundLight: CGFloat = 0.98
+    static let cropEditorToolbarBackgroundDark: CGFloat = 0.18
+    static let cropEditorPillBackgroundDarkAlpha: CGFloat = 0.2
+    static let cropEditorModeButtonSelectedDarkAlpha: CGFloat = 0.15
+
+    static let appearanceChangedNotificationName = Notification.Name("AppleInterfaceThemeChangedNotification")
+
     // Ruler dial
     static let cropEditorRulerHeight: CGFloat = 36
     static let cropEditorRulerTickSpacing: CGFloat = 6

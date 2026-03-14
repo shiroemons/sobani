@@ -42,6 +42,16 @@ final class CropEditorToolbarView: NSView {
     private static let toolbarTopMargin: CGFloat = 16
     private static let toolbarRowSpacing: CGFloat = 16
 
+    /// 現在の外観に応じたツールバー背景色を返す
+    private static func toolbarBackgroundCGColor() -> CGColor {
+        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        if isDark {
+            return NSColor(white: AppConstants.cropEditorToolbarBackgroundDark, alpha: 1.0).cgColor
+        } else {
+            return NSColor(white: AppConstants.cropEditorToolbarBackgroundLight, alpha: 1.0).cgColor
+        }
+    }
+
     // MARK: - Callbacks
 
     var onStraightenAngleChanged: ((CGFloat) -> Void)?
@@ -85,6 +95,7 @@ final class CropEditorToolbarView: NSView {
 
     private func setupSubviews() {
         wantsLayer = true
+        layer?.backgroundColor = Self.toolbarBackgroundCGColor()
 
         // ルーラーダイヤル（上部）
         let slider = StraightenSliderView(frame: .zero)
@@ -256,6 +267,11 @@ final class CropEditorToolbarView: NSView {
         sliderView?.stopTimers()
     }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        layer?.backgroundColor = Self.toolbarBackgroundCGColor()
+    }
+
     /// 全モードの角度を一括同期する（初期化・Undo/Redo共通）
     func syncAngles(straighten: CGFloat, verticalPerspective: CGFloat, horizontalPerspective: CGFloat) {
         modeAngles[.straighten] = straighten
@@ -404,7 +420,12 @@ private class ModeButtonView: NSView {
 
             // 選択中の背景
             if isSelected {
-                context.setFillColor(NSColor.white.withAlphaComponent(0.15).cgColor)
+                let isDark = NSAppearance.currentDrawing().bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                if isDark {
+                    context.setFillColor(NSColor(white: 1.0, alpha: AppConstants.cropEditorModeButtonSelectedDarkAlpha).cgColor)
+                } else {
+                    context.setFillColor(NSColor.white.cgColor)
+                }
                 context.fillEllipse(in: ellipseRect)
             }
 
@@ -472,5 +493,11 @@ private class ModeButtonView: NSView {
 
     override func mouseDown(with event: NSEvent) {
         onClick?()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        cachedIcon = nil
+        needsDisplay = true
     }
 }

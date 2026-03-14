@@ -25,7 +25,38 @@ final class CropEditorPanelController: NSObject {
     private static let revertPillWidth: CGFloat = 60
     private static let revertFontSize: CGFloat = 12
     private static let separatorInset: CGFloat = 4
-    private static let pillBackgroundAlpha: CGFloat = 0.15
+
+    // MARK: - Appearance Helpers
+
+    /// 現在の外観に応じたピル背景色を返す
+    private static func pillBackgroundCGColor() -> CGColor {
+        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        if isDark {
+            return NSColor(white: 1.0, alpha: AppConstants.cropEditorPillBackgroundDarkAlpha).cgColor
+        } else {
+            return NSColor.white.cgColor
+        }
+    }
+
+    /// 現在の外観に応じたセパレータ色を返す
+    private static func separatorCGColor() -> CGColor {
+        NSColor.separatorColor.cgColor
+    }
+
+    /// 現在の外観に応じたツールバー背景NSColorを返す
+    private static func toolbarBackgroundNSColor() -> NSColor {
+        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        if isDark {
+            return NSColor(white: AppConstants.cropEditorToolbarBackgroundDark, alpha: 1.0)
+        } else {
+            return NSColor(white: AppConstants.cropEditorToolbarBackgroundLight, alpha: 1.0)
+        }
+    }
+
+    /// 現在の外観に応じたツールバー背景CGColorを返す
+    private static func toolbarBackgroundCGColor() -> CGColor {
+        toolbarBackgroundNSColor().cgColor
+    }
 
     // MARK: - Properties
 
@@ -33,6 +64,7 @@ final class CropEditorPanelController: NSObject {
     private var panel: NSPanel?
     private var canvasView: CropEditorCanvasView?
     private var toolbarView: CropEditorToolbarView?
+    private var topBarView: NSView?
     private var originalImage: NSImage?
     private(set) var currentCropRect: CropRect
     nonisolated(unsafe) private var keyMonitor: Any?
@@ -45,6 +77,12 @@ final class CropEditorPanelController: NSObject {
     private var undoButton: NSButton?
     private var redoButton: NSButton?
     private var modeButtons: [NSButton] = []
+
+    /// 外観変更時にlayer背景色を再適用するためのピルコンテナ一覧（donePillContainerを除く）
+    private var pillContainers: [NSView] = []
+    /// 外観変更時にlayer背景色を再適用するためのセパレータ一覧
+    private var separatorViews: [NSView] = []
+    nonisolated(unsafe) private var appearanceObserver: Any?
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -76,6 +114,8 @@ final class CropEditorPanelController: NSObject {
         )
         newPanel.title = L("crop_editor.title")
         newPanel.level = .floating
+        newPanel.titlebarAppearsTransparent = true
+        newPanel.backgroundColor = Self.toolbarBackgroundNSColor()
         newPanel.configureForFloating()
         newPanel.delegate = self
 
@@ -145,14 +185,18 @@ final class CropEditorPanelController: NSObject {
         updateRevertButtonVisibility()
         updateUndoRedoButtons()
         installKeyMonitor()
+        installAppearanceObserver()
         logger.debug("Crop editor panel shown")
     }
 
     func close() {
         removeKeyMonitor()
+        removeAppearanceObserver()
         revertButton = nil
         doneButton = nil
         donePillContainer = nil
+        pillContainers = []
+        separatorViews = []
         undoButton = nil
         redoButton = nil
         modeButtons = []
@@ -160,6 +204,7 @@ final class CropEditorPanelController: NSObject {
         canvasView = nil
         toolbarView?.cleanup()
         toolbarView = nil
+        topBarView = nil
         panel?.orderOut(nil)
         panel = nil
         originalImage = nil
@@ -265,8 +310,8 @@ final class CropEditorPanelController: NSObject {
         let canRedo = history?.canRedo ?? false
         undoButton?.isEnabled = canUndo
         redoButton?.isEnabled = canRedo
-        undoButton?.contentTintColor = canUndo ? .white : .tertiaryLabelColor
-        redoButton?.contentTintColor = canRedo ? .white : .tertiaryLabelColor
+        undoButton?.contentTintColor = canUndo ? .labelColor : .tertiaryLabelColor
+        redoButton?.contentTintColor = canRedo ? .labelColor : .tertiaryLabelColor
     }
 
     // MARK: - Toolbar Sync
@@ -312,9 +357,9 @@ final class CropEditorPanelController: NSObject {
         let hasChanges = !currentCropRect.isEffectivelyEqual(to: initialCropRect)
         if hasChanges {
             donePillContainer?.layer?.backgroundColor = NSColor.systemGreen.cgColor
-            doneButton?.contentTintColor = .white
+            doneButton?.contentTintColor = .white // 緑背景上では白固定
         } else {
-            donePillContainer?.layer?.backgroundColor = NSColor.white.withAlphaComponent(Self.pillBackgroundAlpha).cgColor
+            donePillContainer?.layer?.backgroundColor = Self.pillBackgroundCGColor()
             doneButton?.contentTintColor = .labelColor
         }
     }
@@ -416,6 +461,42 @@ extension CropEditorPanelController {
 
 extension CropEditorPanelController {
 
+    private func installAppearanceObserver() {
+        appearanceObserver = DistributedNotificationCenter.default().addObserver(
+            forName: AppConstants.appearanceChangedNotificationName,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateAppearanceDependentColors()
+            }
+        }
+    }
+
+    private func removeAppearanceObserver() {
+        if let observer = appearanceObserver {
+            DistributedNotificationCenter.default().removeObserver(observer)
+            appearanceObserver = nil
+        }
+    }
+
+    private func updateAppearanceDependentColors() {
+        let pillBg = Self.pillBackgroundCGColor()
+        for container in pillContainers {
+            container.layer?.backgroundColor = pillBg
+        }
+        let sepColor = Self.separatorCGColor()
+        for separator in separatorViews {
+            separator.layer?.backgroundColor = sepColor
+        }
+        // トップバー・パネル背景色の再適用
+        let toolbarBg = Self.toolbarBackgroundNSColor()
+        topBarView?.layer?.backgroundColor = toolbarBg.cgColor
+        panel?.backgroundColor = toolbarBg
+        // donePillContainerは状態依存のため updateDoneButtonAppearance で再適用
+        updateDoneButtonAppearance()
+    }
+
     private func installKeyMonitor() {
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == AppConstants.escKeyCode { // ESC
@@ -466,6 +547,8 @@ extension CropEditorPanelController {
     private func createTopBar(width: CGFloat) -> NSView {
         let bar = NSView(frame: NSRect(x: 0, y: 0, width: width, height: AppConstants.cropEditorTopBarHeight))
         bar.wantsLayer = true
+        bar.layer?.backgroundColor = Self.toolbarBackgroundCGColor()
+        topBarView = bar
 
         let pillSize = AppConstants.cropEditorPillButtonSize
         let rowSpacing = Self.topBarRowSpacing
@@ -491,6 +574,7 @@ extension CropEditorPanelController {
         let (cancelPill, _) = makePillButton(symbolName: "xmark", action: #selector(cancelTapped))
         cancelPill.frame = NSRect(x: sidePad, y: rowY, width: pillSize, height: pillSize)
         bar.addSubview(cancelPill)
+        pillContainers.append(cancelPill)
 
         let (donePill, doneBtn) = makePillButton(symbolName: "checkmark", action: #selector(doneTapped))
         doneBtn.keyEquivalent = "\r"
@@ -498,10 +582,11 @@ extension CropEditorPanelController {
         bar.addSubview(donePill)
         doneButton = doneBtn
         donePillContainer = donePill
+        // donePillContainer は updateDoneButtonAppearance で色管理するため pillContainers に追加しない
 
         // Center: grouped Undo/Redo pill
         let groupWidth = pillSize * 2 + Self.separatorWidth
-        let (undoRedoPill, undoRedoButtons) = makeGroupedPill(
+        let undoRedoResult = makeGroupedPill(
             symbols: [
                 ("arrow.uturn.backward", #selector(undoTapped)),
                 ("arrow.uturn.forward", #selector(redoTapped))
@@ -509,12 +594,14 @@ extension CropEditorPanelController {
             width: groupWidth
         )
         let groupX = (width - groupWidth) / 2
-        undoRedoPill.frame = NSRect(x: groupX, y: rowY, width: groupWidth, height: pillSize)
-        bar.addSubview(undoRedoPill)
+        undoRedoResult.container.frame = NSRect(x: groupX, y: rowY, width: groupWidth, height: pillSize)
+        bar.addSubview(undoRedoResult.container)
+        pillContainers.append(undoRedoResult.container)
+        separatorViews.append(contentsOf: undoRedoResult.separators)
 
-        if undoRedoButtons.count >= 2 {
-            undoButton = undoRedoButtons[0]
-            redoButton = undoRedoButtons[1]
+        if undoRedoResult.buttons.count >= 2 {
+            undoButton = undoRedoResult.buttons[0]
+            redoButton = undoRedoResult.buttons[1]
         }
     }
 
@@ -526,15 +613,17 @@ extension CropEditorPanelController {
 
         // Left: grouped pill [Flip | Rotate90]
         let groupWidth = pillSize * 2 + Self.separatorWidth
-        let (groupPill, _) = makeGroupedPill(
+        let flipRotateResult = makeGroupedPill(
             symbols: [
                 ("arrow.left.and.right.righttriangle.left.righttriangle.right", #selector(flipTapped)),
                 ("rotate.left", #selector(rotate90Tapped))
             ],
             width: groupWidth
         )
-        groupPill.frame = NSRect(x: sidePad, y: rowY, width: groupWidth, height: pillSize)
-        bar.addSubview(groupPill)
+        flipRotateResult.container.frame = NSRect(x: sidePad, y: rowY, width: groupWidth, height: pillSize)
+        bar.addSubview(flipRotateResult.container)
+        pillContainers.append(flipRotateResult.container)
+        separatorViews.append(contentsOf: flipRotateResult.separators)
 
         // Center: "戻す" revert button
         let revertX = (width - Self.revertPillWidth) / 2
@@ -552,25 +641,28 @@ extension CropEditorPanelController {
         revertContainer.addSubview(revertBtn)
         bar.addSubview(revertContainer)
         revertButton = revertBtn
+        pillContainers.append(revertContainer)
 
         // Right: mode toggle pill [angle | aspectratio]
         let modeGroupWidth = pillSize * 2 + Self.separatorWidth
-        let (modePill, modeBtns) = makeGroupedPill(
+        let modeResult = makeGroupedPill(
             symbols: [
                 ("angle", #selector(correctionModeTapped)),
                 ("aspectratio", #selector(aspectRatioModeTapped))
             ],
             width: modeGroupWidth
         )
-        modePill.frame = NSRect(x: width - sidePad - modeGroupWidth, y: rowY, width: modeGroupWidth, height: pillSize)
-        bar.addSubview(modePill)
-        modeButtons = modeBtns
+        modeResult.container.frame = NSRect(x: width - sidePad - modeGroupWidth, y: rowY, width: modeGroupWidth, height: pillSize)
+        bar.addSubview(modeResult.container)
+        modeButtons = modeResult.buttons
+        pillContainers.append(modeResult.container)
+        separatorViews.append(contentsOf: modeResult.separators)
     }
 
     private func makePillContainer(frame: NSRect) -> NSView {
         let container = NSView(frame: frame)
         container.wantsLayer = true
-        container.layer?.backgroundColor = NSColor.white.withAlphaComponent(Self.pillBackgroundAlpha).cgColor
+        container.layer?.backgroundColor = Self.pillBackgroundCGColor()
         container.layer?.cornerRadius = AppConstants.cropEditorPillCornerRadius
         return container
     }
@@ -596,13 +688,20 @@ extension CropEditorPanelController {
         return (container, button)
     }
 
+    private struct GroupedPillResult {
+        let container: NSView
+        let buttons: [NSButton]
+        let separators: [NSView]
+    }
+
     /// Creates a grouped pill with multiple icon buttons separated by a 1px vertical line.
-    private func makeGroupedPill(symbols: [(String, Selector)], width: CGFloat) -> (container: NSView, buttons: [NSButton]) {
+    private func makeGroupedPill(symbols: [(String, Selector)], width: CGFloat) -> GroupedPillResult {
         let height = AppConstants.cropEditorPillButtonSize
         let container = makePillContainer(frame: NSRect(x: 0, y: 0, width: width, height: height))
 
         let buttonWidth = (width - CGFloat(symbols.count - 1) * Self.separatorWidth) / CGFloat(symbols.count)
         var buttons: [NSButton] = []
+        var separators: [NSView] = []
 
         for (index, (symbolName, action)) in symbols.enumerated() {
             let buttonX = CGFloat(index) * (buttonWidth + Self.separatorWidth)
@@ -616,12 +715,13 @@ extension CropEditorPanelController {
                 let sepX = buttonX + buttonWidth
                 let separator = NSView(frame: NSRect(x: sepX, y: Self.separatorInset, width: Self.separatorWidth, height: height - Self.separatorInset * 2))
                 separator.wantsLayer = true
-                separator.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.3).cgColor
+                separator.layer?.backgroundColor = Self.separatorCGColor()
                 container.addSubview(separator)
+                separators.append(separator)
             }
         }
 
-        return (container, buttons)
+        return GroupedPillResult(container: container, buttons: buttons, separators: separators)
     }
 }
 
