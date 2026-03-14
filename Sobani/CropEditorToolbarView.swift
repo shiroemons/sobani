@@ -39,6 +39,8 @@ final class CropEditorToolbarView: NSView {
 
     private static let modeButtonSize: CGFloat = 40
     private static let modeButtonSpacing: CGFloat = 16
+    private static let aspectRatioTopMargin: CGFloat = 16
+    private static let aspectRatioRowSpacing: CGFloat = 16
 
     // MARK: - Callbacks
 
@@ -308,15 +310,16 @@ private extension CropEditorToolbarView {
         }
         sliderView?.isHidden = true
 
-        // 上段: 形状セレクタ
         let shapeHeight = CropShapeSelectorView.viewHeight
-        let shapeY = bounds.height - shapeHeight - 4
+        let selectorHeight = AspectRatioSelectorView.viewHeight
+
+        // 上段: 形状セレクタ（上端から16pt）
+        let shapeY = bounds.height - shapeHeight - Self.aspectRatioTopMargin
         shapeSelectorView?.frame = NSRect(x: 0, y: shapeY, width: bounds.width, height: shapeHeight)
         shapeSelectorView?.isHidden = false
 
-        // 下段: アスペクト比セレクタ
-        let selectorHeight = AspectRatioSelectorView.viewHeight
-        let selectorY: CGFloat = 8
+        // 下段: アスペクト比セレクタ（形状セレクタから16pt下）
+        let selectorY = shapeY - Self.aspectRatioRowSpacing - selectorHeight
         selectorView?.frame = NSRect(x: 0, y: selectorY, width: bounds.width, height: selectorHeight)
         selectorView?.isHidden = false
     }
