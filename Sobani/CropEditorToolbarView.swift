@@ -37,10 +37,10 @@ final class CropEditorToolbarView: NSView {
 
     // MARK: - Constants
 
-    private static let modeButtonSize: CGFloat = 40
+    private static let modeButtonSize: CGFloat = 36
     private static let modeButtonSpacing: CGFloat = 16
-    private static let aspectRatioTopMargin: CGFloat = 16
-    private static let aspectRatioRowSpacing: CGFloat = 16
+    private static let toolbarTopMargin: CGFloat = 16
+    private static let toolbarRowSpacing: CGFloat = 16
 
     // MARK: - Callbacks
 
@@ -271,11 +271,10 @@ final class CropEditorToolbarView: NSView {
 private extension CropEditorToolbarView {
 
     func layoutCorrectionMode() {
-        // Layout (bottom to top) within toolbar:
-        // y=14:  ruler (44pt)
-        // y=82:  modeButtons (40pt) — TOP
-        let rulerY: CGFloat = 14
-        let buttonY: CGFloat = 82
+        // 上段: モードボタン（上端から16pt）
+        let buttonY = bounds.height - Self.modeButtonSize - Self.toolbarTopMargin
+        // 下段: ルーラー（モードボタンから16pt下）
+        let rulerY = buttonY - Self.toolbarRowSpacing - AppConstants.cropEditorRulerHeight
 
         // ボタン行: 選択中ボタンが中央に来るようにオフセット
         let modes = StraightenMode.allCases
@@ -314,12 +313,12 @@ private extension CropEditorToolbarView {
         let selectorHeight = AspectRatioSelectorView.viewHeight
 
         // 上段: 形状セレクタ（上端から16pt）
-        let shapeY = bounds.height - shapeHeight - Self.aspectRatioTopMargin
+        let shapeY = bounds.height - shapeHeight - Self.toolbarTopMargin
         shapeSelectorView?.frame = NSRect(x: 0, y: shapeY, width: bounds.width, height: shapeHeight)
         shapeSelectorView?.isHidden = false
 
         // 下段: アスペクト比セレクタ（形状セレクタから16pt下）
-        let selectorY = shapeY - Self.aspectRatioRowSpacing - selectorHeight
+        let selectorY = shapeY - Self.toolbarRowSpacing - selectorHeight
         selectorView?.frame = NSRect(x: 0, y: selectorY, width: bounds.width, height: selectorHeight)
         selectorView?.isHidden = false
     }

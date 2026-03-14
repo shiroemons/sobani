@@ -147,7 +147,7 @@ enum AppConstants {
     static let cropEditorPillCornerRadius: CGFloat = 18
 
     // Ruler dial
-    static let cropEditorRulerHeight: CGFloat = 44
+    static let cropEditorRulerHeight: CGFloat = 36
     static let cropEditorRulerTickSpacing: CGFloat = 6
 
     // Straighten Slider
