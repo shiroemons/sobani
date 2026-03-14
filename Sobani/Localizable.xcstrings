@@ -3110,13 +3110,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "リセット"
+            "value": "戻す"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset"
+            "value": "Revert"
           }
         }
       }
