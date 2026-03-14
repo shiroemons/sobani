@@ -38,13 +38,13 @@ final class CropEditorPanelController: NSObject {
     nonisolated(unsafe) private var keyMonitor: Any?
 
     private var revertButton: NSButton?
-    private var modeToggleButton: NSButton?
     private var doneButton: NSButton?
     private var donePillContainer: NSView?
     private var initialCropRect: CropRect
     private var history: CropEditHistory?
     private var undoButton: NSButton?
     private var redoButton: NSButton?
+    private var modeButtons: [NSButton] = []
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -108,6 +108,9 @@ final class CropEditorPanelController: NSObject {
         }
         contentView.addSubview(toolbar)
         toolbarView = toolbar
+        let savedMode = restoreSavedToolbarMode()
+        toolbar.setMode(savedMode)
+        updateModeButtonsAppearance()
         syncToolbarState(to: currentCropRect)
 
         // Central canvas
@@ -148,11 +151,11 @@ final class CropEditorPanelController: NSObject {
     func close() {
         removeKeyMonitor()
         revertButton = nil
-        modeToggleButton = nil
         doneButton = nil
         donePillContainer = nil
         undoButton = nil
         redoButton = nil
+        modeButtons = []
         history = nil
         canvasView = nil
         toolbarView?.cleanup()
@@ -200,13 +203,6 @@ final class CropEditorPanelController: NSObject {
         updateRevertButtonVisibility()
     }
 
-    @objc private func modeToggleTapped() {
-        guard let toolbar = toolbarView else { return }
-        let newMode: ToolbarMode = (toolbar.currentToolbarMode == .correction) ? .aspectRatio : .correction
-        toolbar.setMode(newMode)
-        updateModeToggleAppearance()
-    }
-
     @objc private func undoTapped() {
         guard let state = history?.undo() else { return }
         applyHistoryState(state)
@@ -215,6 +211,38 @@ final class CropEditorPanelController: NSObject {
     @objc private func redoTapped() {
         guard let state = history?.redo() else { return }
         applyHistoryState(state)
+    }
+
+    @objc private func correctionModeTapped() {
+        switchToolbarMode(to: .correction)
+    }
+
+    @objc private func aspectRatioModeTapped() {
+        switchToolbarMode(to: .aspectRatio)
+    }
+
+    private func switchToolbarMode(to mode: ToolbarMode) {
+        toolbarView?.setMode(mode)
+        UserDefaults.standard.set(mode.rawValue, forKey: AppConstants.cropEditorLastToolbarModeKey)
+        updateModeButtonsAppearance()
+    }
+
+    private func updateModeButtonsAppearance() {
+        let currentMode = toolbarView?.currentToolbarMode ?? .correction
+        guard modeButtons.count >= 2 else { return }
+        let correctionBtn = modeButtons[0]
+        let aspectRatioBtn = modeButtons[1]
+
+        correctionBtn.contentTintColor = currentMode == .correction ? .labelColor : .tertiaryLabelColor
+        aspectRatioBtn.contentTintColor = currentMode == .aspectRatio ? .labelColor : .tertiaryLabelColor
+    }
+
+    private func restoreSavedToolbarMode() -> ToolbarMode {
+        if let saved = UserDefaults.standard.string(forKey: AppConstants.cropEditorLastToolbarModeKey),
+           let mode = ToolbarMode(rawValue: saved) {
+            return mode
+        }
+        return .aspectRatio
     }
 
     // MARK: - History Helpers
@@ -289,14 +317,6 @@ final class CropEditorPanelController: NSObject {
             donePillContainer?.layer?.backgroundColor = NSColor.white.withAlphaComponent(Self.pillBackgroundAlpha).cgColor
             doneButton?.contentTintColor = .labelColor
         }
-    }
-
-    // MARK: - Mode Toggle Appearance
-
-    private func updateModeToggleAppearance() {
-        let mode = toolbarView?.currentToolbarMode ?? .correction
-        let symbolName = mode.toggleSymbolName
-        modeToggleButton?.image = SFSymbolUtils.icon(symbolName, pointSize: Self.pillIconPointSize, weight: .medium)
     }
 
 }
@@ -502,7 +522,7 @@ extension CropEditorPanelController {
         let pillSize = AppConstants.cropEditorPillButtonSize
         let sidePad = Self.topBarSidePadding
         let width = AppConstants.cropEditorPanelWidth
-        // ── Row 2: [Flip | Rotate]  [戻す]  [ModeToggle] ──
+        // ── Row 2: [Flip | Rotate]  [戻す] ──
 
         // Left: grouped pill [Flip | Rotate90]
         let groupWidth = pillSize * 2 + Self.separatorWidth
@@ -515,12 +535,6 @@ extension CropEditorPanelController {
         )
         groupPill.frame = NSRect(x: sidePad, y: rowY, width: groupWidth, height: pillSize)
         bar.addSubview(groupPill)
-
-        // Right: mode toggle pill
-        let (modeTogglePill, toggleBtn) = makePillButton(symbolName: ToolbarMode.correction.toggleSymbolName, action: #selector(modeToggleTapped))
-        modeTogglePill.frame = NSRect(x: width - sidePad - pillSize, y: rowY, width: pillSize, height: pillSize)
-        bar.addSubview(modeTogglePill)
-        modeToggleButton = toggleBtn
 
         // Center: "戻す" revert button
         let revertX = (width - Self.revertPillWidth) / 2
@@ -538,6 +552,19 @@ extension CropEditorPanelController {
         revertContainer.addSubview(revertBtn)
         bar.addSubview(revertContainer)
         revertButton = revertBtn
+
+        // Right: mode toggle pill [angle | aspectratio]
+        let modeGroupWidth = pillSize * 2 + Self.separatorWidth
+        let (modePill, modeBtns) = makeGroupedPill(
+            symbols: [
+                ("angle", #selector(correctionModeTapped)),
+                ("aspectratio", #selector(aspectRatioModeTapped))
+            ],
+            width: modeGroupWidth
+        )
+        modePill.frame = NSRect(x: width - sidePad - modeGroupWidth, y: rowY, width: modeGroupWidth, height: pillSize)
+        bar.addSubview(modePill)
+        modeButtons = modeBtns
     }
 
     private func makePillContainer(frame: NSRect) -> NSView {

@@ -2,16 +2,9 @@ import Cocoa
 
 // MARK: - Enums
 
-enum ToolbarMode {
+enum ToolbarMode: String {
     case correction   // デフォルト: モードボタン + ルーラーダイヤル
     case aspectRatio  // アスペクト比セレクターのみ
-
-    var toggleSymbolName: String {
-        switch self {
-        case .correction: return "aspectratio"
-        case .aspectRatio: return "angle"
-        }
-    }
 }
 
 enum StraightenMode: CaseIterable {
@@ -58,7 +51,7 @@ final class CropEditorToolbarView: NSView {
 
     // MARK: - State
 
-    private var toolbarMode: ToolbarMode = .correction
+    private var toolbarMode: ToolbarMode = .aspectRatio
     private var straightenMode: StraightenMode = .straighten
 
     private var modeAngles: [StraightenMode: CGFloat] = [
@@ -215,6 +208,7 @@ final class CropEditorToolbarView: NSView {
     }
 
     func setMode(_ mode: ToolbarMode) {
+        guard mode != toolbarMode else { return }
         toolbarMode = mode
         layout()
     }
@@ -316,7 +310,7 @@ private extension CropEditorToolbarView {
 
         // 上段: 形状セレクタ
         let shapeHeight = CropShapeSelectorView.viewHeight
-        let shapeY = bounds.height - shapeHeight - 8
+        let shapeY = bounds.height - shapeHeight - 4
         shapeSelectorView?.frame = NSRect(x: 0, y: shapeY, width: bounds.width, height: shapeHeight)
         shapeSelectorView?.isHidden = false
 
