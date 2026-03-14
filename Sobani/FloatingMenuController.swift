@@ -176,7 +176,7 @@ final class FloatingMenuController {
             label: L("floating_menu.label.hide"), action: #selector(hideTapped)
         ))
         buttons.append(ButtonSpec(
-            symbolName: "xmark.circle", tooltip: L("floating_menu.close"),
+            symbolName: AppConstants.closeSymbol, tooltip: L("floating_menu.close"),
             label: L("floating_menu.label.close"), action: #selector(closeTapped)
         ))
 
@@ -256,7 +256,7 @@ final class FloatingMenuController {
         let iconX = AppConstants.floatingMenuPadding + 4
         let iconPointSize: CGFloat = 12
         let iconView = NSImageView(frame: NSRect(x: iconX, y: sliderRowY + (rowHeight - iconSize) / 2, width: iconSize, height: iconSize))
-        iconView.image = SFSymbolUtils.icon("circle.lefthalf.filled", pointSize: iconPointSize)
+        iconView.image = SFSymbolUtils.icon(AppConstants.opacitySymbol, pointSize: iconPointSize)
         iconView.imageScaling = .scaleProportionallyDown
         container.addSubview(iconView)
 

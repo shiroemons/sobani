@@ -19,7 +19,7 @@ extension CharacterWindow {
         )
         resetOpacityItem.target = self
         resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(opacity: imageView.opacityLevel)
-        resetOpacityItem.image = SFSymbolUtils.icon("circle.lefthalf.filled")
+        resetOpacityItem.image = SFSymbolUtils.icon(AppConstants.opacitySymbol)
         otherSubmenu.addItem(resetOpacityItem)
 
         otherSubmenu.addItem(NSMenuItem.separator())
@@ -28,7 +28,7 @@ extension CharacterWindow {
             title: L("adjust.reset_display"), action: #selector(resetDisplay), keyEquivalent: ""
         )
         resetDisplayItem.target = self
-        resetDisplayItem.image = SFSymbolUtils.icon("arrow.counterclockwise.circle")
+        resetDisplayItem.image = SFSymbolUtils.icon(AppConstants.resetSymbol)
         otherSubmenu.addItem(resetDisplayItem)
 
         otherSubmenu.addItem(NSMenuItem.separator())

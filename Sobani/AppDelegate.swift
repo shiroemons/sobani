@@ -118,7 +118,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             applyZOrderToWindows()
         } else {
             for charWindow in zOrderedWindows {
-                charWindow.window.orderOut(nil)
+                charWindow.setHidden(true)
             }
         }
         areWindowsHidden.toggle()
@@ -329,7 +329,9 @@ extension AppDelegate: CharacterWindowDelegate {
     }
 
     func characterWindowDidChangeHidden(_ sender: CharacterWindow) {
-        // Status menu will rebuild on next open
+        // Intentionally empty: status bar menu rebuilds its content
+        // each time it opens (in buildStatusBarMenu), so no immediate
+        // update is needed here.
     }
 
     func characterWindowDidDeleteImage(named name: String) {

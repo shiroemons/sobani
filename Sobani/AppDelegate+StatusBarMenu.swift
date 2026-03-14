@@ -31,22 +31,18 @@ extension AppDelegate {
 
         menu.addItem(buildNewWindowMenuItem(imageNames: imageNames))
 
-        var ghostCount = 0
-        var hiddenCount = 0
-        for charWindow in zOrderedWindows {
-            if charWindow.isGhostMode { ghostCount += 1 }
-            if charWindow.isHidden { hiddenCount += 1 }
-        }
+        let ghostCount = zOrderedWindows.filter(\.isGhostMode).count
+        let hiddenCount = zOrderedWindows.filter(\.isHidden).count
         let countTitle = MenuStateUtils.formatWindowCountText(
             count: zOrderedWindows.count,
             isHidden: areWindowsHidden,
             showingFormat: L("status.showing_count"),
             showingLabel: L("status.showing"),
             hiddenLabel: L("status.hidden"),
-            ghostCount: ghostCount,
-            ghostFormat: L("status.ghost_count"),
-            hiddenCount: hiddenCount,
-            hiddenFormat: L("status.hidden_count")
+            badges: [
+                StatusBadge(value: ghostCount, format: L("status.ghost_count")),
+                StatusBadge(value: hiddenCount, format: L("status.hidden_count"))
+            ]
         )
         let countItem = NSMenuItem(
             title: countTitle,
@@ -83,7 +79,7 @@ extension AppDelegate {
 
         let closeAllItem = NSMenuItem(title: L("menu.close_all"), action: #selector(closeAllWindows), keyEquivalent: "")
         closeAllItem.target = self
-        closeAllItem.image = menuIcon("xmark.circle")
+        closeAllItem.image = menuIcon(AppConstants.closeSymbol)
         menu.addItem(closeAllItem)
 
         menu.addItem(NSMenuItem.separator())
@@ -160,14 +156,14 @@ extension AppDelegate {
         )
         item.target = self
         item.isEnabled = hasOpacity
-        item.image = menuIcon("circle.lefthalf.filled")
+        item.image = menuIcon(AppConstants.opacitySymbol)
         return item
     }
 
     func buildBulkResetMenuItem(ghostCount: Int) -> NSMenuItem {
         let item = NSMenuItem(title: L("menu.bulk_reset"), action: nil, keyEquivalent: "")
         item.tag = MenuItemTag.bulkResetSubmenu.rawValue
-        item.image = menuIcon("arrow.counterclockwise.circle")
+        item.image = menuIcon(AppConstants.resetSymbol)
         let submenu = NSMenu()
 
         let tolerance = AppConstants.floatingPointTolerance
@@ -201,7 +197,7 @@ extension AppDelegate {
         ghostResetItem.target = self
         ghostResetItem.tag = MenuItemTag.ghostModeAllDisable.rawValue
         ghostResetItem.isEnabled = hasGhost
-        ghostResetItem.image = menuIcon("eye")
+        ghostResetItem.image = menuIcon(AppConstants.visibleWindowSymbol)
         submenu.addItem(ghostResetItem)
 
         item.submenu = submenu
@@ -300,7 +296,7 @@ extension AppDelegate {
         let changeImageItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
         changeImageItem.submenu = buildChangeImageSubmenuForWindow(charWindow: charWindow, imageNames: imageNames)
         changeImageItem.isEnabled = !areWindowsHidden && !charWindow.isHidden
-        changeImageItem.image = menuIcon("photo.on.rectangle")
+        changeImageItem.image = menuIcon(AppConstants.changeImageSymbol)
         submenu.addItem(changeImageItem)
 
         submenu.addItem(NSMenuItem.separator())
@@ -334,7 +330,7 @@ extension AppDelegate {
         resetOpacityItem.target = self
         resetOpacityItem.tag = windowNumber
         resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(opacity: charWindow.imageView.opacityLevel)
-        resetOpacityItem.image = menuIcon("circle.lefthalf.filled")
+        resetOpacityItem.image = menuIcon(AppConstants.opacitySymbol)
         submenu.addItem(resetOpacityItem)
 
         submenu.addItem(NSMenuItem.separator())
@@ -342,7 +338,7 @@ extension AppDelegate {
         let resetDisplayItem = NSMenuItem(title: L("adjust.reset_display"), action: #selector(resetDisplayByWindowNumber(_:)), keyEquivalent: "")
         resetDisplayItem.target = self
         resetDisplayItem.tag = windowNumber
-        resetDisplayItem.image = menuIcon("arrow.counterclockwise.circle")
+        resetDisplayItem.image = menuIcon(AppConstants.resetSymbol)
         submenu.addItem(resetDisplayItem)
 
         buildGhostAndBackgroundItems(into: submenu, for: charWindow)
@@ -360,7 +356,7 @@ extension AppDelegate {
         let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
         closeItem.target = self
         closeItem.tag = windowNumber
-        closeItem.image = menuIcon("xmark.circle")
+        closeItem.image = menuIcon(AppConstants.closeSymbol)
         submenu.addItem(closeItem)
 
         return submenu
@@ -636,11 +632,11 @@ extension AppDelegate {
         guard let container = sender.superview else { return }
         let isCustom = charWindow.customGhostAlpha != nil
         let currentAlpha = charWindow.effectiveGhostAlpha
-        if let slider = container.subviews.compactMap({ $0 as? NSSlider }).first {
+        if let slider = container.subviews.first(where: { $0 is NSSlider }) as? NSSlider {
             slider.doubleValue = Double(currentAlpha)
             slider.isEnabled = isCustom
         }
-        if let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
+        if let percentLabel = container.subviews.last(where: { $0 is NSTextField }) as? NSTextField {
             percentLabel.stringValue = FormatUtils.formatOpacity(currentAlpha)
             percentLabel.alphaValue = isCustom ? 1.0 : 0.5
         }

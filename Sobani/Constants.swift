@@ -107,6 +107,10 @@ enum AppConstants {
     static let ghostModeSymbol = "face.dashed"
     static let hiddenWindowSymbol = "eye.slash"
     static let visibleWindowSymbol = "eye"
+    static let opacitySymbol = "circle.lefthalf.filled"
+    static let resetSymbol = "arrow.counterclockwise.circle"
+    static let closeSymbol = "xmark.circle"
+    static let changeImageSymbol = "photo.on.rectangle"
 
     // Ghost Mode Slider Layout
     static let ghostAlphaSliderContainerWidth: CGFloat = 260
@@ -114,6 +118,11 @@ enum AppConstants {
     static let ghostAlphaSliderPercentWidth: CGFloat = 45
     static let ghostAlphaSliderHeight: CGFloat = 21
     static let ghostAlphaSliderTrailingMargin: CGFloat = 8
+
+    // Ghost Alpha Slider Checkbox Layout
+    static let ghostAlphaCheckboxX: CGFloat = 32
+    static let ghostAlphaCheckboxSize: CGFloat = 18
+    static let ghostAlphaCheckboxTrailingGap: CGFloat = 22
 
     // Crop
     static let cropHandleSize: CGFloat = 8

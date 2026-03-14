@@ -512,7 +512,7 @@ extension CharacterWindow {
         let registeredItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
         registeredItem.tag = MenuItemTag.changeImageSubmenu.rawValue
         registeredItem.submenu = NSMenu()
-        registeredItem.image = SFSymbolUtils.icon("photo.on.rectangle")
+        registeredItem.image = SFSymbolUtils.icon(AppConstants.changeImageSymbol)
         menu.addItem(registeredItem)
         menu.addItem(NSMenuItem.separator())
 
@@ -551,7 +551,7 @@ extension CharacterWindow {
         let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeThisWindow), keyEquivalent: "w")
         closeItem.tag = MenuItemTag.close.rawValue
         closeItem.target = self
-        closeItem.image = SFSymbolUtils.icon("xmark.circle")
+        closeItem.image = SFSymbolUtils.icon(AppConstants.closeSymbol)
         menu.addItem(closeItem)
 
         let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
@@ -576,7 +576,7 @@ extension CharacterWindow {
         let iconX: CGFloat = 16
         let iconY = containerH - topRowH + (topRowH - iconSize) / 2
         let iconView = NSImageView(frame: NSRect(x: iconX, y: iconY, width: iconSize, height: iconSize))
-        iconView.image = SFSymbolUtils.icon("circle.lefthalf.filled", pointSize: 12)
+        iconView.image = SFSymbolUtils.icon(AppConstants.opacitySymbol, pointSize: 12)
         iconView.imageScaling = .scaleProportionallyDown
         container.addSubview(iconView)
 

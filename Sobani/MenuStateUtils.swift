@@ -1,5 +1,10 @@
 import Cocoa
 
+struct StatusBadge {
+    let value: Int
+    let format: String
+}
+
 /// メニュー状態判定のユーティリティ
 enum MenuStateUtils {
     /// いずれかの角度が tolerance を超えているか判定（一括回転リセット有効判定）
@@ -51,20 +56,14 @@ enum MenuStateUtils {
         showingFormat: String,
         showingLabel: String,
         hiddenLabel: String,
-        ghostCount: Int = 0,
-        ghostFormat: String = "",
-        hiddenCount: Int = 0,
-        hiddenFormat: String = ""
+        badges: [StatusBadge] = []
     ) -> String {
         var base = String(format: showingFormat, "\(count)")
         if isHidden {
             base = base.replacingOccurrences(of: showingLabel, with: hiddenLabel)
         }
-        if ghostCount > 0, !ghostFormat.isEmpty {
-            base += " " + String(format: ghostFormat, "\(ghostCount)")
-        }
-        if hiddenCount > 0, !hiddenFormat.isEmpty {
-            base += " " + String(format: hiddenFormat, "\(hiddenCount)")
+        for badge in badges where badge.value > 0 {
+            base += " " + String(format: badge.format, "\(badge.value)")
         }
         return base
     }

@@ -250,6 +250,48 @@ struct MenuStateUtilsTests {
         #expect(result == "Showing: 5 windows")
     }
 
+    @Test("formatWindowCountText: バッジ付き（ゴースト）")
+    func formatWindowCountTextWithGhostBadge() {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 5,
+            isHidden: false,
+            showingFormat: "表示中: %@体",
+            showingLabel: "表示中",
+            hiddenLabel: "非表示",
+            badges: [StatusBadge(value: 2, format: "👻%@")]
+        )
+        #expect(result == "表示中: 5体 👻2")
+    }
+
+    @Test("formatWindowCountText: 複数バッジ")
+    func formatWindowCountTextWithMultipleBadges() {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 5,
+            isHidden: false,
+            showingFormat: "表示中: %@体",
+            showingLabel: "表示中",
+            hiddenLabel: "非表示",
+            badges: [
+                StatusBadge(value: 2, format: "👻%@"),
+                StatusBadge(value: 1, format: "🙈%@")
+            ]
+        )
+        #expect(result == "表示中: 5体 👻2 🙈1")
+    }
+
+    @Test("formatWindowCountText: バッジvalue=0はスキップ")
+    func formatWindowCountTextBadgeZeroSkipped() {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 3,
+            isHidden: false,
+            showingFormat: "表示中: %@体",
+            showingLabel: "表示中",
+            hiddenLabel: "非表示",
+            badges: [StatusBadge(value: 0, format: "👻%@")]
+        )
+        #expect(result == "表示中: 3体")
+    }
+
     // MARK: - buildWindowInfoText Tests
 
     @Test("buildWindowInfoText: 基本的なテキスト生成")

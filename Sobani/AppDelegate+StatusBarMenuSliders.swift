@@ -1,9 +1,16 @@
 import Cocoa
 
+private struct SliderContainerResult {
+    let container: NSView
+    let iconView: NSImageView
+    let label: NSTextField
+    let labelMaxX: CGFloat
+}
+
 // MARK: - Status Bar Menu Sliders
 
 extension AppDelegate {
-    func makePercentLabel(alpha: CGFloat, containerWidth: CGFloat, containerHeight: CGFloat) -> NSTextField {
+    private func makePercentLabel(alpha: CGFloat, containerWidth: CGFloat, containerHeight: CGFloat) -> NSTextField {
         let percentWidth = AppConstants.ghostAlphaSliderPercentWidth
         let margin = AppConstants.ghostAlphaSliderTrailingMargin
         let label = NSTextField(labelWithString: FormatUtils.formatOpacity(alpha))
@@ -19,7 +26,7 @@ extension AppDelegate {
     }
 
     func updatePercentLabel(in container: NSView, alpha: CGFloat) {
-        if let label = container.subviews.compactMap({ $0 as? NSTextField }).last {
+        if let label = container.subviews.last(where: { $0 is NSTextField }) as? NSTextField {
             label.stringValue = FormatUtils.formatOpacity(alpha)
         }
     }
@@ -32,9 +39,9 @@ extension AppDelegate {
         let isCustom = charWindow.customGhostAlpha != nil
         let currentAlpha = charWindow.effectiveGhostAlpha
 
-        let checkboxX: CGFloat = 32
-        let checkboxSize: CGFloat = 18
-        let checkboxTrailingGap: CGFloat = 22
+        let checkboxX = AppConstants.ghostAlphaCheckboxX
+        let checkboxSize = AppConstants.ghostAlphaCheckboxSize
+        let checkboxTrailingGap = AppConstants.ghostAlphaCheckboxTrailingGap
         let checkbox = NSButton(checkboxWithTitle: "", target: self, action: #selector(togglePerWindowGhostAlphaCustom(_:)))
         checkbox.frame = NSRect(x: checkboxX, y: (containerHeight - checkboxSize) / 2, width: checkboxSize, height: checkboxSize)
         checkbox.state = isCustom ? .on : .off
@@ -67,7 +74,7 @@ extension AppDelegate {
         return item
     }
 
-    func makeSliderContainerBase(iconSymbol: String, labelText: String) -> (container: NSView, labelMaxX: CGFloat) {
+    private func makeSliderContainerBase(iconSymbol: String, labelText: String) -> SliderContainerResult {
         let containerWidth = AppConstants.ghostAlphaSliderContainerWidth
         let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
         let container = NSView(frame: NSRect(x: 0, y: 0, width: containerWidth, height: containerHeight))
@@ -84,11 +91,11 @@ extension AppDelegate {
         label.frame.origin = NSPoint(x: iconX + iconSize + 4, y: (containerHeight - label.frame.height) / 2)
         container.addSubview(label)
 
-        return (container, label.frame.maxX)
+        return SliderContainerResult(container: container, iconView: iconView, label: label, labelMaxX: label.frame.maxX)
     }
 
-    func makeSlider(value: CGFloat, range: ClosedRange<CGFloat>, sliderX: CGFloat,
-                    tag: Int, action: Selector) -> NSSlider {
+    private func makeSlider(value: CGFloat, range: ClosedRange<CGFloat>, sliderX: CGFloat,
+                            tag: Int, action: Selector) -> NSSlider {
         let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
         let sliderWidth = AppConstants.ghostAlphaSliderContainerWidth - sliderX
             - AppConstants.ghostAlphaSliderPercentWidth - AppConstants.ghostAlphaSliderTrailingMargin
@@ -107,20 +114,16 @@ extension AppDelegate {
         let containerHeight = AppConstants.opacitySliderContainerHeight
         let topRowH = AppConstants.opacitySliderTopRowHeight
         let bottomRowH = containerHeight - topRowH
-        let (container, _) = makeSliderContainerBase(iconSymbol: "circle.lefthalf.filled", labelText: L("adjust.opacity"))
+        let result = makeSliderContainerBase(iconSymbol: AppConstants.opacitySymbol, labelText: L("adjust.opacity"))
+        let container = result.container
         // makeSliderContainerBase が生成するコンテナは ghostAlphaSliderContainerHeight (1行) のため、
         // 2行レイアウト用の高さに拡張し、アイコン・ラベルを上段に移動する。
         container.frame.size.height = containerHeight
         let iconSize: CGFloat = 16
         let iconX: CGFloat = 16
         let topRowIconY = containerHeight - topRowH + (topRowH - iconSize) / 2
-        for subview in container.subviews {
-            if let iconView = subview as? NSImageView {
-                iconView.frame.origin.y = topRowIconY
-            } else if let labelView = subview as? NSTextField {
-                labelView.frame.origin.y = topRowIconY + (iconSize - labelView.frame.height) / 2
-            }
-        }
+        result.iconView.frame.origin.y = topRowIconY
+        result.label.frame.origin.y = topRowIconY + (iconSize - result.label.frame.height) / 2
 
         let opacity = charWindow.imageView.opacityLevel
         let sliderX: CGFloat = iconX + iconSize + 4
@@ -140,7 +143,9 @@ extension AppDelegate {
     func buildGhostAlphaSliderItem() -> NSMenuItem {
         let item = NSMenuItem()
         item.tag = MenuItemTag.ghostModeAlphaSlider.rawValue
-        let (container, labelMaxX) = makeSliderContainerBase(iconSymbol: AppConstants.ghostModeSymbol, labelText: L("ghost.alpha_setting"))
+        let result = makeSliderContainerBase(iconSymbol: AppConstants.ghostModeSymbol, labelText: L("ghost.alpha_setting"))
+        let container = result.container
+        let labelMaxX = result.labelMaxX
         let sliderX = labelMaxX + AppConstants.ghostAlphaSliderTrailingMargin
         container.addSubview(makeSlider(value: GhostModeSettings.globalAlpha,
                                         range: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax,
