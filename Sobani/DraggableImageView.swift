@@ -10,7 +10,9 @@ final class DraggableImageView: NSImageView {
     var aspectRatio: CGFloat = 1.0
     let minHeight: CGFloat = AppConstants.minImageHeight
     let maxHeight: CGFloat = AppConstants.maxImageHeight
-    private var dragStartLocation: NSPoint = .zero
+    private var initialMouseInWindow: NSPoint = .zero
+    private var dragStartScreenLocation: NSPoint = .zero
+    private var cachedAllWindows: [CharacterWindow]?
     private var isDraggingAll = false
     private var isSnapEnabled = false
     private var cachedOtherWindowFrames: [CGRect]?
@@ -73,9 +75,13 @@ final class DraggableImageView: NSImageView {
         onMouseDown?()
         isDraggingAll = event.modifierFlags.contains(.option)
         isSnapEnabled = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
-        dragStartLocation = NSEvent.mouseLocation
 
-        if !isDraggingAll, let currentWindow = window {
+        if isDraggingAll {
+            guard let currentWindow = window else { return }
+            dragStartScreenLocation = currentWindow.convertPoint(toScreen: event.locationInWindow)
+            cachedAllWindows = allCharacterWindows
+        } else if let currentWindow = window {
+            initialMouseInWindow = event.locationInWindow
             let allWindows = allCharacterWindows
             cachedOtherWindowFrames = allWindows
                 .filter { $0.window !== currentWindow }
@@ -86,20 +92,22 @@ final class DraggableImageView: NSImageView {
 
     override func mouseDragged(with event: NSEvent) {
         if isCropModeActive { return }
-        let currentLocation = NSEvent.mouseLocation
-        let deltaX = currentLocation.x - dragStartLocation.x
-        let deltaY = currentLocation.y - dragStartLocation.y
-        dragStartLocation = currentLocation
 
-        if isDraggingAll {
-            let allWindows = allCharacterWindows
-            for charWindow in allWindows {
+        if isDraggingAll, let currentWindow = window {
+            let screenPoint = currentWindow.convertPoint(toScreen: event.locationInWindow)
+            let deltaX = screenPoint.x - dragStartScreenLocation.x
+            let deltaY = screenPoint.y - dragStartScreenLocation.y
+            dragStartScreenLocation = screenPoint
+            for charWindow in cachedAllWindows ?? [] {
                 var origin = charWindow.window.frame.origin
                 origin.x += deltaX
                 origin.y += deltaY
                 charWindow.window.setFrameOrigin(origin)
             }
         } else if let currentWindow = window {
+            let current = event.locationInWindow
+            let deltaX = current.x - initialMouseInWindow.x
+            let deltaY = current.y - initialMouseInWindow.y
             var origin = currentWindow.frame.origin
             origin.x += deltaX
             origin.y += deltaY
@@ -129,6 +137,8 @@ final class DraggableImageView: NSImageView {
     }
 
     override func mouseUp(with event: NSEvent) {
+        isDraggingAll = false
+        cachedAllWindows = nil
         cachedOtherWindowFrames = nil
         cachedScreenFrames = nil
     }
