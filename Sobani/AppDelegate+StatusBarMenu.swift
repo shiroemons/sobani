@@ -547,6 +547,23 @@ extension AppDelegate {
         return languageItem
     }
 
+    func buildThemeMenuItem() -> NSMenuItem {
+        let themeItem = NSMenuItem(title: L("theme.title"), action: nil, keyEquivalent: "")
+        themeItem.image = menuIcon(AppConstants.themeParentSymbol)
+        let themeSubmenu = NSMenu()
+        let currentTheme = AppThemeSettings.currentTheme
+        for theme in AppTheme.allCases {
+            let item = NSMenuItem(title: theme.displayName, action: #selector(changeTheme(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = theme.rawValue
+            item.state = theme == currentTheme ? .on : .off
+            item.image = menuIcon(theme.iconName)
+            themeSubmenu.addItem(item)
+        }
+        themeItem.submenu = themeSubmenu
+        return themeItem
+    }
+
     func buildSettingsMenuItem() -> NSMenuItem {
         let item = NSMenuItem(title: L("menu.settings"), action: nil, keyEquivalent: "")
         item.tag = MenuItemTag.settingsSubmenu.rawValue
@@ -601,6 +618,7 @@ extension AppDelegate {
         submenu.addItem(NSMenuItem.separator())
 
         submenu.addItem(buildLanguageMenuItem())
+        submenu.addItem(buildThemeMenuItem())
 
         item.submenu = submenu
         return item
@@ -659,6 +677,14 @@ extension AppDelegate {
         guard language != currentLanguage else { return }
 
         LanguageManager.shared.currentLanguage = language
+    }
+
+    @objc func changeTheme(_ sender: NSMenuItem) {
+        guard let themeRaw = sender.representedObject as? String,
+              let theme = AppTheme(rawValue: themeRaw) else { return }
+        let currentTheme = AppThemeSettings.currentTheme
+        guard theme != currentTheme else { return }
+        AppThemeSettings.currentTheme = theme
     }
 
     @objc func showAbout() {

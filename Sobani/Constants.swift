@@ -108,6 +108,10 @@ enum AppConstants {
     static let hiddenWindowSymbol = "eye.slash"
     static let visibleWindowSymbol = "eye"
     static let opacitySymbol = "circle.lefthalf.filled"
+    static let themeSystemSymbol = "circle.lefthalf.filled"
+    static let themeLightSymbol = "sun.max"
+    static let themeDarkSymbol = "moon"
+    static let themeParentSymbol = "paintbrush"
     static let resetSymbol = "arrow.counterclockwise.circle"
     static let closeSymbol = "xmark.circle"
     static let changeImageSymbol = "photo.on.rectangle"
@@ -152,8 +156,6 @@ enum AppConstants {
     static let cropEditorPillBackgroundDarkAlpha: CGFloat = 0.2
     static let cropEditorModeButtonSelectedDarkAlpha: CGFloat = 0.15
 
-    static let appearanceChangedNotificationName = Notification.Name("AppleInterfaceThemeChangedNotification")
-
     // Ruler dial
     static let cropEditorRulerHeight: CGFloat = 36
     static let cropEditorRulerTickSpacing: CGFloat = 6
@@ -188,6 +190,7 @@ enum AppConstants {
     static let shapeButtonSize: CGFloat = 28
     // UserDefaults Keys
     static let appLanguageKey = "AppLanguage"
+    static let appThemeKey = "AppTheme"
     static let appleLanguagesKey = "AppleLanguages"
 
     // Window Snap
@@ -231,6 +234,13 @@ enum GhostModeSettings {
             let clamped = max(AppConstants.ghostModeAlphaMin, min(AppConstants.ghostModeAlphaMax, newValue))
             UserDefaults.standard.set(Double(clamped), forKey: AppConstants.ghostModeAlphaKey)
         }
+    }
+}
+
+extension NSAppearance {
+    /// 現在の外観がダークモードかどうかを判定
+    var isDark: Bool {
+        bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
     }
 }
 
@@ -356,6 +366,56 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case ghostModeAlphaSlider = 1035
     case opacitySliderContext = 1036
     case hideWindowToggle = 1037
+}
+
+enum AppTheme: String, CaseIterable, Sendable {
+    case system
+    case light
+    case dark
+
+    var displayName: String {
+        switch self {
+        case .system: return L("theme.system")
+        case .light: return L("theme.light")
+        case .dark: return L("theme.dark")
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .system: return AppConstants.themeSystemSymbol
+        case .light: return AppConstants.themeLightSymbol
+        case .dark: return AppConstants.themeDarkSymbol
+        }
+    }
+
+    var nsAppearance: NSAppearance? {
+        switch self {
+        case .system: return nil
+        case .light: return NSAppearance(named: .aqua)
+        case .dark: return NSAppearance(named: .darkAqua)
+        }
+    }
+}
+
+enum AppThemeSettings {
+    static var currentTheme: AppTheme {
+        get {
+            guard let raw = UserDefaults.standard.string(forKey: AppConstants.appThemeKey),
+                  let theme = AppTheme(rawValue: raw) else {
+                return .system
+            }
+            return theme
+        }
+        set {
+            if newValue == .system {
+                UserDefaults.standard.removeObject(forKey: AppConstants.appThemeKey)
+            } else {
+                UserDefaults.standard.set(newValue.rawValue, forKey: AppConstants.appThemeKey)
+            }
+            NSApp.appearance = newValue.nsAppearance
+        }
+    }
 }
 
 // MARK: - Format Utils

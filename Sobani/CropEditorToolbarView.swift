@@ -44,8 +44,7 @@ final class CropEditorToolbarView: NSView {
 
     /// 現在の外観に応じたツールバー背景色を返す
     private static func toolbarBackgroundCGColor() -> CGColor {
-        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-        if isDark {
+        if NSApp.effectiveAppearance.isDark {
             return NSColor(white: AppConstants.cropEditorToolbarBackgroundDark, alpha: 1.0).cgColor
         } else {
             return NSColor(white: AppConstants.cropEditorToolbarBackgroundLight, alpha: 1.0).cgColor
@@ -420,7 +419,7 @@ private class ModeButtonView: NSView {
 
             // 選択中の背景
             if isSelected {
-                let isDark = NSAppearance.currentDrawing().bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                let isDark = NSAppearance.currentDrawing().isDark
                 if isDark {
                     context.setFillColor(NSColor(white: 1.0, alpha: AppConstants.cropEditorModeButtonSelectedDarkAlpha).cgColor)
                 } else {

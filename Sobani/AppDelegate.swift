@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     weak var lastHighlightedWindow: CharacterWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance
         setupStatusBar()
         setupHotkeyMonitors()
         screenRestorationManager.loadPending()

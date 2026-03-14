@@ -30,8 +30,7 @@ final class CropEditorPanelController: NSObject {
 
     /// 現在の外観に応じたピル背景色を返す
     private static func pillBackgroundCGColor() -> CGColor {
-        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-        if isDark {
+        if NSApp.effectiveAppearance.isDark {
             return NSColor(white: 1.0, alpha: AppConstants.cropEditorPillBackgroundDarkAlpha).cgColor
         } else {
             return NSColor.white.cgColor
@@ -45,8 +44,7 @@ final class CropEditorPanelController: NSObject {
 
     /// 現在の外観に応じたツールバー背景NSColorを返す
     private static func toolbarBackgroundNSColor() -> NSColor {
-        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-        if isDark {
+        if NSApp.effectiveAppearance.isDark {
             return NSColor(white: AppConstants.cropEditorToolbarBackgroundDark, alpha: 1.0)
         } else {
             return NSColor(white: AppConstants.cropEditorToolbarBackgroundLight, alpha: 1.0)
@@ -82,7 +80,7 @@ final class CropEditorPanelController: NSObject {
     private var pillContainers: [NSView] = []
     /// 外観変更時にlayer背景色を再適用するためのセパレータ一覧
     private var separatorViews: [NSView] = []
-    nonisolated(unsafe) private var appearanceObserver: Any?
+    private var appearanceObserver: NSKeyValueObservation?
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -462,22 +460,16 @@ extension CropEditorPanelController {
 extension CropEditorPanelController {
 
     private func installAppearanceObserver() {
-        appearanceObserver = DistributedNotificationCenter.default().addObserver(
-            forName: AppConstants.appearanceChangedNotificationName,
-            object: nil,
-            queue: nil
-        ) { [weak self] _ in
-            DispatchQueue.main.async {
+        appearanceObserver = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
+            MainActor.assumeIsolated {
                 self?.updateAppearanceDependentColors()
             }
         }
     }
 
     private func removeAppearanceObserver() {
-        if let observer = appearanceObserver {
-            DistributedNotificationCenter.default().removeObserver(observer)
-            appearanceObserver = nil
-        }
+        appearanceObserver?.invalidate()
+        appearanceObserver = nil
     }
 
     private func updateAppearanceDependentColors() {
