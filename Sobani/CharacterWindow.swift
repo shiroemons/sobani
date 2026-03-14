@@ -430,8 +430,6 @@ extension CharacterWindow: CropEditorPanelDelegate {
     }
 
     func cropEditorDidCancel(_ editor: CropEditorPanelController) { cropEditorController = nil }
-
-    func cropEditorDidReset(_ editor: CropEditorPanelController) { imageView.resetCrop() }
 }
 
 // MARK: - Adjustment Panel Delegate

@@ -7,7 +7,6 @@ import os.log
 protocol CropEditorPanelDelegate: AnyObject {
     func cropEditorDidConfirm(_ editor: CropEditorPanelController, cropRect: CropRect)
     func cropEditorDidCancel(_ editor: CropEditorPanelController)
-    func cropEditorDidReset(_ editor: CropEditorPanelController)
 }
 
 // MARK: - Crop Editor Panel Controller
@@ -184,7 +183,6 @@ final class CropEditorPanelController: NSObject {
         toolbarView?.resetStraightenAngle()
         toolbarView?.hideAspectRatioSelector()
         syncToolbarState(to: currentCropRect)
-        delegate?.cropEditorDidReset(self)
         recordCurrentState()
         updateRevertButtonVisibility()
     }

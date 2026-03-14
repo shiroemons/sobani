@@ -255,7 +255,6 @@ classDiagram
 |---|---|
 | `cropEditorDidConfirm(_:cropRect:)` | クロップ編集の確定を通知 |
 | `cropEditorDidCancel(_:)` | クロップ編集のキャンセルを通知 |
-| `cropEditorDidReset(_:)` | クロップのリセットを通知 |
 
 ### UpdateManagerDelegate
 
