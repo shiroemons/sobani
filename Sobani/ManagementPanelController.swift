@@ -20,6 +20,7 @@ protocol ManagementPanelDelegate: AnyObject {
     func managementPanel(_ panel: ManagementPanelController, didRequestUpdateLayout preset: LayoutPreset)
     func managementPanel(_ panel: ManagementPanelController, didRequestDeleteLayout preset: LayoutPreset)
     func managementPanel(_ panel: ManagementPanelController, didRequestRenameLayout preset: LayoutPreset, to newName: String)
+    func managementPanelDidChangeHotkey(_ panel: ManagementPanelController)
 }
 
 // MARK: - ManagementPanelController
