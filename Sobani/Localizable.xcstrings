@@ -3632,6 +3632,54 @@
           }
         }
       }
+    },
+    "hotkey.toggle_visibility": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全表示/非表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle Visibility"
+          }
+        }
+      }
+    },
+    "hotkey.toggle_ghost_mode": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全ゴースト"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle Ghost Mode"
+          }
+        }
+      }
+    },
+    "hotkey.management_panel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理パネル"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Management Panel"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
