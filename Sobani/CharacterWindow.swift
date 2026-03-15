@@ -682,7 +682,7 @@ extension CharacterWindow {
             submenu.addItem(NSMenuItem.separator())
             let removeBackgroundItem = NSMenuItem(
                 title: L("image.remove_background"),
-                action: #selector(removeBackground),
+                action: #selector(removeBackground as () -> Void),
                 keyEquivalent: ""
             )
             removeBackgroundItem.target = self
@@ -790,6 +790,10 @@ extension CharacterWindow {
 
 extension CharacterWindow {
     @objc func removeBackground() {
+        removeBackground(completion: nil)
+    }
+
+    func removeBackground(completion: (@MainActor @Sendable () -> Void)?) {
         guard !isRemovingBackground else { return }
         guard #available(macOS 14.0, *) else { return }
         isRemovingBackground = true
@@ -818,6 +822,7 @@ extension CharacterWindow {
                         buttonTitles: [L("update.ok")]
                     ).runModal()
                 }
+                completion?()
             }
         }
     }

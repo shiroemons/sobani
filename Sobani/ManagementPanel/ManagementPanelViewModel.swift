@@ -175,6 +175,7 @@ final class ManagementPanelViewModel {
                     appDelegate?.createNewWindow(imageName: savedName)
                 }
             }
+            triggerRefresh()
         }
     }
 
@@ -286,7 +287,9 @@ final class ManagementPanelViewModel {
 
     func removeBackground(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.removeBackground()
+        charWindow.removeBackground { [weak self] in
+            self?.triggerRefresh()
+        }
         triggerRefresh()
     }
 
