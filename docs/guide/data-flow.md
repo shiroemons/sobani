@@ -28,6 +28,7 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `window_states.json` | `WindowStateManager` | 終了時にウィンドウの位置・サイズ・状態を保存し、次回起動時に復元する |
 | `pending_restorations.json` | `ScreenRestorationManager` | モニター切断・スリープ後の復元待ちキュー。復元完了後は削除される |
 | `layouts/` | `LayoutPresetManager` | レイアウトプリセット。プリセットごとに1つのJSONファイルを保持する |
+| `UserDefaults: hotkey_{action}` | `HotkeyManager` | ホットキーバインディングを JSON エンコードして `UserDefaults` に保存する |
 
 ---
 
@@ -289,6 +290,105 @@ sequenceDiagram
 
     User->>CEP: 確定（✓）
     CEP->>CW: cropEditorDidConfirm(cropRect)
+```
+
+---
+
+## 管理パネルのデータフロー
+
+### 管理パネル ↔ AppDelegate ↔ CharacterWindow
+
+管理パネルはすべての操作を `ManagementPanelDelegate` を通じて `AppDelegate` に委譲し、`AppDelegate` が `CharacterWindow` に変更を適用します。
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant MPC as ManagementPanelController
+    participant AD as AppDelegate
+    participant CW as CharacterWindow
+
+    User->>MPC: ウィンドウの表示/非表示をトグル
+    MPC->>AD: managementPanel(_:didToggleVisibility:)
+    AD->>CW: toggleVisibility()
+    AD->>MPC: reloadWindowList() （UI更新）
+
+    User->>MPC: 不透明度スライダーを操作
+    MPC->>AD: managementPanel(_:didChangeOpacity:for:)
+    AD->>CW: setOpacity(_:)
+
+    User->>MPC: ウィンドウをドラッグで並び替え
+    MPC->>AD: managementPanel(_:didReorderWindow:to:)
+    AD->>AD: zOrderedWindowsを更新
+    AD->>AD: applyZOrderToWindows()
+```
+
+### HotkeyManager のバインディング保存/読込フロー
+
+```mermaid
+flowchart LR
+    subgraph 保存
+        SV["ManagementPanelSettingsView<br/>（ホットキー記録UI）"]
+        HM["HotkeyManager"]
+        UD["UserDefaults<br/>（hotkey_{action} キーにJSONを保存）"]
+        AD["AppDelegate<br/>（ホットキー再登録）"]
+    end
+
+    SV -->|onHotkeyChanged| MPC["ManagementPanelController"]
+    MPC -->|setBinding(_:for:)| HM
+    HM -->|encode & set| UD
+    MPC -->|managementPanelDidChangeHotkey| AD
+    AD -->|registerHotkeys()| AD
+
+    subgraph 読込
+        INIT["HotkeyManager.init"]
+        UD2["UserDefaults"]
+        CACHE["cache ディクショナリ"]
+    end
+
+    INIT -->|data(forKey:)| UD2
+    UD2 -->|JSONデコード| CACHE
+```
+
+### レイアウトタブ ↔ LayoutPresetManager のフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant LV as ManagementPanelLayoutView
+    participant MPC as ManagementPanelController
+    participant AD as AppDelegate
+    participant LPM as LayoutPresetManager
+    participant FS as layouts/*.json
+
+    Note over User,FS: プリセット保存
+    User->>LV: 「現在のレイアウトを保存」
+    LV->>MPC: onSaveLayout(name)
+    MPC->>AD: managementPanel(_:didRequestSaveLayoutWithName:)
+    AD->>AD: 全ウィンドウのWindowStateを収集
+    AD->>LPM: savePreset(name:states:)
+    LPM->>FS: JSONエンコード & アトミック書き込み
+    AD->>LV: reloadPresets()
+
+    Note over User,FS: プリセット適用
+    User->>LV: 「適用」ボタン
+    LV->>MPC: onApplyLayout(preset)
+    MPC->>AD: managementPanel(_:didRequestApplyLayout:)
+    AD->>AD: 既存ウィンドウをすべて閉じる
+    AD->>AD: preset.statesからウィンドウを復元
+```
+
+### 設定タブ ↔ 各マネージャーのフロー
+
+```mermaid
+flowchart TD
+    SV["ManagementPanelSettingsView<br/>（設定タブ）"]
+
+    SV -->|toggle()| LAL["LaunchAtLoginManager<br/>（SMAppService）"]
+    SV -->|UserDefaults.set| SNAP["snapEnabledKey<br/>（UserDefaults）"]
+    SV -->|globalAlpha =| GM["GhostModeSettings<br/>（UserDefaults: ghostAlpha）"]
+    SV -->|currentLanguage =| LM["LanguageManager<br/>（UserDefaults: AppleLanguages）"]
+    SV -->|currentTheme =| AT["AppThemeSettings<br/>（UserDefaults: appTheme）"]
+    SV -->|onHotkeyChanged| HM["HotkeyManager<br/>（UserDefaults: hotkey_{action}）"]
 ```
 
 ---

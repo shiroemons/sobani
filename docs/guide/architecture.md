@@ -116,6 +116,22 @@ classDiagram
     class AspectRatioSelectorView {
         +selectedPreset: AspectRatioPreset
     }
+    class ManagementPanelController {
+        +delegate: ManagementPanelDelegate
+        +toggle()
+        +show()
+        +dismiss()
+        +switchTab(tab:)
+    }
+    class HotkeyManager {
+        +shared: HotkeyManager
+        +binding(for:)
+        +setBinding(_:for:)
+        +resetBinding(for:)
+        +resetAllBindings()
+        +hasSystemConflict(_:)
+        +hasSobaniConflict(_:excluding:)
+    }
 
     AppDelegate --> CharacterWindow : manages
     AppDelegate ..|> CharacterWindowDelegate
@@ -141,6 +157,9 @@ classDiagram
     CropEditorPanelController --> CropEditorToolbarView : contains
     CropEditorPanelController --> CropEditHistory : uses
     CropEditorToolbarView --> AspectRatioSelectorView : contains
+    AppDelegate --> ManagementPanelController : owns
+    AppDelegate ..|> ManagementPanelDelegate
+    ManagementPanelController --> HotkeyManager : uses
 ```
 
 `AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・不透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
@@ -175,12 +194,22 @@ classDiagram
 | `DragDropUtils.swift` | ドラッグ＆ドロップ操作のユーティリティ。ペーストボードから対応画像URLを抽出 |
 | `DraggableImageView.swift` | ドラッグ移動、スクロールリサイズ、反転/回転/不透明度 |
 | `FloatingMenuController.swift` | ダブルクリックで表示するSFシンボルアイコンのフローティングツールバー（NSPanel） |
+| `HotkeyManager.swift` | ホットキーアクション・バインディング・マネージャーの定義。`UserDefaults` に JSON で保存。競合チェック機能を含む |
 | `ImageManager.swift` | 画像の登録・読み込み・削除（シングルトン） |
 | `ImagePreviewPanel.swift` | 画像プレビューパネル |
 | `JSONPersistence.swift` | JSON永続化の共通ユーティリティ（アトミック書き込み、読み込み） |
 | `LaunchAtLoginManager.swift` | ログイン時自動起動の管理（`SMAppService`、シングルトン） |
 | `LanguageManager.swift` | ランタイム言語切り替え（シングルトン） |
 | `LayoutPresetManager.swift` | レイアウトプリセットの保存・読み込み・削除を管理するシングルトン。`layouts/` ディレクトリにプリセットごとのJSONファイルを保存 |
+| `ManagementPanelController.swift` | 管理パネルの生命周期・タブ切り替え・イベント監視（Lazy-init） |
+| `ManagementPanelController+Setup.swift` | 管理パネルのサイドバー・コンテンツコンテナ・ステータスバー構築 |
+| `ManagementPanelWindowListView.swift` | 管理パネルのウィンドウ管理タブ一覧ビュー |
+| `ManagementPanelWindowListView+DragDrop.swift` | ウィンドウ一覧のドラッグ＆ドロップ並び替え拡張 |
+| `ManagementPanelDetailView.swift` | 管理パネルのウィンドウ管理タブ詳細ビュー |
+| `ManagementPanelLayoutView.swift` | 管理パネルのレイアウトタブ（プリセット一覧・操作） |
+| `ManagementPanelLayoutView+Setup.swift` | レイアウトビューのUI構築拡張 |
+| `ManagementPanelLayoutView+Cells.swift` | レイアウトビューのテーブルセル構築拡張 |
+| `ManagementPanelSettingsView.swift` | 管理パネルの設定タブ（一般・ゴーストモード・外観・ホットキー） |
 | `MenuStateUtils.swift` | メニュー状態管理のユーティリティ |
 | `NSMenu+RegisteredImages.swift` | NSMenu拡張 — 登録画像メニュー項目の構築 |
 | `NSPanel+FloatingConfig.swift` | NSPanel拡張 — フローティングパネルの共通設定 |
@@ -207,6 +236,7 @@ classDiagram
 | `LaunchAtLoginManager.shared` | `SMAppService` を通じたログイン時自動起動の切り替え |
 | `LanguageManager.shared` | 日本語・英語・システム言語のランタイム切り替え |
 | `LayoutPresetManager.shared` | レイアウトプリセットの保存・読み込み・削除（`layouts/` ディレクトリ） |
+| `HotkeyManager.shared` | ホットキーバインディングの保存・読み込み・競合チェック（`UserDefaults` に JSON で保存） |
 
 `ScreenRestorationManager` はシングルトンではなく、`AppDelegate` が所有するインスタンスです。
 
@@ -332,6 +362,82 @@ flowchart TD
 `RotatableContainer` は `CharacterWindow.swift` 内に定義された `private class` であり、外部からは参照できません。`CharacterWindow` のプロパティとしては保持されず、`init` 内でローカル変数として生成され `window.contentView` に設定されます。回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・不透明度の状態を保持します。
 
 `AdjustmentPanelController` は別の `NSPanel` として表示されるフローティングパネルで、`AdjustmentPanelDelegate` を通じて `CharacterWindow` に変更を伝えます。
+
+## 管理パネル（ManagementPanel）
+
+管理パネルは `⌥P`（デフォルト）で呼び出せるフローティングパネルで、ウィンドウ管理・レイアウト・設定の3つのタブを備えます。
+
+### ファイル構成と役割
+
+| ファイル | 説明 |
+|---|---|
+| `ManagementPanelController.swift` | パネルの生命周期・タブ切り替え・キーイベント監視 |
+| `ManagementPanelController+Setup.swift` | サイドバー・コンテンツコンテナ・ステータスバーの構築 |
+| `ManagementPanelWindowListView.swift` | ウィンドウ管理タブの一覧ビュー（表示・ゴーストモード・不透明度・並び替え） |
+| `ManagementPanelWindowListView+DragDrop.swift` | ウィンドウ一覧のドラッグ＆ドロップによる並び替え拡張 |
+| `ManagementPanelDetailView.swift` | ウィンドウ管理タブの詳細ビュー（個別ウィンドウ操作） |
+| `ManagementPanelLayoutView.swift` | レイアウトタブ（プリセット一覧・詳細・保存・適用・削除） |
+| `ManagementPanelLayoutView+Setup.swift` | レイアウトビューのUI構築拡張 |
+| `ManagementPanelLayoutView+Cells.swift` | レイアウトビューのテーブルセル構築拡張 |
+| `ManagementPanelSettingsView.swift` | 設定タブ（ログイン時起動・スナップ・ゴーストモードα・言語・テーマ・ホットキー） |
+
+### ManagementPanelController のアーキテクチャ
+
+- **Lazy-init**: `show()` が最初に呼ばれた時点で `setupPanel()` を実行し、`NSPanel` を遅延生成する
+- **サイドバーナビ**: 左端のサイドバーにアイコンボタンを3つ配置し、選択中タブをアニメーション付きハイライトで示す
+- **3タブ切替**: `switchTab(_:)` がコンテントコンテナの子ビューを入れ替え、各タブのビューを遅延生成する
+- **イベント監視**: `NSEvent.addLocalMonitorForEvents` で ESC キーと管理パネルホットキーを監視し、パネルを閉じる
+- **出現監視**: `NSApp.observe(\.effectiveAppearance)` でダーク/ライトモード切替時に accent color を更新する
+
+```mermaid
+flowchart TD
+    MPC["ManagementPanelController<br/>（パネル統括）"]
+    SB["サイドバー<br/>（3タブボタン）"]
+    CC["コンテンツコンテナ<br/>（タブ切替領域）"]
+    WLV["ManagementPanelWindowListView<br/>+ DetailView<br/>（ウィンドウ管理タブ）"]
+    LV["ManagementPanelLayoutView<br/>（レイアウトタブ）"]
+    SV["ManagementPanelSettingsView<br/>（設定タブ）"]
+    DEL["ManagementPanelDelegate<br/>（AppDelegate）"]
+
+    MPC --> SB
+    MPC --> CC
+    CC --> WLV
+    CC --> LV
+    CC --> SV
+    MPC -.-> |委譲| DEL
+```
+
+### HotkeyManager の設計
+
+| 特徴 | 詳細 |
+|---|---|
+| **キャッシュ** | 初期化時に全アクションのバインディングを `cache` ディクショナリに読み込み、`binding(for:)` はキャッシュから O(1) で返す |
+| **Sendable** | `@unchecked Sendable` を宣言し、`UserDefaults`（スレッドセーフ）と `Logger`（Sendable）のみ保持 |
+| **DI 対応** | `init(defaults: UserDefaults = .standard)` でテスト時に独立した `UserDefaults` スイートを注入できる |
+| **競合チェック** | `hasSystemConflict(_:)` でシステム予約済みショートカット（⌘Space 等）を検出、`hasSobaniConflict(_:excluding:)` でアプリ内重複を検出 |
+
+### ManagementPanelDelegate によるAppDelegateとの通信パターン
+
+`ManagementPanelDelegate` は `@MainActor` プロトコルとして宣言され、`AppDelegate` が準拠します。管理パネルからの操作要求はすべてこの delegate を通じて `AppDelegate` に委譲されます。
+
+| メソッド | 用途 |
+|---|---|
+| `managementPanel(_:didToggleVisibility:)` | ウィンドウの表示/非表示トグルを要求 |
+| `managementPanel(_:didToggleGhostMode:)` | ウィンドウのゴーストモードトグルを要求 |
+| `managementPanel(_:didChangeOpacity:for:)` | 不透明度変更を通知 |
+| `managementPanel(_:didReorderWindow:to:)` | Z-order 変更を要求 |
+| `managementPanelDidRequestShowAll(_:)` | 全ウィンドウの表示を要求 |
+| `managementPanelDidRequestHideAll(_:)` | 全ウィンドウの非表示を要求 |
+| `managementPanelDidRequestGhostAll(_:)` | 全ウィンドウのゴーストモード有効化を要求 |
+| `managementPanelDidRequestUnghostAll(_:)` | 全ウィンドウのゴーストモード解除を要求 |
+| `managementPanel(_:didRequestApplyLayout:)` | レイアウトプリセットの適用を要求 |
+| `managementPanel(_:didRequestSaveLayoutWithName:)` | レイアウトプリセットの保存を要求 |
+| `managementPanelDidRequestCreateNewLayout(_:)` | 新しいレイアウトプリセット作成を要求 |
+| `managementPanel(_:didRequestUpdateLayout:)` | レイアウトプリセットの上書き更新を要求 |
+| `managementPanel(_:didRequestDeleteLayout:)` | レイアウトプリセットの削除を要求 |
+| `managementPanel(_:didRequestRenameLayout:to:)` | レイアウトプリセットのリネームを要求 |
+| `managementPanelDidChangeHotkey(_:)` | ホットキー変更後の再登録を要求 |
+| `managementPanelDidDismiss(_:)` | パネルが閉じられたことを通知 |
 
 ## ゴーストモード
 

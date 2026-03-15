@@ -90,6 +90,38 @@ import Testing
         #expect(HotkeyBinding.keyName(for: 49) == "Space")
     }
 
+    // MARK: - HotkeyBinding.keyName 主要キーコードマッピング
+
+    /// A キーコード(0)が "A" になることを検証
+    @Test func hotkeyBinding_KeyName_A() {
+        #expect(HotkeyBinding.keyName(for: 0) == "A")
+    }
+
+    /// H キーコード(4)が "H" になることを検証
+    @Test func hotkeyBinding_KeyName_H() {
+        #expect(HotkeyBinding.keyName(for: 4) == "H")
+    }
+
+    /// G キーコード(5)が "G" になることを検証
+    @Test func hotkeyBinding_KeyName_G() {
+        #expect(HotkeyBinding.keyName(for: 5) == "G")
+    }
+
+    /// P キーコード(35)が "P" になることを検証
+    @Test func hotkeyBinding_KeyName_P() {
+        #expect(HotkeyBinding.keyName(for: 35) == "P")
+    }
+
+    /// Return キーコード(36)が "Return" になることを検証
+    @Test func hotkeyBinding_KeyName_Return() {
+        #expect(HotkeyBinding.keyName(for: 36) == "Return")
+    }
+
+    /// Delete キーコード(51)が "Delete" になることを検証
+    @Test func hotkeyBinding_KeyName_Delete() {
+        #expect(HotkeyBinding.keyName(for: 51) == "Delete")
+    }
+
     // MARK: - HotkeyManager バインディング保存・読み出し
 
     /// カスタムバインディングを保存して読み出せることを検証
