@@ -3665,6 +3665,22 @@
         }
       }
     },
+    "management.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理パネル"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Management Panel"
+          }
+        }
+      }
+    },
     "hotkey.management_panel": {
       "localizations": {
         "ja": {

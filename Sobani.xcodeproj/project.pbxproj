@@ -100,6 +100,8 @@
 		F0TH000002000000000001 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TH000001000000000001 /* AppThemeTests.swift */; };
 		F0HK000002000000000001 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HK000001000000000001 /* HotkeyManager.swift */; };
 		F0HK000004000000000001 /* HotkeyManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HK000003000000000001 /* HotkeyManagerTests.swift */; };
+		F0MP000002000000000001 /* ManagementPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0MP000001000000000001 /* ManagementPanelController.swift */; };
+		F0AM000002000000000001 /* AppDelegate+ManagementPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AM000001000000000001 /* AppDelegate+ManagementPanel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -211,6 +213,8 @@
 		F0TH000001000000000001 /* AppThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
 		F0HK000001000000000001 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		F0HK000003000000000001 /* HotkeyManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManagerTests.swift; sourceTree = "<group>"; };
+		F0MP000001000000000001 /* ManagementPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelController.swift; sourceTree = "<group>"; };
+		F0AM000001000000000001 /* AppDelegate+ManagementPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+ManagementPanel.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -288,6 +292,8 @@
 				F0EH000001000000000001 /* CropEditHistory.swift */,
 				F0AF000001000000000001 /* AlertFactory.swift */,
 				F0HK000001000000000001 /* HotkeyManager.swift */,
+				F0MP000001000000000001 /* ManagementPanelController.swift */,
+				F0AM000001000000000001 /* AppDelegate+ManagementPanel.swift */,
 				F0JP000001000000000001 /* JSONPersistence.swift */,
 				F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */,
 				F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */,
@@ -518,6 +524,8 @@
 				F0EH000002000000000001 /* CropEditHistory.swift in Sources */,
 				F0AF000002000000000001 /* AlertFactory.swift in Sources */,
 				F0HK000002000000000001 /* HotkeyManager.swift in Sources */,
+				F0MP000002000000000001 /* ManagementPanelController.swift in Sources */,
+				F0AM000002000000000001 /* AppDelegate+ManagementPanel.swift in Sources */,
 				F0JP000002000000000001 /* JSONPersistence.swift in Sources */,
 				F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */,
 				F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */,
