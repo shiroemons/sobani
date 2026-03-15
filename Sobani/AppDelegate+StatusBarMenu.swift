@@ -89,8 +89,9 @@ extension AppDelegate {
         let managementItem = NSMenuItem(
             title: L("management.title"),
             action: #selector(showManagementPanel),
-            keyEquivalent: ""
+            keyEquivalent: "m"
         )
+        managementItem.keyEquivalentModifierMask = [.option]
         managementItem.target = self
         managementItem.tag = MenuItemTag.managementPanel.rawValue
         managementItem.image = menuIcon("macwindow.on.rectangle")

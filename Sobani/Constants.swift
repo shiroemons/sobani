@@ -67,6 +67,7 @@ enum AppConstants {
 
     // Hotkey
     static let optionHKeyCode: UInt16 = 4
+    static let optionMKeyCode: UInt16 = 46    // Option + M (管理パネル切り替え)
     static let escKeyCode: UInt16 = 53
 
     // Display ID

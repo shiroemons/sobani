@@ -142,6 +142,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 DispatchQueue.main.async { @Sendable [weak self] in
                     self?.toggleAllGhostMode()
                 }
+            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionMKeyCode) {
+                DispatchQueue.main.async { @Sendable [weak self] in
+                    self?.showManagementPanel()
+                }
             }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
@@ -154,6 +158,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
                 DispatchQueue.main.async { @Sendable [weak self] in
                     self?.toggleAllGhostMode()
+                }
+                return nil
+            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionMKeyCode) {
+                DispatchQueue.main.async { @Sendable [weak self] in
+                    self?.showManagementPanel()
                 }
                 return nil
             }
