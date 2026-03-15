@@ -10,6 +10,10 @@ protocol ManagementPanelDelegate: AnyObject {
     func managementPanel(_ panel: ManagementPanelController, didToggleGhostMode charWindow: CharacterWindow)
     func managementPanel(_ panel: ManagementPanelController, didChangeOpacity opacity: CGFloat, for charWindow: CharacterWindow)
     func managementPanel(_ panel: ManagementPanelController, didReorderWindow charWindow: CharacterWindow, to index: Int)
+    func managementPanelDidRequestShowAll(_ panel: ManagementPanelController)
+    func managementPanelDidRequestHideAll(_ panel: ManagementPanelController)
+    func managementPanelDidRequestGhostAll(_ panel: ManagementPanelController)
+    func managementPanelDidRequestUnghostAll(_ panel: ManagementPanelController)
 }
 
 // MARK: - ManagementPanelController

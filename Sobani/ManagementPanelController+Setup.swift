@@ -33,6 +33,9 @@ extension ManagementPanelController {
             delegate.managementPanel(self, didReorderWindow: charWindow, to: newIndex)
             self.reloadWindowList()
         }
+        listView.onBulkAction = { [weak self] action in
+            self?.handleBulkAction(action)
+        }
         container.addSubview(listView)
         windowListView = listView
 
@@ -62,6 +65,21 @@ extension ManagementPanelController {
         }
         container.addSubview(detail)
         detailView = detail
+    }
+
+    private func handleBulkAction(_ action: ManagementPanelWindowListView.BulkAction) {
+        guard let delegate else { return }
+        switch action {
+        case .showAll:
+            delegate.managementPanelDidRequestShowAll(self)
+        case .hideAll:
+            delegate.managementPanelDidRequestHideAll(self)
+        case .ghostAll:
+            delegate.managementPanelDidRequestGhostAll(self)
+        case .unghostAll:
+            delegate.managementPanelDidRequestUnghostAll(self)
+        }
+        reloadWindowList()
     }
 
     func reloadWindowList() {
