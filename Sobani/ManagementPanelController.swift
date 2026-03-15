@@ -20,13 +20,26 @@ final class ManagementPanelController: NSObject {
 
     private static let closeButtonSize: CGFloat = 20
     private static let titleFontSize: CGFloat = 13
+    // サイドバーボタン・ハイライトのサイズ・外観定数
+    static let sidebarButtonSize: CGFloat = 36
+    static let sidebarButtonInset: CGFloat = 4
+    static let sidebarHighlightCornerRadius: CGFloat = 8
+    static let sidebarHighlightAlpha: CGFloat = 0.15
+    static let sidebarTabAnimationDuration: TimeInterval = 0.15
 
     private let logger = Logger(category: "ManagementPanelController")
     private var panel: NSPanel?
     private var backgroundView: NSVisualEffectView?
-    private var contentContainer: NSView?
+    // 以下のプロパティは +Setup.swift extension から書き込まれるため internal
+    var contentContainer: NSView?
     private var titleBar: NSView?
+    var sidebarView: NSVisualEffectView?
+    var sidebarButtons: [NSButton] = []
+    var sidebarHighlight: NSView?
+    var statusBar: NSTextField?
+    private var activeTab: Tab = .windowManagement
     nonisolated(unsafe) private var keyMonitor: Any?
+    nonisolated(unsafe) private var appearanceObservation: NSKeyValueObservation?
     weak var delegate: ManagementPanelDelegate?
 
     var isVisible: Bool { panel?.isVisible ?? false }
@@ -109,10 +122,15 @@ final class ManagementPanelController: NSObject {
         effectView.layer?.masksToBounds = true
 
         setupTitleBar(in: effectView)
+        setupSidebar(in: effectView)
+        setupContentContainer(in: effectView)
+        setupStatusBar(in: effectView)
 
         newPanel.contentView = effectView
         backgroundView = effectView
         panel = newPanel
+
+        installAppearanceObserver()
     }
 
     private func setupTitleBar(in parent: NSView) {
@@ -160,6 +178,49 @@ final class ManagementPanelController: NSObject {
         dismiss()
     }
 
+    // MARK: - Tab Switching
+
+    @objc func sidebarTabClicked(_ sender: NSButton) {
+        guard let tab = Tab(rawValue: sender.tag) else { return }
+        switchTab(tab)
+    }
+
+    func switchTab(_ tab: Tab) {
+        activeTab = tab
+        contentContainer?.subviews.forEach { $0.removeFromSuperview() }
+        updateSidebarHighlight(tab)
+        updateStatusBar()
+    }
+
+    private func updateSidebarHighlight(_ tab: Tab) {
+        // Tab.rawValue (0,1,2) と1:1対応: windowManagement=400, layout=356, settings=4
+        let yPositions: [CGFloat] = [400, 356, 4]
+        guard tab.rawValue < yPositions.count else { return }
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = Self.sidebarTabAnimationDuration
+            sidebarHighlight?.animator().frame.origin.y = yPositions[tab.rawValue]
+        }
+    }
+
+    func updateStatusBar() {
+        statusBar?.stringValue = ""
+    }
+
+    // MARK: - Appearance
+
+    private func installAppearanceObserver() {
+        appearanceObservation = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
+            DispatchQueue.main.async { [weak self] in
+                self?.updateAppearanceDependentColors()
+            }
+        }
+    }
+
+    private func updateAppearanceDependentColors() {
+        sidebarHighlight?.layer?.backgroundColor =
+            NSColor.controlAccentColor.withAlphaComponent(Self.sidebarHighlightAlpha).cgColor
+    }
+
     // MARK: - Event Monitors
 
     private func installEventMonitors() {
@@ -195,5 +256,6 @@ final class ManagementPanelController: NSObject {
         if let monitor = keyMonitor {
             NSEvent.removeMonitor(monitor)
         }
+        appearanceObservation?.invalidate()
     }
 }
