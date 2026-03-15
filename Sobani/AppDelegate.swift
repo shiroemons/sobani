@@ -217,7 +217,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func quitIfNoWindows() {
-        if Self.shouldQuitApp(windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout) {
+        if Self.shouldQuitApp(windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout)
+            && !(managementPanelController?.isVisible ?? false) {
             shouldTerminate = true
             NSApp.terminate(nil)
         }
@@ -260,6 +261,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         charWindow.windowId = nextWindowId
         nextWindowId += 1
         addCharacterWindow(charWindow)
+        managementPanelController?.reloadWindowList()
     }
 
     @objc func addNewWindowWithNewImageFromMenu() {
@@ -319,6 +321,7 @@ extension AppDelegate: CharacterWindowDelegate {
         if zOrderedWindows.isEmpty {
             areWindowsHidden = false
         }
+        managementPanelController?.reloadWindowList()
         quitIfNoWindows()
     }
 
@@ -327,9 +330,7 @@ extension AppDelegate: CharacterWindowDelegate {
     }
 
     func characterWindowDidChangeHidden(_ sender: CharacterWindow) {
-        // Intentionally empty: status bar menu rebuilds its content
-        // each time it opens (in buildStatusBarMenu), so no immediate
-        // update is needed here.
+        managementPanelController?.reloadWindowList()
     }
 
     func characterWindowDidDeleteImage(named name: String) {

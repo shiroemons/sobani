@@ -13,8 +13,10 @@ extension AppDelegate {
         switch action {
         case .toggleVisibility:
             toggleAllWindowsVisibility()
+            managementPanelController?.reloadWindowList()
         case .toggleGhostMode:
             toggleAllGhostMode()
+            managementPanelController?.reloadWindowList()
         case .managementPanel:
             managementPanelController?.toggle()
         }
@@ -110,5 +112,9 @@ extension AppDelegate: ManagementPanelDelegate {
 
     func managementPanelDidChangeHotkey(_ panel: ManagementPanelController) {
         teardownAndRebuildHotkeyMonitors()
+    }
+
+    func managementPanelDidDismiss(_ panel: ManagementPanelController) {
+        quitIfNoWindows()
     }
 }
