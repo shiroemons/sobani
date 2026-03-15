@@ -67,6 +67,8 @@ enum AppConstants {
 
     // Hotkey
     static let optionHKeyCode: UInt16 = 4
+    static let optionGKeyCode: UInt16 = 5
+    static let optionPKeyCode: UInt16 = 35
     static let escKeyCode: UInt16 = 53
 
     // Display ID
@@ -103,7 +105,6 @@ enum AppConstants {
     static let ghostModeAlphaMax: CGFloat = 0.9
     static let ghostModeAlphaKey = "ghostModeAlpha"
     static let ghostModeAnimationDuration: TimeInterval = 0.3
-    static let optionGKeyCode: UInt16 = 5
     static let ghostModeSymbol = "face.dashed"
     static let hiddenWindowSymbol = "eye.slash"
     static let visibleWindowSymbol = "eye"
@@ -219,6 +220,23 @@ enum AppConstants {
         static let currentVersion = 1
         static let completedVersionKey = "onboardingCompletedVersion"
     }
+
+    // Management Panel
+    static let managementPanelWidth: CGFloat = 640
+    static let managementPanelHeight: CGFloat = 500
+    static let managementPanelCornerRadius: CGFloat = 12
+    static let managementPanelSidebarWidth: CGFloat = 44
+    static let managementPanelTitleBarHeight: CGFloat = 36
+    static let managementPanelStatusBarHeight: CGFloat = 20
+    static let managementPanelContentWidth: CGFloat = 596
+    static let managementPanelContentHeight: CGFloat = 444
+    static let managementPanelListWidth: CGFloat = 240
+    static let managementPanelDetailWidth: CGFloat = 356
+    static let managementPanelRowHeight: CGFloat = 44
+    static let managementPanelLayoutRowHeight: CGFloat = 48
+    static let managementPanelBulkBarHeight: CGFloat = 40
+    static let managementPanelPreviewMaxWidth: CGFloat = 320
+    static let managementPanelPreviewMaxHeight: CGFloat = 180
 }
 
 enum GhostModeSettings {
@@ -366,6 +384,7 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case ghostModeAlphaSlider = 1035
     case opacitySliderContext = 1036
     case hideWindowToggle = 1037
+    case managementPanel = 1038
 }
 
 enum AppTheme: String, CaseIterable, Sendable {
