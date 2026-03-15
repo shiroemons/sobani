@@ -130,6 +130,11 @@ extension ManagementPanelController {
         let view = ManagementPanelSettingsView(frame: NSRect(
             x: 0, y: 0, width: contentWidth, height: contentHeight
         ))
+        view.onHotkeyChanged = { [weak self] action, binding in
+            HotkeyManager.shared.setBinding(binding, for: action)
+            guard let self else { return }
+            self.delegate?.managementPanelDidChangeHotkey(self)
+        }
         container.addSubview(view)
         settingsView = view
         view.syncWithCurrentSettings()

@@ -25,13 +25,6 @@ final class ManagementPanelSettingsView: NSView {
     private static let popupX: CGFloat = 90
     private static let popupWidth: CGFloat = 180
     private static let hotkeyLabelX: CGFloat = 24
-    private static let hotkeyLabelWidth: CGFloat = 120
-    private static let hotkeyKeyLabelX: CGFloat = 150
-    private static let hotkeyKeyLabelWidth: CGFloat = 60
-    private static let hotkeyRecordButtonX: CGFloat = 215
-    private static let hotkeyResetButtonX: CGFloat = 275
-    private static let hotkeyButtonWidth: CGFloat = 56
-    private static let hotkeyButtonHeight: CGFloat = 22
     private static let resetAllButtonX: CGFloat = 24
     private static let resetAllButtonWidth: CGFloat = 100
     private static let resetAllButtonHeight: CGFloat = 24
@@ -49,7 +42,8 @@ final class ManagementPanelSettingsView: NSView {
     private var ghostAlphaPercentLabel: NSTextField?
     private var languagePopup: NSPopUpButton?
     private var themePopup: NSPopUpButton?
-    private var hotkeyKeyLabels: [HotkeyAction: NSTextField] = [:]
+    private var hotkeyRecorders: [HotkeyAction: HotkeyRecorderView] = [:]
+    private var resetAllHotkeysButton: NSButton?
 
     // MARK: - Init
 
@@ -215,60 +209,28 @@ final class ManagementPanelSettingsView: NSView {
 
         // [すべてリセット] ボタン (上から400)
         let resetAllY = totalHeight - 400 - Self.resetAllButtonHeight
-        let resetAllButton = NSButton(frame: NSRect(
+        let resetAllBtn = NSButton(frame: NSRect(
             x: Self.resetAllButtonX,
             y: resetAllY,
             width: Self.resetAllButtonWidth,
             height: Self.resetAllButtonHeight
         ))
-        resetAllButton.bezelStyle = .rounded
-        resetAllButton.title = L("management.reset_all_hotkeys")
-        resetAllButton.isEnabled = false
-        addSubview(resetAllButton)
+        resetAllBtn.bezelStyle = .rounded
+        resetAllBtn.title = L("management.reset_all_hotkeys")
+        resetAllBtn.target = self
+        resetAllBtn.action = #selector(resetAllHotkeysTapped)
+        addSubview(resetAllBtn)
+        resetAllHotkeysButton = resetAllBtn
     }
 
     private func setupHotkeyRow(action: HotkeyAction, y: CGFloat) {
-        // アクション名ラベル
-        let nameLabel = NSTextField(labelWithString: action.displayName)
-        nameLabel.frame = NSRect(x: Self.hotkeyLabelX, y: y, width: Self.hotkeyLabelWidth, height: Self.rowHeight)
-        nameLabel.font = .systemFont(ofSize: Self.labelFontSize)
-        addSubview(nameLabel)
-
-        // キー表示ラベル
-        let keyLabel = NSTextField(labelWithString: HotkeyManager.shared.binding(for: action).displayString)
-        keyLabel.frame = NSRect(x: Self.hotkeyKeyLabelX, y: y, width: Self.hotkeyKeyLabelWidth, height: Self.rowHeight)
-        keyLabel.font = .monospacedSystemFont(ofSize: Self.labelFontSize, weight: .regular)
-        keyLabel.alignment = .center
-        keyLabel.wantsLayer = true
-        keyLabel.layer?.cornerRadius = 4
-        keyLabel.layer?.borderWidth = 1
-        keyLabel.layer?.borderColor = NSColor.separatorColor.cgColor
-        addSubview(keyLabel)
-        hotkeyKeyLabels[action] = keyLabel
-
-        // [記録] ボタン (Phase 9で有効化)
-        let recordButton = NSButton(frame: NSRect(
-            x: Self.hotkeyRecordButtonX,
-            y: y + 2,
-            width: Self.hotkeyButtonWidth,
-            height: Self.hotkeyButtonHeight
-        ))
-        recordButton.bezelStyle = .rounded
-        recordButton.title = L("management.record")
-        recordButton.isEnabled = false
-        addSubview(recordButton)
-
-        // [リセット] ボタン (Phase 9で有効化)
-        let resetButton = NSButton(frame: NSRect(
-            x: Self.hotkeyResetButtonX,
-            y: y + 2,
-            width: Self.hotkeyButtonWidth,
-            height: Self.hotkeyButtonHeight
-        ))
-        resetButton.bezelStyle = .rounded
-        resetButton.title = L("management.reset")
-        resetButton.isEnabled = false
-        addSubview(resetButton)
+        let recorderFrame = NSRect(x: Self.hotkeyLabelX, y: y, width: 340, height: 24)
+        let recorder = HotkeyRecorderView(action: action, frame: recorderFrame)
+        recorder.onHotkeyChanged = { [weak self] act, binding in
+            self?.onHotkeyChanged?(act, binding)
+        }
+        addSubview(recorder)
+        hotkeyRecorders[action] = recorder
     }
 
     // MARK: - Helper Factories
@@ -328,7 +290,7 @@ final class ManagementPanelSettingsView: NSView {
 
         // ホットキー表示の更新
         for action in HotkeyAction.allCases {
-            hotkeyKeyLabels[action]?.stringValue = HotkeyManager.shared.binding(for: action).displayString
+            hotkeyRecorders[action]?.updateDisplay()
         }
     }
 
@@ -367,5 +329,16 @@ final class ManagementPanelSettingsView: NSView {
         guard idx >= 0, idx < AppTheme.allCases.count else { return }
         let theme = AppTheme.allCases[idx]
         AppThemeSettings.currentTheme = theme
+    }
+
+    @objc private func resetAllHotkeysTapped() {
+        HotkeyManager.shared.resetAllBindings()
+        for action in HotkeyAction.allCases {
+            hotkeyRecorders[action]?.updateDisplay()
+        }
+        // 全リセット後も onHotkeyChanged を通知（再登録のトリガー）
+        if let firstAction = HotkeyAction.allCases.first {
+            onHotkeyChanged?(firstAction, HotkeyManager.shared.binding(for: firstAction))
+        }
     }
 }

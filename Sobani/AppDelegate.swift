@@ -127,6 +127,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         areWindowsHidden.toggle()
     }
 
+    func teardownAndRebuildHotkeyMonitors() {
+        if let monitor = globalMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalMonitor = nil
+        }
+        if let monitor = localMonitor {
+            NSEvent.removeMonitor(monitor)
+            localMonitor = nil
+        }
+        setupHotkeyMonitors()
+    }
+
     func setupHotkeyMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             guard let self else { return }

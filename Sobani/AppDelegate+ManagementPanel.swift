@@ -107,4 +107,8 @@ extension AppDelegate: ManagementPanelDelegate {
     ) {
         _ = LayoutPresetManager.shared.renamePreset(from: preset.name, to: newName)
     }
+
+    func managementPanelDidChangeHotkey(_ panel: ManagementPanelController) {
+        teardownAndRebuildHotkeyMonitors()
+    }
 }

@@ -4160,6 +4160,70 @@
           }
         }
       }
+    },
+    "hotkey.waiting": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "入力待ち..."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting..."
+          }
+        }
+      }
+    },
+    "hotkey.conflict_system": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "システムショートカットと競合しています"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conflicts with system shortcut"
+          }
+        }
+      }
+    },
+    "hotkey.conflict_sobani": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "他のアクションと競合しています"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conflicts with another action"
+          }
+        }
+      }
+    },
+    "hotkey.needs_modifier": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修飾キー（⌘⌥⌃⇧）を含めてください"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Include a modifier key"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
