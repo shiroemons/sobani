@@ -116,22 +116,26 @@ final class ManagementPanelViewModel {
     // MARK: - Bulk Operations
 
     func showAllWindows() {
-        targetWindows.forEach { $0.setHidden(false) }
+        guard let appDelegate else { return }
+        appDelegate.zOrderedWindows.forEach { $0.setHidden(false) }
         triggerRefresh()
     }
 
     func hideAllWindows() {
-        targetWindows.forEach { $0.setHidden(true) }
+        guard let appDelegate else { return }
+        appDelegate.zOrderedWindows.forEach { $0.setHidden(true) }
         triggerRefresh()
     }
 
     func ghostAllWindows() {
-        targetWindows.forEach { $0.setGhostMode(true) }
+        guard let appDelegate else { return }
+        appDelegate.zOrderedWindows.forEach { $0.setGhostMode(true) }
         triggerRefresh()
     }
 
     func unghostAllWindows() {
-        targetWindows.forEach { $0.setGhostMode(false) }
+        guard let appDelegate else { return }
+        appDelegate.zOrderedWindows.forEach { $0.setGhostMode(false) }
         triggerRefresh()
     }
 

@@ -3905,6 +3905,22 @@
         }
       }
     },
+    "management.all_label": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一括:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All:"
+          }
+        }
+      }
+    },
     "management.apply": {
       "localizations": {
         "ja": {

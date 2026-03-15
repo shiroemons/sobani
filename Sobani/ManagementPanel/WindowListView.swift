@@ -27,38 +27,49 @@ struct WindowListView: View {
                 viewModel.addImageFromFile()
             } label: {
                 Image(systemName: "plus")
+                    .frame(width: 16, height: 16)
             }
             .help(L("management.add_image"))
 
             Spacer()
 
-            Button {
-                viewModel.showAllWindows()
-            } label: {
-                Image(systemName: "eye")
-            }
-            .help(L("management.show_all"))
+            HStack(spacing: 4) {
+                Text(L("management.all_label"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
 
-            Button {
-                viewModel.hideAllWindows()
-            } label: {
-                Image(systemName: "eye.slash")
-            }
-            .help(L("management.hide_all"))
+                Button {
+                    viewModel.showAllWindows()
+                } label: {
+                    Image(systemName: "eye")
+                        .frame(width: 16, height: 16)
+                }
+                .help(L("management.show_all"))
 
-            Button {
-                viewModel.ghostAllWindows()
-            } label: {
-                Image(systemName: "face.dashed")
-            }
-            .help(L("management.ghost_all"))
+                Button {
+                    viewModel.hideAllWindows()
+                } label: {
+                    Image(systemName: "eye.slash")
+                        .frame(width: 16, height: 16)
+                }
+                .help(L("management.hide_all"))
 
-            Button {
-                viewModel.unghostAllWindows()
-            } label: {
-                Image(systemName: "face.smiling")
+                Button {
+                    viewModel.ghostAllWindows()
+                } label: {
+                    Image(systemName: "face.dashed")
+                        .frame(width: 16, height: 16)
+                }
+                .help(L("management.ghost_all"))
+
+                Button {
+                    viewModel.unghostAllWindows()
+                } label: {
+                    Image(systemName: "face.smiling")
+                        .frame(width: 16, height: 16)
+                }
+                .help(L("management.unghost_all"))
             }
-            .help(L("management.unghost_all"))
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
