@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var screenChangeDebounceTimer: Timer?
     var wakeContext = WakeRestorationContext()
     var onboardingController: OnboardingWindowController?
+    var managementPanelController: ManagementPanelController?
     var isApplyingLayout = false
     weak var lastHighlightedWindow: CharacterWindow?
 
@@ -26,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance
         setupStatusBar()
         setupHotkeyMonitors()
+        setupManagementPanel()
         screenRestorationManager.loadPending()
 
         let savedStates = WindowStateManager.shared.loadStates()
@@ -125,38 +127,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         areWindowsHidden.toggle()
     }
 
-    private nonisolated func isOptionHotkey(_ event: NSEvent, keyCode: UInt16) -> Bool {
-        event.keyCode == keyCode
-            && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option
-    }
-
     func setupHotkeyMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             guard let self else { return }
-            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllWindowsVisibility()
-                }
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllGhostMode()
-                }
+            guard let action = HotkeyManager.shared.matchingAction(for: event) else { return }
+            DispatchQueue.main.async { @Sendable [weak self] in
+                self?.handleHotkeyAction(action)
             }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             guard let self else { return event }
-            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllWindowsVisibility()
-                }
-                return nil
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllGhostMode()
-                }
-                return nil
+            guard let action = HotkeyManager.shared.matchingAction(for: event) else { return event }
+            DispatchQueue.main.async { @Sendable [weak self] in
+                self?.handleHotkeyAction(action)
             }
-            return event
+            return nil
         }
     }
 
