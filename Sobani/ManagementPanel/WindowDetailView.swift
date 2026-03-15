@@ -231,9 +231,10 @@ struct WindowDetailView: View {
                     if #available(macOS 14.0, *) {
                         actionButton(
                             title: L("floating_menu.remove_background"),
-                            icon: "person.crop.rectangle",
+                            icon: "eraser.fill",
                             action: { viewModel.removeBackground(windowId: window.windowId) }
                         )
+                        .disabled(!window.isRemoveBackgroundEnabled)
                     }
                     actionButton(
                         title: L("floating_menu.reset_display"),

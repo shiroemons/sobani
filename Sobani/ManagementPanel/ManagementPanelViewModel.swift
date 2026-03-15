@@ -55,6 +55,7 @@ final class ManagementPanelViewModel {
         let cropRect: CropRect?
         let customGhostAlpha: CGFloat?
         let effectiveGhostAlpha: CGFloat
+        let isRemoveBackgroundEnabled: Bool
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(windowId)
@@ -63,6 +64,7 @@ final class ManagementPanelViewModel {
             hasher.combine(opacityLevel)
             hasher.combine(customGhostAlpha)
             hasher.combine(effectiveGhostAlpha)
+            hasher.combine(isRemoveBackgroundEnabled)
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -74,6 +76,7 @@ final class ManagementPanelViewModel {
                 && lhs.customGhostAlpha == rhs.customGhostAlpha
                 && lhs.effectiveGhostAlpha == rhs.effectiveGhostAlpha
                 && lhs.cropRect == rhs.cropRect
+                && lhs.isRemoveBackgroundEnabled == rhs.isRemoveBackgroundEnabled
         }
     }
 
@@ -106,7 +109,8 @@ final class ManagementPanelViewModel {
                 originalImage: charWindow.imageView.originalImage,
                 cropRect: charWindow.imageView.cropRect,
                 customGhostAlpha: charWindow.customGhostAlpha,
-                effectiveGhostAlpha: charWindow.effectiveGhostAlpha
+                effectiveGhostAlpha: charWindow.effectiveGhostAlpha,
+                isRemoveBackgroundEnabled: charWindow.isRemoveBackgroundAvailable
             )
         }
     }

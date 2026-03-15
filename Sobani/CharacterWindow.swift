@@ -24,6 +24,9 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     private(set) var adjustmentPanelController: AdjustmentPanelController?
     private var spinnerOverlay: NSProgressIndicator?
     private var isRemovingBackground = false
+    var isRemoveBackgroundAvailable: Bool {
+        !isRemovingBackground && !imageHasAlpha()
+    }
     private var cachedHasAlpha: Bool?
     private(set) var isGhostMode: Bool = false
     private(set) var isHidden: Bool = false
