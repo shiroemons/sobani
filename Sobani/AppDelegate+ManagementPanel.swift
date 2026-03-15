@@ -50,4 +50,30 @@ extension AppDelegate: ManagementPanelDelegate {
         zOrderedWindows.insert(charWindow, at: safeIndex)
         applyZOrderToWindows()
     }
+
+    func managementPanelDidRequestShowAll(_ panel: ManagementPanelController) {
+        areWindowsHidden = false
+        for charWindow in zOrderedWindows where charWindow.isHidden {
+            charWindow.setHidden(false)
+        }
+        applyZOrderToWindows()
+    }
+
+    func managementPanelDidRequestHideAll(_ panel: ManagementPanelController) {
+        for charWindow in zOrderedWindows {
+            charWindow.setHidden(true)
+            charWindow.window.orderOut(nil)
+        }
+        areWindowsHidden = true
+    }
+
+    func managementPanelDidRequestGhostAll(_ panel: ManagementPanelController) {
+        for charWindow in zOrderedWindows {
+            charWindow.setGhostMode(true)
+        }
+    }
+
+    func managementPanelDidRequestUnghostAll(_ panel: ManagementPanelController) {
+        disableAllGhostMode()
+    }
 }

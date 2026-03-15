@@ -22,6 +22,14 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
     private static let reorderButtonWidth: CGFloat = 20
     private static let reorderButtonHeight: CGFloat = 24
     private static let reorderButtonIconPointSize: CGFloat = 11
+    private static let bulkBarHeight: CGFloat = AppConstants.managementPanelBulkBarHeight
+    private static let bulkButtonShowAllX: CGFloat = 8
+    private static let bulkButtonHideAllX: CGFloat = 66
+    private static let bulkButtonGhostAllX: CGFloat = 124
+    private static let bulkButtonUnghostAllX: CGFloat = 182
+    private static let bulkButtonY: CGFloat = 6
+    private static let bulkButtonWidth: CGFloat = 54
+    private static let bulkButtonHeight: CGFloat = 28
 
     private let logger = Logger(category: "ManagementPanelWindowListView")
     var listTableView: NSTableView?
@@ -55,7 +63,9 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
     // MARK: - Setup
 
     private func setupTableView() {
-        let scroll = NSScrollView(frame: bounds)
+        let bulkBarHeight = Self.bulkBarHeight
+        let scrollFrame = NSRect(x: 0, y: bulkBarHeight, width: bounds.width, height: bounds.height - bulkBarHeight)
+        let scroll = NSScrollView(frame: scrollFrame)
         scroll.autoresizingMask = [.width, .height]
         scroll.hasVerticalScroller = true
         scroll.borderType = .noBorder
@@ -77,6 +87,42 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
         scroll.documentView = table
         listTableView = table
         setupDragDrop()
+        setupBulkActionBar()
+    }
+
+    private struct BulkButtonSpec {
+        let label: String
+        let action: Selector
+        let xPosition: CGFloat
+    }
+
+    private func setupBulkActionBar() {
+        let barFrame = NSRect(x: 0, y: 0, width: bounds.width, height: Self.bulkBarHeight)
+        let bar = NSView(frame: barFrame)
+        bar.autoresizingMask = [.width]
+        addSubview(bar)
+
+        let specs = [
+            BulkButtonSpec(label: L("management.show_all"), action: #selector(showAllTapped), xPosition: Self.bulkButtonShowAllX),
+            BulkButtonSpec(label: L("management.hide_all"), action: #selector(hideAllTapped), xPosition: Self.bulkButtonHideAllX),
+            BulkButtonSpec(label: L("management.ghost_all"), action: #selector(ghostAllTapped), xPosition: Self.bulkButtonGhostAllX),
+            BulkButtonSpec(label: L("management.unghost_all"), action: #selector(unghostAllTapped), xPosition: Self.bulkButtonUnghostAllX)
+        ]
+
+        for spec in specs {
+            let button = NSButton(frame: NSRect(
+                x: spec.xPosition,
+                y: Self.bulkButtonY,
+                width: Self.bulkButtonWidth,
+                height: Self.bulkButtonHeight
+            ))
+            button.bezelStyle = .recessed
+            button.controlSize = .small
+            button.title = spec.label
+            button.target = self
+            button.action = spec.action
+            bar.addSubview(button)
+        }
     }
 
     // MARK: - Public API
@@ -290,6 +336,22 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
         let index = sender.tag
         guard index >= 0, index < windows.count - 1 else { return }
         onReorder?(windows[index], index + 1)
+    }
+
+    @objc private func showAllTapped() {
+        onBulkAction?(.showAll)
+    }
+
+    @objc private func hideAllTapped() {
+        onBulkAction?(.hideAll)
+    }
+
+    @objc private func ghostAllTapped() {
+        onBulkAction?(.ghostAll)
+    }
+
+    @objc private func unghostAllTapped() {
+        onBulkAction?(.unghostAll)
     }
 }
 
