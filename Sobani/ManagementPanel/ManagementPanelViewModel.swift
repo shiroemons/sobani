@@ -9,6 +9,7 @@ final class ManagementPanelViewModel {
     var selectedTab: ManagementTab? = .images
     var searchText: String = ""
     var selectedWindowIds: Set<Int> = []
+    private(set) var refreshCounter = 0
 
     enum ManagementTab: String, CaseIterable, Identifiable {
         case images
@@ -62,6 +63,7 @@ final class ManagementPanelViewModel {
     // MARK: - Window List
 
     var windows: [WindowInfo] {
+        _ = refreshCounter
         guard let appDelegate else { return [] }
         return appDelegate.zOrderedWindows.map { charWindow in
             let imageSize = charWindow.imageView.frame.size
@@ -95,29 +97,35 @@ final class ManagementPanelViewModel {
     func toggleHidden(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setHidden(!charWindow.isHidden)
+        triggerRefresh()
     }
 
     func toggleGhostMode(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setGhostMode(!charWindow.isGhostMode)
+        triggerRefresh()
     }
 
     // MARK: - Bulk Operations
 
     func showAllWindows() {
         targetWindows.forEach { $0.setHidden(false) }
+        triggerRefresh()
     }
 
     func hideAllWindows() {
         targetWindows.forEach { $0.setHidden(true) }
+        triggerRefresh()
     }
 
     func ghostAllWindows() {
         targetWindows.forEach { $0.setGhostMode(true) }
+        triggerRefresh()
     }
 
     func unghostAllWindows() {
         targetWindows.forEach { $0.setGhostMode(false) }
+        triggerRefresh()
     }
 
     // MARK: - Image Addition
@@ -139,16 +147,19 @@ final class ManagementPanelViewModel {
     func changeOpacity(windowId: Int, opacity: CGFloat) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.applyOpacity(opacity)
+        triggerRefresh()
     }
 
     func changeBulkOpacity(opacity: CGFloat) {
         targetWindows.forEach { $0.applyOpacity(opacity) }
+        triggerRefresh()
     }
 
     func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         let newFrame = NSRect(origin: origin, size: size)
         charWindow.window.setFrame(newFrame, display: true)
+        triggerRefresh()
     }
 
     func findWindow(by windowId: Int) -> CharacterWindow? {
@@ -164,6 +175,7 @@ final class ManagementPanelViewModel {
             removeCharacterWindow(charWindow)
         }
         selectedWindowIds.subtract(windowIds)
+        triggerRefresh()
     }
 
     func duplicateWindow(windowId: Int) {
@@ -192,6 +204,7 @@ final class ManagementPanelViewModel {
         let adjustedIndex = toIndex > fromIndex ? toIndex - 1 : toIndex
         appDelegate.zOrderedWindows.insert(window, at: adjustedIndex)
         appDelegate.applyZOrderToWindows()
+        triggerRefresh()
     }
 
     private func removeCharacterWindow(_ charWindow: CharacterWindow) {
@@ -202,6 +215,10 @@ final class ManagementPanelViewModel {
     }
 
     // MARK: - Private Helpers
+
+    private func triggerRefresh() {
+        refreshCounter += 1
+    }
 
     private func findCharacterWindow(by windowId: Int) -> CharacterWindow? {
         appDelegate?.zOrderedWindows.first { $0.windowId == windowId }
