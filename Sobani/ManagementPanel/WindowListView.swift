@@ -2,6 +2,8 @@ import SwiftUI
 
 struct WindowListView: View {
     @Bindable var viewModel: ManagementPanelViewModel
+    @State private var showingImagePicker = false
+    @State private var hoveredImageName: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -23,16 +25,6 @@ struct WindowListView: View {
     @ViewBuilder
     private var toolbar: some View {
         HStack(spacing: 8) {
-            Button {
-                viewModel.addImageFromFile()
-            } label: {
-                Image(systemName: "plus")
-                    .frame(width: 16, height: 16)
-            }
-            .help(L("management.add_image"))
-
-            Spacer()
-
             HStack(spacing: 4) {
                 Text(L("management.all_label"))
                     .font(.caption2)
@@ -70,6 +62,93 @@ struct WindowListView: View {
                 }
                 .help(L("management.unghost_all"))
             }
+
+            Spacer()
+
+            Button {
+                showingImagePicker.toggle()
+            } label: {
+                Image(systemName: "plus")
+                    .frame(width: 16, height: 16)
+            }
+            .help(L("management.add_image"))
+            .popover(isPresented: $showingImagePicker, arrowEdge: .bottom) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Button {
+                        showingImagePicker = false
+                        viewModel.addImageFromFile()
+                    } label: {
+                        Label(L("management.add_new_image"), systemImage: "doc.badge.plus")
+                    }
+                    .buttonStyle(.plain)
+                    .padding(8)
+
+                    Divider()
+
+                    Text(L("management.registered_images"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+
+                    if viewModel.registeredImageNames.isEmpty {
+                        Text(L("management.no_registered_images"))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding()
+                    } else {
+                        HStack(spacing: 0) {
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    ForEach(viewModel.registeredImageNames, id: \.self) { name in
+                                        Text(name)
+                                            .lineLimit(1)
+                                            .truncationMode(.middle)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(hoveredImageName == name
+                                                ? Color.accentColor.opacity(0.15)
+                                                : Color.clear)
+                                            .cornerRadius(4)
+                                            .contentShape(Rectangle())
+                                            .onHover { isHovered in
+                                                hoveredImageName = isHovered ? name : nil
+                                            }
+                                            .onTapGesture {
+                                                showingImagePicker = false
+                                                viewModel.addFromRegisteredImage(name: name)
+                                            }
+                                    }
+                                }
+                                .padding(4)
+                            }
+                            .frame(width: 220)
+
+                            Divider()
+
+                            VStack {
+                                if let name = hoveredImageName,
+                                   let image = viewModel.registeredImagePreview(name: name) {
+                                    Image(nsImage: image)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(maxWidth: 150, maxHeight: 150)
+                                } else {
+                                    Image(systemName: "photo")
+                                        .font(.system(size: 36))
+                                        .foregroundStyle(.tertiary)
+                                }
+                            }
+                            .frame(width: 170)
+                            .frame(maxHeight: .infinity)
+                        }
+                    }
+                }
+                .frame(width: 400, height: 300)
+            }
+
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)

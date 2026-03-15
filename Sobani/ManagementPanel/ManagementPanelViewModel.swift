@@ -10,6 +10,8 @@ final class ManagementPanelViewModel {
     var searchText: String = ""
     var selectedWindowIds: Set<Int> = []
     private(set) var windows: [WindowInfo] = []
+    nonisolated(unsafe) private var stateObserver: Any?
+    nonisolated(unsafe) private var listObserver: Any?
 
     enum ManagementTab: String, CaseIterable, Identifiable {
         case images
@@ -83,6 +85,12 @@ final class ManagementPanelViewModel {
     init(appDelegate: AppDelegate) {
         self.appDelegate = appDelegate
         rebuildWindows()
+        setupNotificationObservers()
+    }
+
+    deinit {
+        if let stateObserver { NotificationCenter.default.removeObserver(stateObserver) }
+        if let listObserver { NotificationCenter.default.removeObserver(listObserver) }
     }
 
     // MARK: - Window List
@@ -302,11 +310,46 @@ final class ManagementPanelViewModel {
     private func removeCharacterWindow(_ charWindow: CharacterWindow) {
         guard let appDelegate else { return }
         charWindow.window.orderOut(nil)
-        appDelegate.zOrderedWindows.removeAll { $0 === charWindow }
+        appDelegate.removeCharacterWindow(charWindow)
         appDelegate.quitIfNoWindows()
     }
 
+    // MARK: - Registered Images
+
+    var registeredImageNames: [String] {
+        ImageManager.shared.registeredImageNames()
+    }
+
+    func addFromRegisteredImage(name: String) {
+        appDelegate?.createNewWindow(imageName: name)
+    }
+
+    func registeredImagePreview(name: String) -> NSImage? {
+        ImageManager.shared.loadRegisteredImageCached(named: name)
+    }
+
     // MARK: - Private Helpers
+
+    private func setupNotificationObservers() {
+        stateObserver = NotificationCenter.default.addObserver(
+            forName: AppConstants.characterWindowStateDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.triggerRefresh()
+            }
+        }
+        listObserver = NotificationCenter.default.addObserver(
+            forName: AppConstants.characterWindowListDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.triggerRefresh()
+            }
+        }
+    }
 
     private func triggerRefresh() {
         rebuildWindows()

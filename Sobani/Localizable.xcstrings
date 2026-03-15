@@ -3809,6 +3809,54 @@
         }
       }
     },
+    "management.add_new_image": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新規画像を追加"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add New Image"
+          }
+        }
+      }
+    },
+    "management.registered_images": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登録済み画像"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registered Images"
+          }
+        }
+      }
+    },
+    "management.no_registered_images": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登録済み画像がありません"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No registered images"
+          }
+        }
+      }
+    },
     "management.no_windows": {
       "localizations": {
         "ja": {

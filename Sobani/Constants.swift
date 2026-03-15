@@ -223,6 +223,10 @@ enum AppConstants {
     // Management Panel
     static let managementPanelWidth: CGFloat = 1200
     static let managementPanelHeight: CGFloat = 800
+
+    // MARK: - Notifications
+    static let characterWindowStateDidChange = Notification.Name("\(loggerSubsystem).characterWindowStateDidChange")
+    static let characterWindowListDidChange = Notification.Name("\(loggerSubsystem).characterWindowListDidChange")
 }
 
 enum GhostModeSettings {

@@ -108,6 +108,10 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         }
     }
 
+    private func notifyStateDidChange() {
+        NotificationCenter.default.post(name: AppConstants.characterWindowStateDidChange, object: nil)
+    }
+
     func applyImage(_ image: NSImage) {
         guard image.size.height > 0 else { return }
         let baseHeight = imageView.frame.height
@@ -117,10 +121,12 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
         cachedHasAlpha = nil
         adjustWindowForRotation()
+        notifyStateDidChange()
     }
 
     @objc func toggleFlip() {
         imageView.isFlippedHorizontally.toggle()
+        notifyStateDidChange()
     }
 
     @objc func showAdjustmentPanel() {
@@ -182,12 +188,14 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         let clamped = min(max(opacity, AppConstants.opacityMin), AppConstants.opacityMax)
         guard !GeometryUtils.isApproximatelyEqual(clamped, imageView.opacityLevel) else { return }
         imageView.opacityLevel = clamped
+        notifyStateDidChange()
     }
 
     func applyRotation(_ angle: CGFloat) {
         imageView.rotationAngle = angle
         adjustWindowForRotation()
         adjustmentPanelController?.updateAngle(angle)
+        notifyStateDidChange()
     }
 
     func adjustWindowForRotation() {
@@ -296,6 +304,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
         imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
         imageView.needsLayout = true
+        notifyStateDidChange()
     }
 }
 
@@ -323,6 +332,7 @@ extension CharacterWindow {
             imageView.animator().alphaValue = composedImageAlpha
         }
         window.ignoresMouseEvents = enabled
+        notifyStateDidChange()
     }
 
     func setCustomGhostAlpha(_ alpha: CGFloat?) {
@@ -331,6 +341,7 @@ extension CharacterWindow {
         if isGhostMode {
             updateImageAlpha()
         }
+        notifyStateDidChange()
     }
 
     private func updateImageAlpha() {
@@ -353,6 +364,7 @@ extension CharacterWindow {
             window.orderFront(nil)
         }
         delegate?.characterWindowDidChangeHidden(self)
+        notifyStateDidChange()
     }
 
     @objc func hideThisWindow() {
@@ -430,6 +442,7 @@ extension CharacterWindow: CropEditorPanelDelegate {
         imageView.frame.size = NSSize(width: round(newWidth), height: round(newHeight))
         adjustWindowForRotation()
         cropEditorController = nil
+        notifyStateDidChange()
     }
 
     func cropEditorDidCancel(_ editor: CropEditorPanelController) { cropEditorController = nil }

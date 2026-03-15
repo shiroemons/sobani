@@ -10,10 +10,12 @@ extension AppDelegate {
 
     func addCharacterWindow(_ window: CharacterWindow) {
         zOrderedWindows.insert(window, at: 0)
+        notifyWindowListDidChange()
     }
 
     func removeCharacterWindow(_ window: CharacterWindow) {
         zOrderedWindows.removeAll { $0 === window }
+        notifyWindowListDidChange()
     }
 
     /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする

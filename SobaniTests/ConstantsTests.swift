@@ -319,4 +319,22 @@ import os.log
     @Test func formatUtils_formatOpacity_rounding() {
         #expect(FormatUtils.formatOpacity(0.555) == "56%")
     }
+
+    // MARK: - Notification Names
+
+    /// characterWindowStateDidChange通知名が正しいことを検証
+    @Test func notificationName_characterWindowStateDidChange() {
+        #expect(
+            AppConstants.characterWindowStateDidChange.rawValue
+                == "com.shiroemons.Sobani.characterWindowStateDidChange"
+        )
+    }
+
+    /// characterWindowListDidChange通知名が正しいことを検証
+    @Test func notificationName_characterWindowListDidChange() {
+        #expect(
+            AppConstants.characterWindowListDidChange.rawValue
+                == "com.shiroemons.Sobani.characterWindowListDidChange"
+        )
+    }
 }

@@ -188,24 +188,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return zOrderedWindows.first { $0.window.windowNumber == number }
     }
 
+    func notifyWindowListDidChange() {
+        NotificationCenter.default.post(name: AppConstants.characterWindowListDidChange, object: nil)
+    }
+
     func moveWindowToFront(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveToFront(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     func moveWindowForward(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveForward(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     func moveWindowBackward(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveBackward(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     func moveWindowToBack(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveToBack(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     @objc func closeAllWindows() {
@@ -214,6 +222,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             charWindow.window.orderOut(nil)
         }
         zOrderedWindows.removeAll()
+        notifyWindowListDidChange()
         quitIfNoWindows()
     }
     nonisolated static func shouldQuitApp(windowCount: Int, isApplyingLayout: Bool) -> Bool {
