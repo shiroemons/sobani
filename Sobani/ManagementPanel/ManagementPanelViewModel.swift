@@ -67,12 +67,7 @@ final class ManagementPanelViewModel {
             let imageSize = charWindow.imageView.frame.size
             let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
             let subtitle = "\(Int(imageSize.width))×\(Int(imageSize.height)) px ・ \(screenName)"
-            let thumbnail: NSImage?
-            if charWindow.displayName == AppConstants.defaultImageName {
-                thumbnail = ImageManager.shared.defaultImage()
-            } else {
-                thumbnail = ImageManager.shared.loadRegisteredImageCached(named: charWindow.displayName)
-            }
+            let thumbnail = charWindow.imageView.image
             return WindowInfo(
                 id: charWindow.windowId,
                 windowId: charWindow.windowId,

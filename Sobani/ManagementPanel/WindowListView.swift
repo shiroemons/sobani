@@ -228,7 +228,7 @@ struct WindowListRow: View {
         if let image = windowInfo.thumbnail {
             Image(nsImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fill)
+                .aspectRatio(contentMode: .fit)
         } else {
             Rectangle()
                 .fill(.quaternary)
