@@ -33,6 +33,11 @@ final class ManagementPanelViewModel {
             case .settings: return "gearshape"
             }
         }
+
+        /// 設定以外のタブ（サイドバー上部に表示）
+        static var topTabs: [Self] {
+            [.images, .layouts]
+        }
     }
 
     // MARK: - Window Info (snapshot for SwiftUI)

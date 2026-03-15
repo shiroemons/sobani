@@ -14,13 +14,40 @@ struct ManagementPanelView: View {
 
     @ViewBuilder
     private var sidebarContent: some View {
-        List(ManagementPanelViewModel.ManagementTab.allCases, selection: $viewModel.selectedTab) { tab in
-            Label {
-                Text(tab.label)
-            } icon: {
-                Image(systemName: tab.iconName)
+        VStack(spacing: 0) {
+            List(ManagementPanelViewModel.ManagementTab.topTabs, selection: $viewModel.selectedTab) { tab in
+                Label {
+                    Text(tab.label)
+                } icon: {
+                    Image(systemName: tab.iconName)
+                }
+                .tag(tab)
             }
-            .tag(tab)
+
+            Divider()
+
+            Button {
+                viewModel.selectedTab = .settings
+            } label: {
+                Label {
+                    Text(ManagementPanelViewModel.ManagementTab.settings.label)
+                } icon: {
+                    Image(systemName: ManagementPanelViewModel.ManagementTab.settings.iconName)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
+                .background(
+                    viewModel.selectedTab == .settings
+                        ? Color.accentColor.opacity(0.2)
+                        : Color.clear
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
         }
         .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 200)
     }
