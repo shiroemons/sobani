@@ -49,10 +49,17 @@ final class ManagementPanelViewModel {
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(windowId)
+            hasher.combine(isHidden)
+            hasher.combine(isGhostMode)
+            hasher.combine(opacityLevel)
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.windowId == rhs.windowId
+                && lhs.isHidden == rhs.isHidden
+                && lhs.isGhostMode == rhs.isGhostMode
+                && lhs.opacityLevel == rhs.opacityLevel
+                && lhs.displayName == rhs.displayName
         }
     }
 
