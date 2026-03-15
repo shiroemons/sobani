@@ -1,0 +1,225 @@
+import AppKit
+import Observation
+import os.log
+
+@MainActor @Observable
+final class ManagementPanelViewModel {
+    private let logger = Logger(category: "ManagementPanelViewModel")
+    weak var appDelegate: AppDelegate?
+    var selectedTab: ManagementTab? = .images
+    var searchText: String = ""
+    var selectedWindowIds: Set<Int> = []
+
+    enum ManagementTab: String, CaseIterable, Identifiable {
+        case images
+        case layouts
+        case settings
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .images: return L("management.images")
+            case .layouts: return L("management.layout")
+            case .settings: return L("management.settings")
+            }
+        }
+
+        var iconName: String {
+            switch self {
+            case .images: return "photo.on.rectangle"
+            case .layouts: return "rectangle.3.group"
+            case .settings: return "gearshape"
+            }
+        }
+    }
+
+    // MARK: - Window Info (snapshot for SwiftUI)
+
+    struct WindowInfo: Identifiable, Hashable {
+        let id: Int
+        let windowId: Int
+        let displayName: String
+        let subtitle: String
+        let isHidden: Bool
+        let isGhostMode: Bool
+        let opacityLevel: CGFloat
+        let thumbnail: NSImage?
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(windowId)
+        }
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.windowId == rhs.windowId
+        }
+    }
+
+    init(appDelegate: AppDelegate) {
+        self.appDelegate = appDelegate
+    }
+
+    // MARK: - Window List
+
+    var windows: [WindowInfo] {
+        guard let appDelegate else { return [] }
+        return appDelegate.zOrderedWindows.map { charWindow in
+            let imageSize = charWindow.imageView.frame.size
+            let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
+            let subtitle = "\(Int(imageSize.width))×\(Int(imageSize.height)) px ・ \(screenName)"
+            let thumbnail: NSImage?
+            if charWindow.displayName == AppConstants.defaultImageName {
+                thumbnail = ImageManager.shared.defaultImage()
+            } else {
+                thumbnail = ImageManager.shared.loadRegisteredImageCached(named: charWindow.displayName)
+            }
+            return WindowInfo(
+                id: charWindow.windowId,
+                windowId: charWindow.windowId,
+                displayName: charWindow.localizedDisplayName,
+                subtitle: subtitle,
+                isHidden: charWindow.isHidden,
+                isGhostMode: charWindow.isGhostMode,
+                opacityLevel: charWindow.imageView.opacityLevel,
+                thumbnail: thumbnail
+            )
+        }
+    }
+
+    var filteredWindows: [WindowInfo] {
+        if searchText.isEmpty {
+            return windows
+        }
+        return windows.filter {
+            $0.displayName.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    // MARK: - Window Operations
+
+    func toggleHidden(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.setHidden(!charWindow.isHidden)
+    }
+
+    func toggleGhostMode(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.setGhostMode(!charWindow.isGhostMode)
+    }
+
+    // MARK: - Bulk Operations
+
+    func showAllWindows() {
+        targetWindows.forEach { $0.setHidden(false) }
+    }
+
+    func hideAllWindows() {
+        targetWindows.forEach { $0.setHidden(true) }
+    }
+
+    func ghostAllWindows() {
+        targetWindows.forEach { $0.setGhostMode(true) }
+    }
+
+    func unghostAllWindows() {
+        targetWindows.forEach { $0.setGhostMode(false) }
+    }
+
+    // MARK: - Image Addition
+
+    func addImageFromFile() {
+        let panel = ImageFileDialog.makeOpenPanel(message: L("file.select_new_image_message"))
+        panel.allowsMultipleSelection = true
+        if panel.runModal() == .OK {
+            for url in panel.urls {
+                if let savedName = ImageManager.shared.registerImage(from: url) {
+                    appDelegate?.createNewWindow(imageName: savedName)
+                }
+            }
+        }
+    }
+
+    // MARK: - Detail View Operations
+
+    func changeOpacity(windowId: Int, opacity: CGFloat) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.applyOpacity(opacity)
+    }
+
+    func changeBulkOpacity(opacity: CGFloat) {
+        targetWindows.forEach { $0.applyOpacity(opacity) }
+    }
+
+    func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        let newFrame = NSRect(origin: origin, size: size)
+        charWindow.window.setFrame(newFrame, display: true)
+    }
+
+    func findWindow(by windowId: Int) -> CharacterWindow? {
+        findCharacterWindow(by: windowId)
+    }
+
+    // MARK: - Window Management
+
+    func deleteWindows(windowIds: Set<Int>) {
+        guard let appDelegate else { return }
+        let windowsToDelete = appDelegate.zOrderedWindows.filter { windowIds.contains($0.windowId) }
+        for charWindow in windowsToDelete {
+            removeCharacterWindow(charWindow)
+        }
+        selectedWindowIds.subtract(windowIds)
+    }
+
+    func duplicateWindow(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        appDelegate?.createNewWindow(imageName: charWindow.displayName)
+    }
+
+    func centerWindow(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        guard let screen = charWindow.window.screen ?? NSScreen.main else { return }
+        let screenFrame = screen.visibleFrame
+        let windowSize = charWindow.window.frame.size
+        let newOrigin = CGPoint(
+            x: screenFrame.midX - windowSize.width / 2,
+            y: screenFrame.midY - windowSize.height / 2
+        )
+        charWindow.window.setFrameOrigin(newOrigin)
+    }
+
+    func moveWindow(fromIndex: Int, toIndex: Int) {
+        guard let appDelegate else { return }
+        guard fromIndex != toIndex,
+              fromIndex >= 0, fromIndex < appDelegate.zOrderedWindows.count,
+              toIndex >= 0, toIndex <= appDelegate.zOrderedWindows.count else { return }
+        let window = appDelegate.zOrderedWindows.remove(at: fromIndex)
+        let adjustedIndex = toIndex > fromIndex ? toIndex - 1 : toIndex
+        appDelegate.zOrderedWindows.insert(window, at: adjustedIndex)
+        appDelegate.applyZOrderToWindows()
+    }
+
+    private func removeCharacterWindow(_ charWindow: CharacterWindow) {
+        guard let appDelegate else { return }
+        charWindow.window.orderOut(nil)
+        appDelegate.zOrderedWindows.removeAll { $0 === charWindow }
+        appDelegate.quitIfNoWindows()
+    }
+
+    // MARK: - Private Helpers
+
+    private func findCharacterWindow(by windowId: Int) -> CharacterWindow? {
+        appDelegate?.zOrderedWindows.first { $0.windowId == windowId }
+    }
+
+    /// Returns the target windows for bulk operations.
+    /// If windows are selected, returns only the selected ones.
+    /// If no windows are selected, returns all windows.
+    private var targetWindows: [CharacterWindow] {
+        guard let appDelegate else { return [] }
+        if selectedWindowIds.isEmpty {
+            return appDelegate.zOrderedWindows
+        }
+        return appDelegate.zOrderedWindows.filter { selectedWindowIds.contains($0.windowId) }
+    }
+}

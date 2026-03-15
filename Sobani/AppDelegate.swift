@@ -21,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var onboardingController: OnboardingWindowController?
     var isApplyingLayout = false
     weak var lastHighlightedWindow: CharacterWindow?
+    var managementPanelController: ManagementPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance
@@ -361,6 +362,13 @@ extension AppDelegate {
         let current = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
         UserDefaults.standard.set(!current, forKey: AppConstants.snapEnabledKey)
         sender.state = !current ? .on : .off
+    }
+
+    @objc func showManagementPanel() {
+        if managementPanelController == nil {
+            managementPanelController = ManagementPanelController(appDelegate: self)
+        }
+        managementPanelController?.toggle()
     }
 }
 

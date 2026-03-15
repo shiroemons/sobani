@@ -219,6 +219,10 @@ enum AppConstants {
         static let currentVersion = 1
         static let completedVersionKey = "onboardingCompletedVersion"
     }
+
+    // Management Panel
+    static let managementPanelWidth: CGFloat = 820
+    static let managementPanelHeight: CGFloat = 560
 }
 
 enum GhostModeSettings {
@@ -366,6 +370,7 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case ghostModeAlphaSlider = 1035
     case opacitySliderContext = 1036
     case hideWindowToggle = 1037
+    case managementPanel = 1038
 }
 
 enum AppTheme: String, CaseIterable, Sendable {

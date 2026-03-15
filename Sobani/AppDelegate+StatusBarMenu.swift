@@ -86,6 +86,16 @@ extension AppDelegate {
 
         menu.addItem(buildSettingsMenuItem())
 
+        let managementItem = NSMenuItem(
+            title: L("management.title"),
+            action: #selector(showManagementPanel),
+            keyEquivalent: ""
+        )
+        managementItem.target = self
+        managementItem.tag = MenuItemTag.managementPanel.rawValue
+        managementItem.image = menuIcon("macwindow.on.rectangle")
+        menu.addItem(managementItem)
+
         let onboardingItem = NSMenuItem(
             title: L("menu.show_onboarding"),
             action: #selector(showOnboarding),

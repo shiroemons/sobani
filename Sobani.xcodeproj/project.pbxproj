@@ -98,6 +98,17 @@
 		F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */; };
 		F0WH000002000000000001 /* WindowStateHiddenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0WH000001000000000001 /* WindowStateHiddenTests.swift */; };
 		F0TH000002000000000001 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TH000001000000000001 /* AppThemeTests.swift */; };
+		A1B2C3D401000002 /* ManagementPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000001 /* ManagementPanelController.swift */; };
+		A1B2C3D401000004 /* ManagementPanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000003 /* ManagementPanelViewModel.swift */; };
+		A1B2C3D401000006 /* ManagementPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000005 /* ManagementPanelView.swift */; };
+		A1B2C3D401000009 /* WindowManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000008 /* WindowManagementView.swift */; };
+		A1B2C3D40100000B /* WindowListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100000A /* WindowListView.swift */; };
+		A1B2C3D40100000D /* WindowDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100000C /* WindowDetailView.swift */; };
+		A1B2C3D40100000F /* WindowPositionEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100000E /* WindowPositionEditorView.swift */; };
+		A1B2C3D401000011 /* LayoutPresetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000010 /* LayoutPresetsView.swift */; };
+		A1B2C3D401000013 /* PresetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000012 /* PresetDetailView.swift */; };
+		A1B2C3D401000015 /* PresetMinimapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000014 /* PresetMinimapView.swift */; };
+		A1B2C3D401000017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000016 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -207,6 +218,17 @@
 		F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuSliders.swift"; sourceTree = "<group>"; };
 		F0WH000001000000000001 /* WindowStateHiddenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateHiddenTests.swift; sourceTree = "<group>"; };
 		F0TH000001000000000001 /* AppThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
+		A1B2C3D401000001 /* ManagementPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelController.swift; sourceTree = "<group>"; };
+		A1B2C3D401000003 /* ManagementPanelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelViewModel.swift; sourceTree = "<group>"; };
+		A1B2C3D401000005 /* ManagementPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelView.swift; sourceTree = "<group>"; };
+		A1B2C3D401000008 /* WindowManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManagementView.swift; sourceTree = "<group>"; };
+		A1B2C3D40100000A /* WindowListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowListView.swift; sourceTree = "<group>"; };
+		A1B2C3D40100000C /* WindowDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDetailView.swift; sourceTree = "<group>"; };
+		A1B2C3D40100000E /* WindowPositionEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowPositionEditorView.swift; sourceTree = "<group>"; };
+		A1B2C3D401000010 /* LayoutPresetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetsView.swift; sourceTree = "<group>"; };
+		A1B2C3D401000012 /* PresetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetDetailView.swift; sourceTree = "<group>"; };
+		A1B2C3D401000014 /* PresetMinimapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetMinimapView.swift; sourceTree = "<group>"; };
+		A1B2C3D401000016 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -287,6 +309,7 @@
 				F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */,
 				F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */,
 				DD000010 /* WindowStateManager.swift */,
+				A1B2C3D401000007 /* ManagementPanel */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
 				AA000006 /* Sobani.entitlements */,
@@ -350,6 +373,24 @@
 				F0TH000001000000000001 /* AppThemeTests.swift */,
 			);
 			path = SobaniTests;
+			sourceTree = "<group>";
+		};
+		A1B2C3D401000007 /* ManagementPanel */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D401000001 /* ManagementPanelController.swift */,
+				A1B2C3D401000005 /* ManagementPanelView.swift */,
+				A1B2C3D401000003 /* ManagementPanelViewModel.swift */,
+				A1B2C3D401000008 /* WindowManagementView.swift */,
+				A1B2C3D40100000A /* WindowListView.swift */,
+				A1B2C3D40100000C /* WindowDetailView.swift */,
+				A1B2C3D40100000E /* WindowPositionEditorView.swift */,
+				A1B2C3D401000010 /* LayoutPresetsView.swift */,
+				A1B2C3D401000012 /* PresetDetailView.swift */,
+				A1B2C3D401000014 /* PresetMinimapView.swift */,
+				A1B2C3D401000016 /* SettingsView.swift */,
+			);
+			path = ManagementPanel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -517,6 +558,17 @@
 				F0HW000002000000000001 /* CharacterWindow+TestableStaticMethods.swift in Sources */,
 				F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
+				A1B2C3D401000002 /* ManagementPanelController.swift in Sources */,
+				A1B2C3D401000004 /* ManagementPanelViewModel.swift in Sources */,
+				A1B2C3D401000006 /* ManagementPanelView.swift in Sources */,
+				A1B2C3D401000009 /* WindowManagementView.swift in Sources */,
+				A1B2C3D40100000B /* WindowListView.swift in Sources */,
+				A1B2C3D40100000D /* WindowDetailView.swift in Sources */,
+				A1B2C3D40100000F /* WindowPositionEditorView.swift in Sources */,
+				A1B2C3D401000011 /* LayoutPresetsView.swift in Sources */,
+				A1B2C3D401000013 /* PresetDetailView.swift in Sources */,
+				A1B2C3D401000015 /* PresetMinimapView.swift in Sources */,
+				A1B2C3D401000017 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -610,7 +662,7 @@
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -634,7 +686,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
