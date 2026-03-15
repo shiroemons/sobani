@@ -82,6 +82,46 @@ extension ManagementPanelController {
         reloadWindowList()
     }
 
+    func setupLayoutView() {
+        guard let container = contentContainer else { return }
+        let contentHeight = AppConstants.managementPanelContentHeight
+        let contentWidth = AppConstants.managementPanelContentWidth
+
+        let view = ManagementPanelLayoutView(frame: NSRect(
+            x: 0, y: 0, width: contentWidth, height: contentHeight
+        ))
+        view.onApplyLayout = { [weak self] preset in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didRequestApplyLayout: preset)
+            self.reloadWindowList()
+        }
+        view.onSaveLayout = { [weak self] name in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didRequestSaveLayoutWithName: name)
+        }
+        view.onCreateNewLayout = { [weak self] in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanelDidRequestCreateNewLayout(self)
+            self.reloadWindowList()
+            self.layoutView?.reloadPresets()
+        }
+        view.onUpdateLayout = { [weak self] preset in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didRequestUpdateLayout: preset)
+        }
+        view.onDeleteLayout = { [weak self] preset in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didRequestDeleteLayout: preset)
+        }
+        view.onRenameLayout = { [weak self] preset, newName in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didRequestRenameLayout: preset, to: newName)
+        }
+        container.addSubview(view)
+        layoutView = view
+        view.reloadPresets()
+    }
+
     func reloadWindowList() {
         guard let delegate else { return }
         let windows = delegate.managedWindows

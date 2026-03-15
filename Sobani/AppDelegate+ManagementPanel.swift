@@ -76,4 +76,35 @@ extension AppDelegate: ManagementPanelDelegate {
     func managementPanelDidRequestUnghostAll(_ panel: ManagementPanelController) {
         disableAllGhostMode()
     }
+
+    func managementPanel(_ panel: ManagementPanelController, didRequestApplyLayout preset: LayoutPreset) {
+        applyLayout(preset)
+        panel.reloadWindowList()
+    }
+
+    func managementPanel(_ panel: ManagementPanelController, didRequestSaveLayoutWithName name: String) {
+        let states = captureCurrentWindowStates()
+        LayoutPresetManager.shared.savePreset(name: name, states: states)
+    }
+
+    func managementPanelDidRequestCreateNewLayout(_ panel: ManagementPanelController) {
+        createNewLayoutFromMenu()
+    }
+
+    func managementPanel(_ panel: ManagementPanelController, didRequestUpdateLayout preset: LayoutPreset) {
+        let states = captureCurrentWindowStates()
+        LayoutPresetManager.shared.savePreset(name: preset.name, states: states)
+    }
+
+    func managementPanel(_ panel: ManagementPanelController, didRequestDeleteLayout preset: LayoutPreset) {
+        LayoutPresetManager.shared.deletePreset(named: preset.name)
+    }
+
+    func managementPanel(
+        _ panel: ManagementPanelController,
+        didRequestRenameLayout preset: LayoutPreset,
+        to newName: String
+    ) {
+        _ = LayoutPresetManager.shared.renamePreset(from: preset.name, to: newName)
+    }
 }
