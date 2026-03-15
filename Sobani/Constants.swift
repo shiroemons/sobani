@@ -221,8 +221,8 @@ enum AppConstants {
     }
 
     // Management Panel
-    static let managementPanelWidth: CGFloat = 820
-    static let managementPanelHeight: CGFloat = 560
+    static let managementPanelWidth: CGFloat = 1200
+    static let managementPanelHeight: CGFloat = 800
 }
 
 enum GhostModeSettings {

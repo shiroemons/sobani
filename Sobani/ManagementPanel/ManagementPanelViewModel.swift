@@ -9,7 +9,7 @@ final class ManagementPanelViewModel {
     var selectedTab: ManagementTab? = .images
     var searchText: String = ""
     var selectedWindowIds: Set<Int> = []
-    private(set) var refreshCounter = 0
+    private(set) var windows: [WindowInfo] = []
 
     enum ManagementTab: String, CaseIterable, Identifiable {
         case images
@@ -51,12 +51,18 @@ final class ManagementPanelViewModel {
         let isGhostMode: Bool
         let opacityLevel: CGFloat
         let thumbnail: NSImage?
+        let originalImage: NSImage?
+        let cropRect: CropRect?
+        let customGhostAlpha: CGFloat?
+        let effectiveGhostAlpha: CGFloat
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(windowId)
             hasher.combine(isHidden)
             hasher.combine(isGhostMode)
             hasher.combine(opacityLevel)
+            hasher.combine(customGhostAlpha)
+            hasher.combine(effectiveGhostAlpha)
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -65,19 +71,25 @@ final class ManagementPanelViewModel {
                 && lhs.isGhostMode == rhs.isGhostMode
                 && lhs.opacityLevel == rhs.opacityLevel
                 && lhs.displayName == rhs.displayName
+                && lhs.customGhostAlpha == rhs.customGhostAlpha
+                && lhs.effectiveGhostAlpha == rhs.effectiveGhostAlpha
+                && lhs.cropRect == rhs.cropRect
         }
     }
 
     init(appDelegate: AppDelegate) {
         self.appDelegate = appDelegate
+        rebuildWindows()
     }
 
     // MARK: - Window List
 
-    var windows: [WindowInfo] {
-        _ = refreshCounter
-        guard let appDelegate else { return [] }
-        return appDelegate.zOrderedWindows.map { charWindow in
+    private func rebuildWindows() {
+        guard let appDelegate else {
+            windows = []
+            return
+        }
+        windows = appDelegate.zOrderedWindows.map { charWindow in
             let imageSize = charWindow.imageView.frame.size
             let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
             let subtitle = "\(Int(imageSize.width))×\(Int(imageSize.height)) px ・ \(screenName)"
@@ -90,7 +102,11 @@ final class ManagementPanelViewModel {
                 isHidden: charWindow.isHidden,
                 isGhostMode: charWindow.isGhostMode,
                 opacityLevel: charWindow.imageView.opacityLevel,
-                thumbnail: thumbnail
+                thumbnail: thumbnail,
+                originalImage: charWindow.imageView.originalImage,
+                cropRect: charWindow.imageView.cropRect,
+                customGhostAlpha: charWindow.customGhostAlpha,
+                effectiveGhostAlpha: charWindow.effectiveGhostAlpha
             )
         }
     }
@@ -232,6 +248,50 @@ final class ManagementPanelViewModel {
         triggerRefresh()
     }
 
+    // MARK: - Ghost Mode Custom Opacity
+
+    func setCustomGhostAlpha(windowId: Int, alpha: CGFloat) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.setCustomGhostAlpha(alpha)
+        triggerRefresh()
+    }
+
+    func clearCustomGhostAlpha(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.setCustomGhostAlpha(nil)
+        triggerRefresh()
+    }
+
+    // MARK: - Window Actions
+
+    func flipWindow(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.toggleFlip()
+        triggerRefresh()
+    }
+
+    func openCropEditor(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.enterCropMode()
+    }
+
+    func openAdjustPanel(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.showAdjustmentPanel()
+    }
+
+    func removeBackground(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.removeBackground()
+        triggerRefresh()
+    }
+
+    func resetDisplay(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.resetDisplay()
+        triggerRefresh()
+    }
+
     private func removeCharacterWindow(_ charWindow: CharacterWindow) {
         guard let appDelegate else { return }
         charWindow.window.orderOut(nil)
@@ -242,7 +302,7 @@ final class ManagementPanelViewModel {
     // MARK: - Private Helpers
 
     private func triggerRefresh() {
-        refreshCounter += 1
+        rebuildWindows()
     }
 
     private func findCharacterWindow(by windowId: Int) -> CharacterWindow? {

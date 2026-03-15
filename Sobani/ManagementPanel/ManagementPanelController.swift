@@ -50,7 +50,7 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
                 width: AppConstants.managementPanelWidth,
                 height: AppConstants.managementPanelHeight
             ),
-            styleMask: [.titled, .closable, .nonactivatingPanel],
+            styleMask: [.titled, .closable, .resizable, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )

@@ -48,10 +48,18 @@ struct WindowDetailView: View {
 
                 Divider()
 
+                // Actions
+                actionsSection(windowInfo)
+
+                Divider()
+
                 // Opacity
                 opacitySection(windowInfo)
 
                 Divider()
+
+                // Ghost Mode
+                ghostModeSection(windowInfo)
 
                 // Position & Size
                 WindowPositionEditorView(viewModel: viewModel, windowInfo: windowInfo)
@@ -64,26 +72,24 @@ struct WindowDetailView: View {
     // MARK: - Preview
 
     @ViewBuilder
-    private func previewSection(_ windowInfo: ManagementPanelViewModel.WindowInfo) -> some View {
-        if let image = windowInfo.thumbnail {
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
-                )
-        } else {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(.quaternary)
-                .frame(maxWidth: .infinity, maxHeight: 200)
-                .overlay {
-                    Image(systemName: "photo")
-                        .font(.system(size: 36))
-                        .foregroundStyle(.secondary)
-                }
+    private func previewSection(_ window: ManagementPanelViewModel.WindowInfo) -> some View {
+        GroupBox {
+            if let originalImage = window.originalImage, let cropRect = window.cropRect {
+                CropOverlayPreviewView(originalImage: originalImage, cropRect: cropRect)
+                    .frame(maxHeight: 300)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else if let thumbnail = window.thumbnail {
+                Image(nsImage: thumbnail)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxHeight: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.secondary)
+                    .frame(maxHeight: 200)
+            }
         }
     }
 
@@ -139,6 +145,123 @@ struct WindowDetailView: View {
                     .frame(width: 40, alignment: .trailing)
             }
         }
+    }
+
+    // MARK: - Ghost Mode Section
+
+    @ViewBuilder
+    private func ghostModeSection(_ window: ManagementPanelViewModel.WindowInfo) -> some View {
+        if window.isGhostMode {
+            VStack(alignment: .leading, spacing: 12) {
+                Label(L("management.ghost_mode_section"), systemImage: "ghost")
+                    .font(.headline)
+
+                Toggle(L("management.ghost_custom_opacity"), isOn: Binding(
+                    get: { window.customGhostAlpha != nil },
+                    set: { enabled in
+                        if enabled {
+                            viewModel.setCustomGhostAlpha(
+                                windowId: window.windowId,
+                                alpha: window.effectiveGhostAlpha
+                            )
+                        } else {
+                            viewModel.clearCustomGhostAlpha(windowId: window.windowId)
+                        }
+                    }
+                ))
+
+                if window.customGhostAlpha != nil {
+                    HStack {
+                        Image(systemName: "eye.slash")
+                            .foregroundStyle(.secondary)
+                        Slider(
+                            value: Binding(
+                                get: { window.effectiveGhostAlpha },
+                                set: { newValue in
+                                    viewModel.setCustomGhostAlpha(
+                                        windowId: window.windowId,
+                                        alpha: newValue
+                                    )
+                                }
+                            ),
+                            in: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax
+                        )
+                        Text(FormatUtils.formatOpacity(window.effectiveGhostAlpha))
+                            .font(.caption)
+                            .monospacedDigit()
+                            .frame(width: 40, alignment: .trailing)
+                    }
+                } else {
+                    Text(L("management.ghost_using_default")
+                        + " (\(FormatUtils.formatOpacity(GhostModeSettings.globalAlpha)))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Divider()
+        }
+    }
+
+    // MARK: - Actions Section
+
+    @ViewBuilder
+    private func actionsSection(_ window: ManagementPanelViewModel.WindowInfo) -> some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 12) {
+                Label(L("management.actions"), systemImage: "square.grid.2x2")
+                    .font(.headline)
+
+                HStack(spacing: 8) {
+                    actionButton(
+                        title: L("floating_menu.crop"),
+                        icon: "crop",
+                        action: { viewModel.openCropEditor(windowId: window.windowId) }
+                    )
+                    actionButton(
+                        title: L("floating_menu.flip"),
+                        icon: "arrow.left.and.right.righttriangle.left.righttriangle.right",
+                        action: { viewModel.flipWindow(windowId: window.windowId) }
+                    )
+                    actionButton(
+                        title: L("floating_menu.adjust"),
+                        icon: "slider.horizontal.3",
+                        action: { viewModel.openAdjustPanel(windowId: window.windowId) }
+                    )
+                    if #available(macOS 14.0, *) {
+                        actionButton(
+                            title: L("floating_menu.remove_background"),
+                            icon: "person.crop.rectangle",
+                            action: { viewModel.removeBackground(windowId: window.windowId) }
+                        )
+                    }
+                    actionButton(
+                        title: L("floating_menu.reset_display"),
+                        icon: "arrow.counterclockwise",
+                        action: { viewModel.resetDisplay(windowId: window.windowId) }
+                    )
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    private func actionButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .frame(height: 24)
+                Text(title)
+                    .font(.caption)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background(.quaternary)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Multi Selection
