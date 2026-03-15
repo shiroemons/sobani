@@ -248,4 +248,47 @@ struct PendingRestoration: Codable {
 
 ---
 
+## アプリケーション終了ガード
+
+### quitIfNoWindows() の終了条件
+
+`quitIfNoWindows()` は、以下の3条件がすべて満たされたときにのみアプリを終了します。
+
+| 条件 | 内容 |
+|---|---|
+| ウィンドウ数が 0 | `zOrderedWindows` が空である |
+| レイアウト適用中でない | `isApplyingLayout` が `false` である |
+| 管理パネルが非表示 | `managementPanelController?.isVisible` が `false` または `nil` である |
+
+1つでも満たされない場合、終了は保留されます。
+
+### 管理パネル表示中はアプリが終了しない理由
+
+管理パネルを開いたままキャラクターウィンドウを全て閉じると、`zOrderedWindows` は空になります。しかし管理パネルはキャラクター追加・設定変更の起点であるため、この状態でアプリを終了させてはなりません。
+
+`quitIfNoWindows()` は管理パネルの表示状態を確認し、パネルが表示中であれば終了をスキップします。これにより「ウィンドウが全て閉じられた = 終了可能」という単純な判定を避け、管理パネルが開いている間はアプリを生存させます。
+
+### パネル閉じた後の再評価フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Panel as ManagementPanelController
+    participant AD as AppDelegate
+
+    User->>Panel: パネルを閉じる
+    Panel->>AD: managementPanelDidDismiss(_:)
+    AD->>AD: quitIfNoWindows()
+    alt zOrderedWindows が空 かつ レイアウト適用中でない
+        AD->>AD: shouldTerminate = true
+        AD->>AD: NSApp.terminate(nil)
+    else ウィンドウが残っている
+        Note over AD: 何もしない（通常継続）
+    end
+```
+
+管理パネルが閉じられると `managementPanelDidDismiss(_:)` デリゲートが呼ばれ、改めて `quitIfNoWindows()` が実行されます。その時点でウィンドウが存在しない場合は `shouldTerminate` フラグを立ててから `NSApp.terminate(nil)` を呼び出します（`shouldTerminate` を立てない終了パスは `applicationShouldTerminate` にキャンセルされます）。
+
+---
+
 [← 目次](README.md)

@@ -4017,6 +4017,22 @@
         }
       }
     },
+    "management.status_format": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d/%d 表示中"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d/%d Visible"
+          }
+        }
+      }
+    },
     "management.ghost_mode_section": {
       "localizations": {
         "ja": {

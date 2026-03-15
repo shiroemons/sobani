@@ -252,7 +252,7 @@ final class ManagementPanelController: NSObject {
         if activeTab == .windowManagement {
             let all = delegate.managedWindows
             let visible = all.filter { !$0.isHidden }.count
-            statusBar?.stringValue = "\(visible)/\(all.count) 表示中"
+            statusBar?.stringValue = String(format: L("management.status_format"), visible, all.count)
         } else {
             statusBar?.stringValue = ""
         }
