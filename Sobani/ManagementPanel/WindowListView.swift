@@ -79,9 +79,15 @@ struct WindowListView: View {
 
     @ViewBuilder
     private var windowList: some View {
-        List(viewModel.filteredWindows, id: \.windowId, selection: $viewModel.selectedWindowIds) { windowInfo in
-            WindowListRow(windowInfo: windowInfo, viewModel: viewModel)
-                .opacity(windowInfo.isHidden ? 0.5 : 1.0)
+        List(selection: $viewModel.selectedWindowIds) {
+            ForEach(viewModel.filteredWindows, id: \.windowId) { windowInfo in
+                WindowListRow(windowInfo: windowInfo, viewModel: viewModel)
+                    .opacity(windowInfo.isHidden ? 0.5 : 1.0)
+                    .tag(windowInfo.windowId)
+            }
+            .onMove { source, destination in
+                viewModel.moveWindows(from: source, to: destination)
+            }
         }
         .onDeleteCommand {
             if !viewModel.selectedWindowIds.isEmpty {

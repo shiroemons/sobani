@@ -206,6 +206,15 @@ final class ManagementPanelViewModel {
         charWindow.window.setFrameOrigin(newOrigin)
     }
 
+    func moveWindows(from source: IndexSet, to destination: Int) {
+        guard let appDelegate else { return }
+        var windows = appDelegate.zOrderedWindows
+        windows.move(fromOffsets: source, toOffset: destination)
+        appDelegate.zOrderedWindows = windows
+        appDelegate.applyZOrderToWindows()
+        triggerRefresh()
+    }
+
     func moveWindow(fromIndex: Int, toIndex: Int) {
         guard let appDelegate else { return }
         guard fromIndex != toIndex,
