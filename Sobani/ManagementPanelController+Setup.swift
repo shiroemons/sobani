@@ -4,6 +4,72 @@ import Cocoa
 
 extension ManagementPanelController {
 
+    // MARK: - Content Views
+
+    func setupContentViews() {
+        guard let container = contentContainer else { return }
+        let contentHeight = AppConstants.managementPanelContentHeight
+        let listWidth = AppConstants.managementPanelListWidth
+        let detailWidth = AppConstants.managementPanelDetailWidth
+
+        let listView = ManagementPanelWindowListView(frame: NSRect(
+            x: 0, y: 0, width: listWidth, height: contentHeight
+        ))
+        listView.onWindowSelected = { [weak self] charWindow in
+            self?.detailView?.update(with: charWindow)
+        }
+        listView.onVisibilityToggled = { [weak self] charWindow in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didToggleVisibility: charWindow)
+            self.reloadWindowList()
+        }
+        listView.onGhostToggled = { [weak self] charWindow in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didToggleGhostMode: charWindow)
+            self.reloadWindowList()
+        }
+        container.addSubview(listView)
+        windowListView = listView
+
+        // Vertical divider
+        let divider = NSBox(frame: NSRect(x: listWidth, y: 0, width: 1, height: contentHeight))
+        divider.boxType = .separator
+        container.addSubview(divider)
+
+        let detail = ManagementPanelDetailView(frame: NSRect(
+            x: listWidth + 1, y: 0, width: detailWidth - 1, height: contentHeight
+        ))
+        detail.onOpacityChanged = { [weak self] charWindow, opacity in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didChangeOpacity: opacity, for: charWindow)
+        }
+        detail.onGhostToggled = { [weak self] charWindow in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didToggleGhostMode: charWindow)
+            self.reloadWindowList()
+            self.detailView?.update(with: charWindow)
+        }
+        detail.onVisibilityToggled = { [weak self] charWindow in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didToggleVisibility: charWindow)
+            self.reloadWindowList()
+            self.detailView?.update(with: charWindow)
+        }
+        container.addSubview(detail)
+        detailView = detail
+    }
+
+    func reloadWindowList() {
+        guard let delegate else { return }
+        let windows = delegate.managedWindows
+        windowListView?.reload(with: windows)
+        updateStatusBar()
+        // 現在選択中のウィンドウの詳細も更新
+        if let selected = windowListView?.selectedWindow {
+            detailView?.update(with: selected)
+        }
+    }
+
     func setupSidebar(in parent: NSView) {
         let sidebarFrame = NSRect(
             x: 0,
@@ -21,7 +87,8 @@ extension ManagementPanelController {
         // Selection highlight view (behind buttons)
         let highlightSize = Self.sidebarButtonSize
         let highlightInset = Self.sidebarButtonInset
-        let highlight = NSView(frame: NSRect(x: highlightInset, y: 400, width: highlightSize, height: highlightSize))
+        let initialHighlightY = Self.sidebarTabYPositions[Tab.windowManagement.rawValue]
+        let highlight = NSView(frame: NSRect(x: highlightInset, y: initialHighlightY, width: highlightSize, height: highlightSize))
         highlight.wantsLayer = true
         highlight.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(Self.sidebarHighlightAlpha).cgColor
         highlight.layer?.cornerRadius = Self.sidebarHighlightCornerRadius
@@ -50,9 +117,12 @@ extension ManagementPanelController {
             let yPosition: CGFloat
         }
         let specs = [
-            TabButtonSpec(symbolName: "square.on.square", tab: .windowManagement, yPosition: 400),
-            TabButtonSpec(symbolName: "rectangle.3.group", tab: .layout, yPosition: 356),
-            TabButtonSpec(symbolName: "gearshape", tab: .settings, yPosition: 4)
+            TabButtonSpec(symbolName: "square.on.square", tab: .windowManagement,
+                          yPosition: Self.sidebarTabYPositions[Tab.windowManagement.rawValue]),
+            TabButtonSpec(symbolName: "rectangle.3.group", tab: .layout,
+                          yPosition: Self.sidebarTabYPositions[Tab.layout.rawValue]),
+            TabButtonSpec(symbolName: "gearshape", tab: .settings,
+                          yPosition: Self.sidebarTabYPositions[Tab.settings.rawValue])
         ]
         var buttons: [NSButton] = []
         for spec in specs {
@@ -60,7 +130,7 @@ extension ManagementPanelController {
             button.bezelStyle = .regularSquare
             button.isBordered = false
             button.imagePosition = .imageOnly
-            button.image = SFSymbolUtils.icon(spec.symbolName, pointSize: 16, weight: .regular)
+            button.image = SFSymbolUtils.icon(spec.symbolName, pointSize: Self.sidebarButtonIconPointSize, weight: .regular)
             button.tag = spec.tab.rawValue
             button.target = self
             button.action = #selector(sidebarTabClicked(_:))
@@ -79,7 +149,7 @@ extension ManagementPanelController {
         )
         let label = NSTextField(labelWithString: "")
         label.frame = statusFrame
-        label.font = .systemFont(ofSize: 10)
+        label.font = .systemFont(ofSize: Self.statusBarFontSize)
         label.textColor = .secondaryLabelColor
         label.alignment = .center
         parent.addSubview(label)
