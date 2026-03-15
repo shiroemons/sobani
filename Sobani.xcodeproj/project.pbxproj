@@ -106,6 +106,9 @@
 		F0WL000002000000000001 /* ManagementPanelWindowListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0WL000001000000000001 /* ManagementPanelWindowListView.swift */; };
 		F0WL000004000000000001 /* ManagementPanelWindowListView+DragDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0WL000003000000000001 /* ManagementPanelWindowListView+DragDrop.swift */; };
 		F0DV000002000000000001 /* ManagementPanelDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DV000001000000000001 /* ManagementPanelDetailView.swift */; };
+		F0LV000002000000000001 /* ManagementPanelLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LV000001000000000001 /* ManagementPanelLayoutView.swift */; };
+		F0LV000004000000000001 /* ManagementPanelLayoutView+Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LV000003000000000001 /* ManagementPanelLayoutView+Setup.swift */; };
+		F0LV000006000000000001 /* ManagementPanelLayoutView+Cells.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0LV000005000000000001 /* ManagementPanelLayoutView+Cells.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -223,6 +226,9 @@
 		F0WL000001000000000001 /* ManagementPanelWindowListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelWindowListView.swift; sourceTree = "<group>"; };
 		F0WL000003000000000001 /* ManagementPanelWindowListView+DragDrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelWindowListView+DragDrop.swift"; sourceTree = "<group>"; };
 		F0DV000001000000000001 /* ManagementPanelDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelDetailView.swift; sourceTree = "<group>"; };
+		F0LV000001000000000001 /* ManagementPanelLayoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelLayoutView.swift; sourceTree = "<group>"; };
+		F0LV000003000000000001 /* ManagementPanelLayoutView+Setup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelLayoutView+Setup.swift"; sourceTree = "<group>"; };
+		F0LV000005000000000001 /* ManagementPanelLayoutView+Cells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelLayoutView+Cells.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -305,6 +311,9 @@
 				F0WL000001000000000001 /* ManagementPanelWindowListView.swift */,
 				F0WL000003000000000001 /* ManagementPanelWindowListView+DragDrop.swift */,
 				F0DV000001000000000001 /* ManagementPanelDetailView.swift */,
+				F0LV000001000000000001 /* ManagementPanelLayoutView.swift */,
+				F0LV000003000000000001 /* ManagementPanelLayoutView+Setup.swift */,
+				F0LV000005000000000001 /* ManagementPanelLayoutView+Cells.swift */,
 				F0AM000001000000000001 /* AppDelegate+ManagementPanel.swift */,
 				F0JP000001000000000001 /* JSONPersistence.swift */,
 				F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */,
@@ -541,6 +550,9 @@
 				F0WL000002000000000001 /* ManagementPanelWindowListView.swift in Sources */,
 				F0WL000004000000000001 /* ManagementPanelWindowListView+DragDrop.swift in Sources */,
 				F0DV000002000000000001 /* ManagementPanelDetailView.swift in Sources */,
+				F0LV000002000000000001 /* ManagementPanelLayoutView.swift in Sources */,
+				F0LV000004000000000001 /* ManagementPanelLayoutView+Setup.swift in Sources */,
+				F0LV000006000000000001 /* ManagementPanelLayoutView+Cells.swift in Sources */,
 				F0AM000002000000000001 /* AppDelegate+ManagementPanel.swift in Sources */,
 				F0JP000002000000000001 /* JSONPersistence.swift in Sources */,
 				F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */,

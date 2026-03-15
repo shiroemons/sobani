@@ -14,6 +14,12 @@ protocol ManagementPanelDelegate: AnyObject {
     func managementPanelDidRequestHideAll(_ panel: ManagementPanelController)
     func managementPanelDidRequestGhostAll(_ panel: ManagementPanelController)
     func managementPanelDidRequestUnghostAll(_ panel: ManagementPanelController)
+    func managementPanel(_ panel: ManagementPanelController, didRequestApplyLayout preset: LayoutPreset)
+    func managementPanel(_ panel: ManagementPanelController, didRequestSaveLayoutWithName name: String)
+    func managementPanelDidRequestCreateNewLayout(_ panel: ManagementPanelController)
+    func managementPanel(_ panel: ManagementPanelController, didRequestUpdateLayout preset: LayoutPreset)
+    func managementPanel(_ panel: ManagementPanelController, didRequestDeleteLayout preset: LayoutPreset)
+    func managementPanel(_ panel: ManagementPanelController, didRequestRenameLayout preset: LayoutPreset, to newName: String)
 }
 
 // MARK: - ManagementPanelController
@@ -58,6 +64,7 @@ final class ManagementPanelController: NSObject {
     weak var delegate: ManagementPanelDelegate?
     var windowListView: ManagementPanelWindowListView?
     var detailView: ManagementPanelDetailView?
+    var layoutView: ManagementPanelLayoutView?
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -213,8 +220,13 @@ final class ManagementPanelController: NSObject {
         activeTab = tab
         contentContainer?.subviews.forEach { $0.removeFromSuperview() }
         updateSidebarHighlight(tab)
-        if tab == .windowManagement {
+        switch tab {
+        case .windowManagement:
             setupContentViews()
+        case .layout:
+            setupLayoutView()
+        case .settings:
+            break
         }
         updateStatusBar()
     }
