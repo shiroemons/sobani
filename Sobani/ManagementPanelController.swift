@@ -65,6 +65,7 @@ final class ManagementPanelController: NSObject {
     var windowListView: ManagementPanelWindowListView?
     var detailView: ManagementPanelDetailView?
     var layoutView: ManagementPanelLayoutView?
+    var settingsView: ManagementPanelSettingsView?
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -226,7 +227,7 @@ final class ManagementPanelController: NSObject {
         case .layout:
             setupLayoutView()
         case .settings:
-            break
+            setupSettingsView()
         }
         updateStatusBar()
     }

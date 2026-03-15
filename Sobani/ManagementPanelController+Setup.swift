@@ -122,6 +122,19 @@ extension ManagementPanelController {
         view.reloadPresets()
     }
 
+    func setupSettingsView() {
+        guard let container = contentContainer else { return }
+        let contentHeight = AppConstants.managementPanelContentHeight
+        let contentWidth = AppConstants.managementPanelContentWidth
+
+        let view = ManagementPanelSettingsView(frame: NSRect(
+            x: 0, y: 0, width: contentWidth, height: contentHeight
+        ))
+        container.addSubview(view)
+        settingsView = view
+        view.syncWithCurrentSettings()
+    }
+
     func reloadWindowList() {
         guard let delegate else { return }
         let windows = delegate.managedWindows
