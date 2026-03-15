@@ -21,6 +21,7 @@ protocol ManagementPanelDelegate: AnyObject {
     func managementPanel(_ panel: ManagementPanelController, didRequestDeleteLayout preset: LayoutPreset)
     func managementPanel(_ panel: ManagementPanelController, didRequestRenameLayout preset: LayoutPreset, to newName: String)
     func managementPanelDidChangeHotkey(_ panel: ManagementPanelController)
+    func managementPanelDidDismiss(_ panel: ManagementPanelController)
 }
 
 // MARK: - ManagementPanelController
@@ -116,6 +117,7 @@ final class ManagementPanelController: NSObject {
     func dismiss() {
         clearEventMonitors()
         panel?.orderOut(nil)
+        delegate?.managementPanelDidDismiss(self)
     }
 
     // MARK: - Panel Setup
