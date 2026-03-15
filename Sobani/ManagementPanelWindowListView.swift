@@ -16,9 +16,15 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
     private static let eyeButtonX: CGFloat = 132
     private static let ghostButtonX: CGFloat = 160
     private static let actionButtonSize: CGFloat = 24
+    private static let upButtonX: CGFloat = 192
+    private static let downButtonX: CGFloat = 216
+    private static let reorderButtonY: CGFloat = 10
+    private static let reorderButtonWidth: CGFloat = 20
+    private static let reorderButtonHeight: CGFloat = 24
+    private static let reorderButtonIconPointSize: CGFloat = 11
 
     private let logger = Logger(category: "ManagementPanelWindowListView")
-    private var tableView: NSTableView?
+    var listTableView: NSTableView?
     private var scrollView: NSScrollView?
     private(set) var windows: [CharacterWindow] = []
     private(set) var selectedWindow: CharacterWindow?
@@ -69,19 +75,20 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
         table.addTableColumn(column)
 
         scroll.documentView = table
-        tableView = table
+        listTableView = table
+        setupDragDrop()
     }
 
     // MARK: - Public API
 
     func reload(with windows: [CharacterWindow]) {
         self.windows = windows
-        tableView?.reloadData()
+        listTableView?.reloadData()
     }
 
     func selectWindow(_ charWindow: CharacterWindow?) {
         selectedWindow = charWindow
-        guard let table = tableView else { return }
+        guard let table = listTableView else { return }
         if let charWindow, let index = windows.firstIndex(where: { $0 === charWindow }) {
             table.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
         } else {
@@ -126,7 +133,7 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {
-        guard let table = tableView else { return }
+        guard let table = listTableView else { return }
         let row = table.selectedRow
         if row >= 0, row < windows.count {
             selectedWindow = windows[row]
@@ -140,6 +147,12 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
     // MARK: - Cell Building
 
     private func buildCellContent(in cellView: NSView, charWindow: CharacterWindow, index: Int) {
+        buildCellLabels(in: cellView, charWindow: charWindow, index: index)
+        buildCellActionButtons(in: cellView, charWindow: charWindow, index: index)
+        buildCellReorderButtons(in: cellView, index: index)
+    }
+
+    private func buildCellLabels(in cellView: NSView, charWindow: CharacterWindow, index: Int) {
         let rowHeight = AppConstants.managementPanelRowHeight
 
         // Index label
@@ -177,6 +190,10 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
             height: Self.idLabelHeight
         )
         cellView.addSubview(idLabel)
+    }
+
+    private func buildCellActionButtons(in cellView: NSView, charWindow: CharacterWindow, index: Int) {
+        let rowHeight = AppConstants.managementPanelRowHeight
 
         // Eye button (visibility toggle)
         let eyeSymbol = charWindow.isHidden ? AppConstants.hiddenWindowSymbol : AppConstants.visibleWindowSymbol
@@ -206,15 +223,47 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
         ghostButton.isBordered = false
         ghostButton.imagePosition = .imageOnly
         ghostButton.image = SFSymbolUtils.icon(AppConstants.ghostModeSymbol, pointSize: 14, weight: .regular)
-        if charWindow.isGhostMode {
-            ghostButton.contentTintColor = .controlAccentColor
-        } else {
-            ghostButton.contentTintColor = nil
-        }
+        ghostButton.contentTintColor = charWindow.isGhostMode ? .controlAccentColor : nil
         ghostButton.tag = index
         ghostButton.target = self
         ghostButton.action = #selector(ghostButtonTapped(_:))
         cellView.addSubview(ghostButton)
+    }
+
+    private func buildCellReorderButtons(in cellView: NSView, index: Int) {
+        // Up button (move layer up)
+        let upButton = NSButton(frame: NSRect(
+            x: Self.upButtonX,
+            y: Self.reorderButtonY,
+            width: Self.reorderButtonWidth,
+            height: Self.reorderButtonHeight
+        ))
+        upButton.bezelStyle = .regularSquare
+        upButton.isBordered = false
+        upButton.imagePosition = .imageOnly
+        upButton.image = SFSymbolUtils.icon("chevron.up", pointSize: Self.reorderButtonIconPointSize, weight: .regular)
+        upButton.tag = index
+        upButton.isEnabled = index > 0
+        upButton.target = self
+        upButton.action = #selector(moveUpButtonTapped(_:))
+        cellView.addSubview(upButton)
+
+        // Down button (move layer down)
+        let downButton = NSButton(frame: NSRect(
+            x: Self.downButtonX,
+            y: Self.reorderButtonY,
+            width: Self.reorderButtonWidth,
+            height: Self.reorderButtonHeight
+        ))
+        downButton.bezelStyle = .regularSquare
+        downButton.isBordered = false
+        downButton.imagePosition = .imageOnly
+        downButton.image = SFSymbolUtils.icon("chevron.down", pointSize: Self.reorderButtonIconPointSize, weight: .regular)
+        downButton.tag = index
+        downButton.isEnabled = index < windows.count - 1
+        downButton.target = self
+        downButton.action = #selector(moveDownButtonTapped(_:))
+        cellView.addSubview(downButton)
     }
 
     // MARK: - Actions
@@ -229,6 +278,18 @@ final class ManagementPanelWindowListView: NSView, NSTableViewDataSource, NSTabl
         let index = sender.tag
         guard index < windows.count else { return }
         onGhostToggled?(windows[index])
+    }
+
+    @objc private func moveUpButtonTapped(_ sender: NSButton) {
+        let index = sender.tag
+        guard index > 0, index < windows.count else { return }
+        onReorder?(windows[index], index - 1)
+    }
+
+    @objc private func moveDownButtonTapped(_ sender: NSButton) {
+        let index = sender.tag
+        guard index >= 0, index < windows.count - 1 else { return }
+        onReorder?(windows[index], index + 1)
     }
 }
 

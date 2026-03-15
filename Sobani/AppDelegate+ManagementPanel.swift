@@ -42,4 +42,12 @@ extension AppDelegate: ManagementPanelDelegate {
     func managementPanel(_ panel: ManagementPanelController, didChangeOpacity opacity: CGFloat, for charWindow: CharacterWindow) {
         charWindow.applyOpacity(opacity)
     }
+
+    func managementPanel(_ panel: ManagementPanelController, didReorderWindow charWindow: CharacterWindow, to index: Int) {
+        guard let currentIndex = zOrderedWindows.firstIndex(where: { $0 === charWindow }) else { return }
+        zOrderedWindows.remove(at: currentIndex)
+        let safeIndex = max(0, min(index, zOrderedWindows.count))
+        zOrderedWindows.insert(charWindow, at: safeIndex)
+        applyZOrderToWindows()
+    }
 }
