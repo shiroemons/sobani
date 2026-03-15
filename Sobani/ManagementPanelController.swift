@@ -5,7 +5,10 @@ import os.log
 
 @MainActor
 protocol ManagementPanelDelegate: AnyObject {
-    // Phase 4 でウィンドウ操作の通知メソッドを追加予定
+    var managedWindows: [CharacterWindow] { get }
+    func managementPanel(_ panel: ManagementPanelController, didToggleVisibility charWindow: CharacterWindow)
+    func managementPanel(_ panel: ManagementPanelController, didToggleGhostMode charWindow: CharacterWindow)
+    func managementPanel(_ panel: ManagementPanelController, didChangeOpacity opacity: CGFloat, for charWindow: CharacterWindow)
 }
 
 // MARK: - ManagementPanelController
@@ -20,12 +23,19 @@ final class ManagementPanelController: NSObject {
 
     private static let closeButtonSize: CGFloat = 20
     private static let titleFontSize: CGFloat = 13
+    private static let closeButtonX: CGFloat = 4
+    private static let titleLabelPadding: CGFloat = 8
+    private static let closeIconPointSize: CGFloat = 14
     // サイドバーボタン・ハイライトのサイズ・外観定数
     static let sidebarButtonSize: CGFloat = 36
     static let sidebarButtonInset: CGFloat = 4
     static let sidebarHighlightCornerRadius: CGFloat = 8
     static let sidebarHighlightAlpha: CGFloat = 0.15
     static let sidebarTabAnimationDuration: TimeInterval = 0.15
+    // サイドバータブボタンの y 座標（Tab.rawValue の順と一致）
+    static let sidebarTabYPositions: [CGFloat] = [400, 356, 4]
+    static let sidebarButtonIconPointSize: CGFloat = 16
+    static let statusBarFontSize: CGFloat = 10
 
     private let logger = Logger(category: "ManagementPanelController")
     private var panel: NSPanel?
@@ -41,6 +51,8 @@ final class ManagementPanelController: NSObject {
     nonisolated(unsafe) private var keyMonitor: Any?
     nonisolated(unsafe) private var appearanceObservation: NSKeyValueObservation?
     weak var delegate: ManagementPanelDelegate?
+    var windowListView: ManagementPanelWindowListView?
+    var detailView: ManagementPanelDetailView?
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
@@ -82,6 +94,7 @@ final class ManagementPanelController: NSObject {
         panel.setFrameOrigin(origin)
         panel.makeKeyAndOrderFront(nil)
 
+        reloadWindowList()
         clearEventMonitors()
         installEventMonitors()
     }
@@ -131,6 +144,7 @@ final class ManagementPanelController: NSObject {
         panel = newPanel
 
         installAppearanceObserver()
+        switchTab(.windowManagement)
     }
 
     private func setupTitleBar(in parent: NSView) {
@@ -149,12 +163,17 @@ final class ManagementPanelController: NSObject {
         titleBar = bar
 
         // Close button (✕)
-        let closeButtonFrame = NSRect(x: 4, y: (titleBarHeight - Self.closeButtonSize) / 2, width: Self.closeButtonSize, height: Self.closeButtonSize)
+        let closeButtonFrame = NSRect(
+            x: Self.closeButtonX,
+            y: (titleBarHeight - Self.closeButtonSize) / 2,
+            width: Self.closeButtonSize,
+            height: Self.closeButtonSize
+        )
         let closeButton = NSButton(frame: closeButtonFrame)
         closeButton.bezelStyle = .regularSquare
         closeButton.isBordered = false
         closeButton.imagePosition = .imageOnly
-        closeButton.image = SFSymbolUtils.icon("xmark.circle.fill", pointSize: 14, weight: .regular)
+        closeButton.image = SFSymbolUtils.icon("xmark.circle.fill", pointSize: Self.closeIconPointSize, weight: .regular)
         closeButton.target = self
         closeButton.action = #selector(closeTapped)
         bar.addSubview(closeButton)
@@ -164,7 +183,7 @@ final class ManagementPanelController: NSObject {
         titleLabel.alignment = .center
         titleLabel.font = .systemFont(ofSize: Self.titleFontSize, weight: .medium)
         titleLabel.sizeToFit()
-        let labelWidth = titleBarFrame.width - Self.closeButtonSize * 2 - 8
+        let labelWidth = titleBarFrame.width - Self.closeButtonSize * 2 - Self.titleLabelPadding
         titleLabel.frame = NSRect(
             x: (titleBarFrame.width - labelWidth) / 2,
             y: (titleBarHeight - titleLabel.frame.height) / 2,
@@ -189,21 +208,33 @@ final class ManagementPanelController: NSObject {
         activeTab = tab
         contentContainer?.subviews.forEach { $0.removeFromSuperview() }
         updateSidebarHighlight(tab)
+        if tab == .windowManagement {
+            setupContentViews()
+        }
         updateStatusBar()
     }
 
     private func updateSidebarHighlight(_ tab: Tab) {
-        // Tab.rawValue (0,1,2) と1:1対応: windowManagement=400, layout=356, settings=4
-        let yPositions: [CGFloat] = [400, 356, 4]
-        guard tab.rawValue < yPositions.count else { return }
+        // Tab.rawValue (0,1,2) と1:1対応
+        guard tab.rawValue < Self.sidebarTabYPositions.count else { return }
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = Self.sidebarTabAnimationDuration
-            sidebarHighlight?.animator().frame.origin.y = yPositions[tab.rawValue]
+            sidebarHighlight?.animator().frame.origin.y = Self.sidebarTabYPositions[tab.rawValue]
         }
     }
 
     func updateStatusBar() {
-        statusBar?.stringValue = ""
+        guard let delegate else {
+            statusBar?.stringValue = ""
+            return
+        }
+        if activeTab == .windowManagement {
+            let all = delegate.managedWindows
+            let visible = all.filter { !$0.isHidden }.count
+            statusBar?.stringValue = "\(visible)/\(all.count) 表示中"
+        } else {
+            statusBar?.stringValue = ""
+        }
     }
 
     // MARK: - Appearance
