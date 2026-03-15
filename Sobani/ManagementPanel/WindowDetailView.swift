@@ -76,19 +76,17 @@ struct WindowDetailView: View {
         GroupBox {
             if let originalImage = window.originalImage, let cropRect = window.cropRect {
                 CropOverlayPreviewView(originalImage: originalImage, cropRect: cropRect)
-                    .frame(maxHeight: 300)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(maxWidth: .infinity, maxHeight: 300)
             } else if let thumbnail = window.thumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxHeight: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(maxWidth: .infinity, maxHeight: 300)
             } else {
                 Image(systemName: "photo")
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
-                    .frame(maxHeight: 200)
+                    .frame(maxWidth: .infinity, maxHeight: 300)
             }
         }
     }
