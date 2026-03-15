@@ -58,6 +58,12 @@ final class ManagementPanelViewModel {
         let customGhostAlpha: CGFloat?
         let effectiveGhostAlpha: CGFloat
         let isRemoveBackgroundEnabled: Bool
+        let originX: CGFloat
+        let originY: CGFloat
+        let width: CGFloat
+        let height: CGFloat
+        let imageName: String
+        let isFlippedHorizontally: Bool
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(windowId)
@@ -67,6 +73,12 @@ final class ManagementPanelViewModel {
             hasher.combine(customGhostAlpha)
             hasher.combine(effectiveGhostAlpha)
             hasher.combine(isRemoveBackgroundEnabled)
+            hasher.combine(originX)
+            hasher.combine(originY)
+            hasher.combine(width)
+            hasher.combine(height)
+            hasher.combine(imageName)
+            hasher.combine(isFlippedHorizontally)
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -79,6 +91,29 @@ final class ManagementPanelViewModel {
                 && lhs.effectiveGhostAlpha == rhs.effectiveGhostAlpha
                 && lhs.cropRect == rhs.cropRect
                 && lhs.isRemoveBackgroundEnabled == rhs.isRemoveBackgroundEnabled
+                && lhs.originX == rhs.originX
+                && lhs.originY == rhs.originY
+                && lhs.width == rhs.width
+                && lhs.height == rhs.height
+                && lhs.imageName == rhs.imageName
+                && lhs.isFlippedHorizontally == rhs.isFlippedHorizontally
+        }
+
+        func toWindowState() -> WindowState {
+            WindowState(
+                imageName: imageName,
+                originX: originX,
+                originY: originY,
+                width: width,
+                height: height,
+                isFlippedHorizontally: isFlippedHorizontally,
+                opacityLevel: opacityLevel,
+                windowId: windowId,
+                cropRect: cropRect,
+                isGhostMode: isGhostMode,
+                customGhostAlpha: customGhostAlpha,
+                isHidden: isHidden
+            )
         }
     }
 
@@ -105,6 +140,7 @@ final class ManagementPanelViewModel {
             let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
             let subtitle = "\(Int(imageSize.width))×\(Int(imageSize.height)) px ・ \(screenName)"
             let thumbnail = charWindow.imageView.image
+            let frame = charWindow.window.frame
             return WindowInfo(
                 id: charWindow.windowId,
                 windowId: charWindow.windowId,
@@ -118,7 +154,13 @@ final class ManagementPanelViewModel {
                 cropRect: charWindow.imageView.cropRect,
                 customGhostAlpha: charWindow.customGhostAlpha,
                 effectiveGhostAlpha: charWindow.effectiveGhostAlpha,
-                isRemoveBackgroundEnabled: charWindow.isRemoveBackgroundAvailable
+                isRemoveBackgroundEnabled: charWindow.isRemoveBackgroundAvailable,
+                originX: frame.origin.x,
+                originY: frame.origin.y,
+                width: frame.size.width,
+                height: frame.size.height,
+                imageName: charWindow.displayName,
+                isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally
             )
         }
     }
@@ -261,71 +303,11 @@ final class ManagementPanelViewModel {
         triggerRefresh()
     }
 
-    // MARK: - Ghost Mode Custom Opacity
-
-    func setCustomGhostAlpha(windowId: Int, alpha: CGFloat) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setCustomGhostAlpha(alpha)
-        triggerRefresh()
-    }
-
-    func clearCustomGhostAlpha(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setCustomGhostAlpha(nil)
-        triggerRefresh()
-    }
-
-    // MARK: - Window Actions
-
-    func flipWindow(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.toggleFlip()
-        triggerRefresh()
-    }
-
-    func openCropEditor(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.enterCropMode()
-    }
-
-    func openAdjustPanel(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.showAdjustmentPanel()
-    }
-
-    func removeBackground(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.removeBackground { [weak self] in
-            self?.triggerRefresh()
-        }
-        triggerRefresh()
-    }
-
-    func resetDisplay(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.resetDisplay()
-        triggerRefresh()
-    }
-
     private func removeCharacterWindow(_ charWindow: CharacterWindow) {
         guard let appDelegate else { return }
         charWindow.window.orderOut(nil)
         appDelegate.removeCharacterWindow(charWindow)
         appDelegate.quitIfNoWindows()
-    }
-
-    // MARK: - Registered Images
-
-    var registeredImageNames: [String] {
-        ImageManager.shared.registeredImageNames()
-    }
-
-    func addFromRegisteredImage(name: String) {
-        appDelegate?.createNewWindow(imageName: name)
-    }
-
-    func registeredImagePreview(name: String) -> NSImage? {
-        ImageManager.shared.loadRegisteredImageCached(named: name)
     }
 
     // MARK: - Private Helpers
@@ -351,11 +333,11 @@ final class ManagementPanelViewModel {
         }
     }
 
-    private func triggerRefresh() {
+    func triggerRefresh() {
         rebuildWindows()
     }
 
-    private func findCharacterWindow(by windowId: Int) -> CharacterWindow? {
+    func findCharacterWindow(by windowId: Int) -> CharacterWindow? {
         appDelegate?.zOrderedWindows.first { $0.windowId == windowId }
     }
 

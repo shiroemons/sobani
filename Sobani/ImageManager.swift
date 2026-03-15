@@ -68,6 +68,13 @@ final class ImageManager {
         return NSImage(contentsOf: url)
     }
 
+    func image(named name: String) -> NSImage? {
+        if name == AppConstants.defaultImageName {
+            return defaultImage()
+        }
+        return loadRegisteredImageCached(named: name)
+    }
+
     func loadRegisteredImageCached(named name: String) -> NSImage? {
         if let entry = previewImageCache[name] {
             previewImageCache[name] = (image: entry.image, lastAccess: Date())

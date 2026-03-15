@@ -2,133 +2,154 @@ import SwiftUI
 
 struct PresetDetailView: View {
     let preset: LayoutPreset
-    let onApply: () -> Void
-    let onUpdate: () -> Void
-    let onRename: () -> Void
-    let onDelete: () -> Void
+    let selectedIndex: Int?
 
     var body: some View {
-        HSplitView {
-            infoPane
-                .frame(minWidth: 250, idealWidth: 300)
-            minimapPane
-        }
-    }
+        if let index = selectedIndex, index < preset.states.count {
+            let state = preset.states[index]
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    previewSection(state: state)
 
-    // MARK: - Info Pane
+                    Divider()
 
-    @ViewBuilder
-    private var infoPane: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header
-            VStack(alignment: .leading, spacing: 4) {
-                Text(preset.name)
-                    .font(.headline)
-                HStack(spacing: 4) {
-                    Text(preset.createdAt, style: .date)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("・")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("\(preset.states.count)\(L("layout.items_suffix"))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    infoSection(state: state, index: index)
+
+                    Divider()
+
+                    positionSection(state: state)
+
+                    Divider()
+
+                    displaySection(state: state)
                 }
+                .padding(16)
             }
-            .padding(12)
-
-            Divider()
-
-            // Window state list
-            List {
-                ForEach(Array(preset.states.enumerated()), id: \.offset) { index, state in
-                    presetWindowRow(index: index, state: state)
-                }
-            }
-
-            Divider()
-
-            // Action buttons
-            HStack(spacing: 8) {
-                Button(L("layout.apply")) {
-                    onApply()
-                }
-                .buttonStyle(.borderedProminent)
-
-                Button(L("layout.update")) {
-                    onUpdate()
-                }
-                .buttonStyle(.bordered)
-
-                Button(L("layout.rename")) {
-                    onRename()
-                }
-                .buttonStyle(.bordered)
-
-                Button(L("layout.delete")) {
-                    onDelete()
-                }
-                .buttonStyle(.bordered)
-                .foregroundStyle(.red)
-            }
-            .padding(12)
-        }
-    }
-
-    @ViewBuilder
-    private func presetWindowRow(index: Int, state: WindowState) -> some View {
-        HStack(spacing: 8) {
-            // Thumbnail
-            thumbnailForState(state)
-                .frame(width: 28, height: 28)
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-
-            Text("#\(index + 1)")
-                .font(.caption.monospaced())
-                .foregroundStyle(.secondary)
-
-            Text(state.imageName)
-                .font(.body)
-                .lineLimit(1)
-                .truncationMode(.tail)
-
-            Spacer()
-
-            Text("(\(Int(state.originX)), \(Int(state.originY)))")
-                .font(.caption.monospaced())
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    @ViewBuilder
-    private func thumbnailForState(_ state: WindowState) -> some View {
-        let image: NSImage? = if state.imageName == AppConstants.defaultImageName {
-            ImageManager.shared.defaultImage()
-        } else {
-            ImageManager.shared.loadRegisteredImageCached(named: state.imageName)
-        }
-        if let image {
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-        } else {
-            Rectangle()
-                .fill(.quaternary)
-                .overlay {
-                    Image(systemName: "photo")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-        }
-    }
-
-    // MARK: - Minimap Pane
-
-    @ViewBuilder
-    private var minimapPane: some View {
-        PresetMinimapView(states: preset.states)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(12)
+        } else {
+            VStack(spacing: 12) {
+                Image(systemName: "square.on.square.dashed")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.secondary)
+                Text(L("management.select_window"))
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
+
+    // MARK: - Preview
+
+    @ViewBuilder
+    private func previewSection(state: WindowState) -> some View {
+        let image = ImageManager.shared.image(named: state.imageName)
+        GroupBox {
+            if let image {
+                let cropped = CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect)
+                Image(nsImage: cropped)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: 300)
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: 300)
+            }
+        }
+    }
+
+    // MARK: - Info
+
+    @ViewBuilder
+    private func infoSection(state: WindowState, index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label {
+                Text(state.imageName)
+                    .font(.headline)
+            } icon: {
+                Image(systemName: "photo")
+            }
+
+            Label {
+                Text("#\(index + 1)")
+                    .font(.caption.monospaced())
+            } icon: {
+                Image(systemName: "number")
+            }
+
+            Label {
+                Text("\(Int(state.width))×\(Int(state.height)) px")
+                    .font(.caption)
+            } icon: {
+                Image(systemName: "ruler")
+            }
+        }
+    }
+
+    // MARK: - Position & Size
+
+    @ViewBuilder
+    private func positionSection(state: WindowState) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L("management.position_size"))
+                .font(.subheadline.bold())
+
+            HStack(spacing: 16) {
+                coordinateLabel("X", value: state.originX)
+                coordinateLabel("Y", value: state.originY)
+                coordinateLabel("W", value: state.width)
+                coordinateLabel("H", value: state.height)
+            }
+        }
+    }
+
+    private func coordinateLabel(_ label: String, value: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text("\(Int(value))")
+                .font(.body.monospaced())
+        }
+    }
+
+    // MARK: - Display Settings
+
+    @ViewBuilder
+    private func displaySection(state: WindowState) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L("management.display_settings"))
+                .font(.subheadline.bold())
+
+            HStack {
+                Text(L("management.opacity"))
+                    .font(.body)
+                Spacer()
+                Text(FormatUtils.formatOpacity(state.opacityLevel))
+                    .font(.body.monospaced())
+            }
+
+            if state.isGhostMode {
+                HStack {
+                    Label(L("management.ghost_mode_section"), systemImage: "ghost")
+                        .font(.body)
+                    Spacer()
+                    Text(L("management.enabled"))
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if state.isHidden {
+                HStack {
+                    Label(L("status.hidden"), systemImage: "eye.slash")
+                        .font(.body)
+                    Spacer()
+                }
+            }
+        }
+    }
+
 }

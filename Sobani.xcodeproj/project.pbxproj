@@ -110,6 +110,11 @@
 		A1B2C3D401000015 /* PresetMinimapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000014 /* PresetMinimapView.swift */; };
 		A1B2C3D401000017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000016 /* SettingsView.swift */; };
 		A1B2C3D401000019 /* CropOverlayPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000018 /* CropOverlayPreviewView.swift */; };
+		A1B2C3D40100001B /* MinimapLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100001A /* MinimapLayout.swift */; };
+		A1B2C3D40100001D /* CroppedImageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100001C /* CroppedImageHelper.swift */; };
+		A1B2C3D401000023 /* ManagementPanelViewModel+WindowActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */; };
+		A1B2C3D40100001F /* MinimapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100001E /* MinimapLayoutTests.swift */; };
+		A1B2C3D401000021 /* CroppedImageHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000020 /* CroppedImageHelperTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -219,6 +224,8 @@
 		F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuSliders.swift"; sourceTree = "<group>"; };
 		F0WH000001000000000001 /* WindowStateHiddenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateHiddenTests.swift; sourceTree = "<group>"; };
 		F0TH000001000000000001 /* AppThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
+		A1B2C3D40100001E /* MinimapLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimapLayoutTests.swift; sourceTree = "<group>"; };
+		A1B2C3D401000020 /* CroppedImageHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CroppedImageHelperTests.swift; sourceTree = "<group>"; };
 		A1B2C3D401000001 /* ManagementPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelController.swift; sourceTree = "<group>"; };
 		A1B2C3D401000003 /* ManagementPanelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelViewModel.swift; sourceTree = "<group>"; };
 		A1B2C3D401000005 /* ManagementPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelView.swift; sourceTree = "<group>"; };
@@ -231,6 +238,9 @@
 		A1B2C3D401000014 /* PresetMinimapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetMinimapView.swift; sourceTree = "<group>"; };
 		A1B2C3D401000016 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A1B2C3D401000018 /* CropOverlayPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropOverlayPreviewView.swift; sourceTree = "<group>"; };
+		A1B2C3D40100001A /* MinimapLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimapLayout.swift; sourceTree = "<group>"; };
+		A1B2C3D40100001C /* CroppedImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CroppedImageHelper.swift; sourceTree = "<group>"; };
+		A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelViewModel+WindowActions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -373,6 +383,8 @@
 				F0GM000001000000000001 /* WindowStateGhostModeTests.swift */,
 				F0WH000001000000000001 /* WindowStateHiddenTests.swift */,
 				F0TH000001000000000001 /* AppThemeTests.swift */,
+				A1B2C3D40100001E /* MinimapLayoutTests.swift */,
+				A1B2C3D401000020 /* CroppedImageHelperTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -392,6 +404,9 @@
 				A1B2C3D401000014 /* PresetMinimapView.swift */,
 				A1B2C3D401000016 /* SettingsView.swift */,
 				A1B2C3D401000018 /* CropOverlayPreviewView.swift */,
+				A1B2C3D40100001A /* MinimapLayout.swift */,
+				A1B2C3D40100001C /* CroppedImageHelper.swift */,
+				A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */,
 			);
 			path = ManagementPanel;
 			sourceTree = "<group>";
@@ -573,6 +588,9 @@
 				A1B2C3D401000015 /* PresetMinimapView.swift in Sources */,
 				A1B2C3D401000017 /* SettingsView.swift in Sources */,
 				A1B2C3D401000019 /* CropOverlayPreviewView.swift in Sources */,
+				A1B2C3D40100001B /* MinimapLayout.swift in Sources */,
+				A1B2C3D40100001D /* CroppedImageHelper.swift in Sources */,
+				A1B2C3D401000023 /* ManagementPanelViewModel+WindowActions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -619,6 +637,8 @@
 				F0GM000002000000000001 /* WindowStateGhostModeTests.swift in Sources */,
 				F0WH000002000000000001 /* WindowStateHiddenTests.swift in Sources */,
 				F0TH000002000000000001 /* AppThemeTests.swift in Sources */,
+				A1B2C3D40100001F /* MinimapLayoutTests.swift in Sources */,
+				A1B2C3D401000021 /* CroppedImageHelperTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
