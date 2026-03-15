@@ -28,6 +28,11 @@ extension ManagementPanelController {
             delegate.managementPanel(self, didToggleGhostMode: charWindow)
             self.reloadWindowList()
         }
+        listView.onReorder = { [weak self] charWindow, newIndex in
+            guard let self, let delegate = self.delegate else { return }
+            delegate.managementPanel(self, didReorderWindow: charWindow, to: newIndex)
+            self.reloadWindowList()
+        }
         container.addSubview(listView)
         windowListView = listView
 

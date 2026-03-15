@@ -9,6 +9,7 @@ protocol ManagementPanelDelegate: AnyObject {
     func managementPanel(_ panel: ManagementPanelController, didToggleVisibility charWindow: CharacterWindow)
     func managementPanel(_ panel: ManagementPanelController, didToggleGhostMode charWindow: CharacterWindow)
     func managementPanel(_ panel: ManagementPanelController, didChangeOpacity opacity: CGFloat, for charWindow: CharacterWindow)
+    func managementPanel(_ panel: ManagementPanelController, didReorderWindow charWindow: CharacterWindow, to index: Int)
 }
 
 // MARK: - ManagementPanelController
