@@ -7,7 +7,6 @@ final class ManagementPanelViewModel {
     private let logger = Logger(category: "ManagementPanelViewModel")
     weak var appDelegate: AppDelegate?
     var selectedTab: ManagementTab? = .images
-    var searchText: String = ""
     var selectedWindowIds: Set<Int> = []
     var selectedRegisteredImageName: String?
     private(set) var windows: [WindowInfo] = []
@@ -178,15 +177,6 @@ final class ManagementPanelViewModel {
         let newNames = ImageManager.shared.registeredImageNames()
         if newNames != registeredImageNames {
             registeredImageNames = newNames
-        }
-    }
-
-    var filteredWindows: [WindowInfo] {
-        if searchText.isEmpty {
-            return windows
-        }
-        return windows.filter {
-            $0.displayName.localizedCaseInsensitiveContains(searchText)
         }
     }
 

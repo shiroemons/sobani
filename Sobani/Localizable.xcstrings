@@ -3745,22 +3745,6 @@
         }
       }
     },
-    "management.search": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "検索"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search"
-          }
-        }
-      }
-    },
     "management.show_all": {
       "localizations": {
         "ja": {

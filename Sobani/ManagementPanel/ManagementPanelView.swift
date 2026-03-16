@@ -6,8 +6,20 @@ struct ManagementPanelView: View {
     var body: some View {
         NavigationSplitView {
             sidebarContent
+                .toolbar(removing: .sidebarToggle)
+                .navigationSplitViewColumnWidth(200)
         } detail: {
             detailContent
+        }
+        .navigationSplitViewStyle(.balanced)
+        .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Button {
+                    NSApp.sendAction(#selector(NSSplitViewController.toggleSidebar(_:)), to: nil, from: nil)
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
+            }
         }
         .frame(minWidth: 1200, minHeight: 800)
     }
@@ -49,7 +61,6 @@ struct ManagementPanelView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 8)
         }
-        .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 200)
     }
 
     @ViewBuilder
