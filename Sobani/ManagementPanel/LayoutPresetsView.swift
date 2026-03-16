@@ -8,6 +8,7 @@ struct LayoutPresetsView: View {
     @State private var isShowingRenameSheet = false
     @State private var isShowingSaveSheet = false
     @State private var newPresetName = ""
+    @State private var hoveredPresetName: String?
 
     var body: some View {
         if let preset = selectedPreset {
@@ -51,58 +52,7 @@ struct LayoutPresetsView: View {
             } else {
                 List {
                     ForEach(presets, id: \.name) { preset in
-                        Button {
-                            selectedPreset = preset
-                            selectedPresetWindowIndex = nil
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(preset.name)
-                                        .font(.body)
-                                        .lineLimit(1)
-                                    HStack(spacing: 4) {
-                                        Text("\(preset.states.count)\(L("layout.items_suffix"))")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text("・")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text(preset.createdAt, style: .date)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .contextMenu {
-                            Button {
-                                applyPreset(preset)
-                            } label: {
-                                Label(L("layout.apply"), systemImage: "play")
-                            }
-                            Button {
-                                updatePreset(preset)
-                            } label: {
-                                Label(L("layout.update"), systemImage: "arrow.triangle.2.circlepath")
-                            }
-                            Button {
-                                newPresetName = preset.name
-                                selectedPreset = preset
-                                isShowingRenameSheet = true
-                            } label: {
-                                Label(L("layout.rename"), systemImage: "pencil")
-                            }
-                            Divider()
-                            Button(role: .destructive) {
-                                deletePreset(preset)
-                            } label: {
-                                Label(L("layout.delete"), systemImage: "trash")
-                            }
-                        }
+                        presetRow(for: preset)
                     }
                 }
             }
@@ -207,6 +157,90 @@ struct LayoutPresetsView: View {
         }
     }
 
+    // MARK: - Preset Row
+
+    @ViewBuilder
+    private func presetRow(for preset: LayoutPreset) -> some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(preset.name)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    Text("\(preset.states.count)\(L("layout.items_suffix"))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("・")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(preset.createdAt, style: .date)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    ForEach(Array(preset.states.enumerated()), id: \.offset) { _, state in
+                        thumbnailForState(state)
+                            .frame(width: 36, height: 36)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+            PresetActionButtonsView(
+                preset: preset,
+                onApply: { applyPreset(preset) },
+                onUpdate: { updatePreset(preset) },
+                onRename: {
+                    newPresetName = preset.name
+                    selectedPreset = preset
+                    isShowingRenameSheet = true
+                },
+                onDelete: { deletePreset(preset) }
+            )
+
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            selectedPreset = preset
+            selectedPresetWindowIndex = nil
+        }
+        .onHover { isHovered in
+            hoveredPresetName = isHovered ? preset.name : nil
+        }
+        .listRowBackground(
+            hoveredPresetName == preset.name
+                ? Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
+                : nil
+        )
+        .contextMenu {
+            Button { applyPreset(preset) } label: {
+                Label(L("layout.apply"), systemImage: "play")
+            }
+            Button { updatePreset(preset) } label: {
+                Label(L("layout.update"), systemImage: "arrow.triangle.2.circlepath")
+            }
+            Button {
+                newPresetName = preset.name
+                selectedPreset = preset
+                isShowingRenameSheet = true
+            } label: {
+                Label(L("layout.rename"), systemImage: "pencil")
+            }
+            Divider()
+            Button(role: .destructive) { deletePreset(preset) } label: {
+                Label(L("layout.delete"), systemImage: "trash")
+            }
+        }
+    }
+
     // MARK: - Shared Components
 
     @ViewBuilder
@@ -292,6 +326,52 @@ struct LayoutPresetsView: View {
         if selectedPreset?.name == preset.name {
             selectedPreset = nil
         }
+        if hoveredPresetName == preset.name {
+            hoveredPresetName = nil
+        }
         refreshPresets()
+    }
+}
+
+// MARK: - PresetActionButtonsView
+
+struct PresetActionButtonsView: View {
+    let preset: LayoutPreset
+    let onApply: () -> Void
+    let onUpdate: () -> Void
+    let onRename: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Button { onApply() } label: {
+                Image(systemName: "play")
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.borderless)
+            .help(L("layout.apply"))
+
+            Button { onUpdate() } label: {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.borderless)
+            .help(L("layout.update"))
+
+            Button { onRename() } label: {
+                Image(systemName: "pencil")
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.borderless)
+            .help(L("layout.rename"))
+
+            Button { onDelete() } label: {
+                Image(systemName: "trash")
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.red)
+            .help(L("layout.delete"))
+        }
     }
 }
