@@ -59,6 +59,8 @@ struct ManagementPanelView: View {
             WindowManagementView(viewModel: viewModel)
         case .layouts:
             LayoutPresetsView(viewModel: viewModel)
+        case .registeredImages:
+            RegisteredImagesView(viewModel: viewModel)
         case .settings:
             SettingsView()
         case .none:

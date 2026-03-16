@@ -113,6 +113,7 @@
 		A1B2C3D40100001B /* MinimapLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100001A /* MinimapLayout.swift */; };
 		A1B2C3D40100001D /* CroppedImageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100001C /* CroppedImageHelper.swift */; };
 		A1B2C3D401000023 /* ManagementPanelViewModel+WindowActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */; };
+		A1B2C3D401000025 /* RegisteredImagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000024 /* RegisteredImagesView.swift */; };
 		A1B2C3D40100001F /* MinimapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100001E /* MinimapLayoutTests.swift */; };
 		A1B2C3D401000021 /* CroppedImageHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000020 /* CroppedImageHelperTests.swift */; };
 /* End PBXBuildFile section */
@@ -241,6 +242,7 @@
 		A1B2C3D40100001A /* MinimapLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimapLayout.swift; sourceTree = "<group>"; };
 		A1B2C3D40100001C /* CroppedImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CroppedImageHelper.swift; sourceTree = "<group>"; };
 		A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelViewModel+WindowActions.swift"; sourceTree = "<group>"; };
+		A1B2C3D401000024 /* RegisteredImagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredImagesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -407,6 +409,7 @@
 				A1B2C3D40100001A /* MinimapLayout.swift */,
 				A1B2C3D40100001C /* CroppedImageHelper.swift */,
 				A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */,
+				A1B2C3D401000024 /* RegisteredImagesView.swift */,
 			);
 			path = ManagementPanel;
 			sourceTree = "<group>";
@@ -591,6 +594,7 @@
 				A1B2C3D40100001B /* MinimapLayout.swift in Sources */,
 				A1B2C3D40100001D /* CroppedImageHelper.swift in Sources */,
 				A1B2C3D401000023 /* ManagementPanelViewModel+WindowActions.swift in Sources */,
+				A1B2C3D401000025 /* RegisteredImagesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

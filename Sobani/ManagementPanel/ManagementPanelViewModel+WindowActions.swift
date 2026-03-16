@@ -48,11 +48,24 @@ extension ManagementPanelViewModel {
         triggerRefresh()
     }
 
-    // MARK: - Registered Images
+    // MARK: - Image Addition
 
-    var registeredImageNames: [String] {
-        ImageManager.shared.registeredImageNames()
+    func addImageFromFile(createWindow: Bool = true) {
+        let panel = ImageFileDialog.makeOpenPanel(message: L("file.select_new_image_message"))
+        panel.allowsMultipleSelection = true
+        if panel.runModal() == .OK {
+            for url in panel.urls {
+                if let savedName = ImageManager.shared.registerImage(from: url) {
+                    if createWindow {
+                        appDelegate?.createNewWindow(imageName: savedName)
+                    }
+                }
+            }
+            triggerRefresh()
+        }
     }
+
+    // MARK: - Registered Images
 
     func addFromRegisteredImage(name: String) {
         appDelegate?.createNewWindow(imageName: name)
@@ -60,6 +73,18 @@ extension ManagementPanelViewModel {
 
     func registeredImagePreview(name: String) -> NSImage? {
         ImageManager.shared.loadRegisteredImageCached(named: name)
+    }
+
+    func removeRegisteredImage(named name: String) {
+        ImageManager.shared.removeRegisteredImage(named: name)
+        if selectedRegisteredImageName == name {
+            selectedRegisteredImageName = nil
+        }
+        triggerRefresh()
+    }
+
+    func windowCountUsingImage(named name: String) -> Int {
+        windowCountByImageName[name] ?? 0
     }
 
     // MARK: - Derived State for Views

@@ -9,13 +9,17 @@ final class ManagementPanelViewModel {
     var selectedTab: ManagementTab? = .images
     var searchText: String = ""
     var selectedWindowIds: Set<Int> = []
+    var selectedRegisteredImageName: String?
     private(set) var windows: [WindowInfo] = []
+    private(set) var registeredImageNames: [String] = []
+    private(set) var windowCountByImageName: [String: Int] = [:]
     nonisolated(unsafe) private var stateObserver: Any?
     nonisolated(unsafe) private var listObserver: Any?
 
     enum ManagementTab: String, CaseIterable, Identifiable {
         case images
         case layouts
+        case registeredImages
         case settings
 
         var id: String { rawValue }
@@ -24,6 +28,7 @@ final class ManagementPanelViewModel {
             switch self {
             case .images: return L("management.images")
             case .layouts: return L("management.layout")
+            case .registeredImages: return L("management.registered_images")
             case .settings: return L("management.settings")
             }
         }
@@ -32,13 +37,14 @@ final class ManagementPanelViewModel {
             switch self {
             case .images: return "photo.on.rectangle"
             case .layouts: return "rectangle.3.group"
+            case .registeredImages: return "photo.stack"
             case .settings: return "gearshape"
             }
         }
 
         /// 設定以外のタブ（サイドバー上部に表示）
         static var topTabs: [Self] {
-            [.images, .layouts]
+            [.images, .layouts, .registeredImages]
         }
     }
 
@@ -133,6 +139,11 @@ final class ManagementPanelViewModel {
     private func rebuildWindows() {
         guard let appDelegate else {
             windows = []
+            windowCountByImageName = [:]
+            let newNames = ImageManager.shared.registeredImageNames()
+            if newNames != registeredImageNames {
+                registeredImageNames = newNames
+            }
             return
         }
         windows = appDelegate.zOrderedWindows.map { charWindow in
@@ -162,6 +173,11 @@ final class ManagementPanelViewModel {
                 imageName: charWindow.displayName,
                 isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally
             )
+        }
+        windowCountByImageName = Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
+        let newNames = ImageManager.shared.registeredImageNames()
+        if newNames != registeredImageNames {
+            registeredImageNames = newNames
         }
     }
 
@@ -212,21 +228,6 @@ final class ManagementPanelViewModel {
         guard let appDelegate else { return }
         appDelegate.zOrderedWindows.forEach { $0.setGhostMode(false) }
         triggerRefresh()
-    }
-
-    // MARK: - Image Addition
-
-    func addImageFromFile() {
-        let panel = ImageFileDialog.makeOpenPanel(message: L("file.select_new_image_message"))
-        panel.allowsMultipleSelection = true
-        if panel.runModal() == .OK {
-            for url in panel.urls {
-                if let savedName = ImageManager.shared.registerImage(from: url) {
-                    appDelegate?.createNewWindow(imageName: savedName)
-                }
-            }
-            triggerRefresh()
-        }
     }
 
     // MARK: - Detail View Operations
