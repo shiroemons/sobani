@@ -139,6 +139,10 @@ extension AppDelegate {
             okTitle: L("layout.create_button")
         ) else { return }
 
+        createNewLayout(name: name)
+    }
+
+    func createNewLayout(name: String) {
         let mainFrame = NSScreen.mainFrameOrFallback
         let defaultState = WindowState(
             imageName: AppConstants.defaultImageName,

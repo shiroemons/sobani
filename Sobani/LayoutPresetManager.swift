@@ -41,13 +41,17 @@ final class LayoutPresetManager {
         return layoutsDir.appendingPathComponent(fileName)
     }
 
-    func savePreset(name: String, states: [WindowState]) {
-        guard let url = presetFileURL(for: name) else { return }
-        let preset = LayoutPreset(name: name, createdAt: Date(), states: states)
-        JSONPersistence.save(preset, to: url, logger: logger, errorMessage: "Failed to save layout preset") {
+    private func persistPreset(_ preset: LayoutPreset) {
+        guard let url = presetFileURL(for: preset.name) else { return }
+        JSONPersistence.save(preset, to: url, logger: logger, errorMessage: "Failed to persist layout preset") {
             $0.dateEncodingStrategy = .iso8601
         }
         invalidateCache()
+    }
+
+    func savePreset(name: String, states: [WindowState]) {
+        let preset = LayoutPreset(name: name, createdAt: Date(), states: states)
+        persistPreset(preset)
     }
 
     func loadPresets() -> [LayoutPreset] {
@@ -94,6 +98,10 @@ final class LayoutPresetManager {
         } catch {
             logger.error("Failed to delete layout preset '\(name)': \(error.localizedDescription)")
         }
+    }
+
+    func restorePreset(_ preset: LayoutPreset) {
+        persistPreset(preset)
     }
 
     func presetExists(named name: String) -> Bool {

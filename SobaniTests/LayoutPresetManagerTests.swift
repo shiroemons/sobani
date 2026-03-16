@@ -356,4 +356,45 @@ import Testing
         #expect(after.contains(where: { $0.name == "NewCacheName" }))
     }
 
+    // MARK: - Restore Tests
+
+    /// 削除したプリセットがrestorePresetで復元されることを検証
+    @Test func restorePresetAfterDelete() {
+        let states = [makeState(imageName: "restore.png")]
+        presetManager.savePreset(name: "ToRestore", states: states)
+
+        let original = presetManager.loadPreset(named: "ToRestore")
+        #expect(original != nil)
+
+        presetManager.deletePreset(named: "ToRestore")
+        #expect(presetManager.loadPreset(named: "ToRestore") == nil)
+
+        if let original {
+            presetManager.restorePreset(original)
+        }
+
+        let restored = presetManager.loadPreset(named: "ToRestore")
+        #expect(restored != nil)
+        #expect(restored?.name == "ToRestore")
+        #expect(restored?.states == states)
+        #expect(restored?.createdAt == original?.createdAt)
+    }
+
+    /// restorePresetがcreatedAtを保持することを検証
+    @Test func restorePresetPreservesCreatedAt() throws {
+        let states = [makeState(imageName: "preserve.png")]
+        presetManager.savePreset(name: "PreserveDate", states: states)
+
+        let original = try #require(presetManager.loadPreset(named: "PreserveDate"))
+        let originalDate = original.createdAt
+
+        presetManager.deletePreset(named: "PreserveDate")
+
+        // Wait briefly to ensure Date() would produce a different timestamp
+        presetManager.restorePreset(original)
+
+        let restored = try #require(presetManager.loadPreset(named: "PreserveDate"))
+        #expect(restored.createdAt == originalDate)
+    }
+
 }
