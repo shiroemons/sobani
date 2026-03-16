@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var hotkeySettingsVersion = 0
     @State private var hasDuplicateHotkeys = false
     @State private var hasNonDefaultHotkeys = false
+    @State private var hotkeyDebounceTask: Task<Void, Never>?
 
     var body: some View {
         Form {
@@ -231,7 +232,12 @@ struct SettingsView: View {
     private func notifyHotkeySettingsChanged() {
         hotkeySettingsVersion += 1
         updateHotkeyState()
-        NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
+        hotkeyDebounceTask?.cancel()
+        hotkeyDebounceTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
+        }
     }
 
     // MARK: - Accessibility Polling

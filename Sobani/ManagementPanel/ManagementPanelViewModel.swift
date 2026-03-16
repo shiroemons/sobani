@@ -10,9 +10,9 @@ final class ManagementPanelViewModel {
     private(set) var windows: [WindowInfo] = []
     private(set) var registeredImageNames: [String] = []
     private(set) var windowCountByImageName: [String: Int] = [:]
-    private(set) var windowStates: [WindowState] = []
+    var windowStates: [WindowState] { windows.map { $0.toWindowState() } }
     private(set) var windowImages: [String: NSImage] = [:]
-    private(set) var visibleWindowCount: Int = 0
+    var visibleWindowCount: Int { windows.lazy.filter { !$0.isHidden }.count }
     private(set) var languageRefreshId = UUID()
     nonisolated(unsafe) private var stateObserver: Any?
     nonisolated(unsafe) private var listObserver: Any?
@@ -69,10 +69,8 @@ final class ManagementPanelViewModel {
     private func rebuildWindows() {
         guard let appDelegate else {
             windows = []
-            windowStates = []
             windowImages = [:]
             windowCountByImageName = [:]
-            visibleWindowCount = 0
             return
         }
         let newWindows = appDelegate.zOrderedWindows.map { charWindow in
@@ -105,14 +103,6 @@ final class ManagementPanelViewModel {
         }
         if newWindows != windows {
             windows = newWindows
-        }
-        let newWindowStates = newWindows.map { $0.toWindowState() }
-        if newWindowStates != windowStates {
-            windowStates = newWindowStates
-        }
-        let newVisibleCount = newWindows.lazy.filter { !$0.isHidden }.count
-        if newVisibleCount != visibleWindowCount {
-            visibleWindowCount = newVisibleCount
         }
     }
 
@@ -226,7 +216,8 @@ final class ManagementPanelViewModel {
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.refreshRegisteredImageNames()
-                self?.rebuildImageCaches()
+                CroppedImageHelper.invalidateCache()
+                if !(self?.windows.isEmpty ?? true) { self?.rebuildImageCaches() }
             }
         }
         languageObserver = NotificationCenter.default.addObserver(

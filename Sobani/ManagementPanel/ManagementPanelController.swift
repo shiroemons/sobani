@@ -4,7 +4,6 @@ import os.log
 
 @MainActor
 final class ManagementPanelController: NSObject, NSWindowDelegate {
-    private static let panelLevelOffset: Int = 2
     private let logger = Logger(category: "ManagementPanelController")
     private var panel: NSPanel?
     private var hostingController: NSHostingController<ManagementPanelView>?
@@ -74,7 +73,7 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
         panel.contentViewController = hosting
         panel.delegate = self
         panel.isFloatingPanel = true
-        panel.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + Self.panelLevelOffset)
+        panel.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + AppConstants.managementPanelLevelOffset)
         panel.configureForFloating()
         panel.isMovableByWindowBackground = true
         panel.center()

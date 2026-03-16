@@ -238,6 +238,7 @@ enum AppConstants {
     // Management Panel
     static let managementPanelWidth: CGFloat = 1200
     static let managementPanelHeight: CGFloat = 800
+    static let managementPanelLevelOffset = 2
     static let managementPreviewMaxHeight: CGFloat = 300
     static let managementSplitIdealWidth: CGFloat = 500
     static let managementImagePickerPopoverWidth: CGFloat = 400
