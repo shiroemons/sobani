@@ -61,7 +61,7 @@ struct PresetMinimapView: View {
         } else {
             ImageManager.shared.image(named: state.imageName)
         }
-        let displayImage = originalImage.map { CroppedImageHelper.croppedImage(from: $0, cropRect: state.cropRect) }
+        let displayImage = originalImage.map { CroppedImageHelper.croppedImage(from: $0, cropRect: state.cropRect, imageName: state.imageName) }
 
         RoundedRectangle(cornerRadius: 2)
             .fill(Color.secondary.opacity(0.1))

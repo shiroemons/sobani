@@ -204,7 +204,7 @@ struct LayoutPresetsView: View {
     private func thumbnailForState(_ state: WindowState) -> some View {
         let image: NSImage? = {
             guard let baseImage = ImageManager.shared.image(named: state.imageName) else { return nil }
-            return CroppedImageHelper.croppedImage(from: baseImage, cropRect: state.cropRect)
+            return CroppedImageHelper.croppedImage(from: baseImage, cropRect: state.cropRect, imageName: state.imageName)
         }()
         ThumbnailView(image: image, iconFont: .caption2)
     }
