@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct WindowDetailView: View {
+    private static let previewMaxHeight: CGFloat = 300
     @Bindable var viewModel: ManagementPanelViewModel
     @State private var bulkOpacity: CGFloat = AppConstants.opacityMax
 
@@ -76,17 +77,17 @@ struct WindowDetailView: View {
         GroupBox {
             if let originalImage = window.originalImage, let cropRect = window.cropRect {
                 CropOverlayPreviewView(originalImage: originalImage, cropRect: cropRect)
-                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .frame(maxWidth: .infinity, maxHeight: Self.previewMaxHeight)
             } else if let thumbnail = window.thumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .frame(maxWidth: .infinity, maxHeight: Self.previewMaxHeight)
             } else {
                 Image(systemName: "photo")
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .frame(maxWidth: .infinity, maxHeight: Self.previewMaxHeight)
             }
         }
     }

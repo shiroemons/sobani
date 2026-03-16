@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LayoutPresetsView: View {
+    private static let undoTimeoutSeconds: Double = 5
     @Bindable var viewModel: ManagementPanelViewModel
     @State private var presets: [LayoutPreset] = []
     @State private var selectedPreset: LayoutPreset?
@@ -157,11 +158,7 @@ struct LayoutPresetsView: View {
             PresetActionButtonsView(
                 onApply: { applyPreset(preset) },
                 onUpdate: { updatePreset(preset) },
-                onRename: {
-                    newPresetName = preset.name
-                    selectedPreset = preset
-                    isShowingRenameSheet = true
-                },
+                onRename: { startRename(preset) },
                 onDelete: { confirmDeletePreset(preset) }
             )
 
@@ -190,9 +187,7 @@ struct LayoutPresetsView: View {
                 Label(L("layout.update"), systemImage: "arrow.triangle.2.circlepath")
             }
             Button {
-                newPresetName = preset.name
-                selectedPreset = preset
-                isShowingRenameSheet = true
+                startRename(preset)
             } label: {
                 Label(L("layout.rename"), systemImage: "pencil")
             }
@@ -254,8 +249,7 @@ extension LayoutPresetsView {
 
                 HStack(spacing: 4) {
                     Button {
-                        newPresetName = preset.name
-                        isShowingRenameSheet = true
+                        startRename(preset)
                     } label: {
                         Image(systemName: "pencil")
                     }
@@ -348,22 +342,28 @@ extension LayoutPresetsView {
 // MARK: - Actions
 
 extension LayoutPresetsView {
+    private func startRename(_ preset: LayoutPreset) {
+        newPresetName = preset.name
+        selectedPreset = preset
+        isShowingRenameSheet = true
+    }
+
     private func refreshPresets() {
         presets = LayoutPresetManager.shared.loadPresets()
     }
 
     private func savePreset() {
-        guard let states = viewModel.appDelegate?.captureCurrentWindowStates() else { return }
+        guard let states = viewModel.captureCurrentWindowStates() else { return }
         LayoutPresetManager.shared.savePreset(name: newPresetName, states: states)
         refreshPresets()
     }
 
     private func applyPreset(_ preset: LayoutPreset) {
-        viewModel.appDelegate?.applyLayout(preset)
+        viewModel.applyLayout(preset)
     }
 
     private func updatePreset(_ preset: LayoutPreset) {
-        guard let states = viewModel.appDelegate?.captureCurrentWindowStates() else { return }
+        guard let states = viewModel.captureCurrentWindowStates() else { return }
         LayoutPresetManager.shared.savePreset(name: preset.name, states: states)
         refreshPresets()
         // Update the detail view if currently viewing this preset
@@ -402,7 +402,7 @@ extension LayoutPresetsView {
         // Start undo timer
         undoTimerTask = Task {
             do {
-                try await Task.sleep(for: .seconds(5))
+                try await Task.sleep(for: .seconds(Self.undoTimeoutSeconds))
                 withAnimation {
                     deletedPresetForUndo = nil
                 }
@@ -425,7 +425,7 @@ extension LayoutPresetsView {
     private func createNewLayout() {
         let name = newPresetName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
-        viewModel.appDelegate?.createNewLayout(name: name)
+        viewModel.createNewLayout(name: name)
         refreshPresets()
     }
 }

@@ -46,18 +46,8 @@ struct PresetMinimapView: View {
 
     @MainActor
     private var minimapAspectRatio: CGFloat {
-        let screenFrames = NSScreen.screens.map(\.frame)
-        guard !screenFrames.isEmpty else { return 16 / 9 }
-
-        var totalBounds = screenFrames.reduce(CGRect.null) { $0.union($1) }
-        for state in states {
-            let windowFrame = CGRect(
-                x: state.originX, y: state.originY,
-                width: state.width, height: state.height
-            )
-            totalBounds = totalBounds.union(windowFrame)
-        }
-
+        guard !NSScreen.screens.isEmpty else { return 16 / 9 }
+        let totalBounds = MinimapLayout.computeTotalBounds(states: states)
         guard totalBounds.height > 0 else { return 16 / 9 }
         return totalBounds.width / totalBounds.height
     }

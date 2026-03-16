@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RegisteredImagesView: View {
+    private static let previewMaxHeight: CGFloat = 300
     @Bindable var viewModel: ManagementPanelViewModel
     @State private var showingDeleteConfirmation = false
 
@@ -125,12 +126,12 @@ struct RegisteredImagesView: View {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .frame(maxWidth: .infinity, maxHeight: Self.previewMaxHeight)
             } else {
                 Image(systemName: "photo")
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .frame(maxWidth: .infinity, maxHeight: Self.previewMaxHeight)
             }
         }
     }

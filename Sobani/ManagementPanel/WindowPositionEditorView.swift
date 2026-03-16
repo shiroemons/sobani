@@ -52,12 +52,10 @@ struct WindowPositionEditorView: View {
     }
 
     private func loadValues() {
-        guard let charWindow = viewModel.findWindow(by: windowInfo.windowId) else { return }
-        let frame = charWindow.window.frame
-        posX = "\(Int(frame.origin.x))"
-        posY = "\(Int(frame.origin.y))"
-        sizeW = "\(Int(frame.size.width))"
-        sizeH = "\(Int(frame.size.height))"
+        posX = "\(Int(windowInfo.originX))"
+        posY = "\(Int(windowInfo.originY))"
+        sizeW = "\(Int(windowInfo.width))"
+        sizeH = "\(Int(windowInfo.height))"
     }
 
     private func applyChanges() {

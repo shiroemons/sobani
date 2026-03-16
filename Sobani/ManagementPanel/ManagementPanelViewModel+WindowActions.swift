@@ -7,7 +7,7 @@ extension ManagementPanelViewModel {
     func flipWindow(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.toggleFlip()
-        triggerRefresh()
+        // toggleFlip fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func openCropEditor(windowId: Int) {
@@ -30,7 +30,7 @@ extension ManagementPanelViewModel {
     func resetDisplay(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.resetDisplay()
-        triggerRefresh()
+        // resetDisplay fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     // MARK: - Ghost Mode Custom Opacity
@@ -38,13 +38,13 @@ extension ManagementPanelViewModel {
     func setCustomGhostAlpha(windowId: Int, alpha: CGFloat) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setCustomGhostAlpha(alpha)
-        triggerRefresh()
+        // setCustomGhostAlpha fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func clearCustomGhostAlpha(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setCustomGhostAlpha(nil)
-        triggerRefresh()
+        // setCustomGhostAlpha fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     // MARK: - Image Addition
@@ -57,10 +57,11 @@ extension ManagementPanelViewModel {
                 if let savedName = ImageManager.shared.registerImage(from: url) {
                     if createWindow {
                         appDelegate?.createNewWindow(imageName: savedName)
+                        // createNewWindow fires characterWindowListDidChange → triggerRefresh handled by observer
                     }
+                    // registerImage fires registeredImagesDidChange → refreshRegisteredImageNames handled by observer
                 }
             }
-            triggerRefresh()
         }
     }
 

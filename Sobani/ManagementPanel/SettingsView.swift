@@ -7,7 +7,6 @@ struct SettingsView: View {
     @State private var ghostAlpha = GhostModeSettings.globalAlpha
     @State private var currentTheme = AppThemeSettings.currentTheme
     @State private var currentLanguage = LanguageManager.shared.currentLanguage
-    @State private var updateState: UpdateState = .idle
     @State private var isCheckingUpdate = false
     @State private var isHotkeyEnabled = HotkeySettings.isEnabled
     @State private var toggleVisibilityKeyCode = HotkeySettings.toggleVisibilityKeyCode

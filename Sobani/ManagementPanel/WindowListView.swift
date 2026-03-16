@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct WindowListView: View {
+    private static let imagePickerPopoverWidth: CGFloat = 400
+    private static let imagePickerPopoverHeight: CGFloat = 300
+    private static let imagePickerListWidth: CGFloat = 220
+    private static let imagePickerPreviewWidth: CGFloat = 170
     @Bindable var viewModel: ManagementPanelViewModel
     @State private var showingImagePicker = false
     @State private var hoveredImageName: String?
@@ -123,7 +127,7 @@ struct WindowListView: View {
                                 }
                                 .padding(4)
                             }
-                            .frame(width: 220)
+                            .frame(width: Self.imagePickerListWidth)
 
                             Divider()
 
@@ -140,12 +144,12 @@ struct WindowListView: View {
                                         .foregroundStyle(.tertiary)
                                 }
                             }
-                            .frame(width: 170)
+                            .frame(width: Self.imagePickerPreviewWidth)
                             .frame(maxHeight: .infinity)
                         }
                     }
                 }
-                .frame(width: 400, height: 300)
+                .frame(width: Self.imagePickerPopoverWidth, height: Self.imagePickerPopoverHeight)
             }
 
         }

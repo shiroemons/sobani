@@ -11,9 +11,7 @@ final class ManagementPanelViewModel {
     var selectedRegisteredImageName: String?
     private(set) var windows: [WindowInfo] = []
     private(set) var registeredImageNames: [String] = []
-    var windowCountByImageName: [String: Int] {
-        Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
-    }
+    private(set) var windowCountByImageName: [String: Int] = [:]
     nonisolated(unsafe) private var stateObserver: Any?
     nonisolated(unsafe) private var listObserver: Any?
     nonisolated(unsafe) private var imageListObserver: Any?
@@ -172,6 +170,7 @@ final class ManagementPanelViewModel {
                 isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally
             )
         }
+        windowCountByImageName = Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
     }
 
     private func refreshRegisteredImageNames() {
@@ -186,13 +185,13 @@ final class ManagementPanelViewModel {
     func toggleHidden(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setHidden(!charWindow.isHidden)
-        triggerRefresh()
+        // notifyStateDidChange fires via CharacterWindow.setHidden → triggerRefresh handled by observer
     }
 
     func toggleGhostMode(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setGhostMode(!charWindow.isGhostMode)
-        triggerRefresh()
+        // notifyStateDidChange fires via CharacterWindow.setGhostMode → triggerRefresh handled by observer
     }
 
     // MARK: - Bulk Operations
@@ -200,25 +199,25 @@ final class ManagementPanelViewModel {
     func showAllWindows() {
         guard let appDelegate else { return }
         appDelegate.zOrderedWindows.forEach { $0.setHidden(false) }
-        triggerRefresh()
+        // Each setHidden fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func hideAllWindows() {
         guard let appDelegate else { return }
         appDelegate.zOrderedWindows.forEach { $0.setHidden(true) }
-        triggerRefresh()
+        // Each setHidden fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func ghostAllWindows() {
         guard let appDelegate else { return }
         appDelegate.zOrderedWindows.forEach { $0.setGhostMode(true) }
-        triggerRefresh()
+        // Each setGhostMode fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func unghostAllWindows() {
         guard let appDelegate else { return }
         appDelegate.zOrderedWindows.forEach { $0.setGhostMode(false) }
-        triggerRefresh()
+        // Each setGhostMode fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     // MARK: - Detail View Operations
@@ -226,12 +225,12 @@ final class ManagementPanelViewModel {
     func changeOpacity(windowId: Int, opacity: CGFloat) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.applyOpacity(opacity)
-        triggerRefresh()
+        // applyOpacity fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func changeBulkOpacity(opacity: CGFloat) {
         targetWindows.forEach { $0.applyOpacity(opacity) }
-        triggerRefresh()
+        // Each applyOpacity fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {
@@ -239,10 +238,6 @@ final class ManagementPanelViewModel {
         let newFrame = NSRect(origin: origin, size: size)
         charWindow.window.setFrame(newFrame, display: true)
         triggerRefresh()
-    }
-
-    func findWindow(by windowId: Int) -> CharacterWindow? {
-        findCharacterWindow(by: windowId)
     }
 
     // MARK: - Window Management
@@ -350,5 +345,19 @@ final class ManagementPanelViewModel {
             return appDelegate.zOrderedWindows
         }
         return appDelegate.zOrderedWindows.filter { selectedWindowIds.contains($0.windowId) }
+    }
+
+    // MARK: - Layout Delegate Methods
+
+    func captureCurrentWindowStates() -> [WindowState]? {
+        appDelegate?.captureCurrentWindowStates()
+    }
+
+    func applyLayout(_ preset: LayoutPreset) {
+        appDelegate?.applyLayout(preset)
+    }
+
+    func createNewLayout(name: String) {
+        appDelegate?.createNewLayout(name: name)
     }
 }

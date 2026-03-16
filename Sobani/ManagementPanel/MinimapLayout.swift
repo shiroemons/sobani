@@ -21,6 +21,17 @@ struct MinimapLayout {
     }
 
     @MainActor
+    static func computeTotalBounds(states: [WindowState]) -> CGRect {
+        let screenFrames = NSScreen.screens.map(\.frame)
+        var totalBounds = screenFrames.reduce(CGRect.null) { $0.union($1) }
+        for state in states {
+            let windowFrame = CGRect(x: state.originX, y: state.originY, width: state.width, height: state.height)
+            totalBounds = totalBounds.union(windowFrame)
+        }
+        return totalBounds
+    }
+
+    @MainActor
     static func calculate(in availableSize: CGSize, states: [WindowState] = []) -> Self {
         let screenFrames = NSScreen.screens.map(\.frame)
         guard !screenFrames.isEmpty else {
@@ -28,11 +39,7 @@ struct MinimapLayout {
         }
 
         // Include both screens and windows in total bounds calculation
-        var totalBounds = screenFrames.reduce(CGRect.null) { $0.union($1) }
-        for state in states {
-            let windowFrame = CGRect(x: state.originX, y: state.originY, width: state.width, height: state.height)
-            totalBounds = totalBounds.union(windowFrame)
-        }
+        let totalBounds = computeTotalBounds(states: states)
 
         let padding: CGFloat = 16
         let usableWidth = availableSize.width - padding * 2
@@ -65,11 +72,7 @@ struct MinimapLayout {
         let screenFrames = NSScreen.screens.map(\.frame)
         guard !screenFrames.isEmpty else { return Self.minimapFallbackHeight }
 
-        var totalBounds = screenFrames.reduce(CGRect.null) { $0.union($1) }
-        for state in states {
-            let windowFrame = CGRect(x: state.originX, y: state.originY, width: state.width, height: state.height)
-            totalBounds = totalBounds.union(windowFrame)
-        }
+        let totalBounds = computeTotalBounds(states: states)
 
         let padding: CGFloat = 16
         let usableWidth = width - padding * 2
