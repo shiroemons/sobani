@@ -11,10 +11,10 @@ struct RegisteredImagesView: View {
             } else {
                 HSplitView {
                     imageListPanel
-                        .frame(minWidth: 280, idealWidth: 350, maxWidth: 450)
+                        .splitPanelFrame()
 
                     detailPanel
-                        .frame(minWidth: 400)
+                        .splitPanelFrame()
                 }
             }
         }

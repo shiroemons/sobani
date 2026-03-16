@@ -59,3 +59,14 @@ struct ImagePreviewBox: View {
         }
     }
 }
+
+// MARK: - HSplitView Panel Modifier
+
+extension View {
+    /// HSplitViewの各パネルに適用し、コンテンツの最小幅が親に伝播するのを遮断する。
+    /// GeometryReaderの最小サイズがゼロである性質を利用して、HSplitViewがidealWidthのみで分割を決定するようにする。
+    func splitPanelFrame() -> some View {
+        GeometryReader { _ in self }
+            .frame(idealWidth: AppConstants.managementSplitIdealWidth)
+    }
+}

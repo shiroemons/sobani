@@ -291,8 +291,9 @@ extension LayoutPresetsView {
             // Window list | Window detail (read-only)
             HSplitView {
                 presetWindowList(preset: preset)
-                    .frame(minWidth: 280, idealWidth: 320, maxWidth: 400)
+                    .splitPanelFrame()
                 PresetDetailView(preset: preset, selectedIndex: selectedPresetWindowIndex)
+                    .splitPanelFrame()
             }
         }
         .sheet(isPresented: $isShowingRenameSheet) {
