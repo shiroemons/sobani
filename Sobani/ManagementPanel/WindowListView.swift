@@ -313,11 +313,11 @@ struct WindowListRow: View {
 
             Divider()
 
-            Button(role: .destructive) {
+            Button {
                 viewModel.deleteWindows(windowIds: [windowInfo.windowId])
             } label: {
-                Label(L("management.context.delete"),
-                      systemImage: "trash")
+                Label(L("management.context.close"),
+                      systemImage: AppConstants.closeSymbol)
             }
         }
         .accessibilityElement(children: .combine)

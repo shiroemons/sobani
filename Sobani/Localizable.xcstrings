@@ -3590,7 +3590,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "この画像を隠す"
+            "value": "この画像を非表示にする"
           }
         },
         "en": {
@@ -3782,7 +3782,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "すべてゴースト"
+            "value": "すべてゴーストモードにする"
           }
         },
         "en": {
@@ -3798,7 +3798,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ゴースト解除"
+            "value": "すべてゴーストモードを解除"
           }
         },
         "en": {
@@ -4097,18 +4097,18 @@
         }
       }
     },
-    "management.context.delete": {
+    "management.context.close": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "削除"
+            "value": "閉じる"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete"
+            "value": "Close"
           }
         }
       }
