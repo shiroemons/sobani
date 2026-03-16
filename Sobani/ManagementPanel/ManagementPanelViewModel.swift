@@ -10,6 +10,9 @@ final class ManagementPanelViewModel {
     private(set) var windows: [WindowInfo] = []
     private(set) var registeredImageNames: [String] = []
     private(set) var windowCountByImageName: [String: Int] = [:]
+    private(set) var cachedWindowStates: [WindowState] = []
+    private(set) var cachedWindowImages: [String: NSImage] = [:]
+    private(set) var visibleWindowCount: Int = 0
     nonisolated(unsafe) private var stateObserver: Any?
     nonisolated(unsafe) private var listObserver: Any?
     nonisolated(unsafe) private var imageListObserver: Any?
@@ -140,6 +143,9 @@ final class ManagementPanelViewModel {
     private func rebuildWindows() {
         guard let appDelegate else {
             windows = []
+            cachedWindowStates = []
+            cachedWindowImages = [:]
+            visibleWindowCount = 0
             return
         }
         windows = appDelegate.zOrderedWindows.map { charWindow in
@@ -170,6 +176,13 @@ final class ManagementPanelViewModel {
             )
         }
         windowCountByImageName = Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
+        cachedWindowStates = windows.map { $0.toWindowState() }
+        var imageDict: [String: NSImage] = [:]
+        for window in windows where imageDict[window.imageName] == nil {
+            imageDict[window.imageName] = window.originalImage
+        }
+        cachedWindowImages = imageDict
+        visibleWindowCount = windows.filter { !$0.isHidden }.count
     }
 
     private func refreshRegisteredImageNames() {
@@ -196,34 +209,26 @@ final class ManagementPanelViewModel {
     // MARK: - Bulk Operations
 
     func showAllWindows() {
-        guard let appDelegate else { return }
-        isBatchUpdating = true
-        appDelegate.zOrderedWindows.forEach { $0.setHidden(false) }
-        isBatchUpdating = false
-        triggerRefresh()
+        performBatchUpdate { $0.setHidden(false) }
     }
 
     func hideAllWindows() {
-        guard let appDelegate else { return }
-        isBatchUpdating = true
-        appDelegate.zOrderedWindows.forEach { $0.setHidden(true) }
-        isBatchUpdating = false
-        triggerRefresh()
+        performBatchUpdate { $0.setHidden(true) }
     }
 
     func ghostAllWindows() {
-        guard let appDelegate else { return }
-        isBatchUpdating = true
-        appDelegate.zOrderedWindows.forEach { $0.setGhostMode(true) }
-        isBatchUpdating = false
-        triggerRefresh()
+        performBatchUpdate { $0.setGhostMode(true) }
     }
 
     func unghostAllWindows() {
+        performBatchUpdate { $0.setGhostMode(false) }
+    }
+
+    private func performBatchUpdate(_ action: (CharacterWindow) -> Void) {
         guard let appDelegate else { return }
         isBatchUpdating = true
-        appDelegate.zOrderedWindows.forEach { $0.setGhostMode(false) }
-        isBatchUpdating = false
+        defer { isBatchUpdating = false }
+        appDelegate.zOrderedWindows.forEach(action)
         triggerRefresh()
     }
 

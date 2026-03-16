@@ -201,7 +201,7 @@ struct WindowListView: View {
 
     @ViewBuilder
     private var statusBar: some View {
-        let visibleCount = viewModel.windows.filter { !$0.isHidden }.count
+        let visibleCount = viewModel.visibleWindowCount
         let totalCount = viewModel.windows.count
         HStack {
             Text(String(format: L("management.status_format"), visibleCount, totalCount))

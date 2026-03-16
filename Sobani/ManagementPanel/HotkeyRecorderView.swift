@@ -45,10 +45,10 @@ struct HotkeyRecorderRepresentable: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: KeyCaptureView, context: Context) {
-        if isRecording, nsView.window?.firstResponder !== nsView {
-            DispatchQueue.main.async {
-                nsView.window?.makeFirstResponder(nsView)
-            }
+        guard isRecording else { return }
+        guard nsView.window?.firstResponder !== nsView else { return }
+        DispatchQueue.main.async {
+            nsView.window?.makeFirstResponder(nsView)
         }
     }
 }

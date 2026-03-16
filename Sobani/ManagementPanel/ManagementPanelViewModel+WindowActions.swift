@@ -89,15 +89,7 @@ extension ManagementPanelViewModel {
 
     // MARK: - Derived State for Views
 
-    var windowStates: [WindowState] {
-        windows.map { $0.toWindowState() }
-    }
+    var windowStates: [WindowState] { cachedWindowStates }
 
-    var windowImages: [String: NSImage] {
-        var dict: [String: NSImage] = [:]
-        for window in windows where dict[window.imageName] == nil {
-            dict[window.imageName] = window.originalImage
-        }
-        return dict
-    }
+    var windowImages: [String: NSImage] { cachedWindowImages }
 }
