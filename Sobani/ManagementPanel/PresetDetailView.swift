@@ -123,6 +123,20 @@ struct PresetDetailView: View {
                         .font(.body)
                         .foregroundStyle(.secondary)
                 }
+
+                HStack {
+                    Text(L("management.ghost_custom_opacity"))
+                        .font(.body)
+                    Spacer()
+                    if let alpha = state.customGhostAlpha {
+                        Text(FormatUtils.formatOpacity(alpha))
+                            .font(.body.monospaced())
+                    } else {
+                        Text(L("management.ghost_using_default"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
 
             if state.isHidden {
