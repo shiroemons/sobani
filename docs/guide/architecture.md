@@ -7,7 +7,7 @@ Sobani の内部構造を解説します。
 ## 技術スタック
 
 - Swift 6 / Cocoa (AppKit)
-- macOS 13.0+
+- macOS 14.0+
 - 外部依存なし
 - LSUIElement（ドックアイコンなし）
 
@@ -161,7 +161,7 @@ classDiagram
 | `AspectRatioPreset.swift` | アスペクト比プリセットの定義（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
 | `AspectRatioSelectorView.swift` | アスペクト比プリセット選択UI（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
 | `AdjustmentPanelController.swift` | 回転ダイアル・不透明度スライダーのパネル |
-| `BackgroundRemovalManager.swift` | Vision フレームワークによる背景除去（macOS 14以降、シングルトン） |
+| `BackgroundRemovalManager.swift` | Vision フレームワークによる背景除去（シングルトン） |
 | `CharacterWindow.swift` | ボーダーレス透明ウィンドウ。`RotatableContainer`、コンテキストメニュー |
 | `CharacterWindow+OtherSubmenu.swift` | 「その他」コンテキストサブメニューのCharacterWindow拡張 |
 | `Constants.swift` | `AppConstants`、`GeometryUtils`、`MenuItemTag`、`L()` ヘルパー |
