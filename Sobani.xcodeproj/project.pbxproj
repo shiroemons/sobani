@@ -55,6 +55,7 @@
 		F0SN000002000000000001 /* SnapUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SN000001000000000001 /* SnapUtils.swift */; };
 		F0COS00002000000000001 /* CharacterWindow+OtherSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */; };
 		F0ALP00002000000000001 /* AppDelegate+LayoutPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */; };
+		F0HK000002000000000001 /* AppDelegate+Hotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HK000001000000000001 /* AppDelegate+Hotkey.swift */; };
 		F0DI000002000000000001 /* DraggableImageViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DI000001000000000001 /* DraggableImageViewTests.swift */; };
 		F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PT000001000000000001 /* ImagePreviewPanelTests.swift */; };
 		F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ZO000003000000000001 /* ZOrderUtilsTests.swift */; };
@@ -116,6 +117,10 @@
 		A1B2C3D401000025 /* RegisteredImagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000024 /* RegisteredImagesView.swift */; };
 		A1B2C3D40100001F /* MinimapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40100001E /* MinimapLayoutTests.swift */; };
 		A1B2C3D401000021 /* CroppedImageHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000020 /* CroppedImageHelperTests.swift */; };
+		A1B2C3D401000027 /* KeyCodeMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000026 /* KeyCodeMapper.swift */; };
+		A1B2C3D401000029 /* HotkeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000028 /* HotkeyRecorderView.swift */; };
+		A1B2C3D401000031 /* KeyCodeMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000030 /* KeyCodeMapperTests.swift */; };
+		A1B2C3D401000033 /* HotkeySettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000032 /* HotkeySettingsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -182,6 +187,7 @@
 		F0SN000001000000000001 /* SnapUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapUtils.swift; sourceTree = "<group>"; };
 		F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+OtherSubmenu.swift"; sourceTree = "<group>"; };
 		F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+LayoutPreset.swift"; sourceTree = "<group>"; };
+		F0HK000001000000000001 /* AppDelegate+Hotkey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Hotkey.swift"; sourceTree = "<group>"; };
 		F0DI000001000000000001 /* DraggableImageViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraggableImageViewTests.swift; sourceTree = "<group>"; };
 		F0PT000001000000000001 /* ImagePreviewPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanelTests.swift; sourceTree = "<group>"; };
 		F0ZO000003000000000001 /* ZOrderUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZOrderUtilsTests.swift; sourceTree = "<group>"; };
@@ -243,6 +249,10 @@
 		A1B2C3D40100001C /* CroppedImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CroppedImageHelper.swift; sourceTree = "<group>"; };
 		A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelViewModel+WindowActions.swift"; sourceTree = "<group>"; };
 		A1B2C3D401000024 /* RegisteredImagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredImagesView.swift; sourceTree = "<group>"; };
+		A1B2C3D401000026 /* KeyCodeMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeMapper.swift; sourceTree = "<group>"; };
+		A1B2C3D401000028 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
+		A1B2C3D401000030 /* KeyCodeMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeMapperTests.swift; sourceTree = "<group>"; };
+		A1B2C3D401000032 /* HotkeySettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeySettingsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -280,6 +290,7 @@
 				DD000014 /* AppDelegate+StatusBarMenu.swift */,
 				F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */,
 				F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */,
+				F0HK000001000000000001 /* AppDelegate+Hotkey.swift */,
 				DD000006 /* CharacterWindow.swift */,
 				F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */,
 				F0HW000001000000000001 /* CharacterWindow+TestableStaticMethods.swift */,
@@ -323,6 +334,7 @@
 				F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */,
 				F0NM000001000000000001 /* NSMenu+RegisteredImages.swift */,
 				DD000010 /* WindowStateManager.swift */,
+				A1B2C3D401000026 /* KeyCodeMapper.swift */,
 				A1B2C3D401000007 /* ManagementPanel */,
 				HH000002 /* Localizable.xcstrings */,
 				AA000004 /* Assets.xcassets */,
@@ -387,6 +399,8 @@
 				F0TH000001000000000001 /* AppThemeTests.swift */,
 				A1B2C3D40100001E /* MinimapLayoutTests.swift */,
 				A1B2C3D401000020 /* CroppedImageHelperTests.swift */,
+				A1B2C3D401000030 /* KeyCodeMapperTests.swift */,
+				A1B2C3D401000032 /* HotkeySettingsTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -405,6 +419,7 @@
 				A1B2C3D401000012 /* PresetDetailView.swift */,
 				A1B2C3D401000014 /* PresetMinimapView.swift */,
 				A1B2C3D401000016 /* SettingsView.swift */,
+				A1B2C3D401000028 /* HotkeyRecorderView.swift */,
 				A1B2C3D401000018 /* CropOverlayPreviewView.swift */,
 				A1B2C3D40100001A /* MinimapLayout.swift */,
 				A1B2C3D40100001C /* CroppedImageHelper.swift */,
@@ -533,6 +548,7 @@
 			files = (
 				DD000007 /* AppDelegate.swift in Sources */,
 				F0ALP00002000000000001 /* AppDelegate+LayoutPreset.swift in Sources */,
+				F0HK000002000000000001 /* AppDelegate+Hotkey.swift in Sources */,
 				DD000005 /* CharacterWindow.swift in Sources */,
 				F0COS00002000000000001 /* CharacterWindow+OtherSubmenu.swift in Sources */,
 				DD000003 /* DraggableImageView.swift in Sources */,
@@ -595,6 +611,8 @@
 				A1B2C3D40100001D /* CroppedImageHelper.swift in Sources */,
 				A1B2C3D401000023 /* ManagementPanelViewModel+WindowActions.swift in Sources */,
 				A1B2C3D401000025 /* RegisteredImagesView.swift in Sources */,
+				A1B2C3D401000027 /* KeyCodeMapper.swift in Sources */,
+				A1B2C3D401000029 /* HotkeyRecorderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -643,6 +661,8 @@
 				F0TH000002000000000001 /* AppThemeTests.swift in Sources */,
 				A1B2C3D40100001F /* MinimapLayoutTests.swift in Sources */,
 				A1B2C3D401000021 /* CroppedImageHelperTests.swift in Sources */,
+				A1B2C3D401000031 /* KeyCodeMapperTests.swift in Sources */,
+				A1B2C3D401000033 /* HotkeySettingsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,8 +12,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     var areWindowsHidden = false
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
+    var globalMonitor: Any?
+    var localMonitor: Any?
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
@@ -26,7 +26,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance
         setupStatusBar()
-        setupHotkeyMonitors()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(refreshHotkeyMonitors),
+            name: AppConstants.hotkeySettingsDidChange,
+            object: nil
+        )
+        if HotkeySettings.isEnabled {
+            setupHotkeyMonitors()
+        }
         screenRestorationManager.loadPending()
 
         let savedStates = WindowStateManager.shared.loadStates()
@@ -124,50 +132,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
         areWindowsHidden.toggle()
-    }
-
-    private nonisolated func isOptionHotkey(_ event: NSEvent, keyCode: UInt16) -> Bool {
-        event.keyCode == keyCode
-            && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option
-    }
-
-    func setupHotkeyMonitors() {
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            guard let self else { return }
-            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllWindowsVisibility()
-                }
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllGhostMode()
-                }
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionMKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.showManagementPanel()
-                }
-            }
-        }
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            guard let self else { return event }
-            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllWindowsVisibility()
-                }
-                return nil
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllGhostMode()
-                }
-                return nil
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionMKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.showManagementPanel()
-                }
-                return nil
-            }
-            return event
-        }
     }
 
     @objc func addNewWindowFromMenu() { createNewWindow() }
@@ -307,14 +271,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         WindowStateManager.shared.saveStates(states)
         screenRestorationManager.savePending()
 
-        if let monitor = globalMonitor {
-            NSEvent.removeMonitor(monitor)
-            globalMonitor = nil
-        }
-        if let monitor = localMonitor {
-            NSEvent.removeMonitor(monitor)
-            localMonitor = nil
-        }
+        unregisterHotkeyMonitors()
 
         teardownScreenRestorationObservers()
     }

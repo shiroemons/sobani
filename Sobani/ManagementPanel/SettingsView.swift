@@ -8,12 +8,22 @@ struct SettingsView: View {
     @State private var currentLanguage = LanguageManager.shared.currentLanguage
     @State private var updateState: UpdateState = .idle
     @State private var isCheckingUpdate = false
+    @State private var isHotkeyEnabled = HotkeySettings.isEnabled
+    @State private var toggleVisibilityKeyCode = HotkeySettings.toggleVisibilityKeyCode
+    @State private var toggleVisibilityModifiers = HotkeySettings.toggleVisibilityModifiers
+    @State private var toggleGhostKeyCode = HotkeySettings.toggleGhostModeKeyCode
+    @State private var toggleGhostModifiers = HotkeySettings.toggleGhostModeModifiers
+    @State private var toggleManagementKeyCode = HotkeySettings.toggleManagementKeyCode
+    @State private var toggleManagementModifiers = HotkeySettings.toggleManagementModifiers
+    @State private var isAccessibilityGranted = AXIsProcessTrusted()
+    @State private var accessibilityTimer: Timer?
 
     var body: some View {
         Form {
             generalSection
             ghostModeSection
             appearanceSection
+            hotkeySection
             updateSection
         }
         .formStyle(.grouped)
@@ -92,6 +102,121 @@ struct SettingsView: View {
                 AppThemeSettings.currentTheme = currentTheme
             }
         }
+    }
+
+    // MARK: - Hotkey
+
+    @ViewBuilder
+    private var hotkeySection: some View {
+        Section(L("management.hotkey_section")) {
+            Toggle(L("management.hotkey_enabled"), isOn: $isHotkeyEnabled)
+                .onChange(of: isHotkeyEnabled) {
+                    HotkeySettings.isEnabled = isHotkeyEnabled
+                    NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
+                }
+
+            if isHotkeyEnabled {
+                if isAccessibilityGranted {
+                    Label(L("management.hotkey_accessibility_granted"), systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label(L("management.hotkey_accessibility_warning"), systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Button(L("management.hotkey_open_settings")) {
+                            if let url = URL(string: AppConstants.accessibilitySettingsURL) {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                }
+
+                hotkeyRow(
+                    label: L("management.hotkey_toggle_visibility"),
+                    keyCode: $toggleVisibilityKeyCode,
+                    modifiers: $toggleVisibilityModifiers
+                )
+                hotkeyRow(
+                    label: L("management.hotkey_toggle_ghost"),
+                    keyCode: $toggleGhostKeyCode,
+                    modifiers: $toggleGhostModifiers
+                )
+                hotkeyRow(
+                    label: L("management.hotkey_toggle_management"),
+                    keyCode: $toggleManagementKeyCode,
+                    modifiers: $toggleManagementModifiers
+                )
+
+                if hasDuplicateHotkeys {
+                    Label(L("management.hotkey_duplicate_warning"), systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(.red)
+                }
+            }
+        }
+        .onAppear {
+            startAccessibilityPolling()
+        }
+        .onDisappear {
+            stopAccessibilityPolling()
+        }
+    }
+
+    private func hotkeyRow(label: String, keyCode: Binding<UInt16>, modifiers: Binding<NSEvent.ModifierFlags>) -> some View {
+        HStack {
+            Text(label)
+            Spacer()
+            HotkeyRecorderButton(keyCode: keyCode, modifiers: modifiers)
+                .onChange(of: keyCode.wrappedValue) { saveHotkeySettings() }
+                .onChange(of: modifiers.wrappedValue) { saveHotkeySettings() }
+        }
+    }
+
+    private var hasDuplicateHotkeys: Bool {
+        let hotkeys = [
+            (toggleVisibilityKeyCode, toggleVisibilityModifiers),
+            (toggleGhostKeyCode, toggleGhostModifiers),
+            (toggleManagementKeyCode, toggleManagementModifiers)
+        ]
+        for outer in 0..<hotkeys.count {
+            for inner in (outer + 1)..<hotkeys.count {
+                if hotkeys[outer].0 == hotkeys[inner].0 && hotkeys[outer].1 == hotkeys[inner].1 {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private func saveHotkeySettings() {
+        HotkeySettings.toggleVisibilityKeyCode = toggleVisibilityKeyCode
+        HotkeySettings.toggleVisibilityModifiers = toggleVisibilityModifiers
+        HotkeySettings.toggleGhostModeKeyCode = toggleGhostKeyCode
+        HotkeySettings.toggleGhostModeModifiers = toggleGhostModifiers
+        HotkeySettings.toggleManagementKeyCode = toggleManagementKeyCode
+        HotkeySettings.toggleManagementModifiers = toggleManagementModifiers
+        NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
+    }
+
+    private func startAccessibilityPolling() {
+        accessibilityTimer?.invalidate()
+        guard !isAccessibilityGranted else { return }
+        accessibilityTimer = Timer.scheduledTimer(
+            withTimeInterval: AppConstants.accessibilityPollingInterval,
+            repeats: true
+        ) { _ in
+            MainActor.assumeIsolated {
+                let granted = AXIsProcessTrusted()
+                isAccessibilityGranted = granted
+                if granted {
+                    stopAccessibilityPolling()
+                }
+            }
+        }
+    }
+
+    private func stopAccessibilityPolling() {
+        accessibilityTimer?.invalidate()
+        accessibilityTimer = nil
     }
 
     // MARK: - Update
