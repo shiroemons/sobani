@@ -242,6 +242,7 @@ enum AppConstants {
     static let characterWindowStateDidChange = Notification.Name("\(loggerSubsystem).characterWindowStateDidChange")
     static let characterWindowListDidChange = Notification.Name("\(loggerSubsystem).characterWindowListDidChange")
     static let hotkeySettingsDidChange = Notification.Name("\(loggerSubsystem).hotkeySettingsDidChange")
+    static let registeredImagesDidChange = Notification.Name("\(loggerSubsystem).registeredImagesDidChange")
 }
 
 enum GhostModeSettings {

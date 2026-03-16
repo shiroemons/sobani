@@ -21,7 +21,7 @@ struct ManagementPanelView: View {
                 }
             }
         }
-        .frame(minWidth: 1200, minHeight: 800)
+        .frame(minWidth: AppConstants.managementPanelWidth, minHeight: AppConstants.managementPanelHeight)
     }
 
     @ViewBuilder

@@ -1,6 +1,8 @@
 import AppKit
 
 struct MinimapLayout {
+    static let minimapFallbackHeight: CGFloat = 150
+
     let screens: [CGRect]
     let scale: CGFloat
     let offset: CGPoint
@@ -61,7 +63,7 @@ struct MinimapLayout {
     @MainActor
     static func idealHeight(for width: CGFloat, states: [WindowState] = []) -> CGFloat {
         let screenFrames = NSScreen.screens.map(\.frame)
-        guard !screenFrames.isEmpty else { return 150 }
+        guard !screenFrames.isEmpty else { return Self.minimapFallbackHeight }
 
         var totalBounds = screenFrames.reduce(CGRect.null) { $0.union($1) }
         for state in states {

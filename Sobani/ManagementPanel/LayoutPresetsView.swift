@@ -155,7 +155,6 @@ struct LayoutPresetsView: View {
             .frame(maxWidth: .infinity)
 
             PresetActionButtonsView(
-                preset: preset,
                 onApply: { applyPreset(preset) },
                 onUpdate: { updatePreset(preset) },
                 onRename: {
@@ -466,7 +465,6 @@ struct PresetNameSheetView: View {
 // MARK: - PresetActionButtonsView
 
 struct PresetActionButtonsView: View {
-    let preset: LayoutPreset
     let onApply: () -> Void
     let onUpdate: () -> Void
     let onRename: () -> Void

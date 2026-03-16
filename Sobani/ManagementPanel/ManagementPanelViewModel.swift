@@ -11,9 +11,12 @@ final class ManagementPanelViewModel {
     var selectedRegisteredImageName: String?
     private(set) var windows: [WindowInfo] = []
     private(set) var registeredImageNames: [String] = []
-    private(set) var windowCountByImageName: [String: Int] = [:]
+    var windowCountByImageName: [String: Int] {
+        Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
+    }
     nonisolated(unsafe) private var stateObserver: Any?
     nonisolated(unsafe) private var listObserver: Any?
+    nonisolated(unsafe) private var imageListObserver: Any?
 
     enum ManagementTab: String, CaseIterable, Identifiable {
         case images
@@ -50,8 +53,8 @@ final class ManagementPanelViewModel {
     // MARK: - Window Info (snapshot for SwiftUI)
 
     struct WindowInfo: Identifiable, Hashable {
-        let id: Int
         let windowId: Int
+        var id: Int { windowId }
         let displayName: String
         let subtitle: String
         let isHidden: Bool
@@ -125,12 +128,14 @@ final class ManagementPanelViewModel {
     init(appDelegate: AppDelegate) {
         self.appDelegate = appDelegate
         rebuildWindows()
+        refreshRegisteredImageNames()
         setupNotificationObservers()
     }
 
     deinit {
         if let stateObserver { NotificationCenter.default.removeObserver(stateObserver) }
         if let listObserver { NotificationCenter.default.removeObserver(listObserver) }
+        if let imageListObserver { NotificationCenter.default.removeObserver(imageListObserver) }
     }
 
     // MARK: - Window List
@@ -138,11 +143,6 @@ final class ManagementPanelViewModel {
     private func rebuildWindows() {
         guard let appDelegate else {
             windows = []
-            windowCountByImageName = [:]
-            let newNames = ImageManager.shared.registeredImageNames()
-            if newNames != registeredImageNames {
-                registeredImageNames = newNames
-            }
             return
         }
         windows = appDelegate.zOrderedWindows.map { charWindow in
@@ -152,7 +152,6 @@ final class ManagementPanelViewModel {
             let thumbnail = charWindow.imageView.image
             let frame = charWindow.window.frame
             return WindowInfo(
-                id: charWindow.windowId,
                 windowId: charWindow.windowId,
                 displayName: charWindow.localizedDisplayName,
                 subtitle: subtitle,
@@ -173,7 +172,9 @@ final class ManagementPanelViewModel {
                 isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally
             )
         }
-        windowCountByImageName = Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
+    }
+
+    private func refreshRegisteredImageNames() {
         let newNames = ImageManager.shared.registeredImageNames()
         if newNames != registeredImageNames {
             registeredImageNames = newNames
@@ -253,7 +254,6 @@ final class ManagementPanelViewModel {
             removeCharacterWindow(charWindow)
         }
         selectedWindowIds.subtract(windowIds)
-        triggerRefresh()
     }
 
     func duplicateWindow(windowId: Int) {
@@ -320,6 +320,15 @@ final class ManagementPanelViewModel {
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.triggerRefresh()
+            }
+        }
+        imageListObserver = NotificationCenter.default.addObserver(
+            forName: AppConstants.registeredImagesDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refreshRegisteredImageNames()
             }
         }
     }

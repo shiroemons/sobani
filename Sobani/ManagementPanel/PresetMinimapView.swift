@@ -6,7 +6,6 @@ struct PresetMinimapView: View {
     var selectedWindowId: Int?
     var onWindowTapped: ((Int) -> Void)?
 
-    private static let minHeight: CGFloat = 150
     private static let maxHeight: CGFloat = 400
 
     var body: some View {
@@ -42,7 +41,7 @@ struct PresetMinimapView: View {
             }
         }
         .aspectRatio(minimapAspectRatio, contentMode: .fit)
-        .frame(minHeight: Self.minHeight, maxHeight: Self.maxHeight)
+        .frame(minHeight: MinimapLayout.minimapFallbackHeight, maxHeight: Self.maxHeight)
     }
 
     @MainActor

@@ -25,7 +25,6 @@ extension ManagementPanelViewModel {
         charWindow.removeBackground { [weak self] in
             self?.triggerRefresh()
         }
-        triggerRefresh()
     }
 
     func resetDisplay(windowId: Int) {

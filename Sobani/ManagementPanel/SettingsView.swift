@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
     @State private var isLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
     @State private var isSnapEnabled = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
     @State private var ghostAlpha = GhostModeSettings.globalAlpha
@@ -224,11 +225,10 @@ struct SettingsView: View {
     @ViewBuilder
     private var updateSection: some View {
         Section(L("management.update_section")) {
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
             HStack {
                 Text(L("management.current_version"))
                 Spacer()
-                Text("v\(version)")
+                Text("v\(appVersion)")
                     .font(.body.monospaced())
                     .foregroundStyle(.secondary)
             }
