@@ -36,7 +36,7 @@ struct WindowListView: View {
                 Button {
                     viewModel.showAllWindows()
                 } label: {
-                    Image(systemName: "eye")
+                    Image(systemName: AppConstants.visibleWindowSymbol)
                         .frame(width: 16, height: 16)
                 }
                 .help(L("management.show_all"))
@@ -44,7 +44,7 @@ struct WindowListView: View {
                 Button {
                     viewModel.hideAllWindows()
                 } label: {
-                    Image(systemName: "eye.slash")
+                    Image(systemName: AppConstants.hiddenWindowSymbol)
                         .frame(width: 16, height: 16)
                 }
                 .help(L("management.hide_all"))
@@ -52,7 +52,7 @@ struct WindowListView: View {
                 Button {
                     viewModel.ghostAllWindows()
                 } label: {
-                    Image(systemName: "face.dashed")
+                    Image(systemName: AppConstants.ghostModeSymbol)
                         .frame(width: 16, height: 16)
                 }
                 .help(L("management.ghost_all"))
@@ -60,7 +60,7 @@ struct WindowListView: View {
                 Button {
                     viewModel.unghostAllWindows()
                 } label: {
-                    Image(systemName: "face.smiling")
+                    Image(systemName: AppConstants.normalModeSymbol)
                         .frame(width: 16, height: 16)
                 }
                 .help(L("management.unghost_all"))

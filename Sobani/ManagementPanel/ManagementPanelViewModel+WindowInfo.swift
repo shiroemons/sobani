@@ -24,6 +24,7 @@ extension ManagementPanelViewModel {
         let height: CGFloat
         let imageName: String
         let isFlippedHorizontally: Bool
+        let rotationAngle: CGFloat
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(windowId)
@@ -40,6 +41,7 @@ extension ManagementPanelViewModel {
             hasher.combine(height)
             hasher.combine(imageName)
             hasher.combine(isFlippedHorizontally)
+            hasher.combine(rotationAngle)
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -58,6 +60,7 @@ extension ManagementPanelViewModel {
                 && lhs.height == rhs.height
                 && lhs.imageName == rhs.imageName
                 && lhs.isFlippedHorizontally == rhs.isFlippedHorizontally
+                && lhs.rotationAngle == rhs.rotationAngle
         }
 
         func toWindowState() -> WindowState {
@@ -68,6 +71,7 @@ extension ManagementPanelViewModel {
                 width: width,
                 height: height,
                 isFlippedHorizontally: isFlippedHorizontally,
+                rotationAngle: rotationAngle,
                 opacityLevel: opacityLevel,
                 windowId: windowId,
                 cropRect: cropRect,

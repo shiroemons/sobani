@@ -330,7 +330,10 @@ extension LayoutPresetsView {
     }
 
     private func refreshPresets() {
-        presets = LayoutPresetManager.shared.loadPresets()
+        let newPresets = LayoutPresetManager.shared.loadPresets()
+        if newPresets != presets {
+            presets = newPresets
+        }
     }
 
     private func savePreset() {
@@ -429,7 +432,7 @@ struct PresetNameSheetView: View {
                 .font(.headline)
             TextField(L("layout.name_placeholder"), text: $name)
                 .textFieldStyle(.roundedBorder)
-                .frame(width: 260)
+                .frame(width: AppConstants.layoutDialogFieldWidth)
             HStack {
                 Button(L("management.cancel")) {
                     dismiss()
@@ -440,7 +443,7 @@ struct PresetNameSheetView: View {
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
         .padding(20)

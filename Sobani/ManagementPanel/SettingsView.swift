@@ -22,6 +22,9 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onReceive(NotificationCenter.default.publisher(for: AppConstants.managementPanelWillClose)) { _ in
+            stopAccessibilityPolling()
+        }
     }
 
     // MARK: - General
@@ -185,7 +188,7 @@ struct SettingsView: View {
         let pairs = AppDelegate.KeyboardAction.allCases.map { action in
             (keyCode: HotkeySettings.keyCode(for: action), modifiers: HotkeySettings.modifiers(for: action))
         }
-        let unique = Set(pairs.map { "\($0.keyCode)-\($0.modifiers.rawValue)" })
+        let unique = Set(pairs.map { UInt64($0.keyCode) << 32 | UInt64($0.modifiers.rawValue) })
         return unique.count < pairs.count
     }
 

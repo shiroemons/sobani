@@ -39,6 +39,7 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
     }
 
     func close() {
+        NotificationCenter.default.post(name: AppConstants.managementPanelWillClose, object: nil)
         panel?.orderOut(nil)
     }
 

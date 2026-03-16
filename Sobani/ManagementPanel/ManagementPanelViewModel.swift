@@ -75,7 +75,7 @@ final class ManagementPanelViewModel {
             visibleWindowCount = 0
             return
         }
-        windows = appDelegate.zOrderedWindows.map { charWindow in
+        let newWindows = appDelegate.zOrderedWindows.map { charWindow in
             let imageSize = charWindow.imageView.frame.size
             let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
             let subtitle = "\(Int(imageSize.width))×\(Int(imageSize.height)) px ・ \(screenName)"
@@ -99,11 +99,21 @@ final class ManagementPanelViewModel {
                 width: frame.size.width,
                 height: frame.size.height,
                 imageName: charWindow.displayName,
-                isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally
+                isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally,
+                rotationAngle: charWindow.imageView.rotationAngle
             )
         }
-        cachedWindowStates = windows.map { $0.toWindowState() }
-        visibleWindowCount = windows.filter { !$0.isHidden }.count
+        if newWindows != windows {
+            windows = newWindows
+        }
+        let newWindowStates = newWindows.map { $0.toWindowState() }
+        if newWindowStates != cachedWindowStates {
+            cachedWindowStates = newWindowStates
+        }
+        let newVisibleCount = newWindows.filter { !$0.isHidden }.count
+        if newVisibleCount != visibleWindowCount {
+            visibleWindowCount = newVisibleCount
+        }
     }
 
     private func rebuildImageCaches() {

@@ -250,15 +250,7 @@ struct RegisteredImagesView: View {
 
     @ViewBuilder
     private var noSelectionEmptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "photo.stack")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-            Text(L("registered_images.select_image"))
-                .font(.title3)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptySelectionView(message: L("registered_images.select_image"), icon: "photo.stack")
     }
 }
 

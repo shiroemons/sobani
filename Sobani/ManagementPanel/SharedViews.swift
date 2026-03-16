@@ -25,10 +25,11 @@ struct ThumbnailView: View {
 /// 未選択時の空状態表示
 struct EmptySelectionView: View {
     let message: String
+    var icon: String = "square.on.square.dashed"
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: "square.on.square.dashed")
+            Image(systemName: icon)
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
             Text(message)
