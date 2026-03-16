@@ -3,10 +3,27 @@ import os.log
 
 // MARK: - Layout Preset
 
-struct LayoutPreset: Codable, Equatable, Sendable {
-    let name: String
+struct LayoutPreset: Codable, Equatable, Sendable, Identifiable {
+    let id: UUID
+    var name: String
     let createdAt: Date
     let states: [WindowState]
+
+    // Migration: existing files without id get one auto-generated
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        self.name = try container.decode(String.self, forKey: .name)
+        self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+        self.states = try container.decode([WindowState].self, forKey: .states)
+    }
+
+    init(id: UUID = UUID(), name: String, createdAt: Date, states: [WindowState]) {
+        self.id = id
+        self.name = name
+        self.createdAt = createdAt
+        self.states = states
+    }
 }
 
 // MARK: - Layout Preset Manager
@@ -41,13 +58,22 @@ final class LayoutPresetManager {
         return layoutsDir.appendingPathComponent(fileName)
     }
 
-    func savePreset(name: String, states: [WindowState]) {
-        guard let url = presetFileURL(for: name) else { return }
-        let preset = LayoutPreset(name: name, createdAt: Date(), states: states)
-        JSONPersistence.save(preset, to: url, logger: logger, errorMessage: "Failed to save layout preset") {
+    private func persistPreset(_ preset: LayoutPreset) {
+        guard let url = presetFileURL(for: preset.name) else { return }
+        JSONPersistence.save(preset, to: url, logger: logger, errorMessage: "Failed to persist layout preset") {
             $0.dateEncodingStrategy = .iso8601
         }
         invalidateCache()
+    }
+
+    func savePreset(name: String, states: [WindowState]) {
+        let preset = LayoutPreset(name: name, createdAt: Date(), states: states)
+        persistPreset(preset)
+    }
+
+    func updatePreset(_ preset: LayoutPreset, states: [WindowState]) {
+        let updated = LayoutPreset(id: preset.id, name: preset.name, createdAt: preset.createdAt, states: states)
+        persistPreset(updated)
     }
 
     func loadPresets() -> [LayoutPreset] {
@@ -96,6 +122,10 @@ final class LayoutPresetManager {
         }
     }
 
+    func restorePreset(_ preset: LayoutPreset) {
+        persistPreset(preset)
+    }
+
     func presetExists(named name: String) -> Bool {
         guard let url = presetFileURL(for: name) else { return false }
         return FileManager.default.fileExists(atPath: url.path)
@@ -107,22 +137,19 @@ final class LayoutPresetManager {
             return false
         }
         guard let newURL = presetFileURL(for: newName) else { return false }
-        let renamedPreset = LayoutPreset(name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
-        JSONPersistence.save(renamedPreset, to: newURL, logger: logger, errorMessage: "Failed to save renamed layout preset") {
-            $0.dateEncodingStrategy = .iso8601
-        }
+        let renamedPreset = LayoutPreset(id: oldPreset.id, name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
+        persistPreset(renamedPreset)
         guard FileManager.default.fileExists(atPath: newURL.path) else { return false }
         // Only delete old file if sanitized file names differ
         let oldFileName = sanitizedFileName(for: oldName)
         let newFileName = sanitizedFileName(for: newName)
         if oldFileName != newFileName {
             guard let oldURL = presetFileURL(for: oldName) else {
-                invalidateCache()
                 return true
             }
             try? FileManager.default.removeItem(at: oldURL)
+            invalidateCache()
         }
-        invalidateCache()
         return true
     }
 }

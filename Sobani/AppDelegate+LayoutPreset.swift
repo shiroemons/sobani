@@ -10,10 +10,23 @@ extension AppDelegate {
 
     func addCharacterWindow(_ window: CharacterWindow) {
         zOrderedWindows.insert(window, at: 0)
+        notifyWindowListDidChange()
     }
 
     func removeCharacterWindow(_ window: CharacterWindow) {
         zOrderedWindows.removeAll { $0 === window }
+        notifyWindowListDidChange()
+    }
+
+    func closeCharacterWindow(_ window: CharacterWindow) {
+        window.window.orderOut(nil)
+        removeCharacterWindow(window)
+        quitIfNoWindows()
+    }
+
+    func reorderWindows(from sourceIndices: IndexSet, to destination: Int) {
+        zOrderedWindows.move(fromOffsets: sourceIndices, toOffset: destination)
+        applyZOrderToWindows()
     }
 
     /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする
@@ -137,6 +150,10 @@ extension AppDelegate {
             okTitle: L("layout.create_button")
         ) else { return }
 
+        createNewLayout(name: name)
+    }
+
+    func createNewLayout(name: String) {
         let mainFrame = NSScreen.mainFrameOrFallback
         let defaultState = WindowState(
             imageName: AppConstants.defaultImageName,

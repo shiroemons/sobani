@@ -86,6 +86,17 @@ extension AppDelegate {
 
         menu.addItem(buildSettingsMenuItem())
 
+        let managementItem = NSMenuItem(
+            title: L("management.title"),
+            action: #selector(showManagementPanel),
+            keyEquivalent: "m"
+        )
+        managementItem.keyEquivalentModifierMask = [.option]
+        managementItem.target = self
+        managementItem.tag = MenuItemTag.managementPanel.rawValue
+        managementItem.image = menuIcon("macwindow.on.rectangle")
+        menu.addItem(managementItem)
+
         let onboardingItem = NSMenuItem(
             title: L("menu.show_onboarding"),
             action: #selector(showOnboarding),
@@ -586,7 +597,7 @@ extension AppDelegate {
             keyEquivalent: ""
         )
         snapItem.target = self
-        snapItem.state = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey) ? .on : .off
+        snapItem.state = SnapSettings.isEnabled ? .on : .off
         snapItem.image = menuIcon("rectangle.arrowtriangle.2.inward")
         submenu.addItem(snapItem)
 
@@ -688,7 +699,7 @@ extension AppDelegate {
     }
 
     @objc func showAbout() {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+        let version = AppConstants.appVersion
 
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationVersion: String(format: L("about.version"), version, "v\(version)"),

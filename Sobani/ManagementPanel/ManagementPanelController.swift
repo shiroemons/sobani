@@ -1,0 +1,94 @@
+import AppKit
+import SwiftUI
+import os.log
+
+@MainActor
+final class ManagementPanelController: NSObject, NSWindowDelegate {
+    private let logger = Logger(category: "ManagementPanelController")
+    private var panel: NSPanel?
+    private var hostingController: NSHostingController<ManagementPanelView>?
+    private let viewModel: ManagementPanelViewModel
+    nonisolated(unsafe) private var languageObserver: Any?
+
+    init(appDelegate: AppDelegate) {
+        self.viewModel = ManagementPanelViewModel(appDelegate: appDelegate)
+        super.init()
+        languageObserver = NotificationCenter.default.addObserver(
+            forName: .languageDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.panel?.title = L("management.title")
+            }
+        }
+    }
+
+    deinit {
+        if let languageObserver { NotificationCenter.default.removeObserver(languageObserver) }
+    }
+
+    func show() {
+        if let panel {
+            panel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        setupPanel()
+    }
+
+    func close() {
+        NotificationCenter.default.post(name: AppConstants.managementPanelWillClose, object: nil)
+        panel?.orderOut(nil)
+    }
+
+    func toggle() {
+        if panel?.isVisible == true {
+            close()
+        } else {
+            show()
+        }
+    }
+
+    var isVisible: Bool {
+        panel?.isVisible ?? false
+    }
+
+    private func setupPanel() {
+        let contentView = ManagementPanelView(viewModel: viewModel)
+        let hosting = NSHostingController(rootView: contentView)
+        hostingController = hosting
+
+        let panel = NSPanel(
+            contentRect: NSRect(
+                x: 0, y: 0,
+                width: AppConstants.managementPanelWidth,
+                height: AppConstants.managementPanelHeight
+            ),
+            styleMask: [.titled, .closable, .resizable, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.title = L("management.title")
+        panel.contentViewController = hosting
+        panel.delegate = self
+        panel.isFloatingPanel = true
+        panel.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + AppConstants.managementPanelLevelOffset)
+        panel.configureForFloating()
+        panel.isMovableByWindowBackground = true
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.panel = panel
+        logger.info("Management panel opened")
+    }
+
+    // MARK: - NSWindowDelegate
+
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        // Return false to prevent the panel from being deallocated.
+        // Instead, hide it via close() so it can be reused on next show().
+        close()
+        return false
+    }
+}

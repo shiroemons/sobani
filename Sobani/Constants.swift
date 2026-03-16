@@ -67,6 +67,7 @@ enum AppConstants {
 
     // Hotkey
     static let optionHKeyCode: UInt16 = 4
+    static let optionMKeyCode: UInt16 = 46    // Option + M (管理パネル切り替え)
     static let escKeyCode: UInt16 = 53
 
     // Display ID
@@ -105,6 +106,7 @@ enum AppConstants {
     static let ghostModeAnimationDuration: TimeInterval = 0.3
     static let optionGKeyCode: UInt16 = 5
     static let ghostModeSymbol = "face.dashed"
+    static let normalModeSymbol = "face.smiling"
     static let hiddenWindowSymbol = "eye.slash"
     static let visibleWindowSymbol = "eye"
     static let opacitySymbol = "circle.lefthalf.filled"
@@ -193,6 +195,19 @@ enum AppConstants {
     static let appThemeKey = "AppTheme"
     static let appleLanguagesKey = "AppleLanguages"
 
+    // Hotkey Settings
+    static let hotkeyEnabledKey = "hotkeyEnabled"
+    static let hotkeyToggleVisibilityKeyCodeKey = "hotkeyToggleVisibilityKeyCode"
+    static let hotkeyToggleVisibilityModifiersKey = "hotkeyToggleVisibilityModifiers"
+    static let hotkeyToggleGhostModeKeyCodeKey = "hotkeyToggleGhostModeKeyCode"
+    static let hotkeyToggleGhostModeModifiersKey = "hotkeyToggleGhostModeModifiers"
+    static let hotkeyToggleManagementKeyCodeKey = "hotkeyToggleManagementKeyCode"
+    static let hotkeyToggleManagementModifiersKey = "hotkeyToggleManagementModifiers"
+
+    // Accessibility
+    static let accessibilitySettingsURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+    static let accessibilityPollingInterval: TimeInterval = 2.0
+
     // Window Snap
     static let snapThreshold: CGFloat = 8
     static let snapEnabledKey = "windowSnapEnabled"
@@ -219,6 +234,38 @@ enum AppConstants {
         static let currentVersion = 1
         static let completedVersionKey = "onboardingCompletedVersion"
     }
+
+    // Management Panel
+    static let managementPanelWidth: CGFloat = 1200
+    static let managementPanelHeight: CGFloat = 800
+    static let managementPanelLevelOffset = 2
+    static let managementPreviewMaxHeight: CGFloat = 300
+    static let managementSplitIdealWidth: CGFloat = 500
+    static let managementImagePickerPopoverWidth: CGFloat = 400
+    static let managementImagePickerPopoverHeight: CGFloat = 300
+    static let managementImagePickerListWidth: CGFloat = 220
+    static let managementImagePickerPreviewWidth: CGFloat = 170
+    static let layoutUndoTimeoutSeconds: Double = 5
+    static let managementMinimapPadding: CGFloat = 16
+
+    // App Version
+    static var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+    }
+
+    // MARK: - Notifications
+    static let characterWindowStateDidChange = Notification.Name("\(loggerSubsystem).characterWindowStateDidChange")
+    static let characterWindowListDidChange = Notification.Name("\(loggerSubsystem).characterWindowListDidChange")
+    static let hotkeySettingsDidChange = Notification.Name("\(loggerSubsystem).hotkeySettingsDidChange")
+    static let registeredImagesDidChange = Notification.Name("\(loggerSubsystem).registeredImagesDidChange")
+    static let managementPanelWillClose = Notification.Name("\(loggerSubsystem).managementPanelWillClose")
+}
+
+enum SnapSettings {
+    static var isEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey) }
+        set { UserDefaults.standard.set(newValue, forKey: AppConstants.snapEnabledKey) }
+    }
 }
 
 enum GhostModeSettings {
@@ -233,6 +280,171 @@ enum GhostModeSettings {
         set {
             let clamped = max(AppConstants.ghostModeAlphaMin, min(AppConstants.ghostModeAlphaMax, newValue))
             UserDefaults.standard.set(Double(clamped), forKey: AppConstants.ghostModeAlphaKey)
+        }
+    }
+}
+
+enum HotkeySettings {
+
+    // MARK: - Table-driven Config
+
+    private struct ActionConfig {
+        let keyCodeKey: String
+        let modifiersKey: String
+        let defaultKeyCode: UInt16
+        let defaultModifiers: NSEvent.ModifierFlags
+    }
+
+    private static func actionConfig(for action: AppDelegate.KeyboardAction) -> ActionConfig {
+        switch action {
+        case .toggleVisibility:
+            return ActionConfig(
+                keyCodeKey: AppConstants.hotkeyToggleVisibilityKeyCodeKey,
+                modifiersKey: AppConstants.hotkeyToggleVisibilityModifiersKey,
+                defaultKeyCode: AppConstants.optionHKeyCode,
+                defaultModifiers: .option
+            )
+        case .toggleGhostMode:
+            return ActionConfig(
+                keyCodeKey: AppConstants.hotkeyToggleGhostModeKeyCodeKey,
+                modifiersKey: AppConstants.hotkeyToggleGhostModeModifiersKey,
+                defaultKeyCode: AppConstants.optionGKeyCode,
+                defaultModifiers: .option
+            )
+        case .toggleManagement:
+            return ActionConfig(
+                keyCodeKey: AppConstants.hotkeyToggleManagementKeyCodeKey,
+                modifiersKey: AppConstants.hotkeyToggleManagementModifiersKey,
+                defaultKeyCode: AppConstants.optionMKeyCode,
+                defaultModifiers: .option
+            )
+        }
+    }
+
+    // MARK: - Low-level Storage Helpers
+
+    private static func storedKeyCode(forKey key: String, default fallback: UInt16) -> UInt16 {
+        guard let stored = UserDefaults.standard.object(forKey: key) as? Int else {
+            return fallback
+        }
+        return UInt16(stored)
+    }
+
+    private static func saveKeyCode(_ value: UInt16, forKey key: String) {
+        UserDefaults.standard.set(Int(value), forKey: key)
+    }
+
+    private static func storedModifiers(forKey key: String, default fallback: NSEvent.ModifierFlags) -> NSEvent.ModifierFlags {
+        guard let raw = UserDefaults.standard.object(forKey: key) as? Int else {
+            return fallback
+        }
+        return NSEvent.ModifierFlags(rawValue: UInt(raw))
+    }
+
+    private static func saveModifiers(_ value: NSEvent.ModifierFlags, forKey key: String) {
+        UserDefaults.standard.set(Int(value.rawValue), forKey: key)
+    }
+
+    // MARK: - Global Enable/Disable
+
+    static var isEnabled: Bool {
+        get {
+            UserDefaults.standard.object(forKey: AppConstants.hotkeyEnabledKey) as? Bool ?? true
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: AppConstants.hotkeyEnabledKey)
+        }
+    }
+
+    // MARK: - Named Computed Properties (for backwards compatibility)
+
+    static var toggleVisibilityKeyCode: UInt16 {
+        get { keyCode(for: .toggleVisibility) }
+        set { setKeyCode(newValue, for: .toggleVisibility) }
+    }
+
+    static var toggleVisibilityModifiers: NSEvent.ModifierFlags {
+        get { modifiers(for: .toggleVisibility) }
+        set { setModifiers(newValue, for: .toggleVisibility) }
+    }
+
+    static var toggleGhostModeKeyCode: UInt16 {
+        get { keyCode(for: .toggleGhostMode) }
+        set { setKeyCode(newValue, for: .toggleGhostMode) }
+    }
+
+    static var toggleGhostModeModifiers: NSEvent.ModifierFlags {
+        get { modifiers(for: .toggleGhostMode) }
+        set { setModifiers(newValue, for: .toggleGhostMode) }
+    }
+
+    static var toggleManagementKeyCode: UInt16 {
+        get { keyCode(for: .toggleManagement) }
+        set { setKeyCode(newValue, for: .toggleManagement) }
+    }
+
+    static var toggleManagementModifiers: NSEvent.ModifierFlags {
+        get { modifiers(for: .toggleManagement) }
+        set { setModifiers(newValue, for: .toggleManagement) }
+    }
+
+    // MARK: - Action-based Accessors
+
+    static func keyCode(for action: AppDelegate.KeyboardAction) -> UInt16 {
+        let cfg = actionConfig(for: action)
+        return storedKeyCode(forKey: cfg.keyCodeKey, default: cfg.defaultKeyCode)
+    }
+
+    static func modifiers(for action: AppDelegate.KeyboardAction) -> NSEvent.ModifierFlags {
+        let cfg = actionConfig(for: action)
+        return storedModifiers(forKey: cfg.modifiersKey, default: cfg.defaultModifiers)
+    }
+
+    static func setKeyCode(_ keyCode: UInt16, for action: AppDelegate.KeyboardAction) {
+        saveKeyCode(keyCode, forKey: actionConfig(for: action).keyCodeKey)
+    }
+
+    static func setModifiers(_ modifiers: NSEvent.ModifierFlags, for action: AppDelegate.KeyboardAction) {
+        saveModifiers(modifiers, forKey: actionConfig(for: action).modifiersKey)
+    }
+
+    static func buildConfig() -> AppDelegate.HotkeyConfig {
+        AppDelegate.HotkeyConfig(bindings: AppDelegate.KeyboardAction.allCases.map { action in
+            AppDelegate.HotkeyBinding(action: action, keyCode: keyCode(for: action), modifiers: modifiers(for: action))
+        })
+    }
+
+    // MARK: - Defaults
+
+    /// 指定アクションのデフォルトキーコードを返す
+    static func defaultKeyCode(for action: AppDelegate.KeyboardAction) -> UInt16 {
+        actionConfig(for: action).defaultKeyCode
+    }
+
+    /// 指定アクションのデフォルト修飾キーを返す
+    static func defaultModifiers(for action: AppDelegate.KeyboardAction) -> NSEvent.ModifierFlags {
+        actionConfig(for: action).defaultModifiers
+    }
+
+    /// 指定アクションのホットキーがデフォルト値かどうかを返す
+    static func isDefault(for action: AppDelegate.KeyboardAction) -> Bool {
+        keyCode(for: action) == defaultKeyCode(for: action)
+            && modifiers(for: action) == defaultModifiers(for: action)
+    }
+
+    // MARK: - Reset
+
+    /// 指定アクションのホットキーをデフォルトに戻す
+    static func resetToDefault(for action: AppDelegate.KeyboardAction) {
+        let cfg = actionConfig(for: action)
+        saveKeyCode(cfg.defaultKeyCode, forKey: cfg.keyCodeKey)
+        saveModifiers(cfg.defaultModifiers, forKey: cfg.modifiersKey)
+    }
+
+    /// すべてのホットキーをデフォルトに戻す
+    static func resetAllToDefaults() {
+        for action in AppDelegate.KeyboardAction.allCases {
+            resetToDefault(for: action)
         }
     }
 }
@@ -366,6 +578,7 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case ghostModeAlphaSlider = 1035
     case opacitySliderContext = 1036
     case hideWindowToggle = 1037
+    case managementPanel = 1038
 }
 
 enum AppTheme: String, CaseIterable, Sendable {
@@ -424,6 +637,11 @@ enum FormatUtils {
     /// 不透明度（0–1）をパーセント文字列に変換（例: 0.75 → "75%"）
     static func formatOpacity(_ opacity: CGFloat) -> String {
         "\(Int(round(opacity * 100)))%"
+    }
+
+    /// 幅と高さを "W×H px" 形式の文字列に変換（例: 400×300 px）
+    static func formatDimensions(width: CGFloat, height: CGFloat) -> String {
+        "\(Int(width))×\(Int(height)) px"
     }
 }
 

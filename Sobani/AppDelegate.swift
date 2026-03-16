@@ -12,8 +12,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     var areWindowsHidden = false
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
+    // internal (not private) because AppDelegate+Hotkey.swift (a separate file) both reads
+    // and writes these properties in setupHotkeyMonitors() / unregisterHotkeyMonitors().
+    // Same-file extensions could use `private`, but cross-file extensions require at least
+    // internal access.
+    var globalMonitor: Any?
+    var localMonitor: Any?
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
@@ -21,11 +25,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var onboardingController: OnboardingWindowController?
     var isApplyingLayout = false
     weak var lastHighlightedWindow: CharacterWindow?
+    private var managementPanelController: ManagementPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance
         setupStatusBar()
-        setupHotkeyMonitors()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(refreshHotkeyMonitors),
+            name: AppConstants.hotkeySettingsDidChange,
+            object: nil
+        )
+        if HotkeySettings.isEnabled {
+            setupHotkeyMonitors()
+        }
         screenRestorationManager.loadPending()
 
         let savedStates = WindowStateManager.shared.loadStates()
@@ -125,41 +138,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         areWindowsHidden.toggle()
     }
 
-    private nonisolated func isOptionHotkey(_ event: NSEvent, keyCode: UInt16) -> Bool {
-        event.keyCode == keyCode
-            && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option
-    }
-
-    func setupHotkeyMonitors() {
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            guard let self else { return }
-            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllWindowsVisibility()
-                }
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllGhostMode()
-                }
-            }
-        }
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
-            guard let self else { return event }
-            if self.isOptionHotkey(event, keyCode: AppConstants.optionHKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllWindowsVisibility()
-                }
-                return nil
-            } else if self.isOptionHotkey(event, keyCode: AppConstants.optionGKeyCode) {
-                DispatchQueue.main.async { @Sendable [weak self] in
-                    self?.toggleAllGhostMode()
-                }
-                return nil
-            }
-            return event
-        }
-    }
-
     @objc func addNewWindowFromMenu() { createNewWindow() }
 
     @objc func addNewWindowWithImageFromMenu(_ sender: NSMenuItem) {
@@ -187,24 +165,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return zOrderedWindows.first { $0.window.windowNumber == number }
     }
 
+    func notifyWindowListDidChange() {
+        NotificationCenter.default.post(name: AppConstants.characterWindowListDidChange, object: nil)
+    }
+
     func moveWindowToFront(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveToFront(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     func moveWindowForward(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveForward(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     func moveWindowBackward(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveBackward(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     func moveWindowToBack(_ charWindow: CharacterWindow) {
         zOrderedWindows = ZOrderUtils.moveToBack(charWindow, in: zOrderedWindows)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     @objc func closeAllWindows() {
@@ -213,6 +199,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             charWindow.window.orderOut(nil)
         }
         zOrderedWindows.removeAll()
+        notifyWindowListDidChange()
         quitIfNoWindows()
     }
     nonisolated static func shouldQuitApp(windowCount: Int, isApplyingLayout: Bool) -> Bool {
@@ -288,14 +275,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         WindowStateManager.shared.saveStates(states)
         screenRestorationManager.savePending()
 
-        if let monitor = globalMonitor {
-            NSEvent.removeMonitor(monitor)
-            globalMonitor = nil
-        }
-        if let monitor = localMonitor {
-            NSEvent.removeMonitor(monitor)
-            localMonitor = nil
-        }
+        unregisterHotkeyMonitors()
 
         teardownScreenRestorationObservers()
     }
@@ -358,9 +338,16 @@ extension AppDelegate {
     }
 
     @objc func toggleWindowSnap(_ sender: NSMenuItem) {
-        let current = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
-        UserDefaults.standard.set(!current, forKey: AppConstants.snapEnabledKey)
+        let current = SnapSettings.isEnabled
+        SnapSettings.isEnabled = !current
         sender.state = !current ? .on : .off
+    }
+
+    @objc func showManagementPanel() {
+        if managementPanelController == nil {
+            managementPanelController = ManagementPanelController(appDelegate: self)
+        }
+        managementPanelController?.toggle()
     }
 }
 

@@ -74,7 +74,7 @@ final class DraggableImageView: NSImageView {
         if isCropModeActive { return }
         onMouseDown?()
         isDraggingAll = event.modifierFlags.contains(.option)
-        isSnapEnabled = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
+        isSnapEnabled = SnapSettings.isEnabled
 
         if isDraggingAll {
             guard let currentWindow = window else { return }

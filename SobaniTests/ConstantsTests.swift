@@ -61,7 +61,7 @@ import os.log
 
     /// MenuItemTagのケース数が想定通りであることを検証
     @Test func menuItemTag_CaseCount() {
-        #expect(MenuItemTag.allCases.count == 36)
+        #expect(MenuItemTag.allCases.count == 37)
     }
 
     // MARK: - Screen Restoration / Wake Retry 定数検証
@@ -318,5 +318,23 @@ import os.log
     /// 四捨五入が正しく行われることを検証
     @Test func formatUtils_formatOpacity_rounding() {
         #expect(FormatUtils.formatOpacity(0.555) == "56%")
+    }
+
+    // MARK: - Notification Names
+
+    /// characterWindowStateDidChange通知名が正しいことを検証
+    @Test func notificationName_characterWindowStateDidChange() {
+        #expect(
+            AppConstants.characterWindowStateDidChange.rawValue
+                == "com.shiroemons.Sobani.characterWindowStateDidChange"
+        )
+    }
+
+    /// characterWindowListDidChange通知名が正しいことを検証
+    @Test func notificationName_characterWindowListDidChange() {
+        #expect(
+            AppConstants.characterWindowListDidChange.rawValue
+                == "com.shiroemons.Sobani.characterWindowListDidChange"
+        )
     }
 }
