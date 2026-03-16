@@ -110,7 +110,7 @@ final class ManagementPanelViewModel {
         if newWindowStates != cachedWindowStates {
             cachedWindowStates = newWindowStates
         }
-        let newVisibleCount = newWindows.filter { !$0.isHidden }.count
+        let newVisibleCount = newWindows.lazy.filter { !$0.isHidden }.count
         if newVisibleCount != visibleWindowCount {
             visibleWindowCount = newVisibleCount
         }
@@ -120,7 +120,7 @@ final class ManagementPanelViewModel {
         windowCountByImageName = Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
         var imageDict: [String: NSImage] = [:]
         for window in windows where imageDict[window.imageName] == nil {
-            imageDict[window.imageName] = window.originalImage
+            imageDict[window.imageName] = window.originalImage ?? window.thumbnail
         }
         cachedWindowImages = imageDict
     }

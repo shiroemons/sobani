@@ -106,15 +106,7 @@ struct LayoutPresetsView: View {
 
             // List
             if presets.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "rectangle.3.group")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.secondary)
-                    Text(L("management.select_preset"))
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                EmptySelectionView(message: L("management.select_preset"), icon: "rectangle.3.group")
             } else {
                 List {
                     ForEach(presets) { preset in
@@ -266,11 +258,11 @@ extension LayoutPresetsView {
             // Minimap
             PresetMinimapView(
                 states: preset.states,
-                images: Dictionary(
-                    uniqueKeysWithValues: preset.states.compactMap { state in
-                        viewModel.previewImage(name: state.imageName).map { (state.imageName, $0) }
-                    }
-                ),
+                images: preset.states.reduce(into: [String: NSImage]()) { dict, state in
+                    guard dict[state.imageName] == nil,
+                          let image = viewModel.previewImage(name: state.imageName) else { return }
+                    dict[state.imageName] = image
+                },
                 selectedWindowId: selectedPresetWindowIndex.flatMap { index in
                     index < preset.states.count ? preset.states[index].windowId : nil
                 },
@@ -278,7 +270,6 @@ extension LayoutPresetsView {
                     selectedPresetWindowIndex = preset.states.firstIndex { $0.windowId == windowId }
                 }
             )
-            .fixedSize(horizontal: false, vertical: true)
 
             Divider()
 
@@ -330,7 +321,6 @@ extension LayoutPresetsView {
 extension LayoutPresetsView {
     private func startRename(_ preset: LayoutPreset) {
         newPresetName = preset.name
-        selectedPreset = preset
         isShowingRenameSheet = true
     }
 

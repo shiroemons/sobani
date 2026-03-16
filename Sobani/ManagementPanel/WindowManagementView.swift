@@ -13,7 +13,6 @@ struct WindowManagementView: View {
                     viewModel.selectedWindowIds = [windowId]
                 }
             )
-            .fixedSize(horizontal: false, vertical: true)
 
             Divider()
 
