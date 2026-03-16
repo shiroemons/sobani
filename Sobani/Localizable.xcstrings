@@ -3718,7 +3718,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "画像管理"
+            "value": "表示画像管理"
           }
         },
         "en": {
@@ -3878,7 +3878,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "登録済み画像"
+            "value": "登録済み画像管理"
           }
         },
         "en": {
