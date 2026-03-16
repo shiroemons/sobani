@@ -2,6 +2,7 @@ import AppKit
 
 struct MinimapLayout {
     static let minimapFallbackHeight: CGFloat = 150
+    private static let padding: CGFloat = 16
 
     let screens: [CGRect]
     let scale: CGFloat
@@ -46,9 +47,8 @@ struct MinimapLayout {
         // Use caller-supplied bounds to avoid redundant computation when available
         let totalBounds = precomputedBounds ?? computeTotalBounds(states: states, screenFrames: screenFrames)
 
-        let padding: CGFloat = 16
-        let usableWidth = availableSize.width - padding * 2
-        let usableHeight = availableSize.height - padding * 2
+        let usableWidth = availableSize.width - Self.padding * 2
+        let usableHeight = availableSize.height - Self.padding * 2
         let scaleX = usableWidth / totalBounds.width
         let scaleY = usableHeight / totalBounds.height
         let scale = min(scaleX, scaleY)
@@ -84,9 +84,8 @@ struct MinimapLayout {
         // Use caller-supplied bounds to avoid redundant computation when available
         let totalBounds = precomputedBounds ?? computeTotalBounds(states: states)
 
-        let padding: CGFloat = 16
-        let usableWidth = width - padding * 2
+        let usableWidth = width - Self.padding * 2
         let aspectRatio = totalBounds.height / totalBounds.width
-        return usableWidth * aspectRatio + padding * 2
+        return usableWidth * aspectRatio + Self.padding * 2
     }
 }

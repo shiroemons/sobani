@@ -57,38 +57,29 @@ struct CropOverlayPreviewView: View {
 
     // MARK: - Crop Shape
 
+    private var cropShape: AnyShape {
+        switch cropRect.shape {
+        case .rectangle:
+            AnyShape(Rectangle())
+        case .circle:
+            AnyShape(Ellipse())
+        case .roundedRectangle:
+            AnyShape(RoundedRectangle(cornerRadius: cropRect.cornerRadii.topLeft))
+        }
+    }
+
     @ViewBuilder
     private func cropFillView(frame: CGRect) -> some View {
-        Group {
-            switch cropRect.shape {
-            case .rectangle:
-                Rectangle()
-            case .circle:
-                Ellipse()
-            case .roundedRectangle:
-                RoundedRectangle(cornerRadius: cropRect.cornerRadii.topLeft)
-            }
-        }
-        .frame(width: frame.width, height: frame.height)
-        .position(x: frame.midX, y: frame.midY)
+        cropShape
+            .frame(width: frame.width, height: frame.height)
+            .position(x: frame.midX, y: frame.midY)
     }
 
     @ViewBuilder
     private func cropStrokeView(frame: CGRect) -> some View {
-        Group {
-            switch cropRect.shape {
-            case .rectangle:
-                Rectangle()
-                    .stroke(Color.white.opacity(0.8), lineWidth: 1)
-            case .circle:
-                Ellipse()
-                    .stroke(Color.white.opacity(0.8), lineWidth: 1)
-            case .roundedRectangle:
-                RoundedRectangle(cornerRadius: cropRect.cornerRadii.topLeft)
-                    .stroke(Color.white.opacity(0.8), lineWidth: 1)
-            }
-        }
-        .frame(width: frame.width, height: frame.height)
-        .position(x: frame.midX, y: frame.midY)
+        cropShape
+            .stroke(Color.white.opacity(0.8), lineWidth: 1)
+            .frame(width: frame.width, height: frame.height)
+            .position(x: frame.midX, y: frame.midY)
     }
 }

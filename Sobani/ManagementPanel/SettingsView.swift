@@ -22,6 +22,12 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            startAccessibilityPolling()
+        }
+        .onDisappear {
+            stopAccessibilityPolling()
+        }
         .onReceive(NotificationCenter.default.publisher(for: AppConstants.managementPanelWillClose)) { _ in
             stopAccessibilityPolling()
         }
@@ -152,12 +158,6 @@ struct SettingsView: View {
                     }
                 }
             }
-        }
-        .onAppear {
-            startAccessibilityPolling()
-        }
-        .onDisappear {
-            stopAccessibilityPolling()
         }
     }
 

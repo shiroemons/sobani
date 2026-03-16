@@ -28,6 +28,7 @@ extension ManagementPanelViewModel {
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(windowId)
+            hasher.combine(displayName)
             hasher.combine(isHidden)
             hasher.combine(isGhostMode)
             hasher.combine(opacityLevel)
