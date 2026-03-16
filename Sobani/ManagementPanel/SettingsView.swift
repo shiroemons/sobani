@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var currentLanguage = LanguageManager.shared.currentLanguage
     @State private var isAccessibilityGranted = AXIsProcessTrusted()
     @State private var accessibilityTimer: Timer?
+    @State private var hotkeySettingsVersion = 0
 
     var body: some View {
         Form {
@@ -16,6 +17,7 @@ struct SettingsView: View {
             ghostModeSection
             appearanceSection
             hotkeySection
+                .id(hotkeySettingsVersion)
             updateSection
         }
         .formStyle(.grouped)
@@ -190,6 +192,7 @@ struct SettingsView: View {
     }
 
     private func notifyHotkeySettingsChanged() {
+        hotkeySettingsVersion += 1
         NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
     }
 

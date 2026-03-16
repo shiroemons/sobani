@@ -133,21 +133,18 @@ final class LayoutPresetManager {
         }
         guard let newURL = presetFileURL(for: newName) else { return false }
         let renamedPreset = LayoutPreset(id: oldPreset.id, name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
-        JSONPersistence.save(renamedPreset, to: newURL, logger: logger, errorMessage: "Failed to save renamed layout preset") {
-            $0.dateEncodingStrategy = .iso8601
-        }
+        persistPreset(renamedPreset)
         guard FileManager.default.fileExists(atPath: newURL.path) else { return false }
         // Only delete old file if sanitized file names differ
         let oldFileName = sanitizedFileName(for: oldName)
         let newFileName = sanitizedFileName(for: newName)
         if oldFileName != newFileName {
             guard let oldURL = presetFileURL(for: oldName) else {
-                invalidateCache()
                 return true
             }
             try? FileManager.default.removeItem(at: oldURL)
+            invalidateCache()
         }
-        invalidateCache()
         return true
     }
 }

@@ -47,9 +47,7 @@ final class ManagementPanelViewModel {
         }
 
         /// 設定以外のタブ（サイドバー上部に表示）
-        static var topTabs: [Self] {
-            [.images, .layouts, .registeredImages]
-        }
+        static let topTabs: [Self] = [.images, .layouts, .registeredImages]
     }
 
     init(appDelegate: AppDelegate) {
@@ -178,8 +176,10 @@ final class ManagementPanelViewModel {
     }
 
     func changeBulkOpacity(opacity: CGFloat) {
+        isBatchUpdating = true
+        defer { isBatchUpdating = false }
         targetWindows.forEach { $0.applyOpacity(opacity) }
-        // Each applyOpacity fires notifyStateDidChange → triggerRefresh handled by observer
+        triggerRefresh()
     }
 
     func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {

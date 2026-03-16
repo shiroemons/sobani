@@ -9,7 +9,7 @@ struct LayoutPresetsView: View {
     @State private var isShowingRenameSheet = false
     @State private var isShowingSaveSheet = false
     @State private var newPresetName = ""
-    @State private var hoveredPresetName: String?
+    @State private var hoveredPresetId: UUID?
     @State private var presetToDelete: LayoutPreset?
     @State private var isShowingDeleteConfirmation = false
     @State private var deletedPresetForUndo: LayoutPreset?
@@ -172,10 +172,10 @@ struct LayoutPresetsView: View {
             selectedPresetWindowIndex = nil
         }
         .onHover { isHovered in
-            hoveredPresetName = isHovered ? preset.name : nil
+            hoveredPresetId = isHovered ? preset.id : nil
         }
         .listRowBackground(
-            hoveredPresetName == preset.name
+            hoveredPresetId == preset.id
                 ? Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
                 : nil
         )
@@ -386,8 +386,8 @@ extension LayoutPresetsView {
         if selectedPreset?.id == preset.id {
             selectedPreset = nil
         }
-        if hoveredPresetName == preset.name {
-            hoveredPresetName = nil
+        if hoveredPresetId == preset.id {
+            hoveredPresetId = nil
         }
         refreshPresets()
 

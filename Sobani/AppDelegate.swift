@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var onboardingController: OnboardingWindowController?
     var isApplyingLayout = false
     weak var lastHighlightedWindow: CharacterWindow?
-    var managementPanelController: ManagementPanelController?
+    private var managementPanelController: ManagementPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance

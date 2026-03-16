@@ -114,7 +114,7 @@ struct WindowListView: View {
                                             .background(hoveredImageName == name
                                                 ? Color.accentColor.opacity(0.15)
                                                 : Color.clear)
-                                            .cornerRadius(4)
+                                            .clipShape(RoundedRectangle(cornerRadius: 4))
                                             .contentShape(Rectangle())
                                             .onHover { isHovered in
                                                 hoveredImageName = isHovered ? name : nil
