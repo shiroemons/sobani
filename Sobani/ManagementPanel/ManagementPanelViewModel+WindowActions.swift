@@ -92,4 +92,63 @@ extension ManagementPanelViewModel {
     var windowStates: [WindowState] { cachedWindowStates }
 
     var windowImages: [String: NSImage] { cachedWindowImages }
+
+    // MARK: - Window Management
+
+    func deleteWindows(windowIds: Set<Int>) {
+        guard let appDelegate else { return }
+        let windowsToDelete = appDelegate.zOrderedWindows.filter { windowIds.contains($0.windowId) }
+        for charWindow in windowsToDelete {
+            removeCharacterWindow(charWindow)
+        }
+        selectedWindowIds.subtract(windowIds)
+    }
+
+    func duplicateWindow(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        appDelegate?.createNewWindow(imageName: charWindow.displayName)
+    }
+
+    func centerWindow(windowId: Int) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        guard let screen = charWindow.window.screen ?? NSScreen.main else { return }
+        let screenFrame = screen.visibleFrame
+        let windowSize = charWindow.window.frame.size
+        let newOrigin = CGPoint(
+            x: screenFrame.midX - windowSize.width / 2,
+            y: screenFrame.midY - windowSize.height / 2
+        )
+        charWindow.window.setFrameOrigin(newOrigin)
+        triggerRefresh()
+    }
+
+    func moveWindows(from source: IndexSet, to destination: Int) {
+        guard let appDelegate else { return }
+        var windows = appDelegate.zOrderedWindows
+        windows.move(fromOffsets: source, toOffset: destination)
+        appDelegate.zOrderedWindows = windows
+        appDelegate.applyZOrderToWindows()
+        triggerRefresh()
+    }
+
+    fileprivate func removeCharacterWindow(_ charWindow: CharacterWindow) {
+        guard let appDelegate else { return }
+        charWindow.window.orderOut(nil)
+        appDelegate.removeCharacterWindow(charWindow)
+        appDelegate.quitIfNoWindows()
+    }
+
+    // MARK: - Layout Delegate Methods
+
+    func captureCurrentWindowStates() -> [WindowState]? {
+        appDelegate?.captureCurrentWindowStates()
+    }
+
+    func applyLayout(_ preset: LayoutPreset) {
+        appDelegate?.applyLayout(preset)
+    }
+
+    func createNewLayout(name: String) {
+        appDelegate?.createNewLayout(name: name)
+    }
 }

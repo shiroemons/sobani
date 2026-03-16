@@ -28,7 +28,7 @@ struct RegisteredImagesView: View {
                     viewModel.removeRegisteredImage(named: name)
                 }
             }
-            Button(L("quit.cancel"), role: .cancel) {}
+            Button(L("management.cancel"), role: .cancel) {}
         } message: {
             if let name = viewModel.selectedRegisteredImageName {
                 let count = viewModel.windowCountUsingImage(named: name)

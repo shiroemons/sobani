@@ -72,11 +72,16 @@ struct MinimapLayout {
     }
 
     @MainActor
-    static func idealHeight(for width: CGFloat, states: [WindowState] = []) -> CGFloat {
+    static func idealHeight(
+        for width: CGFloat,
+        states: [WindowState] = [],
+        precomputedBounds: CGRect? = nil
+    ) -> CGFloat {
         let screenFrames = NSScreen.screens.map(\.frame)
         guard !screenFrames.isEmpty else { return Self.minimapFallbackHeight }
 
-        let totalBounds = computeTotalBounds(states: states)
+        // Use caller-supplied bounds to avoid redundant computation when available
+        let totalBounds = precomputedBounds ?? computeTotalBounds(states: states)
 
         let padding: CGFloat = 16
         let usableWidth = width - padding * 2

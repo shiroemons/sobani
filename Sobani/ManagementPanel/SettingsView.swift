@@ -173,19 +173,12 @@ struct SettingsView: View {
     }
 
     private var hasDuplicateHotkeys: Bool {
-        let hotkeys = [
-            (toggleVisibilityKeyCode, toggleVisibilityModifiers),
-            (toggleGhostKeyCode, toggleGhostModifiers),
-            (toggleManagementKeyCode, toggleManagementModifiers)
+        let pairs: [HotkeyPair] = [
+            HotkeyPair(keyCode: toggleVisibilityKeyCode, modifiers: toggleVisibilityModifiers),
+            HotkeyPair(keyCode: toggleGhostKeyCode, modifiers: toggleGhostModifiers),
+            HotkeyPair(keyCode: toggleManagementKeyCode, modifiers: toggleManagementModifiers)
         ]
-        for outer in 0..<hotkeys.count {
-            for inner in (outer + 1)..<hotkeys.count {
-                if hotkeys[outer].0 == hotkeys[inner].0 && hotkeys[outer].1 == hotkeys[inner].1 {
-                    return true
-                }
-            }
-        }
-        return false
+        return Set(pairs).count < pairs.count
     }
 
     private func saveHotkeySettings() {
@@ -222,9 +215,14 @@ struct SettingsView: View {
 
     // MARK: - Hotkey Pair
 
-    private struct HotkeyPair: Equatable {
+    private struct HotkeyPair: Equatable, Hashable {
         let keyCode: UInt16
         let modifiers: NSEvent.ModifierFlags
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(keyCode)
+            hasher.combine(modifiers.rawValue)
+        }
     }
 
     // MARK: - Update
