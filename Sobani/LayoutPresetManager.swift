@@ -71,6 +71,11 @@ final class LayoutPresetManager {
         persistPreset(preset)
     }
 
+    func updatePreset(_ preset: LayoutPreset, states: [WindowState]) {
+        let updated = LayoutPreset(id: preset.id, name: preset.name, createdAt: preset.createdAt, states: states)
+        persistPreset(updated)
+    }
+
     func loadPresets() -> [LayoutPreset] {
         if let cached = cachedPresets {
             return cached

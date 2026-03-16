@@ -12,9 +12,14 @@ struct LayoutPresetsView: View {
     @State private var hoveredPresetId: UUID?
     @State private var presetToDelete: LayoutPreset?
     @State private var isShowingDeleteConfirmation = false
-    @State private var deletedPresetForUndo: LayoutPreset?
-    @State private var undoTimerTask: Task<Void, Never>?
+    @State private var activeToast: ToastType?
+    @State private var toastTimerTask: Task<Void, Never>?
     @State private var isShowingCreateSheet = false
+
+    private enum ToastType: Equatable {
+        case deleted(LayoutPreset)
+        case success(String)
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -24,16 +29,24 @@ struct LayoutPresetsView: View {
                 presetListScreen
             }
 
-            // Undo toast banner
-            if let deletedPreset = deletedPresetForUndo {
+            // Toast banner
+            if let toast = activeToast {
                 HStack(spacing: 12) {
-                    Text(String(format: L("layout.deleted_message"), deletedPreset.name))
-                        .lineLimit(1)
-                    Button(L("layout.undo")) {
-                        restoreDeletedPreset()
+                    switch toast {
+                    case .deleted(let preset):
+                        Text(String(format: L("layout.deleted_message"), preset.name))
+                            .lineLimit(1)
+                        Button(L("layout.undo")) {
+                            restoreDeletedPreset()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                    case .success(let message):
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text(message)
+                            .lineLimit(1)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
@@ -43,7 +56,7 @@ struct LayoutPresetsView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: deletedPresetForUndo != nil)
+        .animation(.easeInOut(duration: 0.3), value: activeToast)
         .confirmationDialog(
             L("layout.delete_confirm_title"),
             isPresented: $isShowingDeleteConfirmation,
@@ -57,7 +70,7 @@ struct LayoutPresetsView: View {
             Text(String(format: L("layout.delete_confirm_message"), preset.name))
         }
         .onDisappear {
-            undoTimerTask?.cancel()
+            toastTimerTask?.cancel()
         }
     }
 
@@ -238,36 +251,12 @@ extension LayoutPresetsView {
 
                 Spacer()
 
-                HStack(spacing: 4) {
-                    Button {
-                        startRename(preset)
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                    .buttonStyle(.borderless)
-                    .help(L("layout.rename"))
-
-                    Button {
-                        confirmDeletePreset(preset)
-                    } label: {
-                        Image(systemName: "trash")
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(.red)
-                    .help(L("layout.delete"))
-                }
-
-                HStack(spacing: 8) {
-                    Button(L("layout.apply")) {
-                        applyPreset(preset)
-                    }
-                    .buttonStyle(.borderedProminent)
-
-                    Button(L("layout.update")) {
-                        updatePreset(preset)
-                    }
-                    .buttonStyle(.bordered)
-                }
+                PresetActionButtonsView(
+                    onApply: { applyPreset(preset) },
+                    onUpdate: { updatePreset(preset) },
+                    onRename: { startRename(preset) },
+                    onDelete: { confirmDeletePreset(preset) }
+                )
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -352,16 +341,17 @@ extension LayoutPresetsView {
 
     private func applyPreset(_ preset: LayoutPreset) {
         viewModel.applyLayout(preset)
+        showToast(.success(String(format: L("layout.applied_message"), preset.name)))
     }
 
     private func updatePreset(_ preset: LayoutPreset) {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
-        LayoutPresetManager.shared.savePreset(name: preset.name, states: states)
+        LayoutPresetManager.shared.updatePreset(preset, states: states)
         refreshPresets()
-        // Update the detail view if currently viewing this preset
         if selectedPreset?.id == preset.id {
             selectedPreset = presets.first { $0.id == preset.id }
         }
+        showToast(.success(String(format: L("layout.updated_message"), preset.name)))
     }
 
     private func renamePreset(from oldName: String, to newName: String) {
@@ -379,10 +369,6 @@ extension LayoutPresetsView {
     }
 
     private func performDeletePreset(_ preset: LayoutPreset) {
-        // Save for undo before deleting
-        deletedPresetForUndo = preset
-        undoTimerTask?.cancel()
-
         LayoutPresetManager.shared.deletePreset(named: preset.name)
         if selectedPreset?.id == preset.id {
             selectedPreset = nil
@@ -391,28 +377,34 @@ extension LayoutPresetsView {
             hoveredPresetId = nil
         }
         refreshPresets()
+        showToast(.deleted(preset))
+    }
 
-        // Start undo timer
-        undoTimerTask = Task {
+    private func restoreDeletedPreset() {
+        guard case .deleted(let preset) = activeToast else { return }
+        toastTimerTask?.cancel()
+        LayoutPresetManager.shared.restorePreset(preset)
+        withAnimation {
+            activeToast = nil
+        }
+        refreshPresets()
+    }
+
+    private func showToast(_ toast: ToastType) {
+        toastTimerTask?.cancel()
+        withAnimation {
+            activeToast = toast
+        }
+        toastTimerTask = Task {
             do {
                 try await Task.sleep(for: .seconds(Self.undoTimeoutSeconds))
                 withAnimation {
-                    deletedPresetForUndo = nil
+                    activeToast = nil
                 }
             } catch {
                 // Cancelled — do nothing
             }
         }
-    }
-
-    private func restoreDeletedPreset() {
-        guard let preset = deletedPresetForUndo else { return }
-        undoTimerTask?.cancel()
-        LayoutPresetManager.shared.restorePreset(preset)
-        withAnimation {
-            deletedPresetForUndo = nil
-        }
-        refreshPresets()
     }
 
     private func createNewLayout() {
@@ -464,35 +456,40 @@ struct PresetActionButtonsView: View {
     let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: 4) {
-            Button { onApply() } label: {
-                Image(systemName: "play")
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.borderless)
-            .help(L("layout.apply"))
+        HStack(spacing: 16) {
+            HStack(spacing: 8) {
+                Button { onApply() } label: {
+                    Image(systemName: "play")
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.green)
+                .help(L("layout.apply"))
 
-            Button { onUpdate() } label: {
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .frame(width: 24, height: 24)
+                Button { onUpdate() } label: {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.borderless)
+                .help(L("layout.update"))
             }
-            .buttonStyle(.borderless)
-            .help(L("layout.update"))
 
-            Button { onRename() } label: {
-                Image(systemName: "pencil")
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.borderless)
-            .help(L("layout.rename"))
+            HStack(spacing: 8) {
+                Button { onRename() } label: {
+                    Image(systemName: "pencil")
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.borderless)
+                .help(L("layout.rename"))
 
-            Button { onDelete() } label: {
-                Image(systemName: "trash")
-                    .frame(width: 24, height: 24)
+                Button { onDelete() } label: {
+                    Image(systemName: "trash")
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.red)
+                .help(L("layout.delete"))
             }
-            .buttonStyle(.borderless)
-            .foregroundStyle(.red)
-            .help(L("layout.delete"))
         }
     }
 }
