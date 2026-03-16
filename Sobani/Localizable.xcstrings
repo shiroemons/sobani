@@ -4001,34 +4001,66 @@
         }
       }
     },
-    "management.context.toggle_visibility": {
+    "management.context.ghost_off": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "表示/非表示を切り替え"
+            "value": "ゴーストモードを解除する"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Toggle Visibility"
+            "value": "Disable Ghost Mode"
           }
         }
       }
     },
-    "management.context.toggle_ghost": {
+    "management.context.ghost_on": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ゴーストモードを切り替え"
+            "value": "ゴーストモードにする"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Toggle Ghost Mode"
+            "value": "Enable Ghost Mode"
+          }
+        }
+      }
+    },
+    "management.context.hide": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "非表示にする"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide"
+          }
+        }
+      }
+    },
+    "management.context.show": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示する"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show"
           }
         }
       }

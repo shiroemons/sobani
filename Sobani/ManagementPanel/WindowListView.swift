@@ -221,6 +221,18 @@ struct WindowListRow: View {
     let viewModel: ManagementPanelViewModel
 
     var body: some View {
+        // 現在の状態を示すアイコン（インラインボタン用）
+        let visibilityStateIcon = windowInfo.isHidden ? AppConstants.hiddenWindowSymbol : AppConstants.visibleWindowSymbol
+        let ghostStateIcon = windowInfo.isGhostMode ? AppConstants.ghostModeSymbol : AppConstants.normalModeSymbol
+
+        // 次のアクションを示すアイコン（コンテキストメニュー用）- 状態の反転
+        let visibilityActionIcon = windowInfo.isHidden ? AppConstants.visibleWindowSymbol : AppConstants.hiddenWindowSymbol
+        let ghostActionIcon = windowInfo.isGhostMode ? AppConstants.normalModeSymbol : AppConstants.ghostModeSymbol
+
+        // ラベル
+        let visibilityLabel = windowInfo.isHidden ? L("management.context.show") : L("management.context.hide")
+        let ghostLabel = windowInfo.isGhostMode ? L("management.context.ghost_off") : L("management.context.ghost_on")
+
         HStack(spacing: 8) {
             // Drag handle
             Image(systemName: "line.3.horizontal")
@@ -251,38 +263,36 @@ struct WindowListRow: View {
             Button {
                 viewModel.toggleHidden(windowId: windowInfo.windowId)
             } label: {
-                Image(systemName: windowInfo.isHidden ? "eye.slash" : "eye")
+                Image(systemName: visibilityStateIcon)
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.borderless)
             .foregroundStyle(windowInfo.isHidden ? .secondary : .primary)
-            .accessibilityLabel(L("management.context.toggle_visibility"))
+            .accessibilityLabel(visibilityLabel)
 
             // Ghost toggle
             Button {
                 viewModel.toggleGhostMode(windowId: windowInfo.windowId)
             } label: {
-                Image(systemName: "face.dashed")
+                Image(systemName: ghostStateIcon)
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.borderless)
             .foregroundStyle(windowInfo.isGhostMode ? Color.accentColor : Color.secondary)
-            .accessibilityLabel(L("management.context.toggle_ghost"))
+            .accessibilityLabel(ghostLabel)
         }
         .padding(.vertical, 4)
         .contextMenu {
             Button {
                 viewModel.toggleHidden(windowId: windowInfo.windowId)
             } label: {
-                Label(L("management.context.toggle_visibility"),
-                      systemImage: windowInfo.isHidden ? "eye" : "eye.slash")
+                Label(visibilityLabel, systemImage: visibilityActionIcon)
             }
 
             Button {
                 viewModel.toggleGhostMode(windowId: windowInfo.windowId)
             } label: {
-                Label(L("management.context.toggle_ghost"),
-                      systemImage: "face.dashed")
+                Label(ghostLabel, systemImage: ghostActionIcon)
             }
 
             Divider()

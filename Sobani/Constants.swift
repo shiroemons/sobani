@@ -106,6 +106,7 @@ enum AppConstants {
     static let ghostModeAnimationDuration: TimeInterval = 0.3
     static let optionGKeyCode: UInt16 = 5
     static let ghostModeSymbol = "face.dashed"
+    static let normalModeSymbol = "face.smiling"
     static let hiddenWindowSymbol = "eye.slash"
     static let visibleWindowSymbol = "eye"
     static let opacitySymbol = "circle.lefthalf.filled"
