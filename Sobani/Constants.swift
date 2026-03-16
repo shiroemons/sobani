@@ -365,6 +365,43 @@ enum HotkeySettings {
             AppDelegate.HotkeyBinding(action: action, keyCode: keyCode(for: action), modifiers: modifiers(for: action))
         })
     }
+
+    // MARK: - Defaults
+
+    /// 指定アクションのデフォルトキーコードを返す
+    static func defaultKeyCode(for action: AppDelegate.KeyboardAction) -> UInt16 {
+        switch action {
+        case .toggleVisibility: AppConstants.optionHKeyCode
+        case .toggleGhostMode: AppConstants.optionGKeyCode
+        case .toggleManagement: AppConstants.optionMKeyCode
+        }
+    }
+
+    /// 指定アクションのデフォルト修飾キーを返す
+    static func defaultModifiers(for action: AppDelegate.KeyboardAction) -> NSEvent.ModifierFlags {
+        .option
+    }
+
+    /// 指定アクションのホットキーがデフォルト値かどうかを返す
+    static func isDefault(for action: AppDelegate.KeyboardAction) -> Bool {
+        keyCode(for: action) == defaultKeyCode(for: action)
+            && modifiers(for: action) == defaultModifiers(for: action)
+    }
+
+    // MARK: - Reset
+
+    /// 指定アクションのホットキーをデフォルトに戻す
+    static func resetToDefault(for action: AppDelegate.KeyboardAction) {
+        setKeyCode(defaultKeyCode(for: action), for: action)
+        setModifiers(defaultModifiers(for: action), for: action)
+    }
+
+    /// すべてのホットキーをデフォルトに戻す
+    static func resetAllToDefaults() {
+        for action in AppDelegate.KeyboardAction.allCases {
+            resetToDefault(for: action)
+        }
+    }
 }
 
 extension NSAppearance {

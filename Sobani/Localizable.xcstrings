@@ -4545,6 +4545,38 @@
         }
       }
     },
+    "management.hotkey_reset_all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset All to Defaults"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべてデフォルトに戻す"
+          }
+        }
+      }
+    },
+    "management.hotkey_reset_default": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset to Default"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デフォルトに戻す"
+          }
+        }
+      }
+    },
     "management.hotkey_duplicate_warning": {
       "localizations": {
         "en": {

@@ -123,7 +123,7 @@ struct SettingsView: View {
 
                 ForEach(AppDelegate.KeyboardAction.allCases, id: \.self) { action in
                     hotkeyRow(
-                        label: action.label,
+                        action: action,
                         keyCode: keyCodeBinding(for: action),
                         modifiers: modifiersBinding(for: action)
                     )
@@ -132,6 +132,21 @@ struct SettingsView: View {
                 if hasDuplicateHotkeys {
                     Label(L("management.hotkey_duplicate_warning"), systemImage: "exclamationmark.triangle")
                         .foregroundStyle(.red)
+                }
+
+                if hasNonDefaultHotkeys {
+                    HStack {
+                        Spacer()
+                        Button {
+                            HotkeySettings.resetAllToDefaults()
+                            notifyHotkeySettingsChanged()
+                        } label: {
+                            Label(L("management.hotkey_reset_all"), systemImage: "arrow.counterclockwise")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .buttonStyle(.borderless)
+                    }
                 }
             }
         }
@@ -143,10 +158,25 @@ struct SettingsView: View {
         }
     }
 
-    private func hotkeyRow(label: String, keyCode: Binding<UInt16>, modifiers: Binding<NSEvent.ModifierFlags>) -> some View {
+    private func hotkeyRow(
+        action: AppDelegate.KeyboardAction,
+        keyCode: Binding<UInt16>,
+        modifiers: Binding<NSEvent.ModifierFlags>
+    ) -> some View {
         HStack {
-            Text(label)
+            Text(action.label)
             Spacer()
+            if !HotkeySettings.isDefault(for: action) {
+                Button {
+                    HotkeySettings.resetToDefault(for: action)
+                    notifyHotkeySettingsChanged()
+                } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.secondary)
+                .help(L("management.hotkey_reset_default"))
+            }
             HotkeyRecorderButton(keyCode: keyCode, modifiers: modifiers)
         }
     }
@@ -157,6 +187,10 @@ struct SettingsView: View {
         }
         let unique = Set(pairs.map { "\($0.keyCode)-\($0.modifiers.rawValue)" })
         return unique.count < pairs.count
+    }
+
+    private var hasNonDefaultHotkeys: Bool {
+        AppDelegate.KeyboardAction.allCases.contains { !HotkeySettings.isDefault(for: $0) }
     }
 
     // MARK: - Hotkey Bindings

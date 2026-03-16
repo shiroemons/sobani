@@ -168,6 +168,40 @@ import Testing
         }
     }
 
+    // MARK: - リセットテスト
+
+    /// toggleVisibilityのみをリセットしたとき、他のアクションはカスタム値を維持することを検証
+    @Test func testResetToDefaultRestoresSingleAction() {
+        withCleanAllHotkeyDefaults {
+            setAllActionsToCustomValues()
+
+            HotkeySettings.resetToDefault(for: .toggleVisibility)
+
+            #expect(HotkeySettings.toggleVisibilityKeyCode == AppConstants.optionHKeyCode)
+            #expect(HotkeySettings.toggleVisibilityModifiers == .option)
+            #expect(HotkeySettings.toggleGhostModeKeyCode == 3)
+            #expect(HotkeySettings.toggleGhostModeModifiers == [.command, .control])
+            #expect(HotkeySettings.toggleManagementKeyCode == 9)
+            #expect(HotkeySettings.toggleManagementModifiers == [.command, .option])
+        }
+    }
+
+    /// resetAllToDefaults()がすべてのアクションをデフォルトに戻すことを検証
+    @Test func testResetAllToDefaultsRestoresAllActions() {
+        withCleanAllHotkeyDefaults {
+            setAllActionsToCustomValues()
+
+            HotkeySettings.resetAllToDefaults()
+
+            #expect(HotkeySettings.toggleVisibilityKeyCode == AppConstants.optionHKeyCode)
+            #expect(HotkeySettings.toggleVisibilityModifiers == .option)
+            #expect(HotkeySettings.toggleGhostModeKeyCode == AppConstants.optionGKeyCode)
+            #expect(HotkeySettings.toggleGhostModeModifiers == .option)
+            #expect(HotkeySettings.toggleManagementKeyCode == AppConstants.optionMKeyCode)
+            #expect(HotkeySettings.toggleManagementModifiers == .option)
+        }
+    }
+
     // MARK: - buildConfig() テスト
 
     /// buildConfig()がすべてのアクションのバインディングを含むHotkeyConfigを返すことを検証
@@ -209,4 +243,40 @@ private func withCleanHotkeyDefaults(key: String, body: () -> Void) {
         }
     }
     body()
+}
+
+/// テスト用：全アクションにカスタム値を設定する
+private func setAllActionsToCustomValues() {
+    HotkeySettings.setKeyCode(2, for: .toggleVisibility)
+    HotkeySettings.setModifiers([.command, .shift], for: .toggleVisibility)
+    HotkeySettings.setKeyCode(3, for: .toggleGhostMode)
+    HotkeySettings.setModifiers([.command, .control], for: .toggleGhostMode)
+    HotkeySettings.setKeyCode(9, for: .toggleManagement)
+    HotkeySettings.setModifiers([.command, .option], for: .toggleManagement)
+}
+
+/// 全ホットキー関連キーの既存値を退避・復元しながらテストを実行するヘルパー
+private func withCleanAllHotkeyDefaults(body: () throws -> Void) rethrows {
+    let keys = [
+        AppConstants.hotkeyToggleVisibilityKeyCodeKey,
+        AppConstants.hotkeyToggleVisibilityModifiersKey,
+        AppConstants.hotkeyToggleGhostModeKeyCodeKey,
+        AppConstants.hotkeyToggleGhostModeModifiersKey,
+        AppConstants.hotkeyToggleManagementKeyCodeKey,
+        AppConstants.hotkeyToggleManagementModifiersKey
+    ]
+    let saved = keys.map { ($0, UserDefaults.standard.object(forKey: $0)) }
+    defer {
+        for (key, value) in saved {
+            if let value {
+                UserDefaults.standard.set(value, forKey: key)
+            } else {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+    }
+    for key in keys {
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+    try body()
 }
