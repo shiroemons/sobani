@@ -9,7 +9,7 @@ struct ManagementPanelView: View {
         } detail: {
             detailContent
         }
-        .frame(minWidth: 1000, minHeight: 1200)
+        .frame(minWidth: 1200, minHeight: 800)
     }
 
     @ViewBuilder

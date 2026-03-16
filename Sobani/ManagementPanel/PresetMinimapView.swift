@@ -7,7 +7,7 @@ struct PresetMinimapView: View {
     var onWindowTapped: ((Int) -> Void)?
 
     private static let minHeight: CGFloat = 150
-    private static let maxHeight: CGFloat = 450
+    private static let maxHeight: CGFloat = 400
 
     var body: some View {
         minimapCanvas

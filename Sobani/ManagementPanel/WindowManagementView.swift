@@ -19,9 +19,10 @@ struct WindowManagementView: View {
 
             HSplitView {
                 WindowListView(viewModel: viewModel)
-                    .frame(minWidth: 280, idealWidth: 320, maxWidth: 400)
+                    .frame(minWidth: 320, idealWidth: 400, maxWidth: 500)
 
                 WindowDetailView(viewModel: viewModel)
+                    .frame(minWidth: 400)
             }
         }
     }
