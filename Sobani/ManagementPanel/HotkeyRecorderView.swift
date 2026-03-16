@@ -10,13 +10,17 @@ final class KeyCaptureView: NSView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        window?.makeFirstResponder(self)
+    }
+
+    override func cancelOperation(_ sender: Any?) {
+        onCancel?()
+    }
+
     override func keyDown(with event: NSEvent) {
         let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        // ESCでキャンセル
-        if event.keyCode == AppConstants.escKeyCode {
-            onCancel?()
-            return
-        }
         // 修飾キーが1つ以上必要（修飾キーのみは不可）
         guard !modifiers.isEmpty else { return }
         onKeyCapture?(event.keyCode, modifiers)
