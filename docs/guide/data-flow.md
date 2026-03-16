@@ -293,6 +293,71 @@ sequenceDiagram
 
 ---
 
+## ホットキー設定の永続化
+
+ホットキー設定は `HotkeySettings`（caseless `enum`）が `UserDefaults` に永続化します。管理パネルの Settings タブで変更した内容は即座に保存され、`AppConstants.hotkeySettingsDidChange` 通知を介して `AppDelegate` がモニターを再登録します。
+
+### 保存キーと対応するアクション
+
+| アクション | キーコードキー | 修飾キーキー | デフォルト |
+|---|---|---|---|
+| 表示/非表示切り替え | `hotkey.toggleVisibility.keyCode` | `hotkey.toggleVisibility.modifiers` | `Option+H` |
+| ゴーストモード切り替え | `hotkey.toggleGhostMode.keyCode` | `hotkey.toggleGhostMode.modifiers` | `Option+G` |
+| 管理パネル切り替え | `hotkey.toggleManagement.keyCode` | `hotkey.toggleManagement.modifiers` | `Option+M` |
+
+各キーは `UserDefaults.standard` に `Int` 型で保存されます（キーコードは `UInt16`、修飾キーは `NSEvent.ModifierFlags.rawValue`）。
+
+### 設定変更フロー
+
+```mermaid
+sequenceDiagram
+    participant SV as SettingsView
+    participant HS as HotkeySettings (UserDefaults)
+    participant NC as NotificationCenter
+    participant AD as AppDelegate
+
+    SV->>HS: setKeyCode(_:for:) / setModifiers(_:for:)
+    HS->>HS: UserDefaults に保存
+    SV->>NC: hotkeySettingsDidChange（300ms デバウンス）
+    NC->>AD: refreshHotkeyMonitors()
+    AD->>AD: unregisterHotkeyMonitors()
+    AD->>AD: setupHotkeyMonitors()（新しい設定で再登録）
+```
+
+リセット操作（個別リセット・全件リセット）も同様に `UserDefaults` からキーを削除し、同じ通知フローを経てモニターを再登録します。
+
+---
+
+## 管理パネルのステート管理
+
+`ManagementPanelViewModel` は `@Observable` マクロを使用した MVVM の ViewModel で、`AppDelegate` への weak 参照を通じて実際のウィンドウ操作を委譲します。
+
+### 主要な状態
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `selectedTab` | `ManagementTab?` | 現在選択中のタブ（`.images` / `.layouts` / `.registeredImages` / `.settings`） |
+| `selectedWindowIds` | `Set<Int>` | ウィンドウリストで選択中のウィンドウ ID 集合（複数選択対応） |
+| `selectedRegisteredImageName` | `String?` | Registered Images タブで選択中の画像名 |
+| `windows` | `[WindowInfo]` | `zOrderedWindows` から生成したスナップショット配列 |
+| `windowCountByImageName` | `[String: Int]` | 各画像名を使用しているウィンドウ数（使用状況バッジに利用） |
+| `windowImages` | `[String: NSImage]` | ミニマップ・サムネイル描画用の画像キャッシュ |
+
+### 登録画像の使用状況追跡
+
+`windowCountByImageName` は `windows` から `Dictionary(grouping:by:)` で構築されます。`characterWindowListDidChange` 通知を受け取るたびに `rebuildAll()` が呼ばれ、`rebuildWindows()` と `rebuildImageCaches()` が実行されます。状態変更のみの場合（位置・不透明度・ゴーストモードの変更など）は `triggerRefresh()` が `rebuildWindows()` だけを呼び、画像キャッシュは変更しません。
+
+### 通知とリフレッシュ
+
+| 通知名 | 発火タイミング | ViewModel の処理 |
+|---|---|---|
+| `characterWindowStateDidChange` | 個別ウィンドウの状態変更時 | `triggerRefresh()`（ウィンドウ一覧のみ再構築） |
+| `characterWindowListDidChange` | ウィンドウの追加・削除時 | `rebuildAll()`（ウィンドウ一覧＋画像キャッシュを再構築） |
+| `registeredImagesDidChange` | 登録画像の変更時 | 登録画像名リストの更新＋`CroppedImageHelper` のキャッシュ無効化 |
+| `languageDidChange` | 言語切り替え時 | `languageRefreshId` を更新してビュー全体を再描画 |
+
+---
+
 ## Z-order 管理
 
 `AppDelegate` は `zOrderedWindows` 配列でウィンドウの重なり順を管理します。OS のウィンドウ順序ではなく、この配列を正とします。

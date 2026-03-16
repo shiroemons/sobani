@@ -117,6 +117,31 @@ classDiagram
         +selectedPreset: AspectRatioPreset
     }
 
+    class ManagementPanelController {
+        +show()
+        +close()
+        +toggle()
+        +isVisible: Bool
+    }
+    class ManagementPanelViewModel {
+        +selectedTab: ManagementTab?
+        +selectedWindowIds: Set~Int~
+        +windows: [WindowInfo]
+        +registeredImageNames: [String]
+        +windowCountByImageName: [String: Int]
+        +triggerRefresh()
+    }
+    class ManagementPanelView {
+    }
+    class WindowManagementView {
+    }
+    class LayoutPresetsView {
+    }
+    class RegisteredImagesView {
+    }
+    class SettingsView {
+    }
+
     AppDelegate --> CharacterWindow : manages
     AppDelegate ..|> CharacterWindowDelegate
     AppDelegate ..|> UpdateManagerDelegate
@@ -132,6 +157,14 @@ classDiagram
     AppDelegate --> LanguageManager : uses
     AppDelegate --> LaunchAtLoginManager : uses
     AppDelegate --> LayoutPresetManager : uses
+    AppDelegate --> ManagementPanelController : owns
+    ManagementPanelController --> ManagementPanelViewModel : owns
+    ManagementPanelController --> ManagementPanelView : hosts
+    ManagementPanelViewModel --> AppDelegate : weak ref
+    ManagementPanelView --> WindowManagementView : tab
+    ManagementPanelView --> LayoutPresetsView : tab
+    ManagementPanelView --> RegisteredImagesView : tab
+    ManagementPanelView --> SettingsView : tab
     CharacterWindow --> UnconstrainedWindow : uses
     CharacterWindow --> FloatingMenuController : uses
     CharacterWindow --> CropEditorPanelController : uses
@@ -143,13 +176,33 @@ classDiagram
     CropEditorToolbarView --> AspectRatioSelectorView : contains
 ```
 
-`AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・不透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。
+`AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・不透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。`ManagementPanelController` は `AppDelegate` が所有するインスタンスで、SwiftUI ベースの管理パネル（`NSPanel`）のライフサイクルを管理します。`ManagementPanelViewModel` は MVVM の ViewModel として `AppDelegate` への weak 参照を持ち、ウィンドウ一覧・登録画像・レイアウト操作を各 SwiftUI View に提供します。
 
 ## ソースファイル一覧
 
 | ファイル | 説明 |
 |---|---|
 | `main.swift` | エントリポイント。`LanguageManager` を UI ロード前に初期化 |
+| **ManagementPanel/** | **管理パネル（SwiftUI）** |
+| `ManagementPanel/ManagementPanelController.swift` | 管理パネル（NSPanel）のライフサイクル管理。`show()` / `close()` / `toggle()` を提供 |
+| `ManagementPanel/ManagementPanelViewModel.swift` | 管理パネルの ViewModel。ウィンドウ一覧・登録画像・状態をまとめて保持し、NotificationCenter 経由でリアルタイム更新 |
+| `ManagementPanel/ManagementPanelViewModel+WindowInfo.swift` | `WindowInfo` 構造体の定義（ウィンドウのスナップショット情報） |
+| `ManagementPanel/ManagementPanelViewModel+WindowActions.swift` | ViewModel のウィンドウ操作拡張（クロップ・反転・調整パネル・レイアウト操作など） |
+| `ManagementPanel/ManagementPanelView.swift` | トップレベル SwiftUI View。NavigationSplitView でサイドバーとタブコンテンツを構成 |
+| `ManagementPanel/WindowManagementView.swift` | Images タブ。ミニマップ・ウィンドウリスト・詳細パネルの3分割レイアウト |
+| `ManagementPanel/WindowListView.swift` | ウィンドウ一覧リスト。Z オーダー変更・一括操作・表示/非表示・ゴーストモードトグル |
+| `ManagementPanel/WindowDetailView.swift` | 選択ウィンドウの詳細パネル。不透明度スライダー・ゴーストモード設定・アクションボタン群 |
+| `ManagementPanel/WindowPositionEditorView.swift` | ウィンドウ位置・サイズの直接入力エディタ |
+| `ManagementPanel/LayoutPresetsView.swift` | Layouts タブ。プリセット一覧・作成・適用・リネーム・削除（Undo 対応トースト） |
+| `ManagementPanel/PresetDetailView.swift` | プリセット詳細画面（読み取り専用）。選択ウィンドウの保存状態を表示 |
+| `ManagementPanel/PresetMinimapView.swift` | 全スクリーン・全ウィンドウ位置を縮小表示するミニマップ View |
+| `ManagementPanel/MinimapLayout.swift` | ミニマップのレイアウト計算ユーティリティ |
+| `ManagementPanel/RegisteredImagesView.swift` | Registered Images タブ。画像一覧・使用中ウィンドウ数バッジ・削除確認 |
+| `ManagementPanel/SettingsView.swift` | Settings タブ。一般・ゴーストモード・外観・ホットキー・アップデートの各設定 |
+| `ManagementPanel/HotkeyRecorderView.swift` | ホットキー入力レコーダー View（キー押下を直接キャプチャ） |
+| `ManagementPanel/CropOverlayPreviewView.swift` | CropRect を適用したプレビュー表示 View |
+| `ManagementPanel/CroppedImageHelper.swift` | クロップ済み画像のキャッシュ付き生成ユーティリティ |
+| `ManagementPanel/SharedViews.swift` | 管理パネル内で共有する汎用 View 部品（ThumbnailView, EmptySelectionView など） |
 | `AlertFactory.swift` | アラートダイアログの生成ユーティリティ |
 | `AppDelegate.swift` | アプリケーション全体の管理。ウィンドウライフサイクル、Z-order、ホットキー |
 | `AppDelegate+LayoutPreset.swift` | レイアウトプリセット操作のAppDelegate拡張 |
@@ -208,7 +261,7 @@ classDiagram
 | `LanguageManager.shared` | 日本語・英語・システム言語のランタイム切り替え |
 | `LayoutPresetManager.shared` | レイアウトプリセットの保存・読み込み・削除（`layouts/` ディレクトリ） |
 
-`ScreenRestorationManager` はシングルトンではなく、`AppDelegate` が所有するインスタンスです。
+`ScreenRestorationManager` と `ManagementPanelController` はシングルトンではなく、`AppDelegate` が所有するインスタンスです。
 
 ## プロトコル
 

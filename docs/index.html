@@ -16,9 +16,9 @@
   <link rel="dns-prefetch" href="https://www.youtube.com">
   <link rel="preconnect" href="https://www.youtube.com" crossorigin>
   <title>Sobani — お気に入りを、そばに。</title>
-  <meta name="description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ対応。">
+  <meta name="description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ・管理パネル対応。">
   <meta property="og:title" content="Sobani — お気に入りを、そばに。">
-  <meta property="og:description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ対応。">
+  <meta property="og:description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ・管理パネル対応。">
   <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -27,7 +27,7 @@
   <meta property="og:site_name" content="Sobani">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:title" content="Sobani — お気に入りを、そばに。">
-  <meta name="twitter:description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ対応。">
+  <meta name="twitter:description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ・管理パネル対応。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta name="twitter:site" content="@shiroemons">
   <meta name="twitter:creator" content="@shiroemons">
@@ -39,7 +39,7 @@
   <link rel="alternate" hreflang="x-default" href="https://xn--xckxf.jp/sobani/">
   <meta name="theme-color" content="#f59e0b">
   <meta name="author" content="shiroemons">
-  <meta name="keywords" content="macOS,デスクトップマスコット,アクリルスタンド,デスクトップアクスタ,Sobani,お気に入り,常に最前面,最前面表示,PNG透過表示,透過ウィンドウ,複数画像表示,ドラッグ移動,回転,不透明度調整,仮想デスクトップ対応,Swift,無料,軽量,ペット写真,アイドル,K-POP,VTuber,スポーツ,趣味の写真,デスクトップカスタマイズ,#SobaniApp,#デスクトップアクスタ">
+  <meta name="keywords" content="macOS,デスクトップマスコット,アクリルスタンド,デスクトップアクスタ,Sobani,お気に入り,常に最前面,最前面表示,PNG透過表示,透過ウィンドウ,複数画像表示,ドラッグ移動,回転,不透明度調整,仮想デスクトップ対応,Swift,無料,軽量,管理パネル,ゴーストモード,背景除去,ペット写真,アイドル,K-POP,VTuber,スポーツ,趣味の写真,デスクトップカスタマイズ,#SobaniApp,#デスクトップアクスタ">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192.png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
@@ -237,11 +237,6 @@
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-          <div class="text-3xl mb-4" aria-hidden="true">&#x1F4D6;</div>
-          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card1Title">はじめてガイド</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card1Desc">初回起動時にステップバイステップで操作を案内。はじめてでもすぐに使いこなせます。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5C2;&#xFE0F;</div>
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card2Title">好きな画像を自由に</h3>
           <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card2Desc">PNG・JPEG・GIF・TIFF・HEICに対応。好きな画像を何枚でも登録して、気分に合わせて切り替えられます。</p>
@@ -281,14 +276,11 @@
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card9Title">ゴーストモード</h3>
           <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card9Desc">Option+G でウィンドウをクリック透過に。半透明のゴースト表示で作業の邪魔にならず、お気に入りをそばに置けます。不透明度のカスタマイズも可能。</p>
         </div>
-      </div>
-      <div class="mt-6 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-2xl p-6 lg:p-8 border border-amber-200 dark:border-amber-800">
-        <div class="flex items-center gap-4">
-          <div class="text-3xl" aria-hidden="true">&#x1F50B;</div>
-          <div>
-            <h3 class="text-lg font-semibold mb-1" data-i18n="features.lightweightTitle">バッテリーに優しい、超軽量設計</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.lightweightDesc">ネイティブSwift製、CPU使用率ほぼ0%、メモリ消費も最小限。ノートブックでも安心して常時起動できます。</p>
-          </div>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div class="text-3xl mb-4" aria-hidden="true">&#x1F5C2;&#xFE0F;</div>
+          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card10Title">管理パネル</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card10Desc">すべてのウィンドウをひとつのパネルで管理。ミニマップで配置確認、位置・サイズの数値編集、レイアウトプリセット管理、画像ライブラリ管理、各種設定が一画面に。</p>
+          <a href="features.html#cat-management" class="text-sm text-amber-600 dark:text-amber-400 hover:underline mt-2 inline-block" data-i18n="features.card10Link">詳細を見る →</a>
         </div>
       </div>
       <p class="mt-8 text-center text-sm text-slate-500 dark:text-slate-400" data-i18n="features.autoSaveNote">位置・サイズ・画像・回転・不透明度・重ね順・非表示状態は自動保存。アップデートもアプリ内から確認できます。</p>
@@ -613,8 +605,6 @@
         features: {
           sectionTitle: "\u7279\u9577",
           sectionSubtitle: "\u300c\u98fe\u308b\u300d\u306b\u7279\u5316\u3057\u305f\u3001\u8efd\u304f\u3066\u30b7\u30f3\u30d7\u30eb\u306a\u30a2\u30d7\u30ea",
-          card1Title: "\u306F\u3058\u3081\u3066\u30AC\u30A4\u30C9",
-          card1Desc: "\u521D\u56DE\u8D77\u52D5\u6642\u306B\u30B9\u30C6\u30C3\u30D7\u30D0\u30A4\u30B9\u30C6\u30C3\u30D7\u3067\u64CD\u4F5C\u3092\u6848\u5185\u3002\u306F\u3058\u3081\u3066\u3067\u3082\u3059\u3050\u306B\u4F7F\u3044\u3053\u306A\u305B\u307E\u3059\u3002",
           card2Title: "\u597d\u304d\u306a\u753b\u50cf\u3092\u81ea\u7531\u306b",
           card2Desc: "PNG\u30fbJPEG\u30fbGIF\u30fbTIFF\u30fbHEIC\u306b\u5bfe\u5fdc\u3002\u597d\u304d\u306a\u753b\u50cf\u3092\u4f55\u679a\u3067\u3082\u767b\u9332\u3057\u3066\u3001\u6c17\u5206\u306b\u5408\u308f\u305b\u3066\u5207\u308a\u66ff\u3048\u3089\u308c\u307e\u3059\u3002",
           card3Title: "\u3044\u3064\u3067\u3082\u6700\u524d\u9762\u306b",
@@ -631,9 +621,10 @@
           card8Desc: "JPEG\u30FBHEIC\u306A\u3069\u306E\u5199\u771F\u304B\u3089\u88AB\u5199\u4F53\u3092\u81EA\u52D5\u3067\u5207\u308A\u629C\u304D\u3002\u900F\u904EPNG\u3092\u6E96\u5099\u3059\u308B\u624B\u9593\u306A\u304F\u3001\u304A\u6C17\u306B\u5165\u308A\u306E\u5199\u771F\u3092\u305D\u306E\u307E\u307E\u98FE\u308C\u307E\u3059",
           card9Title: "\u30B4\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9",
           card9Desc: "Option+G \u3067\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u30AF\u30EA\u30C3\u30AF\u900F\u904E\u306B\u3002\u534A\u900F\u660E\u306E\u30B4\u30FC\u30B9\u30C8\u8868\u793A\u3067\u4F5C\u696D\u306E\u90AA\u9B54\u306B\u306A\u3089\u305A\u3001\u304a\u6c17\u306b\u5165\u308a\u3092\u305d\u3070\u306b\u7f6e\u3051\u307e\u3059\u3002\u4E0D\u900F\u660E\u5EA6\u306E\u30AB\u30B9\u30BF\u30DE\u30A4\u30BA\u3082\u53EF\u80FD\u3002",
-          autoSaveNote: "\u4f4d\u7f6e\u30fb\u30b5\u30a4\u30ba\u30fb\u753b\u50cf\u30fb\u56de\u8ee2\u30fb\u4e0d\u900f\u660e\u5ea6\u30fb\u91cd\u306d\u9806\u30fb\u975E\u8868\u793A\u72B6\u614B\u306f\u81ea\u52d5\u4fdd\u5b58\u3002\u30a2\u30c3\u30d7\u30c7\u30fc\u30c8\u3082\u30a2\u30d7\u30ea\u5185\u304b\u3089\u78ba\u8a8d\u3067\u304d\u307e\u3059\u3002",
-          lightweightTitle: "バッテリーに優しい、超軽量設計",
-          lightweightDesc: "ネイティブSwift製、CPU使用率ほぼ0%、メモリ消費も最小限。ノートブックでも安心して常時起動できます。"
+          card10Title: "管理パネル",
+          card10Desc: 'すべてのウィンドウをひとつのパネルで管理。ミニマップで配置確認、位置・サイズの数値編集、レイアウトプリセット管理、画像ライブラリ管理、各種設定が一画面に。',
+          card10Link: "詳細を見る →",
+          autoSaveNote: "\u4f4d\u7f6e\u30fb\u30b5\u30a4\u30ba\u30fb\u753b\u50cf\u30fb\u56de\u8ee2\u30fb\u4e0d\u900f\u660e\u5ea6\u30fb\u91cd\u306d\u9806\u30fb\u975E\u8868\u793A\u72B6\u614B\u306f\u81ea\u52d5\u4fdd\u5b58\u3002\u30a2\u30c3\u30d7\u30c7\u30fc\u30c8\u3082\u30a2\u30d7\u30ea\u5185\u304b\u3089\u78ba\u8a8d\u3067\u304d\u307e\u3059\u3002"
         },
         usecases: {
           sectionTitle: "使い方いろいろ",
@@ -771,8 +762,6 @@
         features: {
           sectionTitle: "Features",
           sectionSubtitle: "A lightweight, simple app focused on displaying images",
-          card1Title: "Getting Started Guide",
-          card1Desc: "A step-by-step walkthrough on first launch guides you through the basics. Get started right away.",
           card2Title: "Any Image You Like",
           card2Desc: "Supports PNG, JPEG, GIF, TIFF, and HEIC. Register as many images as you want and switch between them anytime.",
           card3Title: "Always on Top",
@@ -789,9 +778,10 @@
           card8Desc: "Automatically cut out subjects from JPEG, HEIC, and other photos. Display your favorite photos without the hassle of preparing transparent PNGs",
           card9Title: "Ghost Mode",
           card9Desc: "Press Option+G to make windows click-through. Semi-transparent ghost display keeps your favorites visible without interfering with your work. Customize opacity to your liking.",
-          autoSaveNote: "Position, size, image, rotation, opacity, layer order, and visibility state are all auto-saved. You can also check for updates from within the app.",
-          lightweightTitle: "Battery-friendly, ultra-lightweight design",
-          lightweightDesc: "Built natively in Swift. Near-zero CPU usage, minimal memory footprint. Safe to keep running all day on your laptop."
+          card10Title: "Management Panel",
+          card10Desc: 'Manage all windows from a single panel. Check layout with the minimap, edit position and size numerically, manage layout presets, image library, and all settings in one place.',
+          card10Link: "Learn more →",
+          autoSaveNote: "Position, size, image, rotation, opacity, layer order, and visibility state are all auto-saved. You can also check for updates from within the app."
         },
         usecases: {
           sectionTitle: "Use Cases",
