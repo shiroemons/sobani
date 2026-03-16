@@ -1,10 +1,8 @@
 import AppKit
 import Observation
-import os.log
 
 @MainActor @Observable
 final class ManagementPanelViewModel {
-    private let logger = Logger(category: "ManagementPanelViewModel")
     weak var appDelegate: AppDelegate?
     var selectedTab: ManagementTab? = .images
     var selectedWindowIds: Set<Int> = []
@@ -15,6 +13,7 @@ final class ManagementPanelViewModel {
     nonisolated(unsafe) private var stateObserver: Any?
     nonisolated(unsafe) private var listObserver: Any?
     nonisolated(unsafe) private var imageListObserver: Any?
+    private var isBatchUpdating = false
 
     enum ManagementTab: String, CaseIterable, Identifiable {
         case images
@@ -198,26 +197,34 @@ final class ManagementPanelViewModel {
 
     func showAllWindows() {
         guard let appDelegate else { return }
+        isBatchUpdating = true
         appDelegate.zOrderedWindows.forEach { $0.setHidden(false) }
-        // Each setHidden fires notifyStateDidChange → triggerRefresh handled by observer
+        isBatchUpdating = false
+        triggerRefresh()
     }
 
     func hideAllWindows() {
         guard let appDelegate else { return }
+        isBatchUpdating = true
         appDelegate.zOrderedWindows.forEach { $0.setHidden(true) }
-        // Each setHidden fires notifyStateDidChange → triggerRefresh handled by observer
+        isBatchUpdating = false
+        triggerRefresh()
     }
 
     func ghostAllWindows() {
         guard let appDelegate else { return }
+        isBatchUpdating = true
         appDelegate.zOrderedWindows.forEach { $0.setGhostMode(true) }
-        // Each setGhostMode fires notifyStateDidChange → triggerRefresh handled by observer
+        isBatchUpdating = false
+        triggerRefresh()
     }
 
     func unghostAllWindows() {
         guard let appDelegate else { return }
+        isBatchUpdating = true
         appDelegate.zOrderedWindows.forEach { $0.setGhostMode(false) }
-        // Each setGhostMode fires notifyStateDidChange → triggerRefresh handled by observer
+        isBatchUpdating = false
+        triggerRefresh()
     }
 
     // MARK: - Detail View Operations
@@ -266,6 +273,7 @@ final class ManagementPanelViewModel {
             y: screenFrame.midY - windowSize.height / 2
         )
         charWindow.window.setFrameOrigin(newOrigin)
+        triggerRefresh()
     }
 
     func moveWindows(from source: IndexSet, to destination: Int) {
@@ -273,18 +281,6 @@ final class ManagementPanelViewModel {
         var windows = appDelegate.zOrderedWindows
         windows.move(fromOffsets: source, toOffset: destination)
         appDelegate.zOrderedWindows = windows
-        appDelegate.applyZOrderToWindows()
-        triggerRefresh()
-    }
-
-    func moveWindow(fromIndex: Int, toIndex: Int) {
-        guard let appDelegate else { return }
-        guard fromIndex != toIndex,
-              fromIndex >= 0, fromIndex < appDelegate.zOrderedWindows.count,
-              toIndex >= 0, toIndex <= appDelegate.zOrderedWindows.count else { return }
-        let window = appDelegate.zOrderedWindows.remove(at: fromIndex)
-        let adjustedIndex = toIndex > fromIndex ? toIndex - 1 : toIndex
-        appDelegate.zOrderedWindows.insert(window, at: adjustedIndex)
         appDelegate.applyZOrderToWindows()
         triggerRefresh()
     }
@@ -329,6 +325,7 @@ final class ManagementPanelViewModel {
     }
 
     func triggerRefresh() {
+        guard !isBatchUpdating else { return }
         rebuildWindows()
     }
 

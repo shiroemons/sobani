@@ -32,14 +32,18 @@ struct MinimapLayout {
     }
 
     @MainActor
-    static func calculate(in availableSize: CGSize, states: [WindowState] = []) -> Self {
+    static func calculate(
+        in availableSize: CGSize,
+        states: [WindowState] = [],
+        precomputedBounds: CGRect? = nil
+    ) -> Self {
         let screenFrames = NSScreen.screens.map(\.frame)
         guard !screenFrames.isEmpty else {
             return Self(screens: [], scale: 1, offset: .zero, rawTotalBounds: .zero)
         }
 
-        // Include both screens and windows in total bounds calculation
-        let totalBounds = computeTotalBounds(states: states)
+        // Use caller-supplied bounds to avoid redundant computation when available
+        let totalBounds = precomputedBounds ?? computeTotalBounds(states: states)
 
         let padding: CGFloat = 16
         let usableWidth = availableSize.width - padding * 2

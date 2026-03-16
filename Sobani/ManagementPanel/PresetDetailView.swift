@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct PresetDetailView: View {
-    private static let previewMaxHeight: CGFloat = 300
     let preset: LayoutPreset
     let selectedIndex: Int?
 
@@ -51,12 +50,12 @@ struct PresetDetailView: View {
                 Image(nsImage: cropped)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: Self.previewMaxHeight)
+                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
             } else {
                 Image(systemName: "photo")
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: Self.previewMaxHeight)
+                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
             }
         }
     }

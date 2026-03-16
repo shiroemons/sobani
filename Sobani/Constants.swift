@@ -237,6 +237,7 @@ enum AppConstants {
     // Management Panel
     static let managementPanelWidth: CGFloat = 1200
     static let managementPanelHeight: CGFloat = 800
+    static let managementPreviewMaxHeight: CGFloat = 300
 
     // MARK: - Notifications
     static let characterWindowStateDidChange = Notification.Name("\(loggerSubsystem).characterWindowStateDidChange")

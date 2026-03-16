@@ -112,7 +112,7 @@ struct SettingsView: View {
             Toggle(L("management.hotkey_enabled"), isOn: $isHotkeyEnabled)
                 .onChange(of: isHotkeyEnabled) {
                     HotkeySettings.isEnabled = isHotkeyEnabled
-                    NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
+                    saveHotkeySettings()
                 }
 
             if isHotkeyEnabled {
@@ -166,8 +166,9 @@ struct SettingsView: View {
             Text(label)
             Spacer()
             HotkeyRecorderButton(keyCode: keyCode, modifiers: modifiers)
-                .onChange(of: keyCode.wrappedValue) { saveHotkeySettings() }
-                .onChange(of: modifiers.wrappedValue) { saveHotkeySettings() }
+                .task(id: HotkeyPair(keyCode: keyCode.wrappedValue, modifiers: modifiers.wrappedValue)) {
+                    saveHotkeySettings()
+                }
         }
     }
 
@@ -217,6 +218,13 @@ struct SettingsView: View {
     private func stopAccessibilityPolling() {
         accessibilityTimer?.invalidate()
         accessibilityTimer = nil
+    }
+
+    // MARK: - Hotkey Pair
+
+    private struct HotkeyPair: Equatable {
+        let keyCode: UInt16
+        let modifiers: NSEvent.ModifierFlags
     }
 
     // MARK: - Update
