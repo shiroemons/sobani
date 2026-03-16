@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RegisteredImagesView: View {
     @Bindable var viewModel: ManagementPanelViewModel
-    @State private var showingDeleteConfirmation = false
+    @State private var imageToDelete: String?
 
     var body: some View {
         Group {
@@ -20,17 +20,22 @@ struct RegisteredImagesView: View {
         }
         .confirmationDialog(
             L("registered_images.delete_confirm_title"),
-            isPresented: $showingDeleteConfirmation,
+            isPresented: Binding(
+                get: { imageToDelete != nil },
+                set: { if !$0 { imageToDelete = nil } }
+            ),
             titleVisibility: .visible
         ) {
             Button(L("registered_images.delete"), role: .destructive) {
-                if let name = viewModel.selectedRegisteredImageName {
+                if let name = imageToDelete {
                     viewModel.removeRegisteredImage(named: name)
                 }
             }
-            Button(L("management.cancel"), role: .cancel) {}
+            Button(L("management.cancel"), role: .cancel) {
+                imageToDelete = nil
+            }
         } message: {
-            if let name = viewModel.selectedRegisteredImageName {
+            if let name = imageToDelete {
                 let count = viewModel.windowCountUsingImage(named: name)
                 if count > 0 {
                     Text(String(format: L("registered_images.delete_in_use_warning"), count))
@@ -79,6 +84,21 @@ struct RegisteredImagesView: View {
                     windowCount: viewModel.windowCountUsingImage(named: name)
                 )
                 .tag(name)
+                .contextMenu {
+                    Button {
+                        viewModel.addFromRegisteredImage(name: name)
+                    } label: {
+                        Label(L("registered_images.add_as_window"), systemImage: "plus.rectangle")
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        requestDelete(name: name)
+                    } label: {
+                        Label(L("registered_images.delete"), systemImage: "trash")
+                    }
+                }
             }
         }
     }
@@ -190,13 +210,20 @@ struct RegisteredImagesView: View {
             .buttonStyle(.bordered)
 
             Button(role: .destructive) {
-                showingDeleteConfirmation = true
+                requestDelete(name: name)
             } label: {
                 Label(L("registered_images.delete"), systemImage: "trash")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+            .tint(.red)
         }
+    }
+
+    // MARK: - Actions
+
+    private func requestDelete(name: String) {
+        imageToDelete = name
     }
 
     // MARK: - Empty States
