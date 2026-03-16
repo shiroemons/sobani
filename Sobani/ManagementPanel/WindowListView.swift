@@ -324,17 +324,6 @@ struct WindowListRow: View {
 
     @ViewBuilder
     private var thumbnailView: some View {
-        if let image = windowInfo.thumbnail {
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-        } else {
-            Rectangle()
-                .fill(.quaternary)
-                .overlay {
-                    Image(systemName: "photo")
-                        .foregroundStyle(.secondary)
-                }
-        }
+        ThumbnailView(image: windowInfo.thumbnail)
     }
 }

@@ -7,7 +7,6 @@ struct SettingsView: View {
     @State private var ghostAlpha = GhostModeSettings.globalAlpha
     @State private var currentTheme = AppThemeSettings.currentTheme
     @State private var currentLanguage = LanguageManager.shared.currentLanguage
-    @State private var isCheckingUpdate = false
     @State private var isHotkeyEnabled = HotkeySettings.isEnabled
     @State private var toggleVisibilityKeyCode = HotkeySettings.toggleVisibilityKeyCode
     @State private var toggleVisibilityModifiers = HotkeySettings.toggleVisibilityModifiers
@@ -227,6 +226,11 @@ struct SettingsView: View {
 
     // MARK: - Update
 
+    private var isCheckingUpdate: Bool {
+        if case .checking = UpdateManager.shared.state { return true }
+        return false
+    }
+
     @ViewBuilder
     private var updateSection: some View {
         Section(L("management.update_section")) {
@@ -238,36 +242,29 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
-            if isCheckingUpdate {
+            switch UpdateManager.shared.state {
+            case .checking:
                 HStack {
                     ProgressView()
                         .scaleEffect(0.7)
                     Text(L("management.checking_update"))
                         .foregroundStyle(.secondary)
                 }
-            } else {
-                switch UpdateManager.shared.state {
-                case .upToDate:
-                    Label(L("management.up_to_date"), systemImage: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                case .available(let version, _, _, _):
-                    Label(
-                        String(format: L("management.update_available_format"), version),
-                        systemImage: "exclamationmark.triangle.fill"
-                    )
-                    .foregroundStyle(.orange)
-                default:
-                    EmptyView()
-                }
+            case .upToDate:
+                Label(L("management.up_to_date"), systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            case .available(let version, _, _, _):
+                Label(
+                    String(format: L("management.update_available_format"), version),
+                    systemImage: "exclamationmark.triangle.fill"
+                )
+                .foregroundStyle(.orange)
+            default:
+                EmptyView()
             }
 
             Button(L("management.check_update")) {
-                isCheckingUpdate = true
                 UpdateManager.shared.checkForUpdate(trigger: .manual)
-                // Simple delay to update UI
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    isCheckingUpdate = false
-                }
             }
             .disabled(isCheckingUpdate)
         }

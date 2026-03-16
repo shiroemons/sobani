@@ -1,5 +1,6 @@
 import Cocoa
 import CryptoKit
+import Observation
 import os.log
 
 // MARK: - GitHub API Models
@@ -106,6 +107,7 @@ protocol UpdateManagerDelegate: AnyObject {
 
 // MARK: - Update Manager
 
+@Observable
 final class UpdateManager: @unchecked Sendable {
     static let shared = UpdateManager()
     private let logger = Logger(category: "UpdateManager")

@@ -27,15 +27,7 @@ struct PresetDetailView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            VStack(spacing: 12) {
-                Image(systemName: "square.on.square.dashed")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.secondary)
-                Text(L("management.select_window"))
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            EmptySelectionView(message: L("management.select_window"))
         }
     }
 
@@ -43,21 +35,11 @@ struct PresetDetailView: View {
 
     @ViewBuilder
     private func previewSection(state: WindowState) -> some View {
-        let image = ImageManager.shared.image(named: state.imageName)
-        GroupBox {
-            if let image {
-                let cropped = CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect)
-                Image(nsImage: cropped)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
-            } else {
-                Image(systemName: "photo")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
-            }
-        }
+        let previewImage: NSImage? = {
+            guard let image = ImageManager.shared.image(named: state.imageName) else { return nil }
+            return CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect)
+        }()
+        ImagePreviewBox(image: previewImage)
     }
 
     // MARK: - Info

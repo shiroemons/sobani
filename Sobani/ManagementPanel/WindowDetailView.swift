@@ -21,15 +21,7 @@ struct WindowDetailView: View {
 
     @ViewBuilder
     private var emptySelectionView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "square.on.square.dashed")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-            Text(L("management.select_window"))
-                .font(.title3)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptySelectionView(message: L("management.select_window"))
     }
 
     // MARK: - Single Selection

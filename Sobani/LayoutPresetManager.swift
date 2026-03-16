@@ -3,10 +3,27 @@ import os.log
 
 // MARK: - Layout Preset
 
-struct LayoutPreset: Codable, Equatable, Sendable {
-    let name: String
+struct LayoutPreset: Codable, Equatable, Sendable, Identifiable {
+    let id: UUID
+    var name: String
     let createdAt: Date
     let states: [WindowState]
+
+    // Migration: existing files without id get one auto-generated
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        self.name = try container.decode(String.self, forKey: .name)
+        self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+        self.states = try container.decode([WindowState].self, forKey: .states)
+    }
+
+    init(id: UUID = UUID(), name: String, createdAt: Date, states: [WindowState]) {
+        self.id = id
+        self.name = name
+        self.createdAt = createdAt
+        self.states = states
+    }
 }
 
 // MARK: - Layout Preset Manager
@@ -115,7 +132,7 @@ final class LayoutPresetManager {
             return false
         }
         guard let newURL = presetFileURL(for: newName) else { return false }
-        let renamedPreset = LayoutPreset(name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
+        let renamedPreset = LayoutPreset(id: oldPreset.id, name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
         JSONPersistence.save(renamedPreset, to: newURL, logger: logger, errorMessage: "Failed to save renamed layout preset") {
             $0.dateEncodingStrategy = .iso8601
         }

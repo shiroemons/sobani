@@ -120,19 +120,7 @@ struct RegisteredImagesView: View {
 
     @ViewBuilder
     private func previewSection(name: String) -> some View {
-        GroupBox {
-            if let image = viewModel.registeredImagePreview(name: name) {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
-            } else {
-                Image(systemName: "photo")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
-            }
-        }
+        ImagePreviewBox(image: viewModel.registeredImagePreview(name: name))
     }
 
     // MARK: - Info Section
@@ -282,17 +270,6 @@ private struct ImageListRow: View {
 
     @ViewBuilder
     private var thumbnailView: some View {
-        if let image = thumbnail {
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-        } else {
-            Rectangle()
-                .fill(.quaternary)
-                .overlay {
-                    Image(systemName: "photo")
-                        .foregroundStyle(.secondary)
-                }
-        }
+        ThumbnailView(image: thumbnail)
     }
 }

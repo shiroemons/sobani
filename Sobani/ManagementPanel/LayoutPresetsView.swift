@@ -104,7 +104,7 @@ struct LayoutPresetsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    ForEach(presets, id: \.name) { preset in
+                    ForEach(presets) { preset in
                         presetRow(for: preset)
                     }
                 }
@@ -202,20 +202,11 @@ struct LayoutPresetsView: View {
 
     @ViewBuilder
     private func thumbnailForState(_ state: WindowState) -> some View {
-        if let image = ImageManager.shared.image(named: state.imageName) {
-            let cropped = CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect)
-            Image(nsImage: cropped)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-        } else {
-            Rectangle()
-                .fill(.quaternary)
-                .overlay {
-                    Image(systemName: "photo")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-        }
+        let image: NSImage? = {
+            guard let baseImage = ImageManager.shared.image(named: state.imageName) else { return nil }
+            return CroppedImageHelper.croppedImage(from: baseImage, cropRect: state.cropRect)
+        }()
+        ThumbnailView(image: image, iconFont: .caption2)
     }
 
     // MARK: - Name Input Sheet
@@ -367,16 +358,17 @@ extension LayoutPresetsView {
         LayoutPresetManager.shared.savePreset(name: preset.name, states: states)
         refreshPresets()
         // Update the detail view if currently viewing this preset
-        if selectedPreset?.name == preset.name {
-            selectedPreset = presets.first { $0.name == preset.name }
+        if selectedPreset?.id == preset.id {
+            selectedPreset = presets.first { $0.id == preset.id }
         }
     }
 
     private func renamePreset(from oldName: String, to newName: String) {
+        let previousId = selectedPreset?.id
         let success = LayoutPresetManager.shared.renamePreset(from: oldName, to: newName)
         if success {
             refreshPresets()
-            selectedPreset = presets.first { $0.name == newName }
+            selectedPreset = presets.first { $0.id == previousId }
         }
     }
 
@@ -391,7 +383,7 @@ extension LayoutPresetsView {
         undoTimerTask?.cancel()
 
         LayoutPresetManager.shared.deletePreset(named: preset.name)
-        if selectedPreset?.name == preset.name {
+        if selectedPreset?.id == preset.id {
             selectedPreset = nil
         }
         if hoveredPresetName == preset.name {

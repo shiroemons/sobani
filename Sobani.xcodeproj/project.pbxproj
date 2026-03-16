@@ -122,6 +122,7 @@
 		A1B2C3D401000031 /* KeyCodeMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000030 /* KeyCodeMapperTests.swift */; };
 		A1B2C3D401000033 /* HotkeySettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000032 /* HotkeySettingsTests.swift */; };
 		A1B2C3D401000035 /* ManagementPanelViewModel+WindowInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000034 /* ManagementPanelViewModel+WindowInfo.swift */; };
+		A1B2C3D401000037 /* SharedViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000036 /* SharedViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -250,6 +251,7 @@
 		A1B2C3D40100001C /* CroppedImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CroppedImageHelper.swift; sourceTree = "<group>"; };
 		A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelViewModel+WindowActions.swift"; sourceTree = "<group>"; };
 		A1B2C3D401000034 /* ManagementPanelViewModel+WindowInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelViewModel+WindowInfo.swift"; sourceTree = "<group>"; };
+		A1B2C3D401000036 /* SharedViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedViews.swift; sourceTree = "<group>"; };
 		A1B2C3D401000024 /* RegisteredImagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredImagesView.swift; sourceTree = "<group>"; };
 		A1B2C3D401000026 /* KeyCodeMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeMapper.swift; sourceTree = "<group>"; };
 		A1B2C3D401000028 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
@@ -428,6 +430,7 @@
 				A1B2C3D401000022 /* ManagementPanelViewModel+WindowActions.swift */,
 				A1B2C3D401000034 /* ManagementPanelViewModel+WindowInfo.swift */,
 				A1B2C3D401000024 /* RegisteredImagesView.swift */,
+				A1B2C3D401000036 /* SharedViews.swift */,
 			);
 			path = ManagementPanel;
 			sourceTree = "<group>";
@@ -617,6 +620,7 @@
 				A1B2C3D401000025 /* RegisteredImagesView.swift in Sources */,
 				A1B2C3D401000027 /* KeyCodeMapper.swift in Sources */,
 				A1B2C3D401000029 /* HotkeyRecorderView.swift in Sources */,
+				A1B2C3D401000037 /* SharedViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

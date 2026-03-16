@@ -42,9 +42,10 @@ import Testing
 
     private func writePreset(
         name: String, originX: CGFloat, createdAt: Date,
-        encoder: JSONEncoder, directory: URL
+        encoder: JSONEncoder, directory: URL,
+        id: UUID = UUID()
     ) throws {
-        let preset = LayoutPreset(name: name, createdAt: createdAt, states: [makeState(originX: originX)])
+        let preset = LayoutPreset(id: id, name: name, createdAt: createdAt, states: [makeState(originX: originX)])
         let data = try encoder.encode(preset)
         try data.write(to: directory.appendingPathComponent("\(name).json"), options: .atomic)
     }
@@ -267,23 +268,54 @@ import Testing
         let decoded = try decoder.decode(LayoutPreset.self, from: data)
 
         #expect(decoded == preset)
+        #expect(decoded.id == preset.id)
+    }
+
+    /// idフィールドのないJSONからデコードするとUUIDが自動生成されることを検証（後方互換性）
+    @Test func layoutPresetCodableMigrationGeneratesId() throws {
+        let states = [makeState(imageName: "test.png")]
+        let date = Date()
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+
+        // idフィールドなしのJSONを手動構築
+        let legacyPreset = LayoutPreset(name: "Legacy", createdAt: date, states: states)
+        var json = try JSONSerialization.jsonObject(
+            with: encoder.encode(legacyPreset), options: []
+        ) as? [String: Any]
+        json?.removeValue(forKey: "id")
+        let legacyData = try JSONSerialization.data(withJSONObject: json as Any)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(LayoutPreset.self, from: legacyData)
+
+        #expect(decoded.name == "Legacy")
+        #expect(decoded.states == states)
+        // idが自動生成されている（ゼロUUIDではない）
+        #expect(decoded.id != UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
     }
 
     /// LayoutPresetのEquatable比較が正しく動作することを検証
     @Test func layoutPresetEquatable() {
         let date = Date()
         let states = [makeState(imageName: "eq.png")]
+        let sharedId = UUID()
 
-        let preset1 = LayoutPreset(name: "Same", createdAt: date, states: states)
-        let preset2 = LayoutPreset(name: "Same", createdAt: date, states: states)
+        let preset1 = LayoutPreset(id: sharedId, name: "Same", createdAt: date, states: states)
+        let preset2 = LayoutPreset(id: sharedId, name: "Same", createdAt: date, states: states)
         #expect(preset1 == preset2)
 
-        let preset3 = LayoutPreset(name: "Different", createdAt: date, states: states)
+        let preset3 = LayoutPreset(id: sharedId, name: "Different", createdAt: date, states: states)
         #expect(preset1 != preset3)
 
         let differentStates = [makeState(imageName: "other.png")]
-        let preset4 = LayoutPreset(name: "Same", createdAt: date, states: differentStates)
+        let preset4 = LayoutPreset(id: sharedId, name: "Same", createdAt: date, states: differentStates)
         #expect(preset1 != preset4)
+
+        // 異なるidを持つプリセットは等しくない
+        let preset5 = LayoutPreset(id: UUID(), name: "Same", createdAt: date, states: states)
+        #expect(preset1 != preset5)
     }
 
     // MARK: - Load Non-Existent Tests
@@ -347,6 +379,7 @@ import Testing
         presetManager.savePreset(name: "OldCacheName", states: [makeState()])
         let before = presetManager.loadPresets()
         #expect(before.contains(where: { $0.name == "OldCacheName" }))
+        let originalId = before.first { $0.name == "OldCacheName" }?.id
 
         let result = presetManager.renamePreset(from: "OldCacheName", to: "NewCacheName")
         #expect(result)
@@ -354,6 +387,8 @@ import Testing
         let after = presetManager.loadPresets()
         #expect(!after.contains(where: { $0.name == "OldCacheName" }))
         #expect(after.contains(where: { $0.name == "NewCacheName" }))
+        // リネーム後もidが保持されることを検証
+        #expect(after.first { $0.name == "NewCacheName" }?.id == originalId)
     }
 
     // MARK: - Restore Tests
