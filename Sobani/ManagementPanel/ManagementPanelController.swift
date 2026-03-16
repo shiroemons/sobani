@@ -72,6 +72,8 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
     // MARK: - NSWindowDelegate
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
+        // Return false to prevent the panel from being deallocated.
+        // Instead, hide it via close() so it can be reused on next show().
         close()
         return false
     }

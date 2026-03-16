@@ -15,12 +15,18 @@ struct PresetMinimapView: View {
 
     @ViewBuilder
     private var minimapCanvas: some View {
-        let totalBounds = MinimapLayout.computeTotalBounds(states: states)
-        let aspectRatio = totalBounds.height > 0 && !NSScreen.screens.isEmpty
+        let screenFrames = NSScreen.screens.map(\.frame)
+        let totalBounds = MinimapLayout.computeTotalBounds(states: states, screenFrames: screenFrames)
+        let aspectRatio = totalBounds.height > 0 && !screenFrames.isEmpty
             ? totalBounds.width / totalBounds.height
             : 16.0 / 9.0
         GeometryReader { geometry in
-            let layout = MinimapLayout.calculate(in: geometry.size, states: states, precomputedBounds: totalBounds)
+            let layout = MinimapLayout.calculate(
+                in: geometry.size,
+                states: states,
+                precomputedBounds: totalBounds,
+                screenFrames: screenFrames
+            )
             ZStack(alignment: .topLeading) {
                 // Screens
                 ForEach(Array(layout.screens.enumerated()), id: \.offset) { _, screenRect in

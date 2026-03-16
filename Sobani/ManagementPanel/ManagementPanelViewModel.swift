@@ -214,7 +214,7 @@ final class ManagementPanelViewModel {
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.refreshRegisteredImageNames()
-                self?.rebuildAll()
+                self?.rebuildImageCaches()
             }
         }
     }
