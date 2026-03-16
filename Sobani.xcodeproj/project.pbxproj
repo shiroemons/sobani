@@ -123,6 +123,7 @@
 		A1B2C3D401000033 /* HotkeySettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000032 /* HotkeySettingsTests.swift */; };
 		A1B2C3D401000035 /* ManagementPanelViewModel+WindowInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000034 /* ManagementPanelViewModel+WindowInfo.swift */; };
 		A1B2C3D401000037 /* SharedViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000036 /* SharedViews.swift */; };
+		F0CP000002000000000001 /* CharacterWindow+Positioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CP000001000000000001 /* CharacterWindow+Positioning.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -230,6 +231,7 @@
 		F0JP000003000000000001 /* JSONPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPersistenceTests.swift; sourceTree = "<group>"; };
 		F0GM000001000000000001 /* WindowStateGhostModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateGhostModeTests.swift; sourceTree = "<group>"; };
 		F0HW000001000000000001 /* CharacterWindow+TestableStaticMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+TestableStaticMethods.swift"; sourceTree = "<group>"; };
+		F0CP000001000000000001 /* CharacterWindow+Positioning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+Positioning.swift"; sourceTree = "<group>"; };
 		F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuSliders.swift"; sourceTree = "<group>"; };
 		F0WH000001000000000001 /* WindowStateHiddenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateHiddenTests.swift; sourceTree = "<group>"; };
 		F0TH000001000000000001 /* AppThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
@@ -298,6 +300,7 @@
 				DD000006 /* CharacterWindow.swift */,
 				F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */,
 				F0HW000001000000000001 /* CharacterWindow+TestableStaticMethods.swift */,
+				F0CP000001000000000001 /* CharacterWindow+Positioning.swift */,
 				DD000004 /* DraggableImageView.swift */,
 				DD000002 /* ImageManager.swift */,
 				CC000011 /* UpdateManager.swift */,
@@ -599,6 +602,7 @@
 				F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */,
 				F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */,
 				F0HW000002000000000001 /* CharacterWindow+TestableStaticMethods.swift in Sources */,
+				F0CP000002000000000001 /* CharacterWindow+Positioning.swift in Sources */,
 				F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 				A1B2C3D401000002 /* ManagementPanelController.swift in Sources */,

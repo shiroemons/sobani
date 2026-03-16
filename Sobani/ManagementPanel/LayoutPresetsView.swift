@@ -216,7 +216,7 @@ struct LayoutPresetsView: View {
     @ViewBuilder
     private func thumbnailForState(_ state: WindowState) -> some View {
         let image: NSImage? = {
-            guard let baseImage = ImageManager.shared.image(named: state.imageName) else { return nil }
+            guard let baseImage = viewModel.previewImage(name: state.imageName) else { return nil }
             return CroppedImageHelper.croppedImage(from: baseImage, cropRect: state.cropRect, imageName: state.imageName)
         }()
         ThumbnailView(image: image, iconFont: .caption2)
@@ -266,6 +266,11 @@ extension LayoutPresetsView {
             // Minimap
             PresetMinimapView(
                 states: preset.states,
+                images: Dictionary(
+                    uniqueKeysWithValues: preset.states.compactMap { state in
+                        viewModel.previewImage(name: state.imageName).map { (state.imageName, $0) }
+                    }
+                ),
                 selectedWindowId: selectedPresetWindowIndex.flatMap { index in
                     index < preset.states.count ? preset.states[index].windowId : nil
                 },
@@ -281,7 +286,7 @@ extension LayoutPresetsView {
             HSplitView {
                 presetWindowList(preset: preset)
                     .splitPanelFrame()
-                PresetDetailView(preset: preset, selectedIndex: selectedPresetWindowIndex)
+                PresetDetailView(viewModel: viewModel, preset: preset, selectedIndex: selectedPresetWindowIndex)
                     .splitPanelFrame()
             }
         }
@@ -306,7 +311,7 @@ extension LayoutPresetsView {
                             .font(.body)
                             .lineLimit(1)
                             .truncationMode(.tail)
-                        Text("\(Int(state.width))×\(Int(state.height)) px ・ (\(Int(state.originX)), \(Int(state.originY)))")
+                        Text("\(FormatUtils.formatDimensions(width: state.width, height: state.height)) ・ (\(Int(state.originX)), \(Int(state.originY)))")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -330,7 +335,7 @@ extension LayoutPresetsView {
     }
 
     private func refreshPresets() {
-        let newPresets = LayoutPresetManager.shared.loadPresets()
+        let newPresets = viewModel.loadPresets()
         if newPresets != presets {
             presets = newPresets
         }
@@ -338,7 +343,7 @@ extension LayoutPresetsView {
 
     private func savePreset() {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
-        LayoutPresetManager.shared.savePreset(name: newPresetName, states: states)
+        viewModel.savePreset(name: newPresetName, states: states)
         refreshPresets()
     }
 
@@ -349,7 +354,7 @@ extension LayoutPresetsView {
 
     private func updatePreset(_ preset: LayoutPreset) {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
-        LayoutPresetManager.shared.updatePreset(preset, states: states)
+        viewModel.updatePreset(preset, states: states)
         refreshPresets()
         if selectedPreset?.id == preset.id {
             selectedPreset = presets.first { $0.id == preset.id }
@@ -359,7 +364,7 @@ extension LayoutPresetsView {
 
     private func renamePreset(from oldName: String, to newName: String) {
         let previousId = selectedPreset?.id
-        let success = LayoutPresetManager.shared.renamePreset(from: oldName, to: newName)
+        let success = viewModel.renamePreset(from: oldName, to: newName)
         if success {
             refreshPresets()
             selectedPreset = presets.first { $0.id == previousId }
@@ -372,7 +377,7 @@ extension LayoutPresetsView {
     }
 
     private func performDeletePreset(_ preset: LayoutPreset) {
-        LayoutPresetManager.shared.deletePreset(named: preset.name)
+        viewModel.deletePreset(named: preset.name)
         if selectedPreset?.id == preset.id {
             selectedPreset = nil
         }
@@ -386,7 +391,7 @@ extension LayoutPresetsView {
     private func restoreDeletedPreset() {
         guard case .deleted(let preset) = activeToast else { return }
         toastTimerTask?.cancel()
-        LayoutPresetManager.shared.restorePreset(preset)
+        viewModel.restorePreset(preset)
         withAnimation {
             activeToast = nil
         }

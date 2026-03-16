@@ -75,6 +75,10 @@ extension ManagementPanelViewModel {
         ImageManager.shared.loadRegisteredImageCached(named: name)
     }
 
+    func previewImage(name: String) -> NSImage? {
+        ImageManager.shared.image(named: name)
+    }
+
     func removeRegisteredImage(named name: String) {
         ImageManager.shared.removeRegisteredImage(named: name)
         if selectedRegisteredImageName == name {
@@ -111,31 +115,17 @@ extension ManagementPanelViewModel {
 
     func centerWindow(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        guard let screen = charWindow.window.screen ?? NSScreen.main else { return }
-        let screenFrame = screen.visibleFrame
-        let windowSize = charWindow.window.frame.size
-        let newOrigin = CGPoint(
-            x: screenFrame.midX - windowSize.width / 2,
-            y: screenFrame.midY - windowSize.height / 2
-        )
-        charWindow.window.setFrameOrigin(newOrigin)
+        charWindow.centerOnScreen()
         triggerRefresh()
     }
 
     func moveWindows(from source: IndexSet, to destination: Int) {
-        guard let appDelegate else { return }
-        var windows = appDelegate.zOrderedWindows
-        windows.move(fromOffsets: source, toOffset: destination)
-        appDelegate.zOrderedWindows = windows
-        appDelegate.applyZOrderToWindows()
+        appDelegate?.reorderWindows(from: source, to: destination)
         triggerRefresh()
     }
 
     fileprivate func removeCharacterWindow(_ charWindow: CharacterWindow) {
-        guard let appDelegate else { return }
-        charWindow.window.orderOut(nil)
-        appDelegate.removeCharacterWindow(charWindow)
-        appDelegate.quitIfNoWindows()
+        appDelegate?.closeCharacterWindow(charWindow)
     }
 
     // MARK: - Layout Delegate Methods
@@ -150,5 +140,31 @@ extension ManagementPanelViewModel {
 
     func createNewLayout(name: String) {
         appDelegate?.createNewLayout(name: name)
+    }
+
+    // MARK: - Layout Preset Methods
+
+    func loadPresets() -> [LayoutPreset] {
+        LayoutPresetManager.shared.loadPresets()
+    }
+
+    func savePreset(name: String, states: [WindowState]) {
+        LayoutPresetManager.shared.savePreset(name: name, states: states)
+    }
+
+    func updatePreset(_ preset: LayoutPreset, states: [WindowState]) {
+        LayoutPresetManager.shared.updatePreset(preset, states: states)
+    }
+
+    func renamePreset(from oldName: String, to newName: String) -> Bool {
+        LayoutPresetManager.shared.renamePreset(from: oldName, to: newName)
+    }
+
+    func deletePreset(named name: String) {
+        LayoutPresetManager.shared.deletePreset(named: name)
+    }
+
+    func restorePreset(_ preset: LayoutPreset) {
+        LayoutPresetManager.shared.restorePreset(preset)
     }
 }

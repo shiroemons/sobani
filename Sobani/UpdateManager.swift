@@ -147,8 +147,7 @@ final class UpdateManager: @unchecked Sendable {
         defaults: UserDefaults = .standard
     ) {
         self.currentVersion = currentVersion
-            ?? Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-            ?? "0"
+            ?? (AppConstants.appVersion == "unknown" ? "0" : AppConstants.appVersion)
         self.apiURL = apiURL
             ?? Self.defaultAPIURL
         self.session = session ?? {

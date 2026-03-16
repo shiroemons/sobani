@@ -597,7 +597,7 @@ extension AppDelegate {
             keyEquivalent: ""
         )
         snapItem.target = self
-        snapItem.state = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey) ? .on : .off
+        snapItem.state = SnapSettings.isEnabled ? .on : .off
         snapItem.image = menuIcon("rectangle.arrowtriangle.2.inward")
         submenu.addItem(snapItem)
 
@@ -699,7 +699,7 @@ extension AppDelegate {
     }
 
     @objc func showAbout() {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+        let version = AppConstants.appVersion
 
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationVersion: String(format: L("about.version"), version, "v\(version)"),

@@ -18,6 +18,17 @@ extension AppDelegate {
         notifyWindowListDidChange()
     }
 
+    func closeCharacterWindow(_ window: CharacterWindow) {
+        window.window.orderOut(nil)
+        removeCharacterWindow(window)
+        quitIfNoWindows()
+    }
+
+    func reorderWindows(from sourceIndices: IndexSet, to destination: Int) {
+        zOrderedWindows.move(fromOffsets: sourceIndices, toOffset: destination)
+        applyZOrderToWindows()
+    }
+
     /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする
     func captureCurrentWindowStates() -> [WindowState] {
         Array(zOrderedWindows.reversed()).map { WindowStateManager.captureState(from: $0) }

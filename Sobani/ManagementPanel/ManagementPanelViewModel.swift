@@ -78,7 +78,7 @@ final class ManagementPanelViewModel {
         let newWindows = appDelegate.zOrderedWindows.map { charWindow in
             let imageSize = charWindow.imageView.frame.size
             let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
-            let subtitle = "\(Int(imageSize.width))×\(Int(imageSize.height)) px ・ \(screenName)"
+            let subtitle = "\(FormatUtils.formatDimensions(width: imageSize.width, height: imageSize.height)) ・ \(screenName)"
             let thumbnail = charWindow.imageView.image
             let frame = charWindow.window.frame
             return WindowInfo(
@@ -194,8 +194,7 @@ final class ManagementPanelViewModel {
 
     func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        let newFrame = NSRect(origin: origin, size: size)
-        charWindow.window.setFrame(newFrame, display: true)
+        charWindow.setPositionAndSize(origin: NSPoint(x: origin.x, y: origin.y), size: NSSize(width: size.width, height: size.height))
         triggerRefresh()
     }
 

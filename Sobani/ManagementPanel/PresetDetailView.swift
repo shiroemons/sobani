@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PresetDetailView: View {
+    let viewModel: ManagementPanelViewModel
     let preset: LayoutPreset
     let selectedIndex: Int?
 
@@ -36,7 +37,7 @@ struct PresetDetailView: View {
     @ViewBuilder
     private func previewSection(state: WindowState) -> some View {
         let previewImage: NSImage? = {
-            guard let image = ImageManager.shared.image(named: state.imageName) else { return nil }
+            guard let image = viewModel.previewImage(name: state.imageName) else { return nil }
             return CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect, imageName: state.imageName)
         }()
         ImagePreviewBox(image: previewImage)
@@ -62,7 +63,7 @@ struct PresetDetailView: View {
             }
 
             Label {
-                Text("\(Int(state.width))×\(Int(state.height)) px")
+                Text(FormatUtils.formatDimensions(width: state.width, height: state.height))
                     .font(.caption)
             } icon: {
                 Image(systemName: "ruler")

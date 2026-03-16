@@ -119,7 +119,7 @@ struct RegisteredImagesView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Preview
-                previewSection(name: name)
+                ImagePreviewBox(image: viewModel.registeredImagePreview(name: name))
 
                 Divider()
 
@@ -134,13 +134,6 @@ struct RegisteredImagesView: View {
             .padding(16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // MARK: - Preview Section
-
-    @ViewBuilder
-    private func previewSection(name: String) -> some View {
-        ImagePreviewBox(image: viewModel.registeredImagePreview(name: name))
     }
 
     // MARK: - Info Section
@@ -263,7 +256,7 @@ private struct ImageListRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            thumbnailView
+            ThumbnailView(image: thumbnail)
                 .frame(width: 40, height: 40)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
 
@@ -287,8 +280,4 @@ private struct ImageListRow: View {
         .padding(.vertical, 2)
     }
 
-    @ViewBuilder
-    private var thumbnailView: some View {
-        ThumbnailView(image: thumbnail)
-    }
 }

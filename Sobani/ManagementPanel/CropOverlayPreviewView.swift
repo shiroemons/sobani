@@ -30,14 +30,14 @@ struct CropOverlayPreviewView: View {
                         Rectangle()
                             .fill()
                             .overlay(
-                                cropShapeView(frame: frame)
+                                cropFillView(frame: frame)
                                     .blendMode(.destinationOut)
                             )
                             .compositingGroup()
                     )
 
                 // Thin border around crop area
-                cropShapeView(frame: frame, stroke: true)
+                cropStrokeView(frame: frame)
             }
         }
         .aspectRatio(imageAspectRatio, contentMode: .fit)
@@ -58,30 +58,34 @@ struct CropOverlayPreviewView: View {
     // MARK: - Crop Shape
 
     @ViewBuilder
-    private func cropShapeView(frame: CGRect, stroke: Bool = false) -> some View {
+    private func cropFillView(frame: CGRect) -> some View {
         Group {
             switch cropRect.shape {
             case .rectangle:
-                if stroke {
-                    Rectangle()
-                        .stroke(Color.white.opacity(0.8), lineWidth: 1)
-                } else {
-                    Rectangle()
-                }
+                Rectangle()
             case .circle:
-                if stroke {
-                    Ellipse()
-                        .stroke(Color.white.opacity(0.8), lineWidth: 1)
-                } else {
-                    Ellipse()
-                }
+                Ellipse()
             case .roundedRectangle:
-                if stroke {
-                    RoundedRectangle(cornerRadius: cropRect.cornerRadii.topLeft)
-                        .stroke(Color.white.opacity(0.8), lineWidth: 1)
-                } else {
-                    RoundedRectangle(cornerRadius: cropRect.cornerRadii.topLeft)
-                }
+                RoundedRectangle(cornerRadius: cropRect.cornerRadii.topLeft)
+            }
+        }
+        .frame(width: frame.width, height: frame.height)
+        .position(x: frame.midX, y: frame.midY)
+    }
+
+    @ViewBuilder
+    private func cropStrokeView(frame: CGRect) -> some View {
+        Group {
+            switch cropRect.shape {
+            case .rectangle:
+                Rectangle()
+                    .stroke(Color.white.opacity(0.8), lineWidth: 1)
+            case .circle:
+                Ellipse()
+                    .stroke(Color.white.opacity(0.8), lineWidth: 1)
+            case .roundedRectangle:
+                RoundedRectangle(cornerRadius: cropRect.cornerRadii.topLeft)
+                    .stroke(Color.white.opacity(0.8), lineWidth: 1)
             }
         }
         .frame(width: frame.width, height: frame.height)

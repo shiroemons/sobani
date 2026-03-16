@@ -56,11 +56,7 @@ struct PresetMinimapView: View {
 
     @ViewBuilder
     private func minimapWindow(state: WindowState, isSelected: Bool) -> some View {
-        let originalImage: NSImage? = if let images, let img = images[state.imageName] {
-            img
-        } else {
-            ImageManager.shared.image(named: state.imageName)
-        }
+        let originalImage: NSImage? = images?[state.imageName]
         let displayImage = originalImage.map { CroppedImageHelper.croppedImage(from: $0, cropRect: state.cropRect, imageName: state.imageName) }
 
         RoundedRectangle(cornerRadius: 2)

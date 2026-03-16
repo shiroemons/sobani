@@ -338,8 +338,8 @@ extension AppDelegate {
     }
 
     @objc func toggleWindowSnap(_ sender: NSMenuItem) {
-        let current = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
-        UserDefaults.standard.set(!current, forKey: AppConstants.snapEnabledKey)
+        let current = SnapSettings.isEnabled
+        SnapSettings.isEnabled = !current
         sender.state = !current ? .on : .off
     }
 

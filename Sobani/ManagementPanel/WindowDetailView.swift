@@ -13,15 +13,8 @@ struct WindowDetailView: View {
         } else if selectedWindows.count > 1 {
             multiSelectionView(count: selectedWindows.count)
         } else {
-            emptySelectionView
+            EmptySelectionView(message: L("management.select_window"))
         }
-    }
-
-    // MARK: - Empty Selection
-
-    @ViewBuilder
-    private var emptySelectionView: some View {
-        EmptySelectionView(message: L("management.select_window"))
     }
 
     // MARK: - Single Selection

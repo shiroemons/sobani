@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct SettingsView: View {
-    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+    private let appVersion = AppConstants.appVersion
     @State private var isLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
-    @State private var isSnapEnabled = UserDefaults.standard.bool(forKey: AppConstants.snapEnabledKey)
+    @State private var isSnapEnabled = SnapSettings.isEnabled
     @State private var ghostAlpha = GhostModeSettings.globalAlpha
     @State private var currentTheme = AppThemeSettings.currentTheme
     @State private var currentLanguage = LanguageManager.shared.currentLanguage
@@ -43,7 +43,7 @@ struct SettingsView: View {
 
             Toggle(L("management.snap_enabled"), isOn: $isSnapEnabled)
                 .onChange(of: isSnapEnabled) {
-                    UserDefaults.standard.set(isSnapEnabled, forKey: AppConstants.snapEnabledKey)
+                    SnapSettings.isEnabled = isSnapEnabled
                 }
         }
     }

@@ -1,10 +1,6 @@
 import SwiftUI
 
 struct WindowListView: View {
-    private static let imagePickerPopoverWidth: CGFloat = 400
-    private static let imagePickerPopoverHeight: CGFloat = 300
-    private static let imagePickerListWidth: CGFloat = 220
-    private static let imagePickerPreviewWidth: CGFloat = 170
     @Bindable var viewModel: ManagementPanelViewModel
     @State private var showingImagePicker = false
     @State private var hoveredImageName: String?
@@ -127,7 +123,7 @@ struct WindowListView: View {
                                 }
                                 .padding(4)
                             }
-                            .frame(width: Self.imagePickerListWidth)
+                            .frame(width: AppConstants.managementImagePickerListWidth)
 
                             Divider()
 
@@ -144,12 +140,12 @@ struct WindowListView: View {
                                         .foregroundStyle(.tertiary)
                                 }
                             }
-                            .frame(width: Self.imagePickerPreviewWidth)
+                            .frame(width: AppConstants.managementImagePickerPreviewWidth)
                             .frame(maxHeight: .infinity)
                         }
                     }
                 }
-                .frame(width: Self.imagePickerPopoverWidth, height: Self.imagePickerPopoverHeight)
+                .frame(width: AppConstants.managementImagePickerPopoverWidth, height: AppConstants.managementImagePickerPopoverHeight)
             }
 
         }
@@ -240,7 +236,7 @@ struct WindowListRow: View {
                 .font(.caption)
 
             // Thumbnail
-            thumbnailView
+            ThumbnailView(image: windowInfo.thumbnail)
                 .frame(width: 40, height: 40)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
 
@@ -332,8 +328,4 @@ struct WindowListRow: View {
         )
     }
 
-    @ViewBuilder
-    private var thumbnailView: some View {
-        ThumbnailView(image: windowInfo.thumbnail)
-    }
 }
