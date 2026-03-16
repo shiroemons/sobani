@@ -3,19 +3,36 @@ import Cocoa
 // MARK: - Hotkey Monitor Types
 
 extension AppDelegate {
-    enum KeyboardAction: Sendable {
+    enum KeyboardAction: Sendable, CaseIterable {
         case toggleVisibility
         case toggleGhostMode
         case toggleManagement
+
+        var label: String {
+            switch self {
+            case .toggleVisibility: return L("management.hotkey_toggle_visibility")
+            case .toggleGhostMode: return L("management.hotkey_toggle_ghost")
+            case .toggleManagement: return L("management.hotkey_toggle_management")
+            }
+        }
     }
 
-    struct HotkeyConfig: Sendable {
-        let visibilityKeyCode: UInt16
-        let visibilityModifiers: NSEvent.ModifierFlags
-        let ghostKeyCode: UInt16
-        let ghostModifiers: NSEvent.ModifierFlags
-        let managementKeyCode: UInt16
-        let managementModifiers: NSEvent.ModifierFlags
+    struct HotkeyBinding: Sendable, Equatable {
+        let action: KeyboardAction
+        let keyCode: UInt16
+        let modifiers: NSEvent.ModifierFlags
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.action == rhs.action && lhs.keyCode == rhs.keyCode && lhs.modifiers == rhs.modifiers
+        }
+    }
+
+    struct HotkeyConfig: Sendable, Equatable {
+        let bindings: [HotkeyBinding]
+
+        func binding(for action: KeyboardAction) -> HotkeyBinding? {
+            bindings.first { $0.action == action }
+        }
     }
 }
 
@@ -28,14 +45,7 @@ extension AppDelegate {
     }
 
     nonisolated func hotkeyAction(for event: NSEvent, config: HotkeyConfig) -> KeyboardAction? {
-        if isHotkey(event, keyCode: config.visibilityKeyCode, modifiers: config.visibilityModifiers) {
-            return .toggleVisibility
-        } else if isHotkey(event, keyCode: config.ghostKeyCode, modifiers: config.ghostModifiers) {
-            return .toggleGhostMode
-        } else if isHotkey(event, keyCode: config.managementKeyCode, modifiers: config.managementModifiers) {
-            return .toggleManagement
-        }
-        return nil
+        config.bindings.first { isHotkey(event, keyCode: $0.keyCode, modifiers: $0.modifiers) }?.action
     }
 
     func performKeyboardAction(_ action: KeyboardAction) {
@@ -47,14 +57,7 @@ extension AppDelegate {
     }
 
     func setupHotkeyMonitors() {
-        let config = HotkeyConfig(
-            visibilityKeyCode: HotkeySettings.toggleVisibilityKeyCode,
-            visibilityModifiers: HotkeySettings.toggleVisibilityModifiers,
-            ghostKeyCode: HotkeySettings.toggleGhostModeKeyCode,
-            ghostModifiers: HotkeySettings.toggleGhostModeModifiers,
-            managementKeyCode: HotkeySettings.toggleManagementKeyCode,
-            managementModifiers: HotkeySettings.toggleManagementModifiers
-        )
+        let config = HotkeySettings.buildConfig()
 
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
             guard let self else { return }

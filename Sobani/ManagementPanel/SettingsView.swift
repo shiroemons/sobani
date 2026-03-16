@@ -7,13 +7,6 @@ struct SettingsView: View {
     @State private var ghostAlpha = GhostModeSettings.globalAlpha
     @State private var currentTheme = AppThemeSettings.currentTheme
     @State private var currentLanguage = LanguageManager.shared.currentLanguage
-    @State private var isHotkeyEnabled = HotkeySettings.isEnabled
-    @State private var toggleVisibilityKeyCode = HotkeySettings.toggleVisibilityKeyCode
-    @State private var toggleVisibilityModifiers = HotkeySettings.toggleVisibilityModifiers
-    @State private var toggleGhostKeyCode = HotkeySettings.toggleGhostModeKeyCode
-    @State private var toggleGhostModifiers = HotkeySettings.toggleGhostModeModifiers
-    @State private var toggleManagementKeyCode = HotkeySettings.toggleManagementKeyCode
-    @State private var toggleManagementModifiers = HotkeySettings.toggleManagementModifiers
     @State private var isAccessibilityGranted = AXIsProcessTrusted()
     @State private var accessibilityTimer: Timer?
 
@@ -108,13 +101,9 @@ struct SettingsView: View {
     @ViewBuilder
     private var hotkeySection: some View {
         Section(L("management.hotkey_section")) {
-            Toggle(L("management.hotkey_enabled"), isOn: $isHotkeyEnabled)
-                .onChange(of: isHotkeyEnabled) {
-                    HotkeySettings.isEnabled = isHotkeyEnabled
-                    saveHotkeySettings()
-                }
+            Toggle(L("management.hotkey_enabled"), isOn: hotkeyEnabledBinding())
 
-            if isHotkeyEnabled {
+            if HotkeySettings.isEnabled {
                 if isAccessibilityGranted {
                     Label(L("management.hotkey_accessibility_granted"), systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
@@ -130,21 +119,13 @@ struct SettingsView: View {
                     }
                 }
 
-                hotkeyRow(
-                    label: L("management.hotkey_toggle_visibility"),
-                    keyCode: $toggleVisibilityKeyCode,
-                    modifiers: $toggleVisibilityModifiers
-                )
-                hotkeyRow(
-                    label: L("management.hotkey_toggle_ghost"),
-                    keyCode: $toggleGhostKeyCode,
-                    modifiers: $toggleGhostModifiers
-                )
-                hotkeyRow(
-                    label: L("management.hotkey_toggle_management"),
-                    keyCode: $toggleManagementKeyCode,
-                    modifiers: $toggleManagementModifiers
-                )
+                ForEach(AppDelegate.KeyboardAction.allCases, id: \.self) { action in
+                    hotkeyRow(
+                        label: action.label,
+                        keyCode: keyCodeBinding(for: action),
+                        modifiers: modifiersBinding(for: action)
+                    )
+                }
 
                 if hasDuplicateHotkeys {
                     Label(L("management.hotkey_duplicate_warning"), systemImage: "exclamationmark.triangle")
@@ -165,30 +146,54 @@ struct SettingsView: View {
             Text(label)
             Spacer()
             HotkeyRecorderButton(keyCode: keyCode, modifiers: modifiers)
-                .task(id: HotkeyPair(keyCode: keyCode.wrappedValue, modifiers: modifiers.wrappedValue)) {
-                    saveHotkeySettings()
-                }
         }
     }
 
     private var hasDuplicateHotkeys: Bool {
-        let pairs: [HotkeyPair] = [
-            HotkeyPair(keyCode: toggleVisibilityKeyCode, modifiers: toggleVisibilityModifiers),
-            HotkeyPair(keyCode: toggleGhostKeyCode, modifiers: toggleGhostModifiers),
-            HotkeyPair(keyCode: toggleManagementKeyCode, modifiers: toggleManagementModifiers)
-        ]
-        return Set(pairs).count < pairs.count
+        let pairs = AppDelegate.KeyboardAction.allCases.map { action in
+            (keyCode: HotkeySettings.keyCode(for: action), modifiers: HotkeySettings.modifiers(for: action))
+        }
+        let unique = Set(pairs.map { "\($0.keyCode)-\($0.modifiers.rawValue)" })
+        return unique.count < pairs.count
     }
 
-    private func saveHotkeySettings() {
-        HotkeySettings.toggleVisibilityKeyCode = toggleVisibilityKeyCode
-        HotkeySettings.toggleVisibilityModifiers = toggleVisibilityModifiers
-        HotkeySettings.toggleGhostModeKeyCode = toggleGhostKeyCode
-        HotkeySettings.toggleGhostModeModifiers = toggleGhostModifiers
-        HotkeySettings.toggleManagementKeyCode = toggleManagementKeyCode
-        HotkeySettings.toggleManagementModifiers = toggleManagementModifiers
+    // MARK: - Hotkey Bindings
+
+    private func hotkeyEnabledBinding() -> Binding<Bool> {
+        Binding(
+            get: { HotkeySettings.isEnabled },
+            set: { newValue in
+                HotkeySettings.isEnabled = newValue
+                notifyHotkeySettingsChanged()
+            }
+        )
+    }
+
+    private func keyCodeBinding(for action: AppDelegate.KeyboardAction) -> Binding<UInt16> {
+        Binding(
+            get: { HotkeySettings.keyCode(for: action) },
+            set: { newValue in
+                HotkeySettings.setKeyCode(newValue, for: action)
+                notifyHotkeySettingsChanged()
+            }
+        )
+    }
+
+    private func modifiersBinding(for action: AppDelegate.KeyboardAction) -> Binding<NSEvent.ModifierFlags> {
+        Binding(
+            get: { HotkeySettings.modifiers(for: action) },
+            set: { newValue in
+                HotkeySettings.setModifiers(newValue, for: action)
+                notifyHotkeySettingsChanged()
+            }
+        )
+    }
+
+    private func notifyHotkeySettingsChanged() {
         NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
     }
+
+    // MARK: - Accessibility Polling
 
     private func startAccessibilityPolling() {
         accessibilityTimer?.invalidate()
@@ -210,18 +215,6 @@ struct SettingsView: View {
     private func stopAccessibilityPolling() {
         accessibilityTimer?.invalidate()
         accessibilityTimer = nil
-    }
-
-    // MARK: - Hotkey Pair
-
-    private struct HotkeyPair: Equatable, Hashable {
-        let keyCode: UInt16
-        let modifiers: NSEvent.ModifierFlags
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(keyCode)
-            hasher.combine(modifiers.rawValue)
-        }
     }
 
     // MARK: - Update

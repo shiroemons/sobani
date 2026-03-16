@@ -99,6 +99,99 @@ import Testing
             #expect(retrieved.contains(.option))
         }
     }
+
+    // MARK: - Array-based Accessor テスト
+
+    /// keyCode(for:)がtoggleVisibilityのデフォルト値を返すことを検証
+    @Test func keyCodeForToggleVisibility() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleVisibilityKeyCodeKey) {
+            #expect(HotkeySettings.keyCode(for: .toggleVisibility) == AppConstants.optionHKeyCode)
+        }
+    }
+
+    /// keyCode(for:)がtoggleGhostModeのデフォルト値を返すことを検証
+    @Test func keyCodeForToggleGhostMode() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleGhostModeKeyCodeKey) {
+            #expect(HotkeySettings.keyCode(for: .toggleGhostMode) == AppConstants.optionGKeyCode)
+        }
+    }
+
+    /// keyCode(for:)がtoggleManagementのデフォルト値を返すことを検証
+    @Test func keyCodeForToggleManagement() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleManagementKeyCodeKey) {
+            #expect(HotkeySettings.keyCode(for: .toggleManagement) == AppConstants.optionMKeyCode)
+        }
+    }
+
+    /// setKeyCode(_:for:)でtoggleVisibilityのキーコードを書き込み・読み出しできることを検証
+    @Test func setKeyCodeForToggleVisibility() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleVisibilityKeyCodeKey) {
+            HotkeySettings.setKeyCode(2, for: .toggleVisibility)
+            #expect(HotkeySettings.keyCode(for: .toggleVisibility) == 2)
+            #expect(HotkeySettings.toggleVisibilityKeyCode == 2)
+        }
+    }
+
+    /// setKeyCode(_:for:)でtoggleGhostModeのキーコードを書き込み・読み出しできることを検証
+    @Test func setKeyCodeForToggleGhostMode() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleGhostModeKeyCodeKey) {
+            HotkeySettings.setKeyCode(3, for: .toggleGhostMode)
+            #expect(HotkeySettings.keyCode(for: .toggleGhostMode) == 3)
+            #expect(HotkeySettings.toggleGhostModeKeyCode == 3)
+        }
+    }
+
+    /// setKeyCode(_:for:)でtoggleManagementのキーコードを書き込み・読み出しできることを検証
+    @Test func setKeyCodeForToggleManagement() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleManagementKeyCodeKey) {
+            HotkeySettings.setKeyCode(9, for: .toggleManagement)
+            #expect(HotkeySettings.keyCode(for: .toggleManagement) == 9)
+            #expect(HotkeySettings.toggleManagementKeyCode == 9)
+        }
+    }
+
+    /// modifiers(for:)がtoggleVisibilityのデフォルト修飾キーを返すことを検証
+    @Test func modifiersForToggleVisibility() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleVisibilityModifiersKey) {
+            #expect(HotkeySettings.modifiers(for: .toggleVisibility) == .option)
+        }
+    }
+
+    /// setModifiers(_:for:)でtoggleGhostModeの修飾キーを書き込み・読み出しできることを検証
+    @Test func setModifiersForToggleGhostMode() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleGhostModeModifiersKey) {
+            HotkeySettings.setModifiers([.command, .control], for: .toggleGhostMode)
+            let result = HotkeySettings.modifiers(for: .toggleGhostMode)
+            #expect(result.contains(.command))
+            #expect(result.contains(.control))
+            #expect(HotkeySettings.toggleGhostModeModifiers == [.command, .control])
+        }
+    }
+
+    // MARK: - buildConfig() テスト
+
+    /// buildConfig()がすべてのアクションのバインディングを含むHotkeyConfigを返すことを検証
+    @Test func buildConfigContainsAllActions() {
+        let config = HotkeySettings.buildConfig()
+        #expect(config.bindings.count == AppDelegate.KeyboardAction.allCases.count)
+        for action in AppDelegate.KeyboardAction.allCases {
+            #expect(config.binding(for: action) != nil)
+        }
+    }
+
+    /// buildConfig()がHotkeySettingsの現在値を反映することを検証
+    @Test func buildConfigReflectsCurrentSettings() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleVisibilityKeyCodeKey) {
+            withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleVisibilityModifiersKey) {
+                HotkeySettings.setKeyCode(10, for: .toggleVisibility)
+                HotkeySettings.setModifiers([.command, .shift], for: .toggleVisibility)
+                let config = HotkeySettings.buildConfig()
+                let binding = config.binding(for: .toggleVisibility)
+                #expect(binding?.keyCode == 10)
+                #expect(binding?.modifiers == [.command, .shift])
+            }
+        }
+    }
 }
 
 // MARK: - ヘルパー

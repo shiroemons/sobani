@@ -323,6 +323,46 @@ enum HotkeySettings {
         get { storedModifiers(forKey: AppConstants.hotkeyToggleManagementModifiersKey) }
         set { saveModifiers(newValue, forKey: AppConstants.hotkeyToggleManagementModifiersKey) }
     }
+
+    // MARK: - Array-based Accessors
+
+    static func keyCode(for action: AppDelegate.KeyboardAction) -> UInt16 {
+        switch action {
+        case .toggleVisibility: return toggleVisibilityKeyCode
+        case .toggleGhostMode: return toggleGhostModeKeyCode
+        case .toggleManagement: return toggleManagementKeyCode
+        }
+    }
+
+    static func modifiers(for action: AppDelegate.KeyboardAction) -> NSEvent.ModifierFlags {
+        switch action {
+        case .toggleVisibility: return toggleVisibilityModifiers
+        case .toggleGhostMode: return toggleGhostModeModifiers
+        case .toggleManagement: return toggleManagementModifiers
+        }
+    }
+
+    static func setKeyCode(_ keyCode: UInt16, for action: AppDelegate.KeyboardAction) {
+        switch action {
+        case .toggleVisibility: toggleVisibilityKeyCode = keyCode
+        case .toggleGhostMode: toggleGhostModeKeyCode = keyCode
+        case .toggleManagement: toggleManagementKeyCode = keyCode
+        }
+    }
+
+    static func setModifiers(_ modifiers: NSEvent.ModifierFlags, for action: AppDelegate.KeyboardAction) {
+        switch action {
+        case .toggleVisibility: toggleVisibilityModifiers = modifiers
+        case .toggleGhostMode: toggleGhostModeModifiers = modifiers
+        case .toggleManagement: toggleManagementModifiers = modifiers
+        }
+    }
+
+    static func buildConfig() -> AppDelegate.HotkeyConfig {
+        AppDelegate.HotkeyConfig(bindings: AppDelegate.KeyboardAction.allCases.map { action in
+            AppDelegate.HotkeyBinding(action: action, keyCode: keyCode(for: action), modifiers: modifiers(for: action))
+        })
+    }
 }
 
 extension NSAppearance {
