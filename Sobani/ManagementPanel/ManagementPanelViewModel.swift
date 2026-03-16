@@ -13,9 +13,11 @@ final class ManagementPanelViewModel {
     private(set) var cachedWindowStates: [WindowState] = []
     private(set) var cachedWindowImages: [String: NSImage] = [:]
     private(set) var visibleWindowCount: Int = 0
+    private(set) var languageRefreshId = UUID()
     nonisolated(unsafe) private var stateObserver: Any?
     nonisolated(unsafe) private var listObserver: Any?
     nonisolated(unsafe) private var imageListObserver: Any?
+    nonisolated(unsafe) private var languageObserver: Any?
     private var isBatchUpdating = false
 
     enum ManagementTab: String, CaseIterable, Identifiable {
@@ -61,6 +63,7 @@ final class ManagementPanelViewModel {
         if let stateObserver { NotificationCenter.default.removeObserver(stateObserver) }
         if let listObserver { NotificationCenter.default.removeObserver(listObserver) }
         if let imageListObserver { NotificationCenter.default.removeObserver(imageListObserver) }
+        if let languageObserver { NotificationCenter.default.removeObserver(languageObserver) }
     }
 
     // MARK: - Window List
@@ -215,6 +218,15 @@ final class ManagementPanelViewModel {
             MainActor.assumeIsolated {
                 self?.refreshRegisteredImageNames()
                 self?.rebuildImageCaches()
+            }
+        }
+        languageObserver = NotificationCenter.default.addObserver(
+            forName: .languageDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.languageRefreshId = UUID()
             }
         }
     }

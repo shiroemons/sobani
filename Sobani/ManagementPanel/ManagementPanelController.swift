@@ -9,10 +9,24 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
     private var panel: NSPanel?
     private var hostingController: NSHostingController<ManagementPanelView>?
     private let viewModel: ManagementPanelViewModel
+    nonisolated(unsafe) private var languageObserver: Any?
 
     init(appDelegate: AppDelegate) {
         self.viewModel = ManagementPanelViewModel(appDelegate: appDelegate)
         super.init()
+        languageObserver = NotificationCenter.default.addObserver(
+            forName: .languageDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.panel?.title = L("management.title")
+            }
+        }
+    }
+
+    deinit {
+        if let languageObserver { NotificationCenter.default.removeObserver(languageObserver) }
     }
 
     func show() {

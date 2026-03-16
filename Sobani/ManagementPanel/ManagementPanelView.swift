@@ -11,6 +11,7 @@ struct ManagementPanelView: View {
         } detail: {
             detailContent
         }
+        .id(viewModel.languageRefreshId)
         .navigationSplitViewStyle(.balanced)
         .toolbar {
             ToolbarItem(placement: .navigation) {
