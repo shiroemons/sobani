@@ -46,22 +46,29 @@ extension ManagementPanelViewModel {
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.windowId == rhs.windowId
+            let tol = AppConstants.floatingPointTolerance
+            return lhs.windowId == rhs.windowId
                 && lhs.isHidden == rhs.isHidden
                 && lhs.isGhostMode == rhs.isGhostMode
-                && lhs.opacityLevel == rhs.opacityLevel
+                && abs(lhs.opacityLevel - rhs.opacityLevel) < tol
                 && lhs.displayName == rhs.displayName
-                && lhs.customGhostAlpha == rhs.customGhostAlpha
-                && lhs.effectiveGhostAlpha == rhs.effectiveGhostAlpha
+                && {
+                    switch (lhs.customGhostAlpha, rhs.customGhostAlpha) {
+                    case (nil, nil): return true
+                    case let (lhs?, rhs?): return abs(lhs - rhs) < tol
+                    default: return false
+                    }
+                }()
+                && abs(lhs.effectiveGhostAlpha - rhs.effectiveGhostAlpha) < tol
                 && lhs.cropRect == rhs.cropRect
                 && lhs.isRemoveBackgroundEnabled == rhs.isRemoveBackgroundEnabled
-                && lhs.originX == rhs.originX
-                && lhs.originY == rhs.originY
-                && lhs.width == rhs.width
-                && lhs.height == rhs.height
+                && abs(lhs.originX - rhs.originX) < tol
+                && abs(lhs.originY - rhs.originY) < tol
+                && abs(lhs.width - rhs.width) < tol
+                && abs(lhs.height - rhs.height) < tol
                 && lhs.imageName == rhs.imageName
                 && lhs.isFlippedHorizontally == rhs.isFlippedHorizontally
-                && lhs.rotationAngle == rhs.rotationAngle
+                && abs(lhs.rotationAngle - rhs.rotationAngle) < tol
         }
 
         func toWindowState() -> WindowState {

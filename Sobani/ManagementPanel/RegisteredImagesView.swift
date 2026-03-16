@@ -223,22 +223,13 @@ struct RegisteredImagesView: View {
 
     @ViewBuilder
     private var noImagesEmptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "photo.stack")
-                .font(.system(size: 36))
-                .foregroundStyle(.secondary)
-            Text(L("registered_images.empty"))
-                .font(.body)
-                .foregroundStyle(.secondary)
-            Text(L("registered_images.empty_hint"))
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-            Button(L("registered_images.add")) {
-                viewModel.addImageFromFile(createWindow: false)
-            }
-            .buttonStyle(.bordered)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptySelectionView(
+            message: L("registered_images.empty"),
+            icon: "photo.stack",
+            hint: L("registered_images.empty_hint"),
+            actionTitle: L("registered_images.add"),
+            action: { viewModel.addImageFromFile(createWindow: false) }
+        )
     }
 
     @ViewBuilder

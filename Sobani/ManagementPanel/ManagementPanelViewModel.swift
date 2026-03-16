@@ -3,15 +3,15 @@ import Observation
 
 @MainActor @Observable
 final class ManagementPanelViewModel {
-    weak var appDelegate: AppDelegate?
+    private(set) weak var appDelegate: AppDelegate?
     var selectedTab: ManagementTab? = .images
     var selectedWindowIds: Set<Int> = []
     var selectedRegisteredImageName: String?
     private(set) var windows: [WindowInfo] = []
     private(set) var registeredImageNames: [String] = []
     private(set) var windowCountByImageName: [String: Int] = [:]
-    private(set) var cachedWindowStates: [WindowState] = []
-    private(set) var cachedWindowImages: [String: NSImage] = [:]
+    private(set) var windowStates: [WindowState] = []
+    private(set) var windowImages: [String: NSImage] = [:]
     private(set) var visibleWindowCount: Int = 0
     private(set) var languageRefreshId = UUID()
     nonisolated(unsafe) private var stateObserver: Any?
@@ -69,8 +69,8 @@ final class ManagementPanelViewModel {
     private func rebuildWindows() {
         guard let appDelegate else {
             windows = []
-            cachedWindowStates = []
-            cachedWindowImages = [:]
+            windowStates = []
+            windowImages = [:]
             windowCountByImageName = [:]
             visibleWindowCount = 0
             return
@@ -107,8 +107,8 @@ final class ManagementPanelViewModel {
             windows = newWindows
         }
         let newWindowStates = newWindows.map { $0.toWindowState() }
-        if newWindowStates != cachedWindowStates {
-            cachedWindowStates = newWindowStates
+        if newWindowStates != windowStates {
+            windowStates = newWindowStates
         }
         let newVisibleCount = newWindows.lazy.filter { !$0.isHidden }.count
         if newVisibleCount != visibleWindowCount {
@@ -122,7 +122,7 @@ final class ManagementPanelViewModel {
         for window in windows where imageDict[window.imageName] == nil {
             imageDict[window.imageName] = window.originalImage ?? window.thumbnail
         }
-        cachedWindowImages = imageDict
+        windowImages = imageDict
     }
 
     private func rebuildAll() {
@@ -240,6 +240,10 @@ final class ManagementPanelViewModel {
         }
     }
 
+    /// Rebuilds window state from the current `zOrderedWindows` snapshot.
+    /// Intentionally calls only `rebuildWindows()` — not `rebuildImageCaches()` — because
+    /// image identity does not change during state-only updates (position, opacity, ghost mode, etc.).
+    /// Image caches are rebuilt via `rebuildAll()`, which is triggered by `characterWindowListDidChange`.
     func triggerRefresh() {
         guard !isBatchUpdating else { return }
         rebuildWindows()

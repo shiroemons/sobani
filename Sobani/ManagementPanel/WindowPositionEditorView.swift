@@ -34,7 +34,10 @@ struct WindowPositionEditorView: View {
             .padding(.top, 4)
         }
         .onAppear { loadValues() }
-        .onChange(of: windowInfo) { loadValues() }
+        .onChange(of: windowInfo.originX) { loadValues() }
+        .onChange(of: windowInfo.originY) { loadValues() }
+        .onChange(of: windowInfo.width) { loadValues() }
+        .onChange(of: windowInfo.height) { loadValues() }
     }
 
     @ViewBuilder

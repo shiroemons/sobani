@@ -79,6 +79,11 @@ extension ManagementPanelViewModel {
         ImageManager.shared.image(named: name)
     }
 
+    func croppedPreviewImage(for state: WindowState) -> NSImage? {
+        guard let image = previewImage(name: state.imageName) else { return nil }
+        return CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect, imageName: state.imageName)
+    }
+
     func removeRegisteredImage(named name: String) {
         ImageManager.shared.removeRegisteredImage(named: name)
         if selectedRegisteredImageName == name {
@@ -90,12 +95,6 @@ extension ManagementPanelViewModel {
     func windowCountUsingImage(named name: String) -> Int {
         windowCountByImageName[name] ?? 0
     }
-
-    // MARK: - Derived State for Views
-
-    var windowStates: [WindowState] { cachedWindowStates }
-
-    var windowImages: [String: NSImage] { cachedWindowImages }
 
     // MARK: - Window Management
 

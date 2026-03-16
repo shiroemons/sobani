@@ -36,11 +36,7 @@ struct PresetDetailView: View {
 
     @ViewBuilder
     private func previewSection(state: WindowState) -> some View {
-        let previewImage: NSImage? = {
-            guard let image = viewModel.previewImage(name: state.imageName) else { return nil }
-            return CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect, imageName: state.imageName)
-        }()
-        ImagePreviewBox(image: previewImage)
+        ImagePreviewBox(image: viewModel.croppedPreviewImage(for: state))
     }
 
     // MARK: - Info

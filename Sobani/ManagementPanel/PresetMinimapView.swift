@@ -8,14 +8,25 @@ struct PresetMinimapView: View {
 
     private static let maxHeight: CGFloat = 400
 
+    @State private var screenFrames: [CGRect] = NSScreen.screens.map(\.frame)
+    @State private var totalBounds: CGRect = .zero
+
     var body: some View {
         minimapCanvas
+            .onAppear { updateScreenInfo() }
+            .onChange(of: states) { updateScreenInfo() }
+            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)) { _ in
+                updateScreenInfo()
+            }
+    }
+
+    private func updateScreenInfo() {
+        screenFrames = NSScreen.screens.map(\.frame)
+        totalBounds = MinimapLayout.computeTotalBounds(states: states, screenFrames: screenFrames)
     }
 
     @ViewBuilder
     private var minimapCanvas: some View {
-        let screenFrames = NSScreen.screens.map(\.frame)
-        let totalBounds = MinimapLayout.computeTotalBounds(states: states, screenFrames: screenFrames)
         let contentAspectRatio = totalBounds.height > 0 && !screenFrames.isEmpty
             ? totalBounds.width / totalBounds.height
             : 16.0 / 9.0
@@ -28,11 +39,13 @@ struct PresetMinimapView: View {
             .clipped()
             .overlay {
                 GeometryReader { geometry in
+                    let cachedBounds = totalBounds
+                    let cachedFrames = screenFrames
                     let layout = MinimapLayout.calculate(
                         in: geometry.size,
                         states: states,
-                        precomputedBounds: totalBounds,
-                        screenFrames: screenFrames
+                        precomputedBounds: cachedBounds,
+                        screenFrames: cachedFrames
                     )
                     ZStack(alignment: .topLeading) {
                         // Screens

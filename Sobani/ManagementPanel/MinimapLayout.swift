@@ -2,7 +2,7 @@ import AppKit
 
 struct MinimapLayout {
     static let minimapFallbackHeight: CGFloat = 150
-    private static let padding: CGFloat = 16
+    private static var padding: CGFloat { AppConstants.managementMinimapPadding }
 
     let screens: [CGRect]
     let scale: CGFloat

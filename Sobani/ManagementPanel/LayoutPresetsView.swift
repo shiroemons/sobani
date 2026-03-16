@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct LayoutPresetsView: View {
-    private static let undoTimeoutSeconds: Double = 5
     @Bindable var viewModel: ManagementPanelViewModel
     @State private var presets: [LayoutPreset] = []
     @State private var selectedPreset: LayoutPreset?
@@ -15,6 +14,7 @@ struct LayoutPresetsView: View {
     @State private var activeToast: ToastType?
     @State private var toastTimerTask: Task<Void, Never>?
     @State private var isShowingCreateSheet = false
+    @State private var presetImages: [String: NSImage] = [:]
 
     private enum ToastType: Equatable {
         case deleted(LayoutPreset)
@@ -71,6 +71,17 @@ struct LayoutPresetsView: View {
         }
         .onDisappear {
             toastTimerTask?.cancel()
+        }
+        .onChange(of: selectedPreset) { _, newPreset in
+            guard let preset = newPreset else {
+                presetImages = [:]
+                return
+            }
+            presetImages = preset.states.reduce(into: [String: NSImage]()) { dict, state in
+                guard dict[state.imageName] == nil,
+                      let image = viewModel.previewImage(name: state.imageName) else { return }
+                dict[state.imageName] = image
+            }
         }
     }
 
@@ -160,12 +171,7 @@ struct LayoutPresetsView: View {
             }
             .frame(maxWidth: .infinity)
 
-            PresetActionButtonsView(
-                onApply: { applyPreset(preset) },
-                onUpdate: { updatePreset(preset) },
-                onRename: { startRename(preset) },
-                onDelete: { confirmDeletePreset(preset) }
-            )
+            makePresetActionButtons(for: preset)
 
             Image(systemName: "chevron.right")
                 .foregroundStyle(.secondary)
@@ -207,11 +213,7 @@ struct LayoutPresetsView: View {
 
     @ViewBuilder
     private func thumbnailForState(_ state: WindowState) -> some View {
-        let image: NSImage? = {
-            guard let baseImage = viewModel.previewImage(name: state.imageName) else { return nil }
-            return CroppedImageHelper.croppedImage(from: baseImage, cropRect: state.cropRect, imageName: state.imageName)
-        }()
-        ThumbnailView(image: image, iconFont: .caption2)
+        ThumbnailView(image: viewModel.croppedPreviewImage(for: state), iconFont: .caption2)
     }
 
     // MARK: - Name Input Sheet
@@ -219,6 +221,16 @@ struct LayoutPresetsView: View {
     @ViewBuilder
     private func presetNameSheet(title: String, action: @escaping () -> Void) -> some View {
         PresetNameSheetView(title: title, name: $newPresetName, action: action)
+    }
+
+    @ViewBuilder
+    private func makePresetActionButtons(for preset: LayoutPreset) -> some View {
+        PresetActionButtonsView(
+            onApply: { applyPreset(preset) },
+            onUpdate: { updatePreset(preset) },
+            onRename: { startRename(preset) },
+            onDelete: { confirmDeletePreset(preset) }
+        )
     }
 }
 
@@ -243,12 +255,7 @@ extension LayoutPresetsView {
 
                 Spacer()
 
-                PresetActionButtonsView(
-                    onApply: { applyPreset(preset) },
-                    onUpdate: { updatePreset(preset) },
-                    onRename: { startRename(preset) },
-                    onDelete: { confirmDeletePreset(preset) }
-                )
+                makePresetActionButtons(for: preset)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -258,11 +265,7 @@ extension LayoutPresetsView {
             // Minimap
             PresetMinimapView(
                 states: preset.states,
-                images: preset.states.reduce(into: [String: NSImage]()) { dict, state in
-                    guard dict[state.imageName] == nil,
-                          let image = viewModel.previewImage(name: state.imageName) else { return }
-                    dict[state.imageName] = image
-                },
+                images: presetImages,
                 selectedWindowId: selectedPresetWindowIndex.flatMap { index in
                     index < preset.states.count ? preset.states[index].windowId : nil
                 },
@@ -395,7 +398,7 @@ extension LayoutPresetsView {
         }
         toastTimerTask = Task {
             do {
-                try await Task.sleep(for: .seconds(Self.undoTimeoutSeconds))
+                try await Task.sleep(for: .seconds(AppConstants.layoutUndoTimeoutSeconds))
                 withAnimation {
                     activeToast = nil
                 }

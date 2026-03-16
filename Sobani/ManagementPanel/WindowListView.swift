@@ -178,19 +178,12 @@ struct WindowListView: View {
 
     @ViewBuilder
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "photo.on.rectangle.angled")
-                .font(.system(size: 36))
-                .foregroundStyle(.secondary)
-            Text(L("management.no_windows"))
-                .font(.body)
-                .foregroundStyle(.secondary)
-            Button(L("management.add_image")) {
-                viewModel.addImageFromFile()
-            }
-            .buttonStyle(.bordered)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptySelectionView(
+            message: L("management.no_windows"),
+            icon: "photo.on.rectangle.angled",
+            actionTitle: L("management.add_image"),
+            action: { viewModel.addImageFromFile() }
+        )
     }
 
     // MARK: - Status Bar

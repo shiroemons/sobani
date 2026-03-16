@@ -10,6 +10,8 @@ struct SettingsView: View {
     @State private var isAccessibilityGranted = AXIsProcessTrusted()
     @State private var accessibilityTimer: Timer?
     @State private var hotkeySettingsVersion = 0
+    @State private var hasDuplicateHotkeys = false
+    @State private var hasNonDefaultHotkeys = false
 
     var body: some View {
         Form {
@@ -24,6 +26,7 @@ struct SettingsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             startAccessibilityPolling()
+            updateHotkeyState()
         }
         .onDisappear {
             stopAccessibilityPolling()
@@ -184,16 +187,13 @@ struct SettingsView: View {
         }
     }
 
-    private var hasDuplicateHotkeys: Bool {
+    private func updateHotkeyState() {
         let pairs = AppDelegate.KeyboardAction.allCases.map { action in
             (keyCode: HotkeySettings.keyCode(for: action), modifiers: HotkeySettings.modifiers(for: action))
         }
         let unique = Set(pairs.map { UInt64($0.keyCode) << 32 | UInt64($0.modifiers.rawValue) })
-        return unique.count < pairs.count
-    }
-
-    private var hasNonDefaultHotkeys: Bool {
-        AppDelegate.KeyboardAction.allCases.contains { !HotkeySettings.isDefault(for: $0) }
+        hasDuplicateHotkeys = unique.count < pairs.count
+        hasNonDefaultHotkeys = AppDelegate.KeyboardAction.allCases.contains { !HotkeySettings.isDefault(for: $0) }
     }
 
     // MARK: - Hotkey Bindings
@@ -230,6 +230,7 @@ struct SettingsView: View {
 
     private func notifyHotkeySettingsChanged() {
         hotkeySettingsVersion += 1
+        updateHotkeyState()
         NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
     }
 
@@ -237,6 +238,7 @@ struct SettingsView: View {
 
     private func startAccessibilityPolling() {
         accessibilityTimer?.invalidate()
+        guard HotkeySettings.isEnabled else { return }
         guard !isAccessibilityGranted else { return }
         accessibilityTimer = Timer.scheduledTimer(
             withTimeInterval: AppConstants.accessibilityPollingInterval,

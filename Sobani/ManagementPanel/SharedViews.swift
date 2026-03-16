@@ -26,6 +26,9 @@ struct ThumbnailView: View {
 struct EmptySelectionView: View {
     let message: String
     var icon: String = "square.on.square.dashed"
+    var hint: String?
+    var actionTitle: String?
+    var action: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 12) {
@@ -35,6 +38,15 @@ struct EmptySelectionView: View {
             Text(message)
                 .font(.title3)
                 .foregroundStyle(.secondary)
+            if let hint {
+                Text(hint)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            if let actionTitle, let action {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.bordered)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

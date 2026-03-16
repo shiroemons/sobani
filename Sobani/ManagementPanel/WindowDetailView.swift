@@ -272,11 +272,13 @@ struct WindowDetailView: View {
                 HStack {
                     Slider(
                         value: $bulkOpacity,
-                        in: AppConstants.opacityMin...AppConstants.opacityMax
+                        in: AppConstants.opacityMin...AppConstants.opacityMax,
+                        onEditingChanged: { editing in
+                            if !editing {
+                                viewModel.changeBulkOpacity(opacity: bulkOpacity)
+                            }
+                        }
                     )
-                    .onChange(of: bulkOpacity) {
-                        viewModel.changeBulkOpacity(opacity: bulkOpacity)
-                    }
 
                     Text(FormatUtils.formatOpacity(bulkOpacity))
                         .font(.caption.monospaced())
