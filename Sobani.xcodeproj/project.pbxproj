@@ -777,6 +777,10 @@
 				DEVELOPMENT_TEAM = U4Y9MKZ4GZ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sobani/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MARKETING_VERSION = 202603.21;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.Sobani;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -797,6 +801,10 @@
 				DEVELOPMENT_TEAM = U4Y9MKZ4GZ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sobani/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MARKETING_VERSION = 202603.21;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shiroemons.Sobani;
 				PRODUCT_NAME = "$(TARGET_NAME)";
