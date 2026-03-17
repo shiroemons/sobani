@@ -88,6 +88,14 @@ PLIST="$PROJECT_DIR/$APP_NAME.app/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:1 string en" "$PLIST"
 echo "🌐 日本語・英語ローカライゼーションを設定しました"
 
+# CFBundleIdentifier のフォールバック（CODE_SIGNING_ALLOWED=NO で変数展開されなかった場合の安全策）
+BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$PLIST" 2>/dev/null || echo "")
+if [ -z "$BUNDLE_ID" ] || [[ "$BUNDLE_ID" == *'$('* ]]; then
+    /usr/libexec/PlistBuddy -c "Delete :CFBundleIdentifier" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string com.shiroemons.Sobani" "$PLIST"
+    echo "🔧 CFBundleIdentifier をフォールバック設定しました"
+fi
+
 # コード署名
 if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
     echo "🔏 コード署名中..."
