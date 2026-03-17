@@ -173,7 +173,7 @@ jobs:
           git fetch origin main
           git checkout main
 
-          # Insert new item after <language>ja</language>
+          # Replace all items with latest release only
           awk -v tag="$TAG" -v pub="$PUB_DATE" -v ver="$VERSION" -v len="$DMG_LENGTH" -v sig="$ED_SIGNATURE" -v dmg="$DMG_NAME" '
           /<language>ja<\/language>/ {
             print
@@ -190,9 +190,12 @@ jobs:
             print "        sparkle:edSignature=\"" sig "\""
             print "      />"
             print "    </item>"
+            skip=1
             next
           }
-          { print }
+          /<item>/ { skip=1 }
+          /<\/item>/ { skip=0; next }
+          !skip { print }
           ' docs/appcast.xml > /tmp/appcast_new.xml
           mv /tmp/appcast_new.xml docs/appcast.xml
 
