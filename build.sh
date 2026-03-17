@@ -96,6 +96,17 @@ if [ -z "$BUNDLE_ID" ] || [[ "$BUNDLE_ID" == *'$('* ]]; then
     echo "🔧 CFBundleIdentifier をフォールバック設定しました"
 fi
 
+# CFBundleVersion のフォールバック（CURRENT_PROJECT_VERSION が未展開または 0 の場合の安全策）
+BUNDLE_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PLIST" 2>/dev/null || echo "")
+if [ -z "$BUNDLE_VERSION" ] || [ "$BUNDLE_VERSION" = "0" ] || [[ "$BUNDLE_VERSION" == *'$('* ]]; then
+    SHORT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST" 2>/dev/null || echo "")
+    if [ -n "$SHORT_VERSION" ]; then
+        /usr/libexec/PlistBuddy -c "Delete :CFBundleVersion" "$PLIST" 2>/dev/null || true
+        /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $SHORT_VERSION" "$PLIST"
+        echo "🔧 CFBundleVersion をフォールバック設定しました ($SHORT_VERSION)"
+    fi
+fi
+
 # コード署名
 if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
     echo "🔏 コード署名中..."
