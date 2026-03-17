@@ -5,21 +5,22 @@ import Sparkle
 // MARK: - Sparkle Update Manager
 
 @MainActor
-final class SparkleManager: NSObject {
+final class SparkleManager: NSObject, SPUUpdaterDelegate {
     static let shared = SparkleManager()
     private let logger = Logger(category: "SparkleManager")
-    private let updater: SPUUpdater
 
-    /// テストDI用。プロダクションコードでは `shared` を使用すること。
-    init(
-        updater: SPUUpdater = SPUUpdater(
-            hostBundle: .main,
-            applicationBundle: .main,
-            userDriver: SPUStandardUserDriver(hostBundle: .main, delegate: nil),
-            delegate: nil
-        )
-    ) {
-        self.updater = updater
+    /// Sparkle がアップデートのインストールを開始したかどうか。
+    /// `AppDelegate.applicationShouldTerminate` で終了を許可するために使用。
+    private(set) var isInstallingUpdate = false
+
+    private lazy var updater = SPUUpdater(
+        hostBundle: .main,
+        applicationBundle: .main,
+        userDriver: SPUStandardUserDriver(hostBundle: .main, delegate: nil),
+        delegate: self
+    )
+
+    override init() {
         super.init()
     }
 
@@ -56,4 +57,13 @@ final class SparkleManager: NSObject {
         updater.canCheckForUpdates
     }
 
+    // MARK: - SPUUpdaterDelegate
+
+    nonisolated func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
+        let version = item.displayVersionString
+        Task { @MainActor [weak self] in
+            self?.isInstallingUpdate = true
+            self?.logger.info("Sparkle: アップデートをインストールします - \(version, privacy: .public)")
+        }
+    }
 }

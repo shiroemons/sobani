@@ -23,4 +23,9 @@ import Testing
         #expect(target is SparkleManager)
     }
 
+    /// isInstallingUpdateの初期値がfalseであることを検証
+    @Test func isInstallingUpdateDefaultsToFalse() {
+        #expect(SparkleManager.shared.isInstallingUpdate == false)
+    }
+
 }
