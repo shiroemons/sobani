@@ -977,198 +977,6 @@
         }
       }
     },
-    "update.checking": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "確認中..."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Checking..."
-          }
-        }
-      }
-    },
-    "update.downloading": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロード中..."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Downloading..."
-          }
-        }
-      }
-    },
-    "update.available": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新する（v%@）"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update (v%@)"
-          }
-        }
-      }
-    },
-    "update.confirm_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sobani を v%@ に更新しますか？"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update Sobani to v%@?"
-          }
-        }
-      }
-    },
-    "update.confirm_message": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アプリが再起動されます。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The app will restart."
-          }
-        }
-      }
-    },
-    "update.button": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update"
-          }
-        }
-      }
-    },
-    "update.cancel": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャンセル"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
-          }
-        }
-      }
-    },
-    "update.new_version_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "新しいバージョンがあります"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New Version Available"
-          }
-        }
-      }
-    },
-    "update.new_version_message": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sobani v%@ が利用可能です。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sobani v%@ is available."
-          }
-        }
-      }
-    },
-    "update.later": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "後で"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Later"
-          }
-        }
-      }
-    },
-    "update.up_to_date_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "最新バージョンです"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Up to Date"
-          }
-        }
-      }
-    },
-    "update.up_to_date_message": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sobani は最新の状態です。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sobani is up to date."
-          }
-        }
-      }
-    },
     "update.ok": {
       "localizations": {
         "ja": {
@@ -1181,614 +989,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "OK"
-          }
-        }
-      }
-    },
-    "update.check_failed_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新の確認に失敗しました"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update Check Failed"
-          }
-        }
-      }
-    },
-    "update.network_error": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新の確認に失敗しました。ネットワーク接続を確認してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to check for updates. Please check your network connection."
-          }
-        }
-      }
-    },
-    "update.fetch_error": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新情報を取得できませんでした。しばらく後に再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Could not fetch update information. Please try again later."
-          }
-        }
-      }
-    },
-    "update.parse_error": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新情報の解析に失敗しました。しばらく後に再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to parse update information. Please try again later."
-          }
-        }
-      }
-    },
-    "update.download_error": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Download failed. Please check your network connection."
-          }
-        }
-      }
-    },
-    "update.download_timeout": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードがタイムアウトしました。ネットワーク接続を確認して再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Download timed out. Please check your network connection and try again."
-          }
-        }
-      }
-    },
-    "update.error_code_label": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "エラーコード: %@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Error code: %@"
-          }
-        }
-      }
-    },
-    "update.hint.U-101": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "インターネット接続を確認してください。Wi-Fiやルーターの再起動もお試しください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check your internet connection. Try restarting Wi-Fi or your router."
-          }
-        }
-      }
-    },
-    "update.hint.U-102": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GitHubサーバーが一時的に不安定な可能性があります。しばらく待ってから再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GitHub servers may be temporarily unavailable. Please try again later."
-          }
-        }
-      }
-    },
-    "update.hint.U-103": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "しばらく待ってから再試行してください。繰り返す場合はGitHub Issuesで報告してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Please try again later. If this persists, report it on GitHub Issues."
-          }
-        }
-      }
-    },
-    "update.hint.U-201": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "インターネット接続を確認し、再試行してください。VPN/プロキシ使用中は一時的に無効にしてみてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check your connection and try again. If using VPN/proxy, try disabling it temporarily."
-          }
-        }
-      }
-    },
-    "update.hint.U-204": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードがタイムアウトしました。ネットワーク接続を確認し、再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Download timed out. Please check your network connection and try again."
-          }
-        }
-      }
-    },
-    "update.hint.U-202": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ディスクの空き容量を確認してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check your available disk space."
-          }
-        }
-      }
-    },
-    "update.hint.U-203": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードが破損した可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The download may be corrupted. Try again, or download manually from GitHub if it persists."
-          }
-        }
-      }
-    },
-    "update.hint.U-301": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ディスクの空き容量と一時ファイルの書き込み権限を確認してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check your disk space and temp directory write permissions."
-          }
-        }
-      }
-    },
-    "update.hint.U-302": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The downloaded file may be corrupted. Try again or download manually from GitHub."
-          }
-        }
-      }
-    },
-    "update.hint.U-303": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Please try again. If the issue persists, download and install manually from GitHub."
-          }
-        }
-      }
-    },
-    "update.hint.U-401": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ディスクの空き容量を確認してください。マウント中のDMGが多い場合はアンマウントしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check your disk space. Unmount other disk images if too many are mounted."
-          }
-        }
-      }
-    },
-    "update.hint.U-402": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードファイルが破損している可能性があります。再試行するか、GitHubから手動でダウンロードしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The downloaded file may be corrupted. Try again or download manually from GitHub."
-          }
-        }
-      }
-    },
-    "update.hint.U-403": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "再試行してください。問題が続く場合はGitHubから手動でダウンロード・インストールしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Please try again. If the issue persists, download and install manually from GitHub."
-          }
-        }
-      }
-    },
-    "update.hint.U-501": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sobani.appがアプリケーションフォルダに正しく配置されているか確認してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ensure Sobani.app is correctly placed in the Applications folder."
-          }
-        }
-      }
-    },
-    "update.hint.U-502": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アプリケーションフォルダへの書き込み権限とディスクの空き容量を確認してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check write permissions for the Applications folder and your disk space."
-          }
-        }
-      }
-    },
-    "update.hint.U-503": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アプリケーションフォルダへの書き込み権限を確認してください。Sobaniが他のプロセスで使用されていないか確認してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check write permissions for the Applications folder. Make sure Sobani is not in use by another process."
-          }
-        }
-      }
-    },
-    "update.hint.U-504": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GitHubから手動でSobani.appをダウンロードして再インストールしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Please download and reinstall Sobani.app manually from GitHub."
-          }
-        }
-      }
-    },
-    "update.hint_label": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "💡 対処方法: "
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "💡 How to fix: "
-          }
-        }
-      }
-    },
-    "update.file_not_found": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードファイルが見つかりません。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Downloaded file not found."
-          }
-        }
-      }
-    },
-    "update.checksum_failed": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードファイルの整合性検証に失敗しました。再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "File integrity verification failed. Please try again."
-          }
-        }
-      }
-    },
-    "update.checksum_missing_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "チェックサムファイルが見つかりません"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Checksum File Not Found"
-          }
-        }
-      }
-    },
-    "update.checksum_missing_message": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードファイルの整合性を検証できません。続行しますか？"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cannot verify file integrity. Continue anyway?"
-          }
-        }
-      }
-    },
-    "update.continue": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "続行"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Continue"
-          }
-        }
-      }
-    },
-    "update.zip_extract_failed": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ZIPの展開に失敗しました。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to extract ZIP."
-          }
-        }
-      }
-    },
-    "update.app_not_found": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アップデートのアプリが見つかりません。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Updated app not found."
-          }
-        }
-      }
-    },
-    "update.prepare_failed": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新の準備に失敗しました。再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to prepare update. Please try again."
-          }
-        }
-      }
-    },
-    "update.dmg_mount_failed": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DMGのマウントに失敗しました。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to mount the disk image."
-          }
-        }
-      }
-    },
-    "update.location_error": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在のアプリの場所を取得できません。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cannot determine the current app location."
-          }
-        }
-      }
-    },
-    "update.install_failed": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アプリの更新に失敗しました。再試行してください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to update the app. Please try again."
-          }
-        }
-      }
-    },
-    "update.backup_failed": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在のアプリのバックアップに失敗しました。更新を中止します。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to back up the current app. Update aborted."
-          }
-        }
-      }
-    },
-    "update.restore_failed": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新に失敗し、バックアップからの復元も失敗しました。Sobani.appを再インストールしてください。"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update failed and restoring from backup also failed. Please reinstall Sobani.app."
           }
         }
       }
@@ -2422,13 +1622,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "現在のレイアウトを保存..."
+            "value": "現在の配置を保存"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Save Current Layout..."
+            "value": "Save Current Layout"
           }
         }
       }
@@ -2454,13 +1654,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "レイアウトを削除"
+            "value": "削除"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete Layout"
+            "value": "Delete"
           }
         }
       }
@@ -2470,13 +1670,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "レイアウトの保存"
+            "value": "プリセット保存"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Save Layout"
+            "value": "Save Preset"
           }
         }
       }
@@ -2518,13 +1718,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "レイアウト名"
+            "value": "プリセット名"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Layout name"
+            "value": "Preset Name"
           }
         }
       }
@@ -2678,13 +1878,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "レイアウトを上書き"
+            "value": "更新"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Update Layout"
+            "value": "Update"
           }
         }
       }
@@ -2806,13 +2006,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "レイアウト名を変更"
+            "value": "名前変更"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rename Layout"
+            "value": "Rename"
           }
         }
       }
@@ -2854,13 +2054,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "レイアウト名の変更"
+            "value": "プリセット名を変更"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rename Layout"
+            "value": "Rename Preset"
           }
         }
       }
@@ -4209,70 +3409,6 @@
         }
       }
     },
-    "layout.save_current": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在の配置を保存"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save Current Layout"
-          }
-        }
-      }
-    },
-    "layout.save_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プリセット保存"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save Preset"
-          }
-        }
-      }
-    },
-    "layout.rename_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プリセット名を変更"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rename Preset"
-          }
-        }
-      }
-    },
-    "layout.name_placeholder": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プリセット名"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preset Name"
-          }
-        }
-      }
-    },
     "layout.items_suffix": {
       "localizations": {
         "ja": {
@@ -4301,54 +3437,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Apply"
-          }
-        }
-      }
-    },
-    "layout.update": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update"
-          }
-        }
-      }
-    },
-    "layout.rename": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "名前変更"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rename"
-          }
-        }
-      }
-    },
-    "layout.delete": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "削除"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Delete"
           }
         }
       }
@@ -4717,54 +3805,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Current Version"
-          }
-        }
-      }
-    },
-    "management.checking_update": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "確認中..."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Checking..."
-          }
-        }
-      }
-    },
-    "management.up_to_date": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "最新です"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Up to date"
-          }
-        }
-      }
-    },
-    "management.update_available_format": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "v%@ が利用可能"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "v%@ available"
           }
         }
       }

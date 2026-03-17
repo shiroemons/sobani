@@ -40,8 +40,6 @@
 		C0F10002AAAA000000000005 /* CropRectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000005 /* CropRectTests.swift */; };
 		C0F10002AAAA000000000006 /* CropRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000006 /* CropRect.swift */; };
 		C0F10002AAAA000000000007 /* CropRectExtendedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F10001AAAA000000000007 /* CropRectExtendedTests.swift */; };
-		CC000010 /* UpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000011 /* UpdateManager.swift */; };
-		CC000012 /* UpdateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000013 /* UpdateManagerTests.swift */; };
 		ST000002 /* SparkleManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ST000001 /* SparkleManagerTests.swift */; };
 		DD000001 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002 /* ImageManager.swift */; };
 		DD000003 /* DraggableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000004 /* DraggableImageView.swift */; };
@@ -109,8 +107,6 @@
 		F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SV000001000000000001 /* AppDelegate+Services.swift */; };
 		F0TB000002000000000001 /* CropEditorToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TB000001000000000001 /* CropEditorToolbarView.swift */; };
 		F0TH000002000000000001 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TH000001000000000001 /* AppThemeTests.swift */; };
-		F0UM000002000000000001 /* UpdateManagerExtendedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */; };
-		F0UN000002000000000001 /* UpdateManagerNetworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */; };
 		F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UW000001000000000001 /* UnconstrainedWindow.swift */; };
 		F0WH000002000000000001 /* WindowStateHiddenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0WH000001000000000001 /* WindowStateHiddenTests.swift */; };
 		F0ZO000002000000000001 /* ZOrderUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0ZO000001000000000001 /* ZOrderUtils.swift */; };
@@ -124,7 +120,6 @@
 		II000003 /* LanguageManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II000004 /* LanguageManagerTests.swift */; };
 		JJ000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = JJ000004 /* InfoPlist.strings */; };
 		KK000001 /* WakeRestorationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = KK000002 /* WakeRestorationContext.swift */; };
-		LL000001 /* UpdateErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = LL000002 /* UpdateErrorCodeTests.swift */; };
 		SM000002 /* SparkleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = SM000001 /* SparkleManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -174,8 +169,6 @@
 		C0F10001AAAA000000000005 /* CropRectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropRectTests.swift; sourceTree = "<group>"; };
 		C0F10001AAAA000000000006 /* CropRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropRect.swift; sourceTree = "<group>"; };
 		C0F10001AAAA000000000007 /* CropRectExtendedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropRectExtendedTests.swift; sourceTree = "<group>"; };
-		CC000011 /* UpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManager.swift; sourceTree = "<group>"; };
-		CC000013 /* UpdateManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerTests.swift; sourceTree = "<group>"; };
 		ST000001 /* SparkleManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleManagerTests.swift; sourceTree = "<group>"; };
 		D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContextTests.swift; sourceTree = "<group>"; };
 		DD000002 /* ImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
@@ -245,8 +238,6 @@
 		F0SV000001000000000001 /* AppDelegate+Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Services.swift"; sourceTree = "<group>"; };
 		F0TB000001000000000001 /* CropEditorToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorToolbarView.swift; sourceTree = "<group>"; };
 		F0TH000001000000000001 /* AppThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
-		F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerExtendedTests.swift; sourceTree = "<group>"; };
-		F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManagerNetworkTests.swift; sourceTree = "<group>"; };
 		F0UW000001000000000001 /* UnconstrainedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnconstrainedWindow.swift; sourceTree = "<group>"; };
 		F0WH000001000000000001 /* WindowStateHiddenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateHiddenTests.swift; sourceTree = "<group>"; };
 		F0ZO000001000000000001 /* ZOrderUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZOrderUtils.swift; sourceTree = "<group>"; };
@@ -261,7 +252,6 @@
 		JJ000002 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		JJ000003 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		KK000002 /* WakeRestorationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContext.swift; sourceTree = "<group>"; };
-		LL000002 /* UpdateErrorCodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateErrorCodeTests.swift; sourceTree = "<group>"; };
 		SM000001 /* SparkleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -334,7 +324,6 @@
 				F0CP000001000000000001 /* CharacterWindow+Positioning.swift */,
 				DD000004 /* DraggableImageView.swift */,
 				DD000002 /* ImageManager.swift */,
-				CC000011 /* UpdateManager.swift */,
 				SM000001 /* SparkleManager.swift */,
 				DD000016 /* AdjustmentPanelController.swift */,
 				EE000002 /* LaunchAtLoginManager.swift */,
@@ -397,13 +386,11 @@
 			isa = PBXGroup;
 			children = (
 				BB000002 /* ImageManagerTests.swift */,
-				CC000013 /* UpdateManagerTests.swift */,
 				ST000001 /* SparkleManagerTests.swift */,
 				DD000012 /* WindowStateManagerTests.swift */,
 				EE000004 /* LaunchAtLoginManagerTests.swift */,
 				FF000004 /* ScreenRestorationManagerTests.swift */,
 				II000004 /* LanguageManagerTests.swift */,
-				LL000002 /* UpdateErrorCodeTests.swift */,
 				F0BG000003000000000001 /* BackgroundRemovalManagerTests.swift */,
 				F0DD000003000000000001 /* DragDropUtilsTests.swift */,
 				F0OB000005000000000001 /* OnboardingManagerTests.swift */,
@@ -411,10 +398,8 @@
 				F0PS000003000000000001 /* PathSanitizerTests.swift */,
 				D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */,
 				F0CT000001000000000001 /* ConstantsTests.swift */,
-				F0UM000001000000000001 /* UpdateManagerExtendedTests.swift */,
 				F0LR000001000000000001 /* LayoutPresetRenameTests.swift */,
 				F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */,
-				F0UN000001000000000001 /* UpdateManagerNetworkTests.swift */,
 				E8A1B2C3D4E5F6A7 /* AdjustmentPanelControllerTests.swift */,
 				F0DI000001000000000001 /* DraggableImageViewTests.swift */,
 				F0PT000001000000000001 /* ImagePreviewPanelTests.swift */,
@@ -572,7 +557,6 @@
 				F0COS00002000000000001 /* CharacterWindow+OtherSubmenu.swift in Sources */,
 				DD000003 /* DraggableImageView.swift in Sources */,
 				DD000001 /* ImageManager.swift in Sources */,
-				CC000010 /* UpdateManager.swift in Sources */,
 				SM000002 /* SparkleManager.swift in Sources */,
 				DD000009 /* WindowStateManager.swift in Sources */,
 				DD000015 /* AdjustmentPanelController.swift in Sources */,
@@ -644,13 +628,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB000001 /* ImageManagerTests.swift in Sources */,
-				CC000012 /* UpdateManagerTests.swift in Sources */,
 				ST000002 /* SparkleManagerTests.swift in Sources */,
 				DD000011 /* WindowStateManagerTests.swift in Sources */,
 				EE000003 /* LaunchAtLoginManagerTests.swift in Sources */,
 				FF000003 /* ScreenRestorationManagerTests.swift in Sources */,
 				II000003 /* LanguageManagerTests.swift in Sources */,
-				LL000001 /* UpdateErrorCodeTests.swift in Sources */,
 				F0BG000004000000000001 /* BackgroundRemovalManagerTests.swift in Sources */,
 				F0DD000004000000000001 /* DragDropUtilsTests.swift in Sources */,
 				F0OB000006000000000001 /* OnboardingManagerTests.swift in Sources */,
@@ -658,10 +640,8 @@
 				F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */,
 				E1F2A3B4C5D6E7F8A9B0C1D2 /* WakeRestorationContextTests.swift in Sources */,
 				F0CT000002000000000001 /* ConstantsTests.swift in Sources */,
-				F0UM000002000000000001 /* UpdateManagerExtendedTests.swift in Sources */,
 				F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */,
 				F0LE000002000000000001 /* LayoutPresetManagerExtendedTests.swift in Sources */,
-				F0UN000002000000000001 /* UpdateManagerNetworkTests.swift in Sources */,
 				E8A1B2C3D4E5F6A8 /* AdjustmentPanelControllerTests.swift in Sources */,
 				F0DI000002000000000001 /* DraggableImageViewTests.swift in Sources */,
 				F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */,

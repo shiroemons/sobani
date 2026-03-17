@@ -267,11 +267,6 @@ struct SettingsView: View {
 
     // MARK: - Update
 
-    private var isCheckingUpdate: Bool {
-        if case .checking = UpdateManager.shared.state { return true }
-        return false
-    }
-
     @ViewBuilder
     private var updateSection: some View {
         Section(L("management.update_section")) {
@@ -283,31 +278,10 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
-            switch UpdateManager.shared.state {
-            case .checking:
-                HStack {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                    Text(L("management.checking_update"))
-                        .foregroundStyle(.secondary)
-                }
-            case .upToDate:
-                Label(L("management.up_to_date"), systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-            case .available(let version, _, _, _):
-                Label(
-                    String(format: L("management.update_available_format"), version),
-                    systemImage: "exclamationmark.triangle.fill"
-                )
-                .foregroundStyle(.orange)
-            default:
-                EmptyView()
-            }
-
             Button(L("management.check_update")) {
-                UpdateManager.shared.checkForUpdate(trigger: .manual)
+                SparkleManager.shared.checkForUpdates(nil)
             }
-            .disabled(isCheckingUpdate)
+            .disabled(!SparkleManager.shared.canCheckForUpdates)
         }
     }
 }
