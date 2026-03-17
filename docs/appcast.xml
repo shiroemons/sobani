@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Sobani</title>
+    <link>https://shiroemons.github.io/sobani/appcast.xml</link>
+    <description>Sobani アップデート情報</description>
+    <language>ja</language>
+  </channel>
+</rss>
