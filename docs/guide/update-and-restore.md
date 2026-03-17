@@ -8,126 +8,65 @@
 
 ## 自動アップデート
 
+### 概要
+
+Sparkle フレームワーク（`SPUUpdater`）によるセキュアな自動アップデート機能。EdDSA 署名検証により安全性を確保。
+
 ### チェックタイミング
 
-| トリガー | 発火タイミング | ダイアログ表示 |
+| トリガー | 発火タイミング | 動作 |
 |---|---|---|
-| `manual` | メニューバーから手動実行 | 全結果（最新版・エラーも含む） |
-| `startup` | アプリ起動時 | 更新ありのみ |
-| `automatic` | 24時間タイマー / スリープ復帰後（前回から24時間経過時） | なし（サイレント検出、メニューから手動確認可能） |
+| 手動 | メニューバー「更新を確認...」または管理パネル Settings タブ | Sparkle の標準ダイアログでユーザーに通知 |
+| 自動 | 24時間間隔（`SUScheduledCheckInterval: 86400`） | バックグラウンドで確認し、更新があればダイアログ表示 |
 
-- 24時間タイマーは `Timer.scheduledTimer(interval: 86400)` で設定されます。
-- スリープ復帰時は `NSWorkspace.didWakeNotification` を受信し、前回チェックから24時間経過している場合のみ `.automatic` トリガーで実行されます。
-
-### UpdateState 状態遷移
-
-```mermaid
-stateDiagram-v2
-    [*] --> idle
-    idle --> checking : checkForUpdate()
-    upToDate --> checking : checkForUpdate()
-    error --> checking : checkForUpdate()
-
-    checking --> available : 新バージョンあり
-    checking --> upToDate : 最新版（手動のみ）
-    checking --> error : API エラー（手動のみ）
-    checking --> idle : startup/automatic で更新なし
-
-    available --> downloading : downloadAndInstall()
-    available --> idle : チェックサムなし警告でキャンセル
-
-    downloading --> [*] : 成功（プロセス終了→再起動）
-    downloading --> error : チェックサム不一致
-    downloading --> error : ダウンロード失敗
-```
-
-### アップデート全体フロー
+### アップデートフロー
 
 ```mermaid
 sequenceDiagram
     participant App as Sobani
-    participant UM as UpdateManager
-    participant GH as GitHub API
-    participant FS as ファイルシステム
+    participant SM as SparkleManager
+    participant SPU as SPUUpdater
+    participant Feed as appcast.xml
+    participant UI as ユーザー
 
-    Note over App,GH: チェック
-    App->>UM: checkForUpdate(trigger)
-    UM->>GH: GET /repos/.../releases/latest
-    Note right of GH: TLS 1.3 必須
-    GH-->>UM: リリース情報
-    UM->>UM: バージョン比較
+    Note over App,Feed: チェック
+    App->>SM: checkForUpdates() / 自動チェック
+    SM->>SPU: checkForUpdates()
+    SPU->>Feed: GET appcast.xml
+    Feed-->>SPU: リリース情報
+    SPU->>SPU: バージョン比較 + EdDSA 署名検証
 
     alt 新バージョンあり
-        UM-->>App: state = .available
-        App->>App: 確認ダイアログ表示
-
-        Note over App,FS: ダウンロード & インストール
-        UM->>GH: アセットダウンロード
-        UM->>GH: checksums.txt ダウンロード
-        GH-->>UM: バイナリ + チェックサム
-        UM->>UM: SHA256 検証
-
-        alt DMG 形式
-            UM->>FS: hdiutil attach → .app コピー → detach
-        else ZIP 形式
-            UM->>FS: ditto で展開
-        end
-
-        Note over UM,FS: 既存の Sobani_backup.app があれば削除
-        UM->>FS: 現在の .app → Sobani_backup.app
-        UM->>FS: 新 .app → 現在位置
-        UM->>FS: Sobani_backup.app 削除
-        UM->>FS: /bin/sh 子プロセス起動
-        Note right of FS: PID 終了待ち → open 新アプリ
-        UM->>App: NSApp.terminate
+        SPU->>UI: 更新ダイアログ表示
+        UI->>SPU: 「インストールして再起動」
+        SPU->>SPU: ダウンロード + 署名検証
+        SPU->>App: willInstallUpdate
+        SM->>SM: isInstallingUpdate = true
+        SPU->>App: アプリ終了 + 新バージョン起動
     else 最新版
-        UM-->>App: state = .upToDate
+        SPU->>UI: 最新版ダイアログ（手動時のみ）
     end
 ```
 
-### SHA256 検証
+### セキュリティ
 
-リリースアセットに `checksums.txt` が存在する場合、ダウンロード後に Apple CryptoKit を使って SHA256 チェックサムを検証します。
+- すべてのアップデートは EdDSA（Ed25519）署名で検証される
+- 公開鍵は `Info.plist` の `SUPublicEDKey` に埋め込み
+- 署名が一致しないアップデートは自動的に拒否される
 
-- `checksumURL` が存在 → `checksums.txt` を取得 → ダウンロード済みファイルの SHA256 と照合
-- 不一致 → `state = .error(L("update.checksum_failed"))` としてインストールを中断
-- `checksumURL` が存在しない → 警告ダイアログを表示し、ユーザーが続行またはキャンセルを選択
+### アプリ終了との統合
 
-### 再起動メカニズム
+- `SparkleManager.isInstallingUpdate` フラグにより、Sparkle がアップデートをインストール中であることを `AppDelegate.applicationShouldTerminate` に伝達
+- 通常の終了ガード（`terminateCancel`）をバイパスし、Sparkle によるアプリ再起動を許可
 
-新しいアプリを配置した後、現在のプロセスをそのまま終了するのではなく、`/bin/sh` の子プロセスを先に起動してから終了します。
+### 設定値（Info.plist）
 
-```
-/bin/sh -c "while kill -0 <PID> 2>/dev/null; do sleep 0.1; done; open \"<APP_PATH>\""
-```
-
-- 子プロセスは親プロセス（現在の Sobani）の PID が消えるまでポーリングを続けます。
-- `2>/dev/null` により、プロセスが終了した際に `kill -0` が出力するエラーメッセージを抑制します。
-- `<APP_PATH>` はダブルクォートで囲まれており、パスにスペースが含まれる場合も正しく処理されます。
-- PID が消えた（= 終了した）ことを確認してから `open` コマンドで新しいアプリを起動します。
-- この方式により、ファイル置き換えと再起動の競合状態を回避できます。
-
-### アップデートエラーコード
-
-自動アップデートが失敗した場合、ダイアログにエラーコードが表示されます。
-
-| コード | フェーズ | 説明 |
-|--------|----------|------|
-| U-101 | チェック | API通信のネットワークエラー |
-| U-102 | チェック | APIからデータ未受信 |
-| U-103 | チェック | JSONパース失敗 |
-| U-201 | ダウンロード | ダウンロード中のネットワークエラー |
-| U-202 | ダウンロード | 一時ファイルが見つからない |
-| U-203 | ダウンロード | SHA256チェックサム不一致 |
-| U-301 | インストール (ZIP) | ZIP展開失敗 |
-| U-302 | インストール (ZIP) | ZIP内に.appが見つからない |
-| U-303 | インストール (ZIP) | インストール準備中の例外 |
-| U-401 | インストール (DMG) | DMGマウント失敗 |
-| U-402 | インストール (DMG) | DMG内に.appが見つからない |
-| U-403 | インストール (DMG) | インストール準備中の例外 |
-| U-501 | 置換・再起動 | 現在のアプリパス取得失敗 |
-| U-502 | 置換・再起動 | アプリバックアップ失敗 |
-| U-503 | 置換・再起動 | アプリ置換失敗 |
+| キー | 値 | 説明 |
+|---|---|---|
+| `SUFeedURL` | `https://xn--xckxf.jp/sobani/appcast.xml` | アップキャストフィードの URL |
+| `SUPublicEDKey` | `1AdG0un/J5hcpoyPEKw7/M4U/oA5mLZ8j6K9+xFtFpg=` | EdDSA 公開鍵 |
+| `SUEnableAutomaticChecks` | `true` | 自動チェックの有効化 |
+| `SUScheduledCheckInterval` | `86400` | チェック間隔（秒）= 24時間 |
 
 ---
 

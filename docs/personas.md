@@ -165,7 +165,7 @@ Xのタイムラインで、フォロワーが投稿した「推しデスクト�
 
 ### 発見経路
 
-GitHubの「Swift」トピックを巡回中に発見。「zero dependencies」というREADMEの記載に目が止まり、ソースコードを読み始めた。
+GitHubの「Swift」トピックを巡回中に発見。「minimal dependencies」というREADMEの記載に目が止まり、ソースコードを読み始めた。
 
 ### 機能優先度
 
@@ -176,7 +176,7 @@ GitHubの「Swift」トピックを巡回中に発見。「zero dependencies」�
 
 ### 利用シナリオ
 
-1. **発見** — GitHubの「Explore」ページでSwiftプロジェクトを巡回中、Sobaniのリポジトリを発見する。「Desktop mascot for macOS — zero external dependencies」という説明文に興味を引かれる。
+1. **発見** — GitHubの「Explore」ページでSwiftプロジェクトを巡回中、Sobaniのリポジトリを発見する。「Desktop mascot for macOS — minimal external dependencies」という説明文に興味を引かれる。
 2. **ソースコード調査** — まずREADMEを読み、次に `main.swift`、`AppDelegate.swift`、`Constants.swift` とソースコードを順に読み進める。NSWindowのフラグ設定やZ-order管理のアプローチに感心する。「`collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]` か、なるほど」とつぶやく。
 3. **インストール** — `brew install --cask sobani` で即座にインストール。ターミナルから `open -a Sobani` で起動する。
 4. **リソース使用量の確認** — 起動直後にActivity Monitorを開き、CPU使用率とメモリ消費を確認する。アイドル時のCPU使用率がほぼ0%であることに満足する。「ネイティブアプリはこうでなくちゃ」と納得する。

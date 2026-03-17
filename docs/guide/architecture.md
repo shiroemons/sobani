@@ -8,7 +8,7 @@ Sobani の内部構造を解説します。
 
 - Swift 6 / Cocoa (AppKit)
 - macOS 14.0+
-- 外部依存なし
+- 外部依存: Sparkle（自動アップデート）
 - LSUIElement（ドックアイコンなし）
 
 ## コンポーネント関係図
@@ -49,9 +49,10 @@ classDiagram
         +saveStates()
         +loadStates()
     }
-    class UpdateManager {
-        +shared: UpdateManager
-        +checkForUpdate()
+    class SparkleManager {
+        +shared: SparkleManager
+        +checkForUpdates()
+        +isInstallingUpdate: Bool
     }
     class ScreenRestorationManager {
         +addPending()
@@ -144,7 +145,6 @@ classDiagram
 
     AppDelegate --> CharacterWindow : manages
     AppDelegate ..|> CharacterWindowDelegate
-    AppDelegate ..|> UpdateManagerDelegate
     AppDelegate ..|> NSMenuDelegate
     CharacterWindow --> DraggableImageView : contains
     CharacterWindow --> AdjustmentPanelController : opens
@@ -152,7 +152,7 @@ classDiagram
     CharacterWindow ..|> NSMenuDelegate
     AppDelegate --> ImageManager : uses
     AppDelegate --> WindowStateManager : uses
-    AppDelegate --> UpdateManager : uses
+    AppDelegate --> SparkleManager : uses
     AppDelegate --> ScreenRestorationManager : owns
     AppDelegate --> LanguageManager : uses
     AppDelegate --> LaunchAtLoginManager : uses
@@ -245,7 +245,7 @@ classDiagram
 | `SnapUtils.swift` | スナップ（吸着）関連のユーティリティ |
 | `StraightenSliderView.swift` | iPhone風ルーラーダイヤル。慣性スクロール・フェードトレイルエフェクト対応 |
 | `UnconstrainedWindow.swift` | `NSWindow` サブクラス。`constrainFrameRect` をオーバーライドし画面端制約を無効化。透過PNG画像のメニューバー越え配置を実現 |
-| `UpdateManager.swift` | GitHub Releases 経由の自動アップデート（シングルトン） |
+| `SparkleManager.swift` | Sparkle フレームワークによる自動アップデート（シングルトン） |
 | `WakeRestorationContext.swift` | スリープ/復帰時の復元コンテキスト |
 | `WindowStateManager.swift` | ウィンドウ状態の永続化（シングルトン） |
 | `ZOrderUtils.swift` | Z-order配列操作ユーティリティ（`moveToFront`, `moveForward`, `moveBackward`, `moveToBack`, `nextId`） |
@@ -256,7 +256,7 @@ classDiagram
 |---|---|
 | `ImageManager.shared` | ユーザー登録画像の管理（`~/Library/Application Support/Sobani/images/`） |
 | `WindowStateManager.shared` | ウィンドウ状態の保存・読み込み（`window_states.json`） |
-| `UpdateManager.shared` | GitHub Releases を利用した自動アップデートの確認・適用 |
+| `SparkleManager.shared` | Sparkle フレームワークによる自動アップデートの確認・適用 |
 | `LaunchAtLoginManager.shared` | `SMAppService` を通じたログイン時自動起動の切り替え |
 | `LanguageManager.shared` | 日本語・英語・システム言語のランタイム切り替え |
 | `LayoutPresetManager.shared` | レイアウトプリセットの保存・読み込み・削除（`layouts/` ディレクトリ） |
@@ -308,14 +308,6 @@ classDiagram
 |---|---|
 | `cropEditorDidConfirm(_:cropRect:)` | クロップ編集の確定を通知 |
 | `cropEditorDidCancel(_:)` | クロップ編集のキャンセルを通知 |
-
-### UpdateManagerDelegate
-
-`UpdateManager` から `AppDelegate` へアップデート状態の変化を通知します。
-
-| メソッド | 用途 |
-|---|---|
-| `updateManager(_:didChangeState:)` | アップデート状態の変化を通知 |
 
 ## アプリのライフサイクル
 
