@@ -100,6 +100,24 @@ jobs:
           echo "name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
           echo "📦 $ZIP_NAME を作成しました"
 
+      - name: EdDSA 署名生成
+        id: sparkle_sign
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          DMG_NAME: ${{ steps.dmg.outputs.name }}
+        run: |
+          echo "Sparkle EdDSA 署名を生成中..."
+          curl -sL https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz -o /tmp/Sparkle.tar.xz
+          mkdir -p /tmp/sparkle-tools
+          tar xf /tmp/Sparkle.tar.xz -C /tmp/sparkle-tools
+          SIGN_OUTPUT=$(echo "$SPARKLE_PRIVATE_KEY" | /tmp/sparkle-tools/bin/sign_update "$DMG_NAME" -f -)
+          ED_SIGNATURE=$(echo "$SIGN_OUTPUT" | grep -o 'sparkle:edSignature="[^"]*"' | sed 's/sparkle:edSignature="//;s/"//')
+          DMG_LENGTH=$(stat -f%z "$DMG_NAME")
+          echo "ed_signature=$ED_SIGNATURE" >> "$GITHUB_OUTPUT"
+          echo "dmg_length=$DMG_LENGTH" >> "$GITHUB_OUTPUT"
+          echo "EdDSA 署名: $ED_SIGNATURE"
+          echo "DMG サイズ: $DMG_LENGTH bytes"
+
       - name: SHA256 計算
         id: sha
         env:
@@ -136,6 +154,52 @@ jobs:
             "$ZIP_NAME" \
             checksums.txt \
             --generate-notes
+
+      - name: appcast.xml 更新
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          ED_SIGNATURE: ${{ steps.sparkle_sign.outputs.ed_signature }}
+          DMG_LENGTH: ${{ steps.sparkle_sign.outputs.dmg_length }}
+          DMG_NAME: ${{ steps.dmg.outputs.name }}
+        run: |
+          PUB_DATE=$(date -u +"%a, %d %b %Y %H:%M:%S %z")
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+
+          # Insert new item after <language>ja</language>
+          awk -v tag="$TAG" -v pub="$PUB_DATE" -v ver="$VERSION" -v len="$DMG_LENGTH" -v sig="$ED_SIGNATURE" -v dmg="$DMG_NAME" '
+          /<language>ja<\/language>/ {
+            print
+            print "    <item>"
+            print "      <title>" tag "</title>"
+            print "      <pubDate>" pub "</pubDate>"
+            print "      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>"
+            print "      <enclosure"
+            print "        url=\"https://github.com/shiroemons/sobani/releases/download/" tag "/" dmg "\""
+            print "        type=\"application/octet-stream\""
+            print "        sparkle:version=\"" ver "\""
+            print "        sparkle:shortVersionString=\"" ver "\""
+            print "        length=\"" len "\""
+            print "        sparkle:edSignature=\"" sig "\""
+            print "      />"
+            print "    </item>"
+            next
+          }
+          { print }
+          ' docs/appcast.xml > /tmp/appcast_new.xml
+          mv /tmp/appcast_new.xml docs/appcast.xml
+
+          xmllint --noout docs/appcast.xml
+
+          git add docs/appcast.xml
+          git commit -m "chore: appcast.xml を ${TAG} に更新"
+          git push origin main
+          echo "✅ appcast.xml を更新しました"
 
       - name: Homebrew Tap 更新
         env:
