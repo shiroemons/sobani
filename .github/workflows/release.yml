@@ -149,12 +149,12 @@ jobs:
           DMG_NAME: ${{ steps.dmg.outputs.name }}
           ZIP_NAME: ${{ steps.zip.outputs.name }}
         run: |
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
           gh release create "$TAG" \
             "$DMG_NAME" \
             "$ZIP_NAME" \
             checksums.txt \
-            --generate-notes \
-            --clobber
+            --generate-notes
 
       - name: appcast.xml 更新
         env:
