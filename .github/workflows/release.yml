@@ -157,7 +157,7 @@ jobs:
 
       - name: appcast.xml 更新
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
           ED_SIGNATURE: ${{ steps.sparkle_sign.outputs.ed_signature }}
@@ -168,6 +168,7 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/shiroemons/sobani.git"
           git fetch origin main
           git checkout main
 
