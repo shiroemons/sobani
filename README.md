@@ -2,7 +2,7 @@
 
 > 推しを、そばに。— デスクトップアクスタアプリ
 
-**[公式サイト](https://shiroemons.github.io/sobani/)** | [GitHub](https://github.com/shiroemons/sobani)
+**[公式サイト](https://xn--xckxf.jp/sobani/)** | [GitHub](https://github.com/shiroemons/sobani)
 
 お気に入りのキャラクター画像を、アクリルスタンドのようにデスクトップへ常駐表示する macOS アプリケーションです。アニメーション・音声・AI 会話といった機能は持たず、「好きな画像を飾る」ことだけに特化したシンプルな設計です。
 
