@@ -30,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance
         setupStatusBar()
+        SparkleManager.shared.startUpdater()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(refreshHotkeyMonitors),
@@ -86,8 +87,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         NSApp.activate(ignoringOtherApps: true)
-
-        SparkleManager.shared.startUpdater()
 
         if OnboardingManager.shared.shouldShowOnboarding {
             if savedStates.isEmpty {

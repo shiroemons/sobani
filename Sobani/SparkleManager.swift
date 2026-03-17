@@ -1,11 +1,11 @@
-import Foundation
+import AppKit
 import os.log
 import Sparkle
 
 // MARK: - Sparkle Update Manager
 
 @MainActor
-final class SparkleManager {
+final class SparkleManager: NSObject {
     static let shared = SparkleManager()
     private let logger = Logger(category: "SparkleManager")
     private let updater: SPUUpdater
@@ -20,6 +20,7 @@ final class SparkleManager {
         )
     ) {
         self.updater = updater
+        super.init()
     }
 
     /// Sparkle のアップデーターを開始する。
@@ -33,14 +34,21 @@ final class SparkleManager {
         }
     }
 
+    /// NSMenuItem から呼び出されるアップデート確認アクション。
+    /// LSUIElement アプリでダイアログが前面に表示されるよう NSApp をアクティブ化してから実行する。
+    @objc func checkForUpdates(_ sender: Any?) {
+        NSApp.activate(ignoringOtherApps: true)
+        updater.checkForUpdates()
+    }
+
     /// メニューアイテムに接続するアクション。
     var checkForUpdatesAction: Selector {
-        #selector(SPUUpdater.checkForUpdates)
+        #selector(checkForUpdates(_:))
     }
 
     /// メニューアイテムの target として使用するオブジェクト。
     var updaterTarget: AnyObject {
-        updater
+        self
     }
 
     /// アップデート確認が現在可能かどうか。
