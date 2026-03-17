@@ -115,12 +115,14 @@ extension AppDelegate {
     }
 
     func buildUpdateMenuItem() -> NSMenuItem {
+        let manager = SparkleManager.shared
         let item = NSMenuItem(
             title: L("update.check"),
-            action: SparkleManager.shared.checkForUpdatesAction,
+            action: manager.checkForUpdatesAction,
             keyEquivalent: ""
         )
-        item.target = SparkleManager.shared.updaterTarget
+        item.target = manager.updaterTarget
+        item.isEnabled = manager.canCheckForUpdates
         item.image = menuIcon("arrow.triangle.2.circlepath")
         return item
     }

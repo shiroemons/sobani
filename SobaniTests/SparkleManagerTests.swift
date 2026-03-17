@@ -14,13 +14,13 @@ import Testing
     /// checkForUpdatesActionが有効なSelectorを返すことを検証
     @Test func checkForUpdatesActionIsValidSelector() {
         let action = SparkleManager.shared.checkForUpdatesAction
-        #expect(action == #selector(SPUStandardUpdaterController.checkForUpdates(_:)))
+        #expect(action == #selector(SPUUpdater.checkForUpdates))
     }
 
-    /// updaterTargetがSPUStandardUpdaterControllerインスタンスであることを検証
+    /// updaterTargetがSPUUpdaterインスタンスであることを検証
     @Test func updaterTargetIsExpectedType() {
         let target = SparkleManager.shared.updaterTarget
-        #expect(target is SPUStandardUpdaterController)
+        #expect(target is SPUUpdater)
     }
 
 }
