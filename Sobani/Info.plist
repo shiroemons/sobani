@@ -37,5 +37,13 @@
 			</dict>
 		</dict>
 	</array>
+	<key>SUFeedURL</key>
+	<string>https://shiroemons.github.io/sobani/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>1AdG0un/J5hcpoyPEKw7/M4U/oA5mLZ8j6K9+xFtFpg=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

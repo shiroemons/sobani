@@ -87,8 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         NSApp.activate(ignoringOtherApps: true)
 
-        UpdateManager.shared.delegate = self
-        UpdateManager.shared.startPeriodicChecks()
+        SparkleManager.shared.startUpdater()
 
         if OnboardingManager.shared.shouldShowOnboarding {
             if savedStates.isEmpty {

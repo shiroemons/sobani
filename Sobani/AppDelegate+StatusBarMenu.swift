@@ -115,36 +115,14 @@ extension AppDelegate {
     }
 
     func buildUpdateMenuItem() -> NSMenuItem {
-        switch UpdateManager.shared.state {
-        case .available(let version, _, _, _):
-            let item = NSMenuItem(
-                title: String(format: L("update.available"), version),
-                action: #selector(performUpdate),
-                keyEquivalent: ""
-            )
-            item.target = self
-            item.image = menuIcon("arrow.down.circle")
-            return item
-        case .checking:
-            let item = NSMenuItem(title: L("update.checking"), action: nil, keyEquivalent: "")
-            item.isEnabled = false
-            item.image = menuIcon("arrow.triangle.2.circlepath")
-            return item
-        case .downloading:
-            let item = NSMenuItem(title: L("update.downloading"), action: nil, keyEquivalent: "")
-            item.isEnabled = false
-            item.image = menuIcon("arrow.triangle.2.circlepath")
-            return item
-        default:
-            let item = NSMenuItem(
-                title: L("update.check"),
-                action: #selector(checkForUpdateManually),
-                keyEquivalent: ""
-            )
-            item.target = self
-            item.image = menuIcon("arrow.triangle.2.circlepath")
-            return item
-        }
+        let item = NSMenuItem(
+            title: L("update.check"),
+            action: SparkleManager.shared.checkForUpdatesAction,
+            keyEquivalent: ""
+        )
+        item.target = SparkleManager.shared.updaterTarget
+        item.image = menuIcon("arrow.triangle.2.circlepath")
+        return item
     }
 
     func buildResetRotationMenuItem(hasRotation: Bool) -> NSMenuItem {
