@@ -51,6 +51,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         window.level = .floating
         window.isMovableByWindowBackground = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        window.isRestorable = false
 
         imageView = DraggableImageView(frame: NSRect(x: 0, y: 0, width: windowWidth, height: windowHeight))
         imageView.image = image
