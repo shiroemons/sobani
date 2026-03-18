@@ -12,11 +12,13 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     /// Sparkle がアップデートのインストールを開始したかどうか。
     /// `AppDelegate.applicationShouldTerminate` で終了を許可するために使用。
     private(set) var isInstallingUpdate = false
+    private static let sparkleLastCheckTimeKey = "SULastCheckTime"
 
+    private lazy var userDriver = SPUStandardUserDriver(hostBundle: .main, delegate: self)
     private lazy var updater = SPUUpdater(
         hostBundle: .main,
         applicationBundle: .main,
-        userDriver: SPUStandardUserDriver(hostBundle: .main, delegate: nil),
+        userDriver: userDriver,
         delegate: self
     )
 
@@ -27,6 +29,8 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     /// Sparkle のアップデーターを開始する。
     /// `applicationDidFinishLaunching` から呼び出すこと。
     func startUpdater() {
+        // 起動時に必ず更新チェックを実行するため、前回チェック時刻をリセット
+        UserDefaults.standard.removeObject(forKey: Self.sparkleLastCheckTimeKey)
         do {
             try updater.start()
             logger.info("Sparkle アップデーターを開始しました")
@@ -64,6 +68,37 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
         Task { @MainActor [weak self] in
             self?.isInstallingUpdate = true
             self?.logger.info("Sparkle: アップデートをインストールします - \(version, privacy: .public)")
+        }
+    }
+
+    nonisolated func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+        logger.info("Sparkle: 新しいアップデートが見つかりました - \(item.displayVersionString, privacy: .public)")
+    }
+
+    nonisolated func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
+        logger.info("Sparkle: 新しいアップデートはありません")
+    }
+
+    nonisolated func updater(_ updater: SPUUpdater, didAbortWithError error: any Error) {
+        logger.error("Sparkle: アップデートチェックが中断されました - \(error.localizedDescription, privacy: .public)")
+    }
+}
+
+// MARK: - SPUStandardUserDriverDelegate
+
+extension SparkleManager: @preconcurrency SPUStandardUserDriverDelegate {
+    nonisolated var supportsGentleScheduledUpdateReminders: Bool { true }
+
+    nonisolated func standardUserDriverWillHandleShowingUpdate(
+        _ handleShowingUpdate: Bool,
+        forUpdate update: SUAppcastItem,
+        state: SPUUserUpdateState
+    ) {
+        if handleShowingUpdate && !state.userInitiated {
+            Task { @MainActor [weak self] in
+                NSApp.activate(ignoringOtherApps: true)
+                self?.logger.info("Sparkle: スケジュールされた更新のためアプリをアクティブ化しました")
+            }
         }
     }
 }
