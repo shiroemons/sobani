@@ -27,6 +27,7 @@ extension AppDelegate {
     func reorderWindows(from sourceIndices: IndexSet, to destination: Int) {
         zOrderedWindows.move(fromOffsets: sourceIndices, toOffset: destination)
         applyZOrderToWindows()
+        notifyWindowListDidChange()
     }
 
     /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする
@@ -54,6 +55,7 @@ extension AppDelegate {
         zOrderedWindows = loadedWindows.reversed()
 
         isApplyingLayout = false
+        notifyWindowListDidChange()
         quitIfNoWindows()
     }
 
