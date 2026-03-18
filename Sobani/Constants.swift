@@ -247,6 +247,7 @@ enum AppConstants {
     static let managementImagePickerPreviewWidth: CGFloat = 170
     static let layoutUndoTimeoutSeconds: Double = 5
     static let managementMinimapPadding: CGFloat = 16
+    static let minimapDragMinimumDistance: CGFloat = 3
 
     // App Version
     static var appVersion: String {

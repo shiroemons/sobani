@@ -21,6 +21,14 @@ struct MinimapLayout {
         windowRect(for: state.originX, originY: state.originY, width: state.width, height: state.height)
     }
 
+    /// ミニマップ上のドラッグ差分をmacOS座標系の差分に変換
+    func macOSDelta(from minimapDelta: CGSize) -> CGPoint {
+        CGPoint(
+            x: minimapDelta.width / scale,
+            y: -(minimapDelta.height / scale)
+        )
+    }
+
     @MainActor
     static func computeTotalBounds(states: [WindowState], screenFrames: [CGRect]? = nil) -> CGRect {
         let screenFrames = screenFrames ?? NSScreen.screens.map(\.frame)

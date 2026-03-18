@@ -5,11 +5,17 @@ struct PresetMinimapView: View {
     var images: [String: NSImage]?
     var selectedWindowId: Int?
     var onWindowTapped: ((Int) -> Void)?
+    var isDragEnabled: Bool = false
+    var onWindowDragChanged: ((Int, CGPoint) -> Void)?
+    var onWindowDragEnded: ((Int, CGPoint) -> Void)?
 
     private static let maxHeight: CGFloat = 400
 
     @State private var screenFrames: [CGRect] = NSScreen.screens.map(\.frame)
     @State private var totalBounds: CGRect = .zero
+    @State private var draggingWindowId: Int?
+    @State private var dragOffset: CGSize = .zero
+    @State private var dragStartOrigin: CGPoint = .zero
 
     var body: some View {
         minimapCanvas
@@ -25,6 +31,14 @@ struct PresetMinimapView: View {
         totalBounds = MinimapLayout.computeTotalBounds(states: states, screenFrames: screenFrames)
     }
 
+    private func newOrigin(from translation: CGSize, layout: MinimapLayout) -> CGPoint {
+        let macDelta = layout.macOSDelta(from: translation)
+        return CGPoint(
+            x: dragStartOrigin.x + macDelta.x,
+            y: dragStartOrigin.y + macDelta.y
+        )
+    }
+
     @ViewBuilder
     private var minimapCanvas: some View {
         let contentAspectRatio = totalBounds.height > 0 && !screenFrames.isEmpty
@@ -37,6 +51,7 @@ struct PresetMinimapView: View {
             .aspectRatio(contentAspectRatio, contentMode: .fit)
             .frame(minHeight: MinimapLayout.minimapFallbackHeight, maxHeight: Self.maxHeight)
             .clipped()
+            .background { WindowDragBlocker(isEnabled: isDragEnabled) }
             .overlay {
                 GeometryReader { geometry in
                     let cachedBounds = totalBounds
@@ -61,9 +76,37 @@ struct PresetMinimapView: View {
                         ForEach(Array(states.enumerated()), id: \.offset) { _, state in
                             let windowRect = layout.windowRect(for: state)
                             let isSelected = state.windowId == selectedWindowId
+                            let isDragging = draggingWindowId == state.windowId
+                            let displayOffset = isDragging ? dragOffset : .zero
                             minimapWindow(state: state, isSelected: isSelected)
                                 .frame(width: max(windowRect.width, 8), height: max(windowRect.height, 8))
-                                .offset(x: windowRect.origin.x, y: windowRect.origin.y)
+                                .offset(
+                                    x: windowRect.origin.x + displayOffset.width,
+                                    y: windowRect.origin.y + displayOffset.height
+                                )
+                                .gesture(
+                                    DragGesture(
+                                        minimumDistance: isDragEnabled
+                                            ? AppConstants.minimapDragMinimumDistance : .infinity
+                                    )
+                                    .onChanged { value in
+                                        if draggingWindowId == nil {
+                                            draggingWindowId = state.windowId
+                                            dragStartOrigin = CGPoint(
+                                                x: state.originX, y: state.originY
+                                            )
+                                        }
+                                        dragOffset = value.translation
+                                        let origin = newOrigin(from: value.translation, layout: layout)
+                                        onWindowDragChanged?(state.windowId, origin)
+                                    }
+                                    .onEnded { value in
+                                        let origin = newOrigin(from: value.translation, layout: layout)
+                                        onWindowDragEnded?(state.windowId, origin)
+                                        draggingWindowId = nil
+                                        dragOffset = .zero
+                                    }
+                                )
                                 .onTapGesture {
                                     onWindowTapped?(state.windowId)
                                 }
@@ -71,6 +114,14 @@ struct PresetMinimapView: View {
                     }
                 }
             }
+            .overlay {
+                if isDragEnabled {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.orange.opacity(0.08))
+                        .allowsHitTesting(false)
+                }
+            }
+            .animation(.easeInOut(duration: 0.2), value: isDragEnabled)
     }
 
     @ViewBuilder
@@ -96,4 +147,21 @@ struct PresetMinimapView: View {
                     )
             )
     }
+}
+
+private struct WindowDragBlocker: NSViewRepresentable {
+    let isEnabled: Bool
+
+    func makeNSView(context: Context) -> DragBlockingView {
+        DragBlockingView()
+    }
+
+    func updateNSView(_ nsView: DragBlockingView, context: Context) {
+        nsView.isBlockingEnabled = isEnabled
+    }
+}
+
+private final class DragBlockingView: NSView {
+    var isBlockingEnabled = false
+    override var mouseDownCanMoveWindow: Bool { !isBlockingEnabled }
 }

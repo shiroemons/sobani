@@ -184,8 +184,24 @@ final class ManagementPanelViewModel {
 
     func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setPositionAndSize(origin: NSPoint(x: origin.x, y: origin.y), size: NSSize(width: size.width, height: size.height))
+        charWindow.setPositionAndSize(origin: origin, size: size)
         triggerRefresh()
+    }
+
+    /// ドラッグ中: setFrame のみ（軽量、triggerRefresh なし）
+    func moveWindowWithoutRefresh(windowId: Int, origin: CGPoint) {
+        applyWindowPosition(windowId: windowId, origin: origin)
+    }
+
+    /// ドラッグ完了: setFrame + triggerRefresh で状態同期
+    func moveWindowAndRefresh(windowId: Int, origin: CGPoint) {
+        applyWindowPosition(windowId: windowId, origin: origin)
+        triggerRefresh()
+    }
+
+    private func applyWindowPosition(windowId: Int, origin: CGPoint) {
+        guard let charWindow = findCharacterWindow(by: windowId) else { return }
+        charWindow.setPositionAndSize(origin: origin, size: charWindow.window.frame.size)
     }
 
     // MARK: - Private Helpers

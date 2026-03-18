@@ -97,4 +97,46 @@ final class MinimapLayoutTests: XCTestCase {
         XCTAssertEqual(rect.origin.x, 222, accuracy: 0.001)
         XCTAssertEqual(rect.origin.y, 98, accuracy: 0.001)
     }
+
+    // MARK: - macOSDelta
+
+    func testMacOSDeltaBasicConversion() throws {
+        let layout = MinimapLayout(
+            screens: [],
+            scale: 0.5,
+            offset: .zero,
+            rawTotalBounds: .zero
+        )
+
+        // Positive width → positive X, positive height → negative Y (SwiftUI→macOS Y flip)
+        let delta = layout.macOSDelta(from: CGSize(width: 50, height: 30))
+        XCTAssertEqual(delta.x, 100, accuracy: 0.001)
+        XCTAssertEqual(delta.y, -60, accuracy: 0.001)
+    }
+
+    func testMacOSDeltaScaleFactor() throws {
+        let layout = MinimapLayout(
+            screens: [],
+            scale: 0.1,
+            offset: .zero,
+            rawTotalBounds: .zero
+        )
+
+        let delta = layout.macOSDelta(from: CGSize(width: 10, height: 20))
+        XCTAssertEqual(delta.x, 100, accuracy: 0.001)
+        XCTAssertEqual(delta.y, -200, accuracy: 0.001)
+    }
+
+    func testMacOSDeltaZero() throws {
+        let layout = MinimapLayout(
+            screens: [],
+            scale: 0.5,
+            offset: .zero,
+            rawTotalBounds: .zero
+        )
+
+        let delta = layout.macOSDelta(from: .zero)
+        XCTAssertEqual(delta.x, 0, accuracy: 0.001)
+        XCTAssertEqual(delta.y, 0, accuracy: 0.001)
+    }
 }

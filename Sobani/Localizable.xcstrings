@@ -4129,6 +4129,22 @@
         }
       }
     },
+    "minimap_placement_mode": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "配置変更モード"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Placement mode"
+          }
+        }
+      }
+    },
     "registered_images.empty": {
       "localizations": {
         "ja": {
