@@ -84,6 +84,9 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.onOpacityChanged = { [weak self] in
             self?.updateImageAlpha()
         }
+        imageView.onPositionChanged = { [weak self] in
+            self?.notifyStateDidChange()
+        }
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
         imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
         imageView.onDropImage = { [weak self] url, isOption in

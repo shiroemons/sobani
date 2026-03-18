@@ -43,6 +43,7 @@ final class DraggableImageView: NSImageView {
     var onDragEntered: (() -> Void)?
     var onDragExited: (() -> Void)?
     var onSizeChanged: (() -> Void)?
+    var onPositionChanged: (() -> Void)?
     var onDoubleClick: (() -> Void)?
     var cropRect: CropRect? {
         didSet { applyCrop() }
@@ -134,6 +135,7 @@ final class DraggableImageView: NSImageView {
 
             currentWindow.setFrameOrigin(origin)
         }
+        onPositionChanged?()
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -141,6 +143,7 @@ final class DraggableImageView: NSImageView {
         cachedAllWindows = nil
         cachedOtherWindowFrames = nil
         cachedScreenFrames = nil
+        onPositionChanged?()
     }
 
     override func scrollWheel(with event: NSEvent) {
