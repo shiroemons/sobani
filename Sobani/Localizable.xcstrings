@@ -1441,6 +1441,38 @@
         }
       }
     },
+    "onboarding.step2.ghostLabel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゴーストモード"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ghost Mode"
+          }
+        }
+      }
+    },
+    "onboarding.step2.ghost": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を透明にしてクリックを通過させるモード"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makes images transparent and click-through"
+          }
+        }
+      }
+    },
     "onboarding.skipHint": {
       "localizations": {
         "ja": {
@@ -1462,6 +1494,166 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
+            "value": "ホットキーとアクセシビリティ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hotkeys & Accessibility"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyH": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥H (Option+H)  すべての画像を表示/非表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥H (Option+H)  Show/Hide all images"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyG": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥G (Option+G)  ゴーストモードの切り替え"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥G (Option+G)  Toggle ghost mode"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyM": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥M (Option+M)  管理パネルの表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥M (Option+M)  Show management panel"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyCustomizeHint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ホットキーは管理パネルの設定から変更できます"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hotkeys can be changed in the management panel settings"
+          }
+        }
+      }
+    },
+    "onboarding.step3.accessibilityWarning": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリ外でも使うにはアクセシビリティ権限が必要です"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accessibility permission required for use outside the app"
+          }
+        }
+      }
+    },
+    "onboarding.step3.accessibilityStep1": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① 上のボタンでアクセシビリティ設定を開く"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Open Accessibility settings with the button above"
+          }
+        }
+      }
+    },
+    "onboarding.step3.accessibilityStep2": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "② 「Sobani」に✅を入れる"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "② Check ✅ next to \"Sobani\""
+          }
+        }
+      }
+    },
+    "onboarding.step3.openAccessibility": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アクセシビリティ設定を開く"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Accessibility Settings"
+          }
+        }
+      }
+    },
+    "onboarding.step3.accessibilityGranted": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✅ アクセシビリティ: 許可済み"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✅ Accessibility: Granted"
+          }
+        }
+      }
+    },
+    "onboarding.step4.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
             "value": "準備完了！"
           }
         },
@@ -1473,7 +1665,7 @@
         }
       }
     },
-    "onboarding.step3.description": {
+    "onboarding.step4.description": {
       "localizations": {
         "ja": {
           "stringUnit": {
@@ -1489,7 +1681,7 @@
         }
       }
     },
-    "onboarding.step3.cta": {
+    "onboarding.step4.cta": {
       "localizations": {
         "ja": {
           "stringUnit": {

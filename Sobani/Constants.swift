@@ -231,7 +231,7 @@ enum AppConstants {
     enum Onboarding {
         static let width: CGFloat = 520
         static let height: CGFloat = 480
-        static let currentVersion = 1
+        static let currentVersion = 2
         static let completedVersionKey = "onboardingCompletedVersion"
     }
 

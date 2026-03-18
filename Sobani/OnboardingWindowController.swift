@@ -4,26 +4,27 @@ import os.log
 @MainActor
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private var panel: NSPanel?
-    private var contentContainer: NSView?
+    var contentContainer: NSView?
     private var currentStep = 0
-    private let totalSteps = 3
+    private let totalSteps = 4
     private let onboardingManager: OnboardingManager
     private var onComplete: (() -> Void)?
     var onAddImage: (() -> Void)?
     var onFinish: (() -> Void)?
     nonisolated(unsafe) private var languageObserver: NSObjectProtocol?
     private let logger = Logger(category: "OnboardingWindowController")
-    private static let iconSize: CGFloat = 48
-    private static let contentPadding: CGFloat = 40
+    static let iconSize: CGFloat = 48
+    static let contentPadding: CGFloat = 40
     private static let dotSize: CGFloat = 8
     private static let dotSpacing: CGFloat = 12
-    private static let rowHeight: CGFloat = 65
+    private static let rowHeight: CGFloat = 56
     private static let titleY: CGFloat = 320
     private static let descriptionY: CGFloat = 280
     private static let iconY: CGFloat = 360
     private static let pageIndicatorY: CGFloat = 75
     private static let navigationButtonY: CGFloat = 35
     private static let finishDelay: TimeInterval = 0.3
+    var accessibilityTimer: Timer?
 
     init(onboardingManager: OnboardingManager = .shared) {
         self.onboardingManager = onboardingManager
@@ -97,6 +98,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             NotificationCenter.default.removeObserver(observer)
             languageObserver = nil
         }
+        stopStep3AccessibilityPolling()
         panel = nil
         contentContainer = nil
     }
@@ -116,16 +118,22 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private func buildCurrentStep() {
         guard let container = contentContainer else { return }
         container.subviews.forEach { $0.removeFromSuperview() }
+        stopStep3AccessibilityPolling()
 
         switch currentStep {
         case 0: buildStep1(in: container)
         case 1: buildStep2(in: container)
-        case 2: buildStep3(in: container)
+        case 2: buildStep3Hotkey(in: container)
+        case 3: buildStep4(in: container)
         default: break
         }
 
         buildPageIndicator(in: container)
         buildNavigationButtons(in: container)
+
+        if currentStep == 2 {
+            startStep3AccessibilityPolling()
+        }
     }
 
     private func goToStep(_ step: Int) {
@@ -181,18 +189,20 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.step2TitleY, width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
-        let symbols = ["hand.draw", "scroll", "contextualmenu.and.cursorarrow", "option"]
+        let symbols = ["hand.draw", "scroll", "contextualmenu.and.cursorarrow", "eye", "face.dashed"]
         let labels = [
             L("onboarding.step2.dragLabel"), L("onboarding.step2.scrollLabel"),
-            L("onboarding.step2.rightClickLabel"), L("onboarding.step2.hotkeyLabel")
+            L("onboarding.step2.rightClickLabel"), L("onboarding.step2.hotkeyLabel"),
+            L("onboarding.step2.ghostLabel")
         ]
         let descriptions = [
             L("onboarding.step2.drag"), L("onboarding.step2.scroll"),
-            L("onboarding.step2.rightClick"), L("onboarding.step2.hotkey")
+            L("onboarding.step2.rightClick"), L("onboarding.step2.hotkey"),
+            L("onboarding.step2.ghost")
         ]
         let hints: [String?] = [
             L("onboarding.step2.dragHint"), L("onboarding.step2.scrollHint"),
-            nil, L("onboarding.step2.hotkeyHint")
+            nil, L("onboarding.step2.hotkeyHint"), nil
         ]
 
         let rowHeight = Self.rowHeight
@@ -221,24 +231,24 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
     }
 
-    // MARK: - Step 3: Get Started
+    // MARK: - Step 4: Get Started
 
-    private func buildStep3(in container: NSView) {
+    private func buildStep4(in container: NSView) {
         let width = container.bounds.width
 
         let iconView = makeSymbolView("party.popper", size: Self.iconSize, color: .systemOrange)
         iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: Self.iconY)
         container.addSubview(iconView)
 
-        let titleLabel = makeTitleLabel(L("onboarding.step3.title"))
+        let titleLabel = makeTitleLabel(L("onboarding.step4.title"))
         titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
-        let descLabel = makeDescriptionLabel(L("onboarding.step3.description"))
+        let descLabel = makeDescriptionLabel(L("onboarding.step4.description"))
         descLabel.frame = NSRect(x: Self.contentPadding, y: 250, width: width - Self.contentPadding * 2, height: 60)
         container.addSubview(descLabel)
 
-        let ctaButton = NSButton(title: L("onboarding.step3.cta"), target: self, action: #selector(addImageFromOnboarding))
+        let ctaButton = NSButton(title: L("onboarding.step4.cta"), target: self, action: #selector(addImageFromOnboarding))
         ctaButton.frame = NSRect(x: (width - 200) / 2, y: 200, width: 200, height: 36)
         ctaButton.bezelStyle = .rounded
         ctaButton.font = NSFont.systemFont(ofSize: 14)
@@ -247,7 +257,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     // MARK: - Page Indicator
 
-    private func buildPageIndicator(in container: NSView) {
+    func buildPageIndicator(in container: NSView) {
         let width = container.bounds.width
         let frames = Self.pageIndicatorDotFrames(
             totalSteps: totalSteps, containerWidth: width, dotSize: Self.dotSize, dotSpacing: Self.dotSpacing
@@ -267,7 +277,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     // MARK: - Navigation Buttons
 
-    private func buildNavigationButtons(in container: NSView) {
+    func buildNavigationButtons(in container: NSView) {
         let width = container.bounds.width
         let buttonY: CGFloat = Self.navigationButtonY
         let config = Self.navigationButtonConfig(currentStep: currentStep, totalSteps: totalSteps)
@@ -357,32 +367,48 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
 extension OnboardingWindowController {
     // MARK: Step 共通
-    fileprivate static let smallFontSize: CGFloat = 12
+    static let smallFontSize: CGFloat = 12
 
     // MARK: Step 1: メニューバーアイコンイラスト
-    fileprivate static let step1IconBackgroundWidth: CGFloat = 36
-    fileprivate static let step1IconBackgroundHeight: CGFloat = 28
-    fileprivate static let step1IconBackgroundY: CGFloat = 218
-    fileprivate static let step1IconBackgroundCornerRadius: CGFloat = 6
-    fileprivate static let step1StatusIconSize: CGFloat = 18
-    fileprivate static let step1StatusIconY: CGFloat = 223
-    fileprivate static let step1HintY: CGFloat = 160
-    fileprivate static let step1HintHeight: CGFloat = 50
+    private static let step1IconBackgroundWidth: CGFloat = 36
+    private static let step1IconBackgroundHeight: CGFloat = 28
+    private static let step1IconBackgroundY: CGFloat = 218
+    private static let step1IconBackgroundCornerRadius: CGFloat = 6
+    private static let step1StatusIconSize: CGFloat = 18
+    private static let step1StatusIconY: CGFloat = 223
+    private static let step1HintY: CGFloat = 160
+    private static let step1HintHeight: CGFloat = 50
 
     // MARK: Step 2: 操作一覧
-    fileprivate static let step2TitleY: CGFloat = 390
-    fileprivate static let step2StartY: CGFloat = 340
-    fileprivate static let step2IconX: CGFloat = 70
-    fileprivate static let step2LabelX: CGFloat = 110
-    fileprivate static let step2LabelYOffset: CGFloat = 4
-    fileprivate static let step2DescriptionYOffset: CGFloat = -14
-    fileprivate static let step2HintYOffset: CGFloat = -30
-    fileprivate static let step2SeparatorYOffset: CGFloat = -38
-    fileprivate static let step2ContentInset: CGFloat = 150
-    fileprivate static let step2SeparatorInset: CGFloat = 140
-    fileprivate static let step2SymbolSize: CGFloat = 24
-    fileprivate static let step2LabelFontSize: CGFloat = 13
-    fileprivate static let step2HintFontSize: CGFloat = 11
+    private static let step2TitleY: CGFloat = 420
+    private static let step2StartY: CGFloat = 380
+    private static let step2IconX: CGFloat = 110
+    private static let step2LabelX: CGFloat = 150
+    private static let step2LabelYOffset: CGFloat = 4
+    private static let step2DescriptionYOffset: CGFloat = -14
+    private static let step2HintYOffset: CGFloat = -28
+    private static let step2SeparatorYOffset: CGFloat = -30
+    private static let step2ContentInset: CGFloat = 190
+    private static let step2SeparatorInset: CGFloat = 240
+    private static let step2SymbolSize: CGFloat = 24
+    static let step2LabelFontSize: CGFloat = 13
+    private static let step2HintFontSize: CGFloat = 11
+
+    // MARK: Step 3: ホットキー＆アクセシビリティ
+    static let step3IconY: CGFloat = 380
+    static let step3TitleY: CGFloat = 340
+    static let step3HotkeyStartY: CGFloat = 305
+    static let step3HotkeyRowHeight: CGFloat = 22
+    static let step3HotkeyX: CGFloat = 80
+    static let step3HotkeyInset: CGFloat = 160
+    static let step3HintY: CGFloat = 232
+    static let step3GrantedStatusY: CGFloat = 207
+    static let step3WarningY: CGFloat = 202
+    static let step3ButtonY: CGFloat = 165
+    static let step3StepInstructionX: CGFloat = 100
+    static let step3StepInstructionInset: CGFloat = 200
+    static let step3Step1Y: CGFloat = 138
+    static let step3Step2Y: CGFloat = 118
 }
 
 // MARK: - View Helpers
@@ -436,21 +462,21 @@ extension OnboardingWindowController {
         }
     }
 
-    private func makeSymbolView(_ symbolName: String, size: CGFloat, color: NSColor) -> NSImageView {
+    func makeSymbolView(_ symbolName: String, size: CGFloat, color: NSColor) -> NSImageView {
         let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: size, height: size))
         imageView.image = SFSymbolUtils.icon(symbolName, pointSize: size)
         imageView.contentTintColor = color
         return imageView
     }
 
-    private func makeTitleLabel(_ text: String) -> NSTextField {
+    func makeTitleLabel(_ text: String) -> NSTextField {
         let label = NSTextField(labelWithString: text)
         label.font = NSFont.boldSystemFont(ofSize: 20)
         label.alignment = .center
         return label
     }
 
-    private func makeDescriptionLabel(_ text: String) -> NSTextField {
+    func makeDescriptionLabel(_ text: String) -> NSTextField {
         let label = NSTextField(wrappingLabelWithString: text)
         label.font = NSFont.systemFont(ofSize: 14)
         label.alignment = .center

@@ -204,9 +204,19 @@ struct SettingsView: View {
             get: { HotkeySettings.isEnabled },
             set: { newValue in
                 HotkeySettings.isEnabled = newValue
+                if newValue {
+                    requestAccessibilityIfNeeded()
+                }
                 notifyHotkeySettingsChanged()
             }
         )
+    }
+
+    private func requestAccessibilityIfNeeded() {
+        guard !AXIsProcessTrusted() else { return }
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+        AXIsProcessTrustedWithOptions(options)
+        startAccessibilityPolling()
     }
 
     private func keyCodeBinding(for action: AppDelegate.KeyboardAction) -> Binding<UInt16> {

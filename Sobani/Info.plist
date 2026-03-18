@@ -47,5 +47,7 @@
 	<true/>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>グローバルホットキー（Option+H / Option+G / Option+M）を有効にするためアクセシビリティ権限が必要です。</string>
 </dict>
 </plist>

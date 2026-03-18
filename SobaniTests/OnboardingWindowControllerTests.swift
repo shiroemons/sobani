@@ -9,7 +9,7 @@ import Testing
 
     /// 最初のステップではback非表示、skip・next表示を検証
     @Test func navigationButtonConfig_firstStep() {
-        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 0, totalSteps: 3)
+        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 0, totalSteps: 4)
         #expect(config.showBack == false)
         #expect(config.showSkip == true)
         #expect(config.showNext == true)
@@ -19,7 +19,7 @@ import Testing
 
     /// 中間ステップではback・skip・next表示を検証
     @Test func navigationButtonConfig_middleStep() {
-        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 1, totalSteps: 3)
+        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 1, totalSteps: 4)
         #expect(config.showBack == true)
         #expect(config.showSkip == true)
         #expect(config.showNext == true)
@@ -29,7 +29,7 @@ import Testing
 
     /// 最終ステップではstart・close表示、skip・next非表示を検証
     @Test func navigationButtonConfig_lastStep() {
-        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 2, totalSteps: 3)
+        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 3, totalSteps: 4)
         #expect(config.showBack == true)
         #expect(config.showSkip == false)
         #expect(config.showNext == false)
@@ -49,19 +49,19 @@ import Testing
 
     // MARK: - pageIndicatorDotFrames Tests
 
-    /// 3ステップで正しい数のフレームが返ることを検証
-    @Test func pageIndicatorDotFrames_threeSteps_returnsCorrectCount() {
+    /// 4ステップで正しい数のフレームが返ることを検証
+    @Test func pageIndicatorDotFrames_fourSteps_returnsCorrectCount() {
         let frames = OnboardingWindowController.pageIndicatorDotFrames(
-            totalSteps: 3, containerWidth: 400, dotSize: 8, dotSpacing: 12
+            totalSteps: 4, containerWidth: 400, dotSize: 8, dotSpacing: 12
         )
-        #expect(frames.count == 3)
+        #expect(frames.count == 4)
     }
 
     /// 各フレームのサイズがdotSizeに一致することを検証
     @Test func pageIndicatorDotFrames_dotSizeMatchesFrameSize() {
         let dotSize: CGFloat = 8
         let frames = OnboardingWindowController.pageIndicatorDotFrames(
-            totalSteps: 3, containerWidth: 400, dotSize: dotSize, dotSpacing: 12
+            totalSteps: 4, containerWidth: 400, dotSize: dotSize, dotSpacing: 12
         )
         for frame in frames {
             #expect(frame.width == dotSize)
@@ -74,7 +74,7 @@ import Testing
         let containerWidth: CGFloat = 400
         let dotSize: CGFloat = 8
         let dotSpacing: CGFloat = 12
-        let totalSteps = 3
+        let totalSteps = 4
         let frames = OnboardingWindowController.pageIndicatorDotFrames(
             totalSteps: totalSteps, containerWidth: containerWidth, dotSize: dotSize, dotSpacing: dotSpacing
         )

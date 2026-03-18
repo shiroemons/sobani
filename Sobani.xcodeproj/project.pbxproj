@@ -94,6 +94,7 @@
 		F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */; };
 		F0OB000002000000000001 /* OnboardingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OB000001000000000001 /* OnboardingManager.swift */; };
 		F0OB000004000000000001 /* OnboardingWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OB000003000000000001 /* OnboardingWindowController.swift */; };
+		F0OS000002000000000001 /* OnboardingWindowController+Step3.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OS000001000000000001 /* OnboardingWindowController+Step3.swift */; };
 		F0OB000006000000000001 /* OnboardingManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OB000005000000000001 /* OnboardingManagerTests.swift */; };
 		F0OW000002000000000001 /* OnboardingWindowControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */; };
 		F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PS000003000000000001 /* PathSanitizerTests.swift */; };
@@ -225,6 +226,7 @@
 		F0NP000001000000000001 /* NSPanel+FloatingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPanel+FloatingConfig.swift"; sourceTree = "<group>"; };
 		F0OB000001000000000001 /* OnboardingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingManager.swift; sourceTree = "<group>"; };
 		F0OB000003000000000001 /* OnboardingWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowController.swift; sourceTree = "<group>"; };
+		F0OS000001000000000001 /* OnboardingWindowController+Step3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingWindowController+Step3.swift"; sourceTree = "<group>"; };
 		F0OB000005000000000001 /* OnboardingManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingManagerTests.swift; sourceTree = "<group>"; };
 		F0OW000001000000000001 /* OnboardingWindowControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindowControllerTests.swift; sourceTree = "<group>"; };
 		F0PS000003000000000001 /* PathSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizerTests.swift; sourceTree = "<group>"; };
@@ -336,6 +338,7 @@
 				F0DD000001000000000001 /* DragDropUtils.swift */,
 				F0OB000001000000000001 /* OnboardingManager.swift */,
 				F0OB000003000000000001 /* OnboardingWindowController.swift */,
+				F0OS000001000000000001 /* OnboardingWindowController+Step3.swift */,
 				F0LP000001000000000001 /* LayoutPresetManager.swift */,
 				F0UW000001000000000001 /* UnconstrainedWindow.swift */,
 				F0IP000001000000000001 /* ImagePreviewPanel.swift */,
@@ -571,6 +574,7 @@
 				F0DD000002000000000001 /* DragDropUtils.swift in Sources */,
 				F0OB000002000000000001 /* OnboardingManager.swift in Sources */,
 				F0OB000004000000000001 /* OnboardingWindowController.swift in Sources */,
+				F0OS000002000000000001 /* OnboardingWindowController+Step3.swift in Sources */,
 				F0LP000002000000000001 /* LayoutPresetManager.swift in Sources */,
 				F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */,
 				F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */,
