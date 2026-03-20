@@ -67,6 +67,8 @@
 		F0CG000002000000000001 /* CropGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CG000001000000000001 /* CropGeometry.swift */; };
 		F0CI000002000000000001 /* CropImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000001000000000001 /* CropImageProcessor.swift */; };
 		F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000003000000000001 /* CropImageProcessorTests.swift */; };
+		F0CBR00002000000000001 /* CharacterWindow+BackgroundRemoval.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CBR00001000000000001 /* CharacterWindow+BackgroundRemoval.swift */; };
+		F0CCM00002000000000001 /* CharacterWindow+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CCM00001000000000001 /* CharacterWindow+ContextMenu.swift */; };
 		F0COS00002000000000001 /* CharacterWindow+OtherSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */; };
 		F0CP000002000000000001 /* CharacterWindow+Positioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CP000001000000000001 /* CharacterWindow+Positioning.swift */; };
 		F0CSS00002000000000001 /* CropShapeSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CSS00001000000000001 /* CropShapeSelectorView.swift */; };
@@ -199,6 +201,8 @@
 		F0CG000003000000000001 /* CropGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropGeometryTests.swift; sourceTree = "<group>"; };
 		F0CI000001000000000001 /* CropImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessor.swift; sourceTree = "<group>"; };
 		F0CI000003000000000001 /* CropImageProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessorTests.swift; sourceTree = "<group>"; };
+		F0CBR00001000000000001 /* CharacterWindow+BackgroundRemoval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+BackgroundRemoval.swift"; sourceTree = "<group>"; };
+		F0CCM00001000000000001 /* CharacterWindow+ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+ContextMenu.swift"; sourceTree = "<group>"; };
 		F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+OtherSubmenu.swift"; sourceTree = "<group>"; };
 		F0CP000001000000000001 /* CharacterWindow+Positioning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+Positioning.swift"; sourceTree = "<group>"; };
 		F0CSS00001000000000001 /* CropShapeSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropShapeSelectorView.swift; sourceTree = "<group>"; };
@@ -324,6 +328,8 @@
 				F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */,
 				F0HK000001000000000001 /* AppDelegate+Hotkey.swift */,
 				DD000006 /* CharacterWindow.swift */,
+				F0CCM00001000000000001 /* CharacterWindow+ContextMenu.swift */,
+				F0CBR00001000000000001 /* CharacterWindow+BackgroundRemoval.swift */,
 				F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */,
 				F0HW000001000000000001 /* CharacterWindow+TestableStaticMethods.swift */,
 				F0CP000001000000000001 /* CharacterWindow+Positioning.swift */,
@@ -604,6 +610,8 @@
 				F0JP000002000000000001 /* JSONPersistence.swift in Sources */,
 				F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */,
 				F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */,
+				F0CCM00002000000000001 /* CharacterWindow+ContextMenu.swift in Sources */,
+				F0CBR00002000000000001 /* CharacterWindow+BackgroundRemoval.swift in Sources */,
 				F0HW000002000000000001 /* CharacterWindow+TestableStaticMethods.swift in Sources */,
 				F0CP000002000000000001 /* CharacterWindow+Positioning.swift in Sources */,
 				F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */,
