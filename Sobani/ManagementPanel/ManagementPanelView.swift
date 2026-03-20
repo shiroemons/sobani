@@ -16,19 +16,27 @@ struct ManagementPanelView: View {
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 Button {
-                    NSApp.sendAction(#selector(NSSplitViewController.toggleSidebar(_:)), to: nil, from: nil)
+                    NSApp.sendAction(
+                        #selector(NSSplitViewController.toggleSidebar(_:)), to: nil, from: nil
+                    )
                 } label: {
                     Image(systemName: "sidebar.left")
                 }
             }
         }
-        .frame(minWidth: AppConstants.managementPanelWidth, minHeight: AppConstants.managementPanelHeight)
+        .frame(
+            minWidth: AppConstants.managementPanelWidth,
+            minHeight: AppConstants.managementPanelHeight
+        )
     }
 
     @ViewBuilder
     private var sidebarContent: some View {
         VStack(spacing: 0) {
-            List(ManagementPanelViewModel.ManagementTab.topTabs, selection: $viewModel.selectedTab) { tab in
+            List(
+                ManagementPanelViewModel.ManagementTab.topTabs,
+                selection: $viewModel.selectedTab
+            ) { tab in
                 Label {
                     Text(tab.label)
                 } icon: {

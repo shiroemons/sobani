@@ -117,7 +117,10 @@ struct LayoutPresetsView: View {
 
             // List
             if presets.isEmpty {
-                EmptySelectionView(message: L("management.select_preset"), icon: "rectangle.3.group")
+                EmptySelectionView(
+                    message: L("management.select_preset"),
+                    icon: "rectangle.3.group"
+                )
             } else {
                 List {
                     ForEach(presets) { preset in
@@ -280,8 +283,12 @@ extension LayoutPresetsView {
             HSplitView {
                 presetWindowList(preset: preset)
                     .splitPanelFrame()
-                PresetDetailView(viewModel: viewModel, preset: preset, selectedIndex: selectedPresetWindowIndex)
-                    .splitPanelFrame()
+                PresetDetailView(
+                    viewModel: viewModel,
+                    preset: preset,
+                    selectedIndex: selectedPresetWindowIndex
+                )
+                .splitPanelFrame()
             }
         }
         .sheet(isPresented: $isShowingRenameSheet) {
@@ -305,7 +312,10 @@ extension LayoutPresetsView {
                             .font(.body)
                             .lineLimit(1)
                             .truncationMode(.tail)
-                        Text("\(FormatUtils.formatDimensions(width: state.width, height: state.height)) ・ (\(Int(state.originX)), \(Int(state.originY)))")
+                        Text(
+                            "\(FormatUtils.formatDimensions(width: state.width, height: state.height))"
+                            + " ・ (\(Int(state.originX)), \(Int(state.originY)))"
+                        )
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

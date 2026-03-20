@@ -145,7 +145,10 @@ struct WindowListView: View {
                         }
                     }
                 }
-                .frame(width: AppConstants.managementImagePickerPopoverWidth, height: AppConstants.managementImagePickerPopoverHeight)
+                .frame(
+                    width: AppConstants.managementImagePickerPopoverWidth,
+                    height: AppConstants.managementImagePickerPopoverHeight
+                )
             }
 
         }
@@ -211,16 +214,22 @@ struct WindowListRow: View {
 
     var body: some View {
         // 現在の状態を示すアイコン（インラインボタン用）
-        let visibilityStateIcon = windowInfo.isHidden ? AppConstants.hiddenWindowSymbol : AppConstants.visibleWindowSymbol
-        let ghostStateIcon = windowInfo.isGhostMode ? AppConstants.ghostModeSymbol : AppConstants.normalModeSymbol
+        let visibilityStateIcon = windowInfo.isHidden
+            ? AppConstants.hiddenWindowSymbol : AppConstants.visibleWindowSymbol
+        let ghostStateIcon = windowInfo.isGhostMode
+            ? AppConstants.ghostModeSymbol : AppConstants.normalModeSymbol
 
         // 次のアクションを示すアイコン（コンテキストメニュー用）- 状態の反転
-        let visibilityActionIcon = windowInfo.isHidden ? AppConstants.visibleWindowSymbol : AppConstants.hiddenWindowSymbol
-        let ghostActionIcon = windowInfo.isGhostMode ? AppConstants.normalModeSymbol : AppConstants.ghostModeSymbol
+        let visibilityActionIcon = windowInfo.isHidden
+            ? AppConstants.visibleWindowSymbol : AppConstants.hiddenWindowSymbol
+        let ghostActionIcon = windowInfo.isGhostMode
+            ? AppConstants.normalModeSymbol : AppConstants.ghostModeSymbol
 
         // ラベル
-        let visibilityLabel = windowInfo.isHidden ? L("management.context.show") : L("management.context.hide")
-        let ghostLabel = windowInfo.isGhostMode ? L("management.context.ghost_off") : L("management.context.ghost_on")
+        let visibilityLabel = windowInfo.isHidden
+            ? L("management.context.show") : L("management.context.hide")
+        let ghostLabel = windowInfo.isGhostMode
+            ? L("management.context.ghost_off") : L("management.context.ghost_on")
 
         HStack(spacing: 8) {
             // Drag handle

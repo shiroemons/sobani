@@ -73,7 +73,8 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
         panel.contentViewController = hosting
         panel.delegate = self
         panel.isFloatingPanel = true
-        panel.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + AppConstants.managementPanelLevelOffset)
+        let panelLevel = NSWindow.Level.floating.rawValue + AppConstants.managementPanelLevelOffset
+        panel.level = NSWindow.Level(rawValue: panelLevel)
         panel.configureForFloating()
         panel.isMovableByWindowBackground = true
         panel.center()

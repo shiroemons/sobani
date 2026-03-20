@@ -76,7 +76,8 @@ final class ManagementPanelViewModel {
         let newWindows = appDelegate.zOrderedWindows.map { charWindow in
             let imageSize = charWindow.imageView.frame.size
             let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
-            let subtitle = "\(FormatUtils.formatDimensions(width: imageSize.width, height: imageSize.height)) ・ \(screenName)"
+            let dims = FormatUtils.formatDimensions(width: imageSize.width, height: imageSize.height)
+            let subtitle = "\(dims) ・ \(screenName)"
             let thumbnail = charWindow.imageView.image
             let frame = charWindow.window.frame
             return WindowInfo(
@@ -132,13 +133,15 @@ final class ManagementPanelViewModel {
     func toggleHidden(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setHidden(!charWindow.isHidden)
-        // notifyStateDidChange fires via CharacterWindow.setHidden → triggerRefresh handled by observer
+        // notifyStateDidChange fires via CharacterWindow.setHidden
+        // → triggerRefresh handled by observer
     }
 
     func toggleGhostMode(windowId: Int) {
         guard let charWindow = findCharacterWindow(by: windowId) else { return }
         charWindow.setGhostMode(!charWindow.isGhostMode)
-        // notifyStateDidChange fires via CharacterWindow.setGhostMode → triggerRefresh handled by observer
+        // notifyStateDidChange fires via CharacterWindow.setGhostMode
+        // → triggerRefresh handled by observer
     }
 
     // MARK: - Bulk Operations
@@ -249,8 +252,10 @@ final class ManagementPanelViewModel {
 
     /// Rebuilds window state from the current `zOrderedWindows` snapshot.
     /// Intentionally calls only `rebuildWindows()` — not `rebuildImageCaches()` — because
-    /// image identity does not change during state-only updates (position, opacity, ghost mode, etc.).
-    /// Image caches are rebuilt via `rebuildAll()`, which is triggered by `characterWindowListDidChange`.
+    /// image identity does not change during state-only updates
+    /// (position, opacity, ghost mode, etc.).
+    /// Image caches are rebuilt via `rebuildAll()`,
+    /// which is triggered by `characterWindowListDidChange`.
     func triggerRefresh() {
         guard !isBatchUpdating else { return }
         rebuildWindows()

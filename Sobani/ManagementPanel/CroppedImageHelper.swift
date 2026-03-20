@@ -26,7 +26,8 @@ enum CroppedImageHelper {
         let key = "\(imageName)-\(x)-\(y)-\(w)-\(h)"
             + "-\(angle)-\(cropRect.quarterTurns)-\(cropRect.isFlippedInCrop)"
             + "-\(vPersp)-\(hPersp)"
-            + "-\(cropRect.shape.rawValue)-\(radiusTopLeft)-\(radiusTopRight)-\(radiusBottomLeft)-\(radiusBottomRight)"
+            + "-\(cropRect.shape.rawValue)"
+            + "-\(radiusTopLeft)-\(radiusTopRight)-\(radiusBottomLeft)-\(radiusBottomRight)"
         return key as NSString
     }
 
@@ -35,7 +36,11 @@ enum CroppedImageHelper {
     ///   - image: 元画像
     ///   - cropRect: 適用するクロップ設定（nil または identity の場合は元画像をそのまま返す）
     ///   - imageName: キャッシュキーに使用する画像名
-    static func croppedImage(from image: NSImage, cropRect: CropRect?, imageName: String) -> NSImage {
+    static func croppedImage(
+        from image: NSImage,
+        cropRect: CropRect?,
+        imageName: String
+    ) -> NSImage {
         // クロップなし、またはフル画像と同等の場合は元画像を返す
         guard let cropRect, !cropRect.isEffectivelyEqual(to: .full) else {
             return image
@@ -52,7 +57,9 @@ enum CroppedImageHelper {
             return image
         }
 
-        guard let croppedCG = CropImageProcessor.applyFullCrop(to: cgImage, cropRect: cropRect) else {
+        guard let croppedCG = CropImageProcessor.applyFullCrop(
+            to: cgImage, cropRect: cropRect
+        ) else {
             return image
         }
 

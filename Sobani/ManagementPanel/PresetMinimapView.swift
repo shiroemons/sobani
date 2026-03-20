@@ -21,7 +21,11 @@ struct PresetMinimapView: View {
         minimapCanvas
             .onAppear { updateScreenInfo() }
             .onChange(of: states) { updateScreenInfo() }
-            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)) { _ in
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: NSApplication.didChangeScreenParametersNotification
+                )
+            ) { _ in
                 updateScreenInfo()
             }
     }
@@ -79,7 +83,10 @@ struct PresetMinimapView: View {
                             let isDragging = draggingWindowId == state.windowId
                             let displayOffset = isDragging ? dragOffset : .zero
                             minimapWindow(state: state, isSelected: isSelected)
-                                .frame(width: max(windowRect.width, 8), height: max(windowRect.height, 8))
+                                .frame(
+                                    width: max(windowRect.width, 8),
+                                    height: max(windowRect.height, 8)
+                                )
                                 .offset(
                                     x: windowRect.origin.x + displayOffset.width,
                                     y: windowRect.origin.y + displayOffset.height
@@ -97,11 +104,15 @@ struct PresetMinimapView: View {
                                             )
                                         }
                                         dragOffset = value.translation
-                                        let origin = newOrigin(from: value.translation, layout: layout)
+                                        let origin = newOrigin(
+                                            from: value.translation, layout: layout
+                                        )
                                         onWindowDragChanged?(state.windowId, origin)
                                     }
                                     .onEnded { value in
-                                        let origin = newOrigin(from: value.translation, layout: layout)
+                                        let origin = newOrigin(
+                                            from: value.translation, layout: layout
+                                        )
                                         onWindowDragEnded?(state.windowId, origin)
                                         draggingWindowId = nil
                                         dragOffset = .zero
@@ -127,7 +138,9 @@ struct PresetMinimapView: View {
     @ViewBuilder
     private func minimapWindow(state: WindowState, isSelected: Bool) -> some View {
         let originalImage: NSImage? = images?[state.imageName]
-        let displayImage = originalImage.map { CroppedImageHelper.croppedImage(from: $0, cropRect: state.cropRect, imageName: state.imageName) }
+        let displayImage = originalImage.map {
+            CroppedImageHelper.croppedImage(from: $0, cropRect: state.cropRect, imageName: state.imageName)
+        }
 
         RoundedRectangle(cornerRadius: 2)
             .fill(Color.secondary.opacity(0.1))

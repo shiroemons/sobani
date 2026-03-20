@@ -9,16 +9,21 @@ struct MinimapLayout {
     let offset: CGPoint
     let rawTotalBounds: CGRect
 
-    func windowRect(for originX: CGFloat, originY: CGFloat, width: CGFloat, height: CGFloat) -> CGRect {
+    func windowRect(
+        for originX: CGFloat, originY: CGFloat, width: CGFloat, height: CGFloat
+    ) -> CGRect {
         let scaledX = (originX - rawTotalBounds.origin.x) * scale + offset.x
-        let scaledY = (rawTotalBounds.height - (originY - rawTotalBounds.origin.y + height)) * scale + offset.y
+        let rawY = rawTotalBounds.height - (originY - rawTotalBounds.origin.y + height)
+        let scaledY = rawY * scale + offset.y
         let scaledW = width * scale
         let scaledH = height * scale
         return CGRect(x: scaledX, y: scaledY, width: scaledW, height: scaledH)
     }
 
     func windowRect(for state: WindowState) -> CGRect {
-        windowRect(for: state.originX, originY: state.originY, width: state.width, height: state.height)
+        windowRect(
+            for: state.originX, originY: state.originY, width: state.width, height: state.height
+        )
     }
 
     /// ミニマップ上のドラッグ差分をmacOS座標系の差分に変換
@@ -34,7 +39,9 @@ struct MinimapLayout {
         let screenFrames = screenFrames ?? NSScreen.screens.map(\.frame)
         var totalBounds = screenFrames.reduce(CGRect.null) { $0.union($1) }
         for state in states {
-            let windowFrame = CGRect(x: state.originX, y: state.originY, width: state.width, height: state.height)
+            let windowFrame = CGRect(
+                x: state.originX, y: state.originY, width: state.width, height: state.height
+            )
             totalBounds = totalBounds.union(windowFrame)
         }
         return totalBounds
@@ -53,7 +60,8 @@ struct MinimapLayout {
         }
 
         // Use caller-supplied bounds to avoid redundant computation when available
-        let totalBounds = precomputedBounds ?? computeTotalBounds(states: states, screenFrames: screenFrames)
+        let totalBounds = precomputedBounds
+            ?? computeTotalBounds(states: states, screenFrames: screenFrames)
 
         let usableWidth = availableSize.width - Self.padding * 2
         let usableHeight = availableSize.height - Self.padding * 2
@@ -68,7 +76,8 @@ struct MinimapLayout {
 
         let scaledScreens = screenFrames.map { frame -> CGRect in
             let scaledX = (frame.origin.x - totalBounds.origin.x) * scale + offsetX
-            let scaledY = (totalBounds.height - (frame.origin.y - totalBounds.origin.y + frame.height)) * scale + offsetY
+            let rawY = totalBounds.height - (frame.origin.y - totalBounds.origin.y + frame.height)
+            let scaledY = rawY * scale + offsetY
             return CGRect(
                 x: scaledX,
                 y: scaledY,
@@ -77,7 +86,12 @@ struct MinimapLayout {
             )
         }
 
-        return Self(screens: scaledScreens, scale: scale, offset: CGPoint(x: offsetX, y: offsetY), rawTotalBounds: totalBounds)
+        return Self(
+            screens: scaledScreens,
+            scale: scale,
+            offset: CGPoint(x: offsetX, y: offsetY),
+            rawTotalBounds: totalBounds
+        )
     }
 
     @MainActor

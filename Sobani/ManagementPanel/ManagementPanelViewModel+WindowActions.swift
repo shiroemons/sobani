@@ -57,9 +57,11 @@ extension ManagementPanelViewModel {
                 if let savedName = ImageManager.shared.registerImage(from: url) {
                     if createWindow {
                         appDelegate?.createNewWindow(imageName: savedName)
-                        // createNewWindow fires characterWindowListDidChange → triggerRefresh handled by observer
+                        // createNewWindow fires characterWindowListDidChange
+                        // → triggerRefresh handled by observer
                     }
-                    // registerImage fires registeredImagesDidChange → refreshRegisteredImageNames handled by observer
+                    // registerImage fires registeredImagesDidChange
+                    // → refreshRegisteredImageNames handled by observer
                 }
             }
         }
@@ -81,7 +83,9 @@ extension ManagementPanelViewModel {
 
     func croppedPreviewImage(for state: WindowState) -> NSImage? {
         guard let image = previewImage(name: state.imageName) else { return nil }
-        return CroppedImageHelper.croppedImage(from: image, cropRect: state.cropRect, imageName: state.imageName)
+        return CroppedImageHelper.croppedImage(
+            from: image, cropRect: state.cropRect, imageName: state.imageName
+        )
     }
 
     func removeRegisteredImage(named name: String) {

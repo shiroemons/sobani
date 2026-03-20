@@ -32,7 +32,9 @@ struct SettingsView: View {
         .onDisappear {
             stopAccessibilityPolling()
         }
-        .onReceive(NotificationCenter.default.publisher(for: AppConstants.managementPanelWillClose)) { _ in
+        .onReceive(
+            NotificationCenter.default.publisher(for: AppConstants.managementPanelWillClose)
+        ) { _ in
             stopAccessibilityPolling()
         }
     }
@@ -120,12 +122,18 @@ struct SettingsView: View {
 
             if HotkeySettings.isEnabled {
                 if isAccessibilityGranted {
-                    Label(L("management.hotkey_accessibility_granted"), systemImage: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+                    Label(
+                        L("management.hotkey_accessibility_granted"),
+                        systemImage: "checkmark.circle.fill"
+                    )
+                    .foregroundStyle(.green)
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
-                        Label(L("management.hotkey_accessibility_warning"), systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
+                        Label(
+                            L("management.hotkey_accessibility_warning"),
+                            systemImage: "exclamationmark.triangle.fill"
+                        )
+                        .foregroundStyle(.orange)
                         Button(L("management.hotkey_open_settings")) {
                             if let url = URL(string: AppConstants.accessibilitySettingsURL) {
                                 NSWorkspace.shared.open(url)
@@ -143,8 +151,11 @@ struct SettingsView: View {
                 }
 
                 if hasDuplicateHotkeys {
-                    Label(L("management.hotkey_duplicate_warning"), systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.red)
+                    Label(
+                        L("management.hotkey_duplicate_warning"),
+                        systemImage: "exclamationmark.triangle"
+                    )
+                    .foregroundStyle(.red)
                 }
 
                 if hasNonDefaultHotkeys {
@@ -154,7 +165,10 @@ struct SettingsView: View {
                             HotkeySettings.resetAllToDefaults()
                             notifyHotkeySettingsChanged()
                         } label: {
-                            Label(L("management.hotkey_reset_all"), systemImage: "arrow.counterclockwise")
+                            Label(
+                                L("management.hotkey_reset_all"),
+                                systemImage: "arrow.counterclockwise"
+                            )
                         }
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -190,11 +204,16 @@ struct SettingsView: View {
 
     private func updateHotkeyState() {
         let pairs = AppDelegate.KeyboardAction.allCases.map { action in
-            (keyCode: HotkeySettings.keyCode(for: action), modifiers: HotkeySettings.modifiers(for: action))
+            (
+                keyCode: HotkeySettings.keyCode(for: action),
+                modifiers: HotkeySettings.modifiers(for: action)
+            )
         }
         let unique = Set(pairs.map { UInt64($0.keyCode) << 32 | UInt64($0.modifiers.rawValue) })
         hasDuplicateHotkeys = unique.count < pairs.count
-        hasNonDefaultHotkeys = AppDelegate.KeyboardAction.allCases.contains { !HotkeySettings.isDefault(for: $0) }
+        hasNonDefaultHotkeys = AppDelegate.KeyboardAction.allCases.contains {
+            !HotkeySettings.isDefault(for: $0)
+        }
     }
 
     // MARK: - Hotkey Bindings
@@ -229,7 +248,9 @@ struct SettingsView: View {
         )
     }
 
-    private func modifiersBinding(for action: AppDelegate.KeyboardAction) -> Binding<NSEvent.ModifierFlags> {
+    private func modifiersBinding(
+        for action: AppDelegate.KeyboardAction
+    ) -> Binding<NSEvent.ModifierFlags> {
         Binding(
             get: { HotkeySettings.modifiers(for: action) },
             set: { newValue in

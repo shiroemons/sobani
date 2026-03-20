@@ -20,7 +20,9 @@ struct WindowDetailView: View {
     // MARK: - Single Selection
 
     @ViewBuilder
-    private func singleSelectionView(_ windowInfo: ManagementPanelViewModel.WindowInfo) -> some View {
+    private func singleSelectionView(
+        _ windowInfo: ManagementPanelViewModel.WindowInfo
+    ) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Preview
@@ -117,7 +119,10 @@ struct WindowDetailView: View {
                     value: Binding(
                         get: { windowInfo.opacityLevel },
                         set: { newValue in
-                            viewModel.changeOpacity(windowId: windowInfo.windowId, opacity: newValue)
+                            viewModel.changeOpacity(
+                                windowId: windowInfo.windowId,
+                                opacity: newValue
+                            )
                         }
                     ),
                     in: AppConstants.opacityMin...AppConstants.opacityMax
@@ -230,7 +235,9 @@ struct WindowDetailView: View {
         }
     }
 
-    private func actionButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+    private func actionButton(
+        title: String, icon: String, action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
