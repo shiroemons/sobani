@@ -111,8 +111,9 @@ final class BackgroundRemovalManager: @unchecked Sendable {
             throw BackgroundRemovalError.filterOutputFailed
         }
 
-        guard let outputCGImage = ciContext.createCGImage(outputCIImage,
-                                                          from: inputCIImage.extent) else {
+        guard let outputCGImage = ciContext.createCGImage(
+            outputCIImage, from: inputCIImage.extent
+        ) else {
             throw BackgroundRemovalError.finalImageConversionFailed
         }
 

@@ -62,8 +62,10 @@ final class LayoutPresetManager {
 
     private func persistPreset(_ preset: LayoutPreset) {
         guard let url = presetFileURL(for: preset.name) else { return }
-        JSONPersistence.save(preset, to: url, logger: logger,
-                             errorMessage: "Failed to persist layout preset") {
+        JSONPersistence.save(
+            preset, to: url, logger: logger,
+            errorMessage: "Failed to persist layout preset"
+        ) {
             $0.dateEncodingStrategy = .iso8601
         }
         invalidateCache()

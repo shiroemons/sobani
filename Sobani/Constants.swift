@@ -287,10 +287,15 @@ enum GhostModeSettings {
                 return AppConstants.ghostModeAlphaDefault
             }
             let value = UserDefaults.standard.double(forKey: AppConstants.ghostModeAlphaKey)
-            return CGFloat(max(AppConstants.ghostModeAlphaMin, min(AppConstants.ghostModeAlphaMax, value)))
+            return CGFloat(
+                max(AppConstants.ghostModeAlphaMin, min(AppConstants.ghostModeAlphaMax, value))
+            )
         }
         set {
-            let clamped = max(AppConstants.ghostModeAlphaMin, min(AppConstants.ghostModeAlphaMax, newValue))
+            let clamped = max(
+                AppConstants.ghostModeAlphaMin,
+                min(AppConstants.ghostModeAlphaMax, newValue)
+            )
             UserDefaults.standard.set(Double(clamped), forKey: AppConstants.ghostModeAlphaKey)
         }
     }
@@ -419,14 +424,23 @@ enum HotkeySettings {
         saveKeyCode(keyCode, forKey: actionConfig(for: action).keyCodeKey)
     }
 
-    static func setModifiers(_ modifiers: NSEvent.ModifierFlags, for action: AppDelegate.KeyboardAction) {
+    static func setModifiers(
+        _ modifiers: NSEvent.ModifierFlags,
+        for action: AppDelegate.KeyboardAction
+    ) {
         saveModifiers(modifiers, forKey: actionConfig(for: action).modifiersKey)
     }
 
     static func buildConfig() -> AppDelegate.HotkeyConfig {
-        AppDelegate.HotkeyConfig(bindings: AppDelegate.KeyboardAction.allCases.map { action in
-            AppDelegate.HotkeyBinding(action: action, keyCode: keyCode(for: action), modifiers: modifiers(for: action))
-        })
+        AppDelegate.HotkeyConfig(
+            bindings: AppDelegate.KeyboardAction.allCases.map { action in
+                AppDelegate.HotkeyBinding(
+                    action: action,
+                    keyCode: keyCode(for: action),
+                    modifiers: modifiers(for: action)
+                )
+            }
+        )
     }
 
     // MARK: - Defaults
@@ -505,7 +519,9 @@ enum AppSupportDirectory {
         if let base = baseDirectory {
             appDir = base
         } else {
-            guard let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
+            guard let appSupport = fm.urls(
+                for: .applicationSupportDirectory, in: .userDomainMask
+            ).first else { return nil }
             appDir = appSupport.appendingPathComponent(AppConstants.appName)
         }
         do {
@@ -663,8 +679,11 @@ enum FormatUtils {
 // MARK: - SF Symbol Utils
 
 enum SFSymbolUtils {
-    static func icon(_ name: String, pointSize: CGFloat = AppConstants.menuIconPointSize,
-                     weight: NSFont.Weight = .regular) -> NSImage? {
+    static func icon(
+        _ name: String,
+        pointSize: CGFloat = AppConstants.menuIconPointSize,
+        weight: NSFont.Weight = .regular
+    ) -> NSImage? {
         let config = NSImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
         return NSImage(systemSymbolName: name, accessibilityDescription: nil)?
             .withSymbolConfiguration(config)

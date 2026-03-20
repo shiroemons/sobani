@@ -17,9 +17,11 @@ struct PendingRestoration: Codable, Sendable {
         case screenFrameX, screenFrameY, screenFrameWidth, screenFrameHeight
     }
 
-    init(windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
-         adjustedOriginX: CGFloat, adjustedOriginY: CGFloat, createdAt: Date,
-         preSleepScreenFrame: NSRect? = nil) {
+    init(
+        windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
+        adjustedOriginX: CGFloat, adjustedOriginY: CGFloat, createdAt: Date,
+        preSleepScreenFrame: NSRect? = nil
+    ) {
         self.windowId = windowId
         self.originalState = originalState
         self.displayID = displayID
@@ -86,9 +88,11 @@ final class ScreenRestorationManager {
         return !pendingRestorations.isEmpty
     }
 
-    func addPending(windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
-                    adjustedOriginX: CGFloat, adjustedOriginY: CGFloat,
-                    preSleepScreenFrame: NSRect? = nil) {
+    func addPending(
+        windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
+        adjustedOriginX: CGFloat, adjustedOriginY: CGFloat,
+        preSleepScreenFrame: NSRect? = nil
+    ) {
         pendingRestorations.removeAll { $0.windowId == windowId }
         let entry = PendingRestoration(
             windowId: windowId,
@@ -137,8 +141,10 @@ final class ScreenRestorationManager {
 
     func savePending() {
         guard let url = pendingFileURL else { return }
-        JSONPersistence.save(pendingRestorations, to: url, logger: logger,
-                             errorMessage: "Failed to save pending restorations")
+        JSONPersistence.save(
+            pendingRestorations, to: url, logger: logger,
+            errorMessage: "Failed to save pending restorations"
+        )
     }
 
     func loadPending() {
