@@ -47,21 +47,21 @@ final class FloatingMenuController {
 
     func show(at point: NSPoint, in window: NSWindow) {
         let buttonCount = Self.buttonCount()
-        let panelWidth = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuColumnWidth * CGFloat(buttonCount)
+        let panelWidth = AppConstants.floatingMenuPadding * 2
+            + AppConstants.floatingMenuColumnWidth * CGFloat(buttonCount)
             + AppConstants.floatingMenuGap * CGFloat(buttonCount - 1)
-        let panelHeight = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuButtonSize + Self.labelTopGap + Self.labelHeight
+        let panelHeight = AppConstants.floatingMenuPadding * 2
+            + AppConstants.floatingMenuButtonSize + Self.labelTopGap + Self.labelHeight
             + AppConstants.floatingMenuSeparatorHeight + AppConstants.floatingMenuSliderRowHeight
 
         // Convert window-local point to screen coordinates
         let screenPoint = window.convertPoint(toScreen: point)
 
         // Determine position: prefer above, fall back to below if off-screen
-        var origin = NSPoint(
-            x: screenPoint.x - panelWidth / 2,
-            y: screenPoint.y + Self.aboveOffset
-        )
+        var origin = NSPoint(x: screenPoint.x - panelWidth / 2, y: screenPoint.y + Self.aboveOffset)
 
-        if let screen = NSScreen.screens.first(where: { $0.frame.contains(screenPoint) }) ?? NSScreen.main {
+        let targetScreen = NSScreen.screens.first(where: { $0.frame.contains(screenPoint) }) ?? NSScreen.main
+        if let screen = targetScreen {
             // If panel would go above visible area, show below instead
             if origin.y + panelHeight > screen.visibleFrame.maxY {
                 origin.y = screenPoint.y - panelHeight - Self.aboveOffset
@@ -138,7 +138,10 @@ final class FloatingMenuController {
 
     private func setupButtons(in container: NSView) {
         var buttons: [ButtonSpec] = [
-            ButtonSpec(symbolName: "crop", tooltip: L("floating_menu.crop"), label: L("floating_menu.label.crop"), action: #selector(cropTapped)),
+            ButtonSpec(symbolName: "crop",
+                       tooltip: L("floating_menu.crop"),
+                       label: L("floating_menu.label.crop"),
+                       action: #selector(cropTapped)),
             ButtonSpec(
                 symbolName: "arrow.left.and.right.righttriangle.left.righttriangle.right",
                 tooltip: L("floating_menu.flip"),
@@ -255,7 +258,9 @@ final class FloatingMenuController {
         let iconSize: CGFloat = 16
         let iconX = AppConstants.floatingMenuPadding + 4
         let iconPointSize: CGFloat = 12
-        let iconView = NSImageView(frame: NSRect(x: iconX, y: sliderRowY + (rowHeight - iconSize) / 2, width: iconSize, height: iconSize))
+        let iconView = NSImageView(frame: NSRect(x: iconX,
+                                                y: sliderRowY + (rowHeight - iconSize) / 2,
+                                                width: iconSize, height: iconSize))
         iconView.image = SFSymbolUtils.icon(AppConstants.opacitySymbol, pointSize: iconPointSize)
         iconView.imageScaling = .scaleProportionallyDown
         container.addSubview(iconView)
@@ -346,13 +351,17 @@ final class FloatingMenuController {
     // MARK: - Event Monitors
 
     private func installEventMonitors() {
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown]
+        ) { [weak self] _ in
             DispatchQueue.main.async {
                 self?.dismiss()
             }
         }
 
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown]) { [weak self] event in
+        localMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown, .keyDown]
+        ) { [weak self] event in
             guard let self else { return event }
 
             if event.type == .keyDown && event.keyCode == AppConstants.escKeyCode {

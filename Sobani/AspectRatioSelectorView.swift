@@ -64,7 +64,8 @@ final class AspectRatioSelectorView: NSView {
         let allPresets = AspectRatioPreset.allCases
 
         for (index, preset) in allPresets.enumerated() {
-            let button = NSButton(title: preset.localizedName, target: self, action: #selector(buttonTapped(_:)))
+            let button = NSButton(title: preset.localizedName,
+                                  target: self, action: #selector(buttonTapped(_:)))
             button.bezelStyle = .regularSquare
             button.isBordered = false
             button.tag = index
@@ -105,7 +106,8 @@ final class AspectRatioSelectorView: NSView {
                         .foregroundColor: NSColor.labelColor
                     ]
                 )
-                button.layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(AppConstants.selectorSelectedAlpha).cgColor
+                button.layer?.backgroundColor = NSColor.labelColor
+                    .withAlphaComponent(AppConstants.selectorSelectedAlpha).cgColor
                 button.layer?.cornerRadius = AppConstants.selectorCornerRadius
             } else {
                 let font = NSFont.systemFont(ofSize: 12, weight: .regular)

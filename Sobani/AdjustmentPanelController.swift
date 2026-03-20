@@ -52,7 +52,8 @@ final class RotationDialView: NSView {
         // Outer circle
         context.setStrokeColor(NSColor.separatorColor.cgColor)
         context.setLineWidth(Self.outerLineWidth)
-        context.addArc(center: center, radius: radius, startAngle: 0, endAngle: .pi * 2, clockwise: false)
+        context.addArc(center: center, radius: radius, startAngle: 0, endAngle: .pi * 2,
+                       clockwise: false)
         context.strokePath()
 
         // Tick marks every 45 degrees
@@ -245,11 +246,13 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
             let contentView = NSView(frame: panelRect)
 
-            setupRotationSection(in: contentView, angle: state.angle, offsetY: Self.rotationSectionOffsetY)
+            setupRotationSection(in: contentView, angle: state.angle,
+                                 offsetY: Self.rotationSectionOffsetY)
 
             // Separator between rotation and position/size
             let sep1 = NSBox(frame: NSRect(
-                x: SectionLayout.labelX, y: Self.rotationSectionOffsetY, width: SectionLayout.contentWidth, height: 1
+                x: SectionLayout.labelX, y: Self.rotationSectionOffsetY,
+                width: SectionLayout.contentWidth, height: 1
             ))
             sep1.boxType = .separator
             contentView.addSubview(sep1)
@@ -296,7 +299,8 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         // "角度:" label
         let label = NSTextField(labelWithString: L("adjust.angle"))
         label.frame = NSRect(
-            x: RotationLayout.angleLabelX, y: RotationLayout.angleLabelRelativeY + offsetY, width: 40, height: 20
+            x: RotationLayout.angleLabelX, y: RotationLayout.angleLabelRelativeY + offsetY,
+            width: 40, height: 20
         )
         label.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(label)
@@ -308,7 +312,8 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         ))
         field.stringValue = Self.formatAngle(angle)
         field.alignment = .right
-        field.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
+        field.font = NSFont.monospacedDigitSystemFont(
+            ofSize: SectionLayout.labelFontSize, weight: .regular)
         field.target = self
         field.action = #selector(textFieldChanged(_:))
         contentView.addSubview(field)
@@ -317,13 +322,15 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         // "°" label
         let degreeLabel = NSTextField(labelWithString: L("adjust.degree"))
         degreeLabel.frame = NSRect(
-            x: RotationLayout.degreeLabelX, y: RotationLayout.angleLabelRelativeY + offsetY, width: 15, height: 20
+            x: RotationLayout.degreeLabelX, y: RotationLayout.angleLabelRelativeY + offsetY,
+            width: 15, height: 20
         )
         degreeLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(degreeLabel)
 
         // Reset button
-        let resetButton = NSButton(title: L("adjust.reset"), target: self, action: #selector(resetAngle))
+        let resetButton = NSButton(
+            title: L("adjust.reset"), target: self, action: #selector(resetAngle))
         resetButton.frame = NSRect(
             x: RotationLayout.resetButtonX, y: RotationLayout.resetButtonRelativeY + offsetY,
             width: SectionLayout.resetButtonWidth, height: SectionLayout.resetButtonHeight
@@ -419,7 +426,8 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
     // MARK: - Testable Static Methods
 
-    nonisolated static func generateMonitorPopupTitles(screenSizes: [(width: Int, height: Int)]) -> [String] {
+    nonisolated static func generateMonitorPopupTitles(
+        screenSizes: [(width: Int, height: Int)]) -> [String] {
         return screenSizes.enumerated().map { index, size in
             "\(index + 1): \(size.width)×\(size.height)"
         }
@@ -477,7 +485,8 @@ extension AdjustmentPanelController {
 
         let popup = NSPopUpButton(frame: NSRect(
             x: PositionSizeLayout.monitorPopupX, y: PositionSizeLayout.monitorPopupY,
-            width: PositionSizeLayout.monitorPopupWidth, height: PositionSizeLayout.monitorPopupHeight
+            width: PositionSizeLayout.monitorPopupWidth,
+            height: PositionSizeLayout.monitorPopupHeight
         ), pullsDown: false)
         popup.font = NSFont.systemFont(ofSize: PositionSizeLayout.monitorPopupFontSize)
         popup.target = self
@@ -489,7 +498,8 @@ extension AdjustmentPanelController {
         let resLabel = NSTextField(labelWithString: "")
         resLabel.frame = NSRect(
             x: PositionSizeLayout.monitorPopupX, y: PositionSizeLayout.resolutionLabelY,
-            width: PositionSizeLayout.monitorPopupWidth, height: PositionSizeLayout.resolutionLabelHeight
+            width: PositionSizeLayout.monitorPopupWidth,
+            height: PositionSizeLayout.resolutionLabelHeight
         )
         resLabel.font = NSFont.systemFont(ofSize: PositionSizeLayout.resolutionLabelFontSize)
         resLabel.textColor = .secondaryLabelColor
@@ -508,7 +518,8 @@ extension AdjustmentPanelController {
 
         let xLabel = NSTextField(labelWithString: "X")
         xLabel.frame = NSRect(
-            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.positionRowY, width: 15, height: 20
+            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.positionRowY,
+            width: 15, height: 20
         )
         xLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(xLabel)
@@ -518,7 +529,8 @@ extension AdjustmentPanelController {
             width: PositionSizeLayout.inputWidth, height: 22
         ))
         xInput.alignment = .right
-        xInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
+        xInput.font = NSFont.monospacedDigitSystemFont(
+            ofSize: SectionLayout.labelFontSize, weight: .regular)
         xInput.target = self
         xInput.action = #selector(xFieldChanged(_:))
         contentView.addSubview(xInput)
@@ -526,7 +538,8 @@ extension AdjustmentPanelController {
 
         let yLabel = NSTextField(labelWithString: "Y")
         yLabel.frame = NSRect(
-            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.positionRowY, width: 15, height: 20
+            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.positionRowY,
+            width: 15, height: 20
         )
         yLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(yLabel)
@@ -536,7 +549,8 @@ extension AdjustmentPanelController {
             width: PositionSizeLayout.inputWidth, height: 22
         ))
         yInput.alignment = .right
-        yInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
+        yInput.font = NSFont.monospacedDigitSystemFont(
+            ofSize: SectionLayout.labelFontSize, weight: .regular)
         yInput.target = self
         yInput.action = #selector(yFieldChanged(_:))
         contentView.addSubview(yInput)
@@ -553,7 +567,8 @@ extension AdjustmentPanelController {
 
         let wLabel = NSTextField(labelWithString: "W")
         wLabel.frame = NSRect(
-            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.sizeRowY, width: 15, height: 20
+            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.sizeRowY,
+            width: 15, height: 20
         )
         wLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(wLabel)
@@ -563,7 +578,8 @@ extension AdjustmentPanelController {
             width: PositionSizeLayout.inputWidth, height: 22
         ))
         wInput.alignment = .right
-        wInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
+        wInput.font = NSFont.monospacedDigitSystemFont(
+            ofSize: SectionLayout.labelFontSize, weight: .regular)
         wInput.target = self
         wInput.action = #selector(wFieldChanged(_:))
         contentView.addSubview(wInput)
@@ -571,7 +587,8 @@ extension AdjustmentPanelController {
 
         let hLabel = NSTextField(labelWithString: "H")
         hLabel.frame = NSRect(
-            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.sizeRowY, width: 15, height: 20
+            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.sizeRowY,
+            width: 15, height: 20
         )
         hLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(hLabel)
@@ -581,7 +598,8 @@ extension AdjustmentPanelController {
             width: PositionSizeLayout.inputWidth, height: 22
         ))
         hInput.alignment = .right
-        hInput.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
+        hInput.font = NSFont.monospacedDigitSystemFont(
+            ofSize: SectionLayout.labelFontSize, weight: .regular)
         hInput.target = self
         hInput.action = #selector(hFieldChanged(_:))
         contentView.addSubview(hInput)
@@ -642,7 +660,8 @@ extension AdjustmentPanelController {
             updatePositionFields()
             return
         }
-        let currentRelative = Self.globalToMonitorRelative(currentPosition, screenOrigin: screen.frame.origin)
+        let currentRelative = Self.globalToMonitorRelative(
+            currentPosition, screenOrigin: screen.frame.origin)
         let relative = Self.updatedRelativePosition(
             newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: isXField
         )
@@ -665,7 +684,8 @@ extension AdjustmentPanelController {
             updateSizeFields()
             return
         }
-        guard let newSize = Self.clampedSize(newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: isWidth) else {
+        guard let newSize = Self.clampedSize(
+            newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: isWidth) else {
             updateSizeFields()
             return
         }
@@ -709,7 +729,8 @@ extension AdjustmentPanelController {
 
     private func updatePositionFields() {
         guard let screen = currentScreen else { return }
-        let relative = Self.globalToMonitorRelative(currentPosition, screenOrigin: screen.frame.origin)
+        let relative = Self.globalToMonitorRelative(
+            currentPosition, screenOrigin: screen.frame.origin)
         xField?.stringValue = "\(Int(round(relative.x)))"
         yField?.stringValue = "\(Int(round(relative.y)))"
     }
