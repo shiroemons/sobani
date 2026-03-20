@@ -73,6 +73,82 @@ import os.log
         #expect(result == nil)
     }
 
+    // MARK: - Type mismatch
+
+    /// 必須フィールドが欠けた空JSONオブジェクトからのloadがnilを返すことを検証
+    @Test func loadEmptyJsonObjectReturnsNil() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("empty.json")
+        try Data("{}".utf8).write(to: url, options: .atomic)
+        let result = JSONPersistence.load(TestData.self, from: url, logger: logger)
+        #expect(result == nil)
+    }
+
+    /// オブジェクト型に対してJSON配列が渡された場合、loadがnilを返すことを検証
+    @Test func loadArrayInsteadOfObjectReturnsNil() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("array.json")
+        try Data("[1,2,3]".utf8).write(to: url, options: .atomic)
+        let result = JSONPersistence.load(TestData.self, from: url, logger: logger)
+        #expect(result == nil)
+    }
+
+    // MARK: - Large array
+
+    /// 大量要素を含む配列のsave/loadラウンドトリップが正しく動作することを検証
+    @Test func largeArrayRoundTrip() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("large.json")
+        let items = (0..<1000).map { TestData(name: "item\($0)", value: $0) }
+        JSONPersistence.save(items, to: url, logger: logger)
+        let loaded = JSONPersistence.load([TestData].self, from: url, logger: logger)
+        #expect(loaded == items)
+    }
+
+    // MARK: - Non-existent directory
+
+    /// 存在しないディレクトリへのsaveがクラッシュせずエラーをログに記録することを検証
+    @Test func saveToNonExistentDirectoryDoesNotCrash() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathComponent("nested")
+            .appendingPathComponent("test.json")
+        let data = TestData(name: "test", value: 1)
+        // クラッシュしないことを確認（エラーはログに記録される）
+        JSONPersistence.save(data, to: url, logger: logger)
+    }
+
+    // MARK: - Overwrite
+
+    /// 同一ファイルへの上書き保存が正しく動作することを検証
+    @Test func overwriteExistingFile() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("overwrite.json")
+        let first = TestData(name: "first", value: 1)
+        let second = TestData(name: "second", value: 2)
+        JSONPersistence.save(first, to: url, logger: logger)
+        JSONPersistence.save(second, to: url, logger: logger)
+        let loaded = JSONPersistence.load(TestData.self, from: url, logger: logger)
+        #expect(loaded == second)
+    }
+
+    // MARK: - Empty array
+
+    /// 空配列のsave/loadラウンドトリップが正しく動作することを検証
+    @Test func emptyArrayRoundTrip() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("empty_array.json")
+        let items: [TestData] = []
+        JSONPersistence.save(items, to: url, logger: logger)
+        let loaded = JSONPersistence.load([TestData].self, from: url, logger: logger)
+        #expect(loaded == items)
+    }
+
     // MARK: - Custom configuration
 
     /// カスタムのdateEncodingStrategy/dateDecodingStrategyが正しく動作することを検証

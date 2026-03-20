@@ -34,4 +34,20 @@ import Testing
         guard manager.status != .enabled else { return }
         #expect(throws: (any Error).self) { try manager.toggle() }
     }
+
+    /// DI用の新しいインスタンスが作成できることを検証
+    @Test func canCreateNewInstance() {
+        let instance = LaunchAtLoginManager()
+        #expect(instance !== LaunchAtLoginManager.shared)
+    }
+
+    /// isEnabledとstatusの関係が一貫していることを検証（環境非依存）
+    @Test func isEnabledConsistentWithStatus() {
+        let manager = LaunchAtLoginManager.shared
+        if manager.status == .enabled {
+            #expect(manager.isEnabled == true)
+        } else {
+            #expect(manager.isEnabled == false)
+        }
+    }
 }

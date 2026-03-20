@@ -28,4 +28,27 @@ import Testing
         #expect(SparkleManager.shared.isInstallingUpdate == false)
     }
 
+    /// canCheckForUpdatesがBoolを返すことを検証
+    @Test func canCheckForUpdatesReturnsBool() {
+        // canCheckForUpdates はUpdater起動前なので具体値は環境依存だが、呼び出し可能であることを確認
+        _ = SparkleManager.shared.canCheckForUpdates
+    }
+
+    /// startUpdaterがクラッシュしないことを検証
+    @Test func startUpdaterDoesNotCrash() {
+        // テスト環境ではSparkle更新チェックは失敗するが、クラッシュしないことを確認
+        SparkleManager.shared.startUpdater()
+    }
+
+    /// checkForUpdatesActionがresponds(to:)で確認可能であることを検証
+    @Test func checkForUpdatesActionIsResponded() {
+        let action = SparkleManager.shared.checkForUpdatesAction
+        #expect(SparkleManager.shared.responds(to: action))
+    }
+
+    /// supportsGentleScheduledUpdateRemindersがtrueであることを検証
+    @Test func supportsGentleScheduledUpdateReminders() {
+        #expect(SparkleManager.shared.supportsGentleScheduledUpdateReminders == true)
+    }
+
 }

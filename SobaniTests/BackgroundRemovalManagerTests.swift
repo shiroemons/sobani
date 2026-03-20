@@ -97,4 +97,58 @@ import Testing
         }
         #expect(isMainThread, "Completion should be called on main thread")
     }
+
+    /// 1x1ピクセルの最小画像に対してremoveBackgroundがクラッシュせず完了することを検証
+    @Test func removeBackgroundWith1x1Image() async {
+        guard #available(macOS 14.0, *) else { return }
+        let tiny = NSImage(size: NSSize(width: 1, height: 1))
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: 1, pixelsHigh: 1,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
+            isPlanar: false, colorSpaceName: .deviceRGB,
+            bytesPerRow: 0, bitsPerPixel: 0
+        ) else { return }
+        tiny.addRepresentation(rep)
+
+        let result: Result<NSImage, BackgroundRemovalError> =
+            await withCheckedContinuation { continuation in
+                BackgroundRemovalManager.shared.removeBackground(from: tiny) { result in
+                    continuation.resume(returning: result)
+                }
+            }
+        // 1x1画像は成功または失敗どちらでもクラッシュしないことが重要
+        switch result {
+        case .success, .failure:
+            break // No crash = pass
+        }
+    }
+
+    /// 全エラーケースの説明文が一意であることを検証
+    @Test func errorDescriptions_AreUnique() throws {
+        guard #available(macOS 14.0, *) else { return }
+        let descriptions = BackgroundRemovalError.allCases.compactMap { $0.errorDescription }
+        let uniqueDescriptions = Set(descriptions)
+        #expect(descriptions.count == uniqueDescriptions.count,
+                "Each error case should have a unique description")
+    }
+
+    /// CaseIterable に含まれるエラーケース数が期待通りであることを検証
+    @Test func allCases_ContainsExpectedCount() {
+        guard #available(macOS 14.0, *) else { return }
+        #expect(BackgroundRemovalError.allCases.count == 5)
+    }
+
+    /// removeBackgroundを複数回連続で呼び出してもクラッシュせず安定して完了することを検証
+    @Test func removeBackground_MultipleCallsStable() async {
+        guard #available(macOS 14.0, *) else { return }
+        let emptyImage = NSImage()
+        for _ in 0..<3 {
+            let _: Result<NSImage, BackgroundRemovalError> =
+                await withCheckedContinuation { continuation in
+                    BackgroundRemovalManager.shared.removeBackground(from: emptyImage) { result in
+                        continuation.resume(returning: result)
+                    }
+                }
+        }
+    }
 }
