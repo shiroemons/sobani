@@ -75,7 +75,8 @@ struct HotkeyRecorderButton: View {
                         modifiers: $modifiers,
                         isRecording: $isRecording
                     )
-                    .frame(width: 0, height: 0)  // 不可視だがファーストレスポンダーとして機能
+                    // 不可視だがファーストレスポンダーとして機能
+                    .frame(width: 0, height: 0)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -87,7 +88,10 @@ struct HotkeyRecorderButton: View {
                 Button {
                     isRecording = true
                 } label: {
-                    Text(KeyCodeMapper.shortcutDisplayString(keyCode: keyCode, modifiers: modifiers))
+                    Text(KeyCodeMapper.shortcutDisplayString(
+                        keyCode: keyCode,
+                        modifiers: modifiers
+                    ))
                         .font(.system(.body, design: .monospaced))
                         .frame(minWidth: 60)
                 }

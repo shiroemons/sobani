@@ -29,18 +29,22 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     /// Sparkle のアップデーターを開始する。
     /// `applicationDidFinishLaunching` から呼び出すこと。
     func startUpdater() {
-        // 起動時に必ず更新チェックを実行するため、前回チェック時刻をリセット
+        // 起動時に必ず更新チェックを実行するため、
+        // 前回チェック時刻をリセット
         UserDefaults.standard.removeObject(forKey: Self.sparkleLastCheckTimeKey)
         do {
             try updater.start()
             logger.info("Sparkle アップデーターを開始しました")
         } catch {
-            logger.error("Sparkle アップデーターの開始に失敗しました: \(error.localizedDescription, privacy: .public)")
+            logger.error(
+                "Sparkle アップデーターの開始に失敗しました: \(error.localizedDescription, privacy: .public)"
+            )
         }
     }
 
     /// NSMenuItem から呼び出されるアップデート確認アクション。
-    /// LSUIElement アプリでダイアログが前面に表示されるよう NSApp をアクティブ化してから実行する。
+    /// LSUIElement アプリでダイアログが前面に表示されるよう
+    /// NSApp をアクティブ化してから実行する。
     @objc func checkForUpdates(_ sender: Any?) {
         NSApp.activate(ignoringOtherApps: true)
         updater.checkForUpdates()
@@ -67,12 +71,16 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
         let version = item.displayVersionString
         Task { @MainActor [weak self] in
             self?.isInstallingUpdate = true
-            self?.logger.info("Sparkle: アップデートをインストールします - \(version, privacy: .public)")
+            self?.logger.info(
+                "Sparkle: アップデートをインストールします - \(version, privacy: .public)"
+            )
         }
     }
 
     nonisolated func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
-        logger.info("Sparkle: 新しいアップデートが見つかりました - \(item.displayVersionString, privacy: .public)")
+        logger.info(
+            "Sparkle: 新しいアップデートが見つかりました - \(item.displayVersionString, privacy: .public)"
+        )
     }
 
     nonisolated func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
@@ -80,7 +88,9 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     }
 
     nonisolated func updater(_ updater: SPUUpdater, didAbortWithError error: any Error) {
-        logger.error("Sparkle: アップデートチェックが中断されました - \(error.localizedDescription, privacy: .public)")
+        logger.error(
+            "Sparkle: アップデートチェックが中断されました - \(error.localizedDescription, privacy: .public)"
+        )
     }
 }
 
@@ -97,7 +107,9 @@ extension SparkleManager: @preconcurrency SPUStandardUserDriverDelegate {
         if handleShowingUpdate && !state.userInitiated {
             Task { @MainActor [weak self] in
                 NSApp.activate(ignoringOtherApps: true)
-                self?.logger.info("Sparkle: スケジュールされた更新のためアプリをアクティブ化しました")
+                self?.logger.info(
+                    "Sparkle: スケジュールされた更新のためアプリをアクティブ化しました"
+                )
             }
         }
     }
