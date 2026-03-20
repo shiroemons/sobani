@@ -64,6 +64,8 @@
 		F0BG000002000000000001 /* BackgroundRemovalManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0BG000001000000000001 /* BackgroundRemovalManager.swift */; };
 		F0BG000004000000000001 /* BackgroundRemovalManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0BG000003000000000001 /* BackgroundRemovalManagerTests.swift */; };
 		F0CE000002000000000001 /* CropEditorPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE000001000000000001 /* CropEditorPanelController.swift */; };
+		F0CETB0002000000000001 /* CropEditorPanelController+TopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CETB0001000000000001 /* CropEditorPanelController+TopBar.swift */; };
+		F0CETH0002000000000001 /* CropEditorPanelController+ToolbarHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CETH0001000000000001 /* CropEditorPanelController+ToolbarHandlers.swift */; };
 		F0CG000002000000000001 /* CropGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CG000001000000000001 /* CropGeometry.swift */; };
 		F0CI000002000000000001 /* CropImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000001000000000001 /* CropImageProcessor.swift */; };
 		F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000003000000000001 /* CropImageProcessorTests.swift */; };
@@ -74,6 +76,8 @@
 		F0CSS00002000000000001 /* CropShapeSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CSS00001000000000001 /* CropShapeSelectorView.swift */; };
 		F0CT000002000000000001 /* ConstantsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CT000001000000000001 /* ConstantsTests.swift */; };
 		F0CV000002000000000001 /* CropEditorCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CV000001000000000001 /* CropEditorCanvasView.swift */; };
+		F0CVD00002000000000001 /* CropEditorCanvasView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CVD00001000000000001 /* CropEditorCanvasView+Drawing.swift */; };
+		F0CVMH0002000000000001 /* CropEditorCanvasView+MouseHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CVMH0001000000000001 /* CropEditorCanvasView+MouseHandling.swift */; };
 		F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CW000001000000000001 /* CharacterWindowTests.swift */; };
 		F0DD000002000000000001 /* DragDropUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DD000001000000000001 /* DragDropUtils.swift */; };
 		F0DD000004000000000001 /* DragDropUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DD000003000000000001 /* DragDropUtilsTests.swift */; };
@@ -197,6 +201,8 @@
 		F0BG000001000000000001 /* BackgroundRemovalManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemovalManager.swift; sourceTree = "<group>"; };
 		F0BG000003000000000001 /* BackgroundRemovalManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemovalManagerTests.swift; sourceTree = "<group>"; };
 		F0CE000001000000000001 /* CropEditorPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorPanelController.swift; sourceTree = "<group>"; };
+		F0CETB0001000000000001 /* CropEditorPanelController+TopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CropEditorPanelController+TopBar.swift"; sourceTree = "<group>"; };
+		F0CETH0001000000000001 /* CropEditorPanelController+ToolbarHandlers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CropEditorPanelController+ToolbarHandlers.swift"; sourceTree = "<group>"; };
 		F0CG000001000000000001 /* CropGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropGeometry.swift; sourceTree = "<group>"; };
 		F0CG000003000000000001 /* CropGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropGeometryTests.swift; sourceTree = "<group>"; };
 		F0CI000001000000000001 /* CropImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessor.swift; sourceTree = "<group>"; };
@@ -208,6 +214,8 @@
 		F0CSS00001000000000001 /* CropShapeSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropShapeSelectorView.swift; sourceTree = "<group>"; };
 		F0CT000001000000000001 /* ConstantsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConstantsTests.swift; sourceTree = "<group>"; };
 		F0CV000001000000000001 /* CropEditorCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorCanvasView.swift; sourceTree = "<group>"; };
+		F0CVD00001000000000001 /* CropEditorCanvasView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CropEditorCanvasView+Drawing.swift"; sourceTree = "<group>"; };
+		F0CVMH0001000000000001 /* CropEditorCanvasView+MouseHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CropEditorCanvasView+MouseHandling.swift"; sourceTree = "<group>"; };
 		F0CW000001000000000001 /* CharacterWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterWindowTests.swift; sourceTree = "<group>"; };
 		F0DD000001000000000001 /* DragDropUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragDropUtils.swift; sourceTree = "<group>"; };
 		F0DD000003000000000001 /* DragDropUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragDropUtilsTests.swift; sourceTree = "<group>"; };
@@ -363,7 +371,11 @@
 				F0CG000001000000000001 /* CropGeometry.swift */,
 				F0CI000001000000000001 /* CropImageProcessor.swift */,
 				F0CE000001000000000001 /* CropEditorPanelController.swift */,
+				F0CETB0001000000000001 /* CropEditorPanelController+TopBar.swift */,
+				F0CETH0001000000000001 /* CropEditorPanelController+ToolbarHandlers.swift */,
 				F0CV000001000000000001 /* CropEditorCanvasView.swift */,
+				F0CVD00001000000000001 /* CropEditorCanvasView+Drawing.swift */,
+				F0CVMH0001000000000001 /* CropEditorCanvasView+MouseHandling.swift */,
 				F0SS000001000000000001 /* StraightenSliderView.swift */,
 				F0ARS00001000000000001 /* AspectRatioSelectorView.swift */,
 				F0CSS00001000000000001 /* CropShapeSelectorView.swift */,
@@ -600,7 +612,11 @@
 				F0CG000002000000000001 /* CropGeometry.swift in Sources */,
 				F0CI000002000000000001 /* CropImageProcessor.swift in Sources */,
 				F0CE000002000000000001 /* CropEditorPanelController.swift in Sources */,
+				F0CETB0002000000000001 /* CropEditorPanelController+TopBar.swift in Sources */,
+				F0CETH0002000000000001 /* CropEditorPanelController+ToolbarHandlers.swift in Sources */,
 				F0CV000002000000000001 /* CropEditorCanvasView.swift in Sources */,
+				F0CVD00002000000000001 /* CropEditorCanvasView+Drawing.swift in Sources */,
+				F0CVMH0002000000000001 /* CropEditorCanvasView+MouseHandling.swift in Sources */,
 				F0SS000002000000000001 /* StraightenSliderView.swift in Sources */,
 				F0ARS00002000000000001 /* AspectRatioSelectorView.swift in Sources */,
 				F0CSS00002000000000001 /* CropShapeSelectorView.swift in Sources */,
