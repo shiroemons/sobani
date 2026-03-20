@@ -53,7 +53,13 @@ final class ImageManager {
         }
         guard let imagesDir = imagesDirectoryURL else { return [] }
         let fm = FileManager.default
-        let files = (try? fm.contentsOfDirectory(atPath: imagesDir.path)) ?? []
+        let files: [String]
+        do {
+            files = try fm.contentsOfDirectory(atPath: imagesDir.path)
+        } catch {
+            logger.error("Failed to list images directory at \(imagesDir.path): \(error.localizedDescription)")
+            return []
+        }
         let result = files
             .filter { name in
                 let ext = URL(fileURLWithPath: name).pathExtension

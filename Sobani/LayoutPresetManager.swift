@@ -89,7 +89,13 @@ final class LayoutPresetManager {
         }
         guard let layoutsDir = layoutsDirectoryURL else { return [] }
         let fm = FileManager.default
-        let files = (try? fm.contentsOfDirectory(atPath: layoutsDir.path)) ?? []
+        let files: [String]
+        do {
+            files = try fm.contentsOfDirectory(atPath: layoutsDir.path)
+        } catch {
+            logger.error("Failed to list layouts directory at \(layoutsDir.path): \(error.localizedDescription)")
+            return []
+        }
         var presets: [LayoutPreset] = []
         for file in files where file.hasSuffix(".json") {
             let url = layoutsDir.appendingPathComponent(file)
@@ -157,7 +163,11 @@ final class LayoutPresetManager {
             guard let oldURL = presetFileURL(for: oldName) else {
                 return true
             }
-            try? FileManager.default.removeItem(at: oldURL)
+            do {
+                try FileManager.default.removeItem(at: oldURL)
+            } catch {
+                logger.warning("Failed to remove old preset file at \(oldURL.path): \(error.localizedDescription)")
+            }
             invalidateCache()
         }
         return true
