@@ -10,7 +10,9 @@ extension CharacterWindow {
             title: L("adjust.reset_rotation"), action: #selector(resetRotation), keyEquivalent: ""
         )
         resetRotationItem.target = self
-        resetRotationItem.isEnabled = MenuStateUtils.isRotationResetEnabled(angle: imageView.rotationAngle)
+        resetRotationItem.isEnabled = MenuStateUtils.isRotationResetEnabled(
+            angle: imageView.rotationAngle
+        )
         resetRotationItem.image = SFSymbolUtils.icon("arrow.counterclockwise")
         otherSubmenu.addItem(resetRotationItem)
 
@@ -18,7 +20,9 @@ extension CharacterWindow {
             title: L("adjust.reset_opacity"), action: #selector(resetOpacity), keyEquivalent: ""
         )
         resetOpacityItem.target = self
-        resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(opacity: imageView.opacityLevel)
+        resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(
+            opacity: imageView.opacityLevel
+        )
         resetOpacityItem.image = SFSymbolUtils.icon(AppConstants.opacitySymbol)
         otherSubmenu.addItem(resetOpacityItem)
 
@@ -52,12 +56,16 @@ extension CharacterWindow {
 
         otherSubmenu.addItem(NSMenuItem.separator())
 
-        let deleteRegisteredItem = NSMenuItem(title: L("image.delete_registered"), action: nil, keyEquivalent: "")
+        let deleteRegisteredItem = NSMenuItem(
+            title: L("image.delete_registered"), action: nil, keyEquivalent: ""
+        )
         deleteRegisteredItem.image = SFSymbolUtils.icon("trash")
         let deleteSubmenu = NSMenu()
         deleteSubmenu.delegate = self
         for name in names {
-            let item = NSMenuItem(title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: "")
+            let item = NSMenuItem(
+                title: name, action: #selector(deleteRegisteredImage(_:)), keyEquivalent: ""
+            )
             item.target = self
             item.representedObject = name
             deleteSubmenu.addItem(item)

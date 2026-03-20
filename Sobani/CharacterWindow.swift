@@ -464,9 +464,7 @@ extension CharacterWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
-        let origin = Self.windowOrigin(
-            forImageOrigin: position, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle
-        )
+        let origin = Self.windowOrigin(forImageOrigin: position, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle)
         window.setFrameOrigin(origin)
     }
 
@@ -481,13 +479,8 @@ extension CharacterWindow: AdjustmentPanelDelegate {
         let oldOrigin = currentImageOrigin()
         let relativeX = oldOrigin.x - oldScreen.frame.origin.x
         let relativeY = oldOrigin.y - oldScreen.frame.origin.y
-        let newOrigin = CGPoint(
-            x: screen.frame.origin.x + relativeX,
-            y: screen.frame.origin.y + relativeY
-        )
-        let newWindowOrigin = Self.windowOrigin(
-            forImageOrigin: newOrigin, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle
-        )
+        let newOrigin = CGPoint(x: screen.frame.origin.x + relativeX, y: screen.frame.origin.y + relativeY)
+        let newWindowOrigin = Self.windowOrigin(forImageOrigin: newOrigin, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle)
         window.setFrameOrigin(newWindowOrigin)
         adjustmentPanelController?.updatePosition(currentImageOrigin())
     }
@@ -541,9 +534,7 @@ extension CharacterWindow {
         menu.addItem(flipItem)
         menu.addItem(buildOpacitySliderMenuItem())
 
-        let adjustPanelItem = NSMenuItem(
-            title: L("adjust.open"), action: #selector(showAdjustmentPanel), keyEquivalent: ""
-        )
+        let adjustPanelItem = NSMenuItem(title: L("adjust.open"), action: #selector(showAdjustmentPanel), keyEquivalent: "")
         adjustPanelItem.tag = MenuItemTag.adjustPanelContext.rawValue
         adjustPanelItem.target = self
         adjustPanelItem.image = SFSymbolUtils.icon("slider.horizontal.3")
@@ -601,7 +592,10 @@ extension CharacterWindow {
         let label = NSTextField(labelWithString: L("adjust.opacity"))
         label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
         label.sizeToFit()
-        label.frame.origin = NSPoint(x: iconX + iconSize + 4, y: iconY + (iconSize - label.frame.height) / 2)
+        label.frame.origin = NSPoint(
+            x: iconX + iconSize + 4,
+            y: iconY + (iconSize - label.frame.height) / 2
+        )
         container.addSubview(label)
 
         // Bottom row: slider + percent
@@ -617,14 +611,22 @@ extension CharacterWindow {
             target: self,
             action: #selector(contextMenuOpacitySliderChanged(_:))
         )
-        slider.frame = NSRect(x: sliderX, y: (bottomRowH - sliderH) / 2,
-                              width: containerW - sliderX - pctWidth - trailing, height: sliderH)
+        slider.frame = NSRect(
+            x: sliderX,
+            y: (bottomRowH - sliderH) / 2,
+            width: containerW - sliderX - pctWidth - trailing,
+            height: sliderH
+        )
         slider.isContinuous = true
         slider.trackFillColor = .systemGray
         container.addSubview(slider)
 
-        let percentLabel = NSTextField(labelWithString: FormatUtils.formatOpacity(imageView.opacityLevel))
-        percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        let percentLabel = NSTextField(
+            labelWithString: FormatUtils.formatOpacity(imageView.opacityLevel)
+        )
+        percentLabel.font = NSFont.monospacedDigitSystemFont(
+            ofSize: NSFont.systemFontSize, weight: .regular
+        )
         percentLabel.alignment = .right
         percentLabel.frame = NSRect(
             x: containerW - pctWidth - trailing,

@@ -19,7 +19,8 @@ struct WindowState: Codable, Equatable, Sendable {
     var isHidden: Bool
 
     enum CodingKeys: String, CodingKey {
-        case imageName, originX, originY, width, height, isFlippedHorizontally, rotationAngle, opacityLevel, windowId
+        case imageName, originX, originY, width, height
+        case isFlippedHorizontally, rotationAngle, opacityLevel, windowId
         case cropRect
         case isGhostMode
         case customGhostAlpha
@@ -129,7 +130,9 @@ final class WindowStateManager {
 
     func saveStates(_ states: [WindowState]) {
         guard let url = statesFileURL else { return }
-        JSONPersistence.save(states, to: url, logger: logger, errorMessage: "Failed to save window states")
+        JSONPersistence.save(
+            states, to: url, logger: logger, errorMessage: "Failed to save window states"
+        )
     }
 
     func loadStates() -> [WindowState] {
@@ -199,7 +202,8 @@ extension CharacterWindow {
         // AppKit resets the backing layer's affineTransform during
         // the initial window display cycle. Defer re-application
         // to the next run loop so the transform sticks.
-        if adjusted.isFlippedHorizontally || !GeometryUtils.isApproximatelyZero(adjusted.rotationAngle) {
+        if adjusted.isFlippedHorizontally
+            || !GeometryUtils.isApproximatelyZero(adjusted.rotationAngle) {
             DispatchQueue.main.async { @Sendable [weak self] in
                 MainActor.assumeIsolated {
                     if !GeometryUtils.isApproximatelyZero(adjusted.rotationAngle) {

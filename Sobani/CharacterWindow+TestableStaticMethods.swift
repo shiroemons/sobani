@@ -5,7 +5,10 @@ import Cocoa
 extension CharacterWindow {
     /// ウィンドウフレームから画像の原点座標を計算
     nonisolated static func imageOrigin(windowFrame: NSRect, imageViewSize: NSSize) -> CGPoint {
-        CGPoint(x: windowFrame.midX - imageViewSize.width / 2, y: windowFrame.midY - imageViewSize.height / 2)
+        CGPoint(
+            x: windowFrame.midX - imageViewSize.width / 2,
+            y: windowFrame.midY - imageViewSize.height / 2
+        )
     }
 
     /// 画像原点座標からウィンドウ原点座標を計算（逆変換）
