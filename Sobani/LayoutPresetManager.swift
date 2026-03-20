@@ -38,7 +38,9 @@ final class LayoutPresetManager {
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
         if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger) {
-            self.layoutsDirectoryURL = AppSupportDirectory.ensureSubdirectory("layouts", in: appDir, logger: logger)
+            self.layoutsDirectoryURL = AppSupportDirectory.ensureSubdirectory(
+                "layouts", in: appDir, logger: logger
+            )
         } else {
             self.layoutsDirectoryURL = nil
         }
@@ -60,7 +62,8 @@ final class LayoutPresetManager {
 
     private func persistPreset(_ preset: LayoutPreset) {
         guard let url = presetFileURL(for: preset.name) else { return }
-        JSONPersistence.save(preset, to: url, logger: logger, errorMessage: "Failed to persist layout preset") {
+        JSONPersistence.save(preset, to: url, logger: logger,
+                             errorMessage: "Failed to persist layout preset") {
             $0.dateEncodingStrategy = .iso8601
         }
         invalidateCache()
@@ -72,7 +75,9 @@ final class LayoutPresetManager {
     }
 
     func updatePreset(_ preset: LayoutPreset, states: [WindowState]) {
-        let updated = LayoutPreset(id: preset.id, name: preset.name, createdAt: preset.createdAt, states: states)
+        let updated = LayoutPreset(
+            id: preset.id, name: preset.name, createdAt: preset.createdAt, states: states
+        )
         persistPreset(updated)
     }
 
@@ -137,7 +142,10 @@ final class LayoutPresetManager {
             return false
         }
         guard let newURL = presetFileURL(for: newName) else { return false }
-        let renamedPreset = LayoutPreset(id: oldPreset.id, name: newName, createdAt: oldPreset.createdAt, states: oldPreset.states)
+        let renamedPreset = LayoutPreset(
+            id: oldPreset.id, name: newName,
+            createdAt: oldPreset.createdAt, states: oldPreset.states
+        )
         persistPreset(renamedPreset)
         guard FileManager.default.fileExists(atPath: newURL.path) else { return false }
         // Only delete old file if sanitized file names differ

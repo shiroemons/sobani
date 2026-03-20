@@ -12,7 +12,10 @@ extension OnboardingWindowController {
         container.addSubview(iconView)
 
         let titleLabel = makeTitleLabel(L("onboarding.step3.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.step3TitleY, width: width - Self.contentPadding * 2, height: 30)
+        titleLabel.frame = NSRect(
+            x: Self.contentPadding, y: Self.step3TitleY,
+            width: width - Self.contentPadding * 2, height: 30
+        )
         container.addSubview(titleLabel)
 
         buildStep3HotkeyList(in: container, width: width)
@@ -85,7 +88,10 @@ extension OnboardingWindowController {
 
     private func buildStep3HotkeyHint(in container: NSView, width: CGFloat) {
         let hintLabel = makeDescriptionLabel("💡 " + L("onboarding.step3.hotkeyCustomizeHint"))
-        hintLabel.frame = NSRect(x: Self.step3HotkeyX, y: Self.step3HintY, width: width - Self.step3HotkeyInset, height: 20)
+        hintLabel.frame = NSRect(
+            x: Self.step3HotkeyX, y: Self.step3HintY,
+            width: width - Self.step3HotkeyInset, height: 20
+        )
         hintLabel.font = NSFont.systemFont(ofSize: Self.smallFontSize)
         hintLabel.textColor = .secondaryLabelColor
         hintLabel.alignment = .left
@@ -107,7 +113,9 @@ extension OnboardingWindowController {
     }
 
     private func buildStep3NotGrantedViews(in container: NSView, width: CGFloat) {
-        let warningLabel = makeDescriptionLabel("⚠️ " + L("onboarding.step3.accessibilityWarning"))
+        let warningLabel = makeDescriptionLabel(
+            "⚠️ " + L("onboarding.step3.accessibilityWarning")
+        )
         warningLabel.frame = NSRect(
             x: Self.step3HotkeyX,
             y: Self.step3WarningY,
@@ -124,7 +132,9 @@ extension OnboardingWindowController {
             target: self,
             action: #selector(openAccessibilitySettings)
         )
-        openButton.frame = NSRect(x: (width - 220) / 2, y: Self.step3ButtonY, width: 220, height: 32)
+        openButton.frame = NSRect(
+            x: (width - 220) / 2, y: Self.step3ButtonY, width: 220, height: 32
+        )
         openButton.bezelStyle = .rounded
         container.addSubview(openButton)
 

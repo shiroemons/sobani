@@ -120,8 +120,8 @@ final class ScreenRestorationManager {
                 if matchByID { return true }
                 if let savedFrame = entry.preSleepScreenFrame {
                     let tol = AppConstants.screenMatchTolerance
-                    return screens.contains { screen in
-                        ScreenRestorationUtils.isFrameMatch(screen.frame, savedFrame, tolerance: tol)
+                    return screens.contains {
+                        ScreenRestorationUtils.isFrameMatch($0.frame, savedFrame, tolerance: tol)
                     }
                 }
                 return false
@@ -137,7 +137,8 @@ final class ScreenRestorationManager {
 
     func savePending() {
         guard let url = pendingFileURL else { return }
-        JSONPersistence.save(pendingRestorations, to: url, logger: logger, errorMessage: "Failed to save pending restorations")
+        JSONPersistence.save(pendingRestorations, to: url, logger: logger,
+                             errorMessage: "Failed to save pending restorations")
     }
 
     func loadPending() {

@@ -19,7 +19,8 @@ final class OnboardingManager {
     }
 
     func markCompleted() {
-        defaults.set(AppConstants.Onboarding.currentVersion, forKey: AppConstants.Onboarding.completedVersionKey)
+        defaults.set(AppConstants.Onboarding.currentVersion,
+                     forKey: AppConstants.Onboarding.completedVersionKey)
         logger.info("Onboarding completed for version \(AppConstants.Onboarding.currentVersion)")
     }
 

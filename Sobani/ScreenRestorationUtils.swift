@@ -4,7 +4,8 @@ import Cocoa
 enum ScreenRestorationUtils {
     /// ウィンドウ原点をスクリーン範囲内にクランプ。
     /// ウィンドウがスクリーンより大きい場合はクランプしない。
-    static func clampOrigin(_ origin: NSPoint, windowSize: NSSize, to screenFrame: NSRect) -> NSPoint {
+    static func clampOrigin(_ origin: NSPoint, windowSize: NSSize,
+                            to screenFrame: NSRect) -> NSPoint {
         let clampedX = windowSize.width >= screenFrame.width
             ? origin.x
             : max(screenFrame.minX, min(origin.x, screenFrame.maxX - windowSize.width))
@@ -52,7 +53,9 @@ enum ScreenRestorationUtils {
         }
         // Phase 2: ジオメトリベースのフォールバック
         if let savedFrame = savedScreenFrame {
-            if let match = availableScreens.first(where: { isFrameMatch($0.frame, savedFrame, tolerance: tolerance) }) {
+            if let match = availableScreens.first(where: {
+                isFrameMatch($0.frame, savedFrame, tolerance: tolerance)
+            }) {
                 return match
             }
         }
@@ -86,7 +89,9 @@ enum ScreenRestorationUtils {
         }
         // Phase 2: ジオメトリベースのフォールバック
         if let savedFrame = savedScreenFrame {
-            if let match = availableScreens.first(where: { isFrameMatch($0.frame, savedFrame, tolerance: tolerance) }) {
+            if let match = availableScreens.first(where: {
+                isFrameMatch($0.frame, savedFrame, tolerance: tolerance)
+            }) {
                 return match
             }
         }

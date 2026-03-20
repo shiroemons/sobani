@@ -32,7 +32,10 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     deinit {
-        assert(languageObserver == nil, "teardown() must be called before OnboardingWindowController is deallocated")
+        assert(
+            languageObserver == nil,
+            "teardown() must be called before OnboardingWindowController is deallocated"
+        )
     }
 
     func show(onComplete: (() -> Void)? = nil) {
@@ -142,125 +145,13 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         buildCurrentStep()
     }
 
-    // MARK: - Step 1: Welcome
-
-    private func buildStep1(in container: NSView) {
-        let width = container.bounds.width
-
-        let iconView = makeSymbolView("star.fill", size: Self.iconSize, color: .systemYellow)
-        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: Self.iconY)
-        container.addSubview(iconView)
-
-        let titleLabel = makeTitleLabel(L("onboarding.step1.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
-        container.addSubview(titleLabel)
-
-        let desc1 = makeDescriptionLabel(L("onboarding.step1.description1"))
-        desc1.frame = NSRect(x: Self.contentPadding, y: Self.descriptionY, width: width - Self.contentPadding * 2, height: 40)
-        container.addSubview(desc1)
-
-        // Simulated menu bar icon display
-        let bgWidth = Self.step1IconBackgroundWidth
-        let bgHeight = Self.step1IconBackgroundHeight
-        let iconBackground = NSView(frame: NSRect(x: (width - bgWidth) / 2, y: Self.step1IconBackgroundY, width: bgWidth, height: bgHeight))
-        iconBackground.wantsLayer = true
-        iconBackground.layer?.cornerRadius = Self.step1IconBackgroundCornerRadius
-        iconBackground.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
-        container.addSubview(iconBackground)
-
-        let statusSize = Self.step1StatusIconSize
-        let statusIcon = makeSymbolView("person.fill", size: statusSize, color: .labelColor)
-        statusIcon.frame = NSRect(x: (width - statusSize) / 2, y: Self.step1StatusIconY, width: statusSize, height: statusSize)
-        container.addSubview(statusIcon)
-
-        let hintLabel = makeDescriptionLabel(L("onboarding.step1.hint"))
-        hintLabel.frame = NSRect(x: Self.contentPadding, y: Self.step1HintY, width: width - Self.contentPadding * 2, height: Self.step1HintHeight)
-        hintLabel.textColor = .secondaryLabelColor
-        hintLabel.font = NSFont.systemFont(ofSize: Self.smallFontSize)
-        container.addSubview(hintLabel)
-    }
-
-    // MARK: - Step 2: Basic Operations
-
-    private func buildStep2(in container: NSView) {
-        let width = container.bounds.width
-
-        let titleLabel = makeTitleLabel(L("onboarding.step2.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.step2TitleY, width: width - Self.contentPadding * 2, height: 30)
-        container.addSubview(titleLabel)
-
-        let symbols = ["hand.draw", "scroll", "contextualmenu.and.cursorarrow", "eye", "face.dashed"]
-        let labels = [
-            L("onboarding.step2.dragLabel"), L("onboarding.step2.scrollLabel"),
-            L("onboarding.step2.rightClickLabel"), L("onboarding.step2.hotkeyLabel"),
-            L("onboarding.step2.ghostLabel")
-        ]
-        let descriptions = [
-            L("onboarding.step2.drag"), L("onboarding.step2.scroll"),
-            L("onboarding.step2.rightClick"), L("onboarding.step2.hotkey"),
-            L("onboarding.step2.ghost")
-        ]
-        let hints: [String?] = [
-            L("onboarding.step2.dragHint"), L("onboarding.step2.scrollHint"),
-            nil, L("onboarding.step2.hotkeyHint"), nil
-        ]
-
-        let rowHeight = Self.rowHeight
-        let startY = Self.step2StartY
-        let iconX = Self.step2IconX
-        let labelX = Self.step2LabelX
-        let contentWidth = width - Self.step2ContentInset
-
-        for index in 0..<symbols.count {
-            let rowY = startY - CGFloat(index) * rowHeight
-            let content = StepRowContent(
-                symbol: symbols[index],
-                label: labels[index],
-                description: descriptions[index],
-                hint: hints[index]
-            )
-            let context = StepRowContext(
-                rowY: rowY,
-                iconX: iconX,
-                labelX: labelX,
-                contentWidth: contentWidth,
-                containerWidth: width,
-                addSeparator: index < symbols.count - 1
-            )
-            buildStepRow(in: container, content: content, context: context)
-        }
-    }
-
-    // MARK: - Step 4: Get Started
-
-    private func buildStep4(in container: NSView) {
-        let width = container.bounds.width
-
-        let iconView = makeSymbolView("party.popper", size: Self.iconSize, color: .systemOrange)
-        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: Self.iconY)
-        container.addSubview(iconView)
-
-        let titleLabel = makeTitleLabel(L("onboarding.step4.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
-        container.addSubview(titleLabel)
-
-        let descLabel = makeDescriptionLabel(L("onboarding.step4.description"))
-        descLabel.frame = NSRect(x: Self.contentPadding, y: 250, width: width - Self.contentPadding * 2, height: 60)
-        container.addSubview(descLabel)
-
-        let ctaButton = NSButton(title: L("onboarding.step4.cta"), target: self, action: #selector(addImageFromOnboarding))
-        ctaButton.frame = NSRect(x: (width - 200) / 2, y: 200, width: 200, height: 36)
-        ctaButton.bezelStyle = .rounded
-        ctaButton.font = NSFont.systemFont(ofSize: 14)
-        container.addSubview(ctaButton)
-    }
-
     // MARK: - Page Indicator
 
     func buildPageIndicator(in container: NSView) {
         let width = container.bounds.width
         let frames = Self.pageIndicatorDotFrames(
-            totalSteps: totalSteps, containerWidth: width, dotSize: Self.dotSize, dotSpacing: Self.dotSpacing
+            totalSteps: totalSteps, containerWidth: width,
+            dotSize: Self.dotSize, dotSpacing: Self.dotSpacing
         )
         let y: CGFloat = Self.pageIndicatorY
 
@@ -411,6 +302,114 @@ extension OnboardingWindowController {
     static let step3Step2Y: CGFloat = 118
 }
 
+// MARK: - Step Builders
+
+extension OnboardingWindowController {
+    // MARK: - Step 1: Welcome
+
+    func buildStep1(in container: NSView) {
+        let width = container.bounds.width
+
+        let iconView = makeSymbolView("star.fill", size: Self.iconSize, color: .systemYellow)
+        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: Self.iconY)
+        container.addSubview(iconView)
+
+        let titleLabel = makeTitleLabel(L("onboarding.step1.title"))
+        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
+        container.addSubview(titleLabel)
+
+        let desc1 = makeDescriptionLabel(L("onboarding.step1.description1"))
+        desc1.frame = NSRect(x: Self.contentPadding, y: Self.descriptionY, width: width - Self.contentPadding * 2, height: 40)
+        container.addSubview(desc1)
+
+        // Simulated menu bar icon display
+        let bgWidth = Self.step1IconBackgroundWidth
+        let bgHeight = Self.step1IconBackgroundHeight
+        let iconBackground = NSView(frame: NSRect(x: (width - bgWidth) / 2, y: Self.step1IconBackgroundY, width: bgWidth, height: bgHeight))
+        iconBackground.wantsLayer = true
+        iconBackground.layer?.cornerRadius = Self.step1IconBackgroundCornerRadius
+        iconBackground.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
+        container.addSubview(iconBackground)
+
+        let statusSize = Self.step1StatusIconSize
+        let statusIcon = makeSymbolView("person.fill", size: statusSize, color: .labelColor)
+        statusIcon.frame = NSRect(x: (width - statusSize) / 2, y: Self.step1StatusIconY, width: statusSize, height: statusSize)
+        container.addSubview(statusIcon)
+
+        let hintLabel = makeDescriptionLabel(L("onboarding.step1.hint"))
+        hintLabel.frame = NSRect(x: Self.contentPadding, y: Self.step1HintY, width: width - Self.contentPadding * 2, height: Self.step1HintHeight)
+        hintLabel.textColor = .secondaryLabelColor
+        hintLabel.font = NSFont.systemFont(ofSize: Self.smallFontSize)
+        container.addSubview(hintLabel)
+    }
+
+    // MARK: - Step 2: Basic Operations
+
+    func buildStep2(in container: NSView) {
+        let width = container.bounds.width
+
+        let titleLabel = makeTitleLabel(L("onboarding.step2.title"))
+        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.step2TitleY, width: width - Self.contentPadding * 2, height: 30)
+        container.addSubview(titleLabel)
+
+        let symbols = ["hand.draw", "scroll", "contextualmenu.and.cursorarrow", "eye", "face.dashed"]
+        let labels = [
+            L("onboarding.step2.dragLabel"), L("onboarding.step2.scrollLabel"),
+            L("onboarding.step2.rightClickLabel"), L("onboarding.step2.hotkeyLabel"),
+            L("onboarding.step2.ghostLabel")
+        ]
+        let descriptions = [
+            L("onboarding.step2.drag"), L("onboarding.step2.scroll"),
+            L("onboarding.step2.rightClick"), L("onboarding.step2.hotkey"),
+            L("onboarding.step2.ghost")
+        ]
+        let hints: [String?] = [
+            L("onboarding.step2.dragHint"), L("onboarding.step2.scrollHint"),
+            nil, L("onboarding.step2.hotkeyHint"), nil
+        ]
+
+        let rowHeight = Self.rowHeight
+        let startY = Self.step2StartY
+        let iconX = Self.step2IconX
+        let labelX = Self.step2LabelX
+        let contentWidth = width - Self.step2ContentInset
+
+        for index in 0..<symbols.count {
+            let rowY = startY - CGFloat(index) * rowHeight
+            let content = StepRowContent(symbol: symbols[index], label: labels[index], description: descriptions[index], hint: hints[index])
+            let context = StepRowContext(
+                rowY: rowY, iconX: iconX, labelX: labelX,
+                contentWidth: contentWidth, containerWidth: width, addSeparator: index < symbols.count - 1
+            )
+            buildStepRow(in: container, content: content, context: context)
+        }
+    }
+
+    // MARK: - Step 4: Get Started
+
+    func buildStep4(in container: NSView) {
+        let width = container.bounds.width
+
+        let iconView = makeSymbolView("party.popper", size: Self.iconSize, color: .systemOrange)
+        iconView.frame.origin = CGPoint(x: (width - Self.iconSize) / 2, y: Self.iconY)
+        container.addSubview(iconView)
+
+        let titleLabel = makeTitleLabel(L("onboarding.step4.title"))
+        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
+        container.addSubview(titleLabel)
+
+        let descLabel = makeDescriptionLabel(L("onboarding.step4.description"))
+        descLabel.frame = NSRect(x: Self.contentPadding, y: 250, width: width - Self.contentPadding * 2, height: 60)
+        container.addSubview(descLabel)
+
+        let ctaButton = NSButton(title: L("onboarding.step4.cta"), target: self, action: #selector(addImageFromOnboarding))
+        ctaButton.frame = NSRect(x: (width - 200) / 2, y: 200, width: 200, height: 36)
+        ctaButton.bezelStyle = .rounded
+        ctaButton.font = NSFont.systemFont(ofSize: 14)
+        container.addSubview(ctaButton)
+    }
+}
+
 // MARK: - View Helpers
 
 extension OnboardingWindowController {
@@ -430,25 +429,38 @@ extension OnboardingWindowController {
         let addSeparator: Bool
     }
 
-    fileprivate func buildStepRow(in container: NSView, content: StepRowContent, context: StepRowContext) {
-        let icon = makeSymbolView(content.symbol, size: Self.step2SymbolSize, color: .controlAccentColor)
+    fileprivate func buildStepRow(
+        in container: NSView, content: StepRowContent, context: StepRowContext
+    ) {
+        let icon = makeSymbolView(
+            content.symbol, size: Self.step2SymbolSize, color: .controlAccentColor
+        )
         icon.frame.origin = CGPoint(x: context.iconX, y: context.rowY)
         container.addSubview(icon)
 
         let labelField = NSTextField(labelWithString: content.label)
-        labelField.frame = NSRect(x: context.labelX, y: context.rowY + Self.step2LabelYOffset, width: context.contentWidth, height: 20)
+        labelField.frame = NSRect(
+            x: context.labelX, y: context.rowY + Self.step2LabelYOffset,
+            width: context.contentWidth, height: 20
+        )
         labelField.font = NSFont.boldSystemFont(ofSize: Self.step2LabelFontSize)
         container.addSubview(labelField)
 
         let descField = NSTextField(labelWithString: content.description)
-        descField.frame = NSRect(x: context.labelX, y: context.rowY + Self.step2DescriptionYOffset, width: context.contentWidth, height: 18)
+        descField.frame = NSRect(
+            x: context.labelX, y: context.rowY + Self.step2DescriptionYOffset,
+            width: context.contentWidth, height: 18
+        )
         descField.font = NSFont.systemFont(ofSize: Self.smallFontSize)
         descField.textColor = .secondaryLabelColor
         container.addSubview(descField)
 
         if let hint = content.hint, !hint.isEmpty {
             let hintField = NSTextField(labelWithString: hint)
-            hintField.frame = NSRect(x: context.labelX, y: context.rowY + Self.step2HintYOffset, width: context.contentWidth, height: 16)
+            hintField.frame = NSRect(
+                x: context.labelX, y: context.rowY + Self.step2HintYOffset,
+                width: context.contentWidth, height: 16
+            )
             hintField.font = NSFont.systemFont(ofSize: Self.step2HintFontSize)
             hintField.textColor = .tertiaryLabelColor
             container.addSubview(hintField)
@@ -456,7 +468,10 @@ extension OnboardingWindowController {
 
         if context.addSeparator {
             let separatorWidth = context.containerWidth - Self.step2SeparatorInset
-            let separator = NSBox(frame: NSRect(x: context.iconX, y: context.rowY + Self.step2SeparatorYOffset, width: separatorWidth, height: 1))
+            let separator = NSBox(frame: NSRect(
+                x: context.iconX, y: context.rowY + Self.step2SeparatorYOffset,
+                width: separatorWidth, height: 1
+            ))
             separator.boxType = .separator
             container.addSubview(separator)
         }
