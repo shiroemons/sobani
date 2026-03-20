@@ -298,15 +298,17 @@ struct WindowListRow: View {
             Button {
                 viewModel.duplicateWindow(windowId: windowInfo.windowId)
             } label: {
-                Label(L("management.context.duplicate"),
-                      systemImage: "doc.on.doc")
+                Label(
+                    L("management.context.duplicate"),
+                    systemImage: "doc.on.doc")
             }
 
             Button {
                 viewModel.centerWindow(windowId: windowInfo.windowId)
             } label: {
-                Label(L("management.context.center"),
-                      systemImage: "arrow.up.left.and.arrow.down.right")
+                Label(
+                    L("management.context.center"),
+                    systemImage: "arrow.up.left.and.arrow.down.right")
             }
 
             Divider()
@@ -314,8 +316,9 @@ struct WindowListRow: View {
             Button {
                 viewModel.deleteWindows(windowIds: [windowInfo.windowId])
             } label: {
-                Label(L("management.context.close"),
-                      systemImage: AppConstants.closeSymbol)
+                Label(
+                    L("management.context.close"),
+                    systemImage: AppConstants.closeSymbol)
             }
         }
         .accessibilityElement(children: .combine)

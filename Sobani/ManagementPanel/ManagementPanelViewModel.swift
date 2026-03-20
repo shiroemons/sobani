@@ -76,7 +76,8 @@ final class ManagementPanelViewModel {
         let newWindows = appDelegate.zOrderedWindows.map { charWindow in
             let imageSize = charWindow.imageView.frame.size
             let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
-            let dims = FormatUtils.formatDimensions(width: imageSize.width, height: imageSize.height)
+            let dims = FormatUtils.formatDimensions(
+                width: imageSize.width, height: imageSize.height)
             let subtitle = "\(dims) ・ \(screenName)"
             let thumbnail = charWindow.imageView.image
             let frame = charWindow.window.frame
