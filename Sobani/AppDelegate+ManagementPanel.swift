@@ -60,7 +60,8 @@ extension AppDelegate: ManagementPanelDelegate {
         didReorderWindow charWindow: CharacterWindow,
         to index: Int
     ) {
-        guard let currentIndex = zOrderedWindows.firstIndex(where: { $0 === charWindow }) else { return }
+        guard let currentIndex = zOrderedWindows.firstIndex(where: { $0 === charWindow })
+        else { return }
         zOrderedWindows.remove(at: currentIndex)
         let safeIndex = max(0, min(index, zOrderedWindows.count))
         zOrderedWindows.insert(charWindow, at: safeIndex)

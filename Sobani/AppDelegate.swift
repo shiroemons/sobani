@@ -164,7 +164,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func notifyWindowListDidChange() {
-        NotificationCenter.default.post(name: AppConstants.characterWindowListDidChange, object: nil)
+        NotificationCenter.default.post(
+            name: AppConstants.characterWindowListDidChange, object: nil)
     }
 
     func moveWindowToFront(_ charWindow: CharacterWindow) {
@@ -206,7 +207,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func quitIfNoWindows() {
-        if Self.shouldQuitApp(windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout) {
+        if Self.shouldQuitApp(
+            windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout
+        ) {
             shouldTerminate = true
             NSApp.terminate(nil)
         }
@@ -238,7 +241,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
         let image: NSImage
-        if let name = imageName, let registered = ImageManager.shared.loadRegisteredImage(named: name) {
+        if let name = imageName,
+            let registered = ImageManager.shared.loadRegisteredImage(named: name) {
             image = registered
         } else {
             image = ImageManager.shared.defaultImage() ?? NSImage()

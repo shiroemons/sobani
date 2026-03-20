@@ -39,13 +39,17 @@ extension AppDelegate {
 // MARK: - Hotkey Monitor Setup
 
 extension AppDelegate {
-    nonisolated func isHotkey(_ event: NSEvent, keyCode: UInt16, modifiers: NSEvent.ModifierFlags) -> Bool {
+    nonisolated func isHotkey(
+        _ event: NSEvent, keyCode: UInt16, modifiers: NSEvent.ModifierFlags
+    ) -> Bool {
         event.keyCode == keyCode
             && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == modifiers
     }
 
     nonisolated func hotkeyAction(for event: NSEvent, config: HotkeyConfig) -> KeyboardAction? {
-        config.bindings.first { isHotkey(event, keyCode: $0.keyCode, modifiers: $0.modifiers) }?.action
+        config.bindings.first {
+            isHotkey(event, keyCode: $0.keyCode, modifiers: $0.modifiers)
+        }?.action
     }
 
     func performKeyboardAction(_ action: KeyboardAction) {
