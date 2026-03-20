@@ -1,6 +1,6 @@
 import Cocoa
-import ServiceManagement
 import os.log
+import ServiceManagement
 
 // MARK: - App Delegate
 
@@ -200,6 +200,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         notifyWindowListDidChange()
         quitIfNoWindows()
     }
+
     nonisolated static func shouldQuitApp(windowCount: Int, isApplyingLayout: Bool) -> Bool {
         windowCount == 0 && !isApplyingLayout
     }

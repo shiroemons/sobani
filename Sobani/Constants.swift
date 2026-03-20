@@ -190,6 +190,7 @@ enum AppConstants {
     static let cornerRadiusMax: CGFloat = 1.0
     static let cornerRadiusDefault: CGFloat = 0.3
     static let shapeButtonSize: CGFloat = 28
+
     // UserDefaults Keys
     static let appLanguageKey = "AppLanguage"
     static let appThemeKey = "AppTheme"
@@ -255,11 +256,21 @@ enum AppConstants {
     }
 
     // MARK: - Notifications
-    static let characterWindowStateDidChange = Notification.Name("\(loggerSubsystem).characterWindowStateDidChange")
-    static let characterWindowListDidChange = Notification.Name("\(loggerSubsystem).characterWindowListDidChange")
-    static let hotkeySettingsDidChange = Notification.Name("\(loggerSubsystem).hotkeySettingsDidChange")
-    static let registeredImagesDidChange = Notification.Name("\(loggerSubsystem).registeredImagesDidChange")
-    static let managementPanelWillClose = Notification.Name("\(loggerSubsystem).managementPanelWillClose")
+    static let characterWindowStateDidChange = Notification.Name(
+        "\(loggerSubsystem).characterWindowStateDidChange"
+    )
+    static let characterWindowListDidChange = Notification.Name(
+        "\(loggerSubsystem).characterWindowListDidChange"
+    )
+    static let hotkeySettingsDidChange = Notification.Name(
+        "\(loggerSubsystem).hotkeySettingsDidChange"
+    )
+    static let registeredImagesDidChange = Notification.Name(
+        "\(loggerSubsystem).registeredImagesDidChange"
+    )
+    static let managementPanelWillClose = Notification.Name(
+        "\(loggerSubsystem).managementPanelWillClose"
+    )
 }
 
 enum SnapSettings {
@@ -335,7 +346,10 @@ enum HotkeySettings {
         UserDefaults.standard.set(Int(value), forKey: key)
     }
 
-    private static func storedModifiers(forKey key: String, default fallback: NSEvent.ModifierFlags) -> NSEvent.ModifierFlags {
+    private static func storedModifiers(
+        forKey key: String,
+        default fallback: NSEvent.ModifierFlags
+    ) -> NSEvent.ModifierFlags {
         guard let raw = UserDefaults.standard.object(forKey: key) as? Int else {
             return fallback
         }
