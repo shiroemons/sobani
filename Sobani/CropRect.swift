@@ -163,10 +163,13 @@ struct CropRect: Codable, Equatable, Sendable {
         height = try container.decode(CGFloat.self, forKey: .height)
         straightenAngle = try container.decodeIfPresent(CGFloat.self, forKey: .straightenAngle) ?? 0
         quarterTurns = try container.decodeIfPresent(Int.self, forKey: .quarterTurns) ?? 0
-        isFlippedInCrop = try container.decodeIfPresent(Bool.self, forKey: .isFlippedInCrop) ?? false
+        isFlippedInCrop = try container.decodeIfPresent(
+            Bool.self, forKey: .isFlippedInCrop) ?? false
         aspectRatioPreset = try container.decodeIfPresent(String.self, forKey: .aspectRatioPreset)
-        verticalPerspective = try container.decodeIfPresent(CGFloat.self, forKey: .verticalPerspective) ?? 0
-        horizontalPerspective = try container.decodeIfPresent(CGFloat.self, forKey: .horizontalPerspective) ?? 0
+        verticalPerspective = try container.decodeIfPresent(
+            CGFloat.self, forKey: .verticalPerspective) ?? 0
+        horizontalPerspective = try container.decodeIfPresent(
+            CGFloat.self, forKey: .horizontalPerspective) ?? 0
         shape = (try? container.decodeIfPresent(CropShape.self, forKey: .shapeType)) ?? .rectangle
         cornerRadii = try container.decodeIfPresent(CornerRadii.self, forKey: .cornerRadii) ?? .zero
         cornersLinked = try container.decodeIfPresent(Bool.self, forKey: .cornersLinked) ?? true

@@ -115,8 +115,9 @@ final class CropEditorCanvasView: NSView {
 
     // MARK: - Coordinate Helpers
 
-    private func handleCornerPoint(for position: HandlePosition,
-                                   cropFrame: NSRect) -> NSPoint {
+    private func handleCornerPoint(
+        for position: HandlePosition, cropFrame: NSRect
+    ) -> NSPoint {
         switch position {
         case .topLeft: return NSPoint(x: cropFrame.minX, y: cropFrame.maxY)
         case .topRight: return NSPoint(x: cropFrame.maxX, y: cropFrame.maxY)
@@ -434,52 +435,54 @@ extension CropEditorCanvasView {
         }
     }
 
-    private func drawHandle(at position: HandlePosition,
-                            cropFrame: NSRect,
-                            context: CGContext) {
+    private func drawHandle(
+        at position: HandlePosition, cropFrame: NSRect, context: CGContext
+    ) {
         let len = AppConstants.cropEditorHandleLength
         let point = handleCornerPoint(for: position, cropFrame: cropFrame)
 
         switch position {
         case .topLeft:
-            drawLHandle(context: context, corner: point,
-                        end1: CGPoint(x: point.x, y: point.y - len),
-                        end2: CGPoint(x: point.x + len, y: point.y))
+            drawLHandle(
+                context: context, corner: point,
+                end1: CGPoint(x: point.x, y: point.y - len),
+                end2: CGPoint(x: point.x + len, y: point.y))
         case .topRight:
-            drawLHandle(context: context, corner: point,
-                        end1: CGPoint(x: point.x - len, y: point.y),
-                        end2: CGPoint(x: point.x, y: point.y - len))
+            drawLHandle(
+                context: context, corner: point,
+                end1: CGPoint(x: point.x - len, y: point.y),
+                end2: CGPoint(x: point.x, y: point.y - len))
         case .bottomLeft:
-            drawLHandle(context: context, corner: point,
-                        end1: CGPoint(x: point.x, y: point.y + len),
-                        end2: CGPoint(x: point.x + len, y: point.y))
+            drawLHandle(
+                context: context, corner: point,
+                end1: CGPoint(x: point.x, y: point.y + len),
+                end2: CGPoint(x: point.x + len, y: point.y))
         case .bottomRight:
-            drawLHandle(context: context, corner: point,
-                        end1: CGPoint(x: point.x - len, y: point.y),
-                        end2: CGPoint(x: point.x, y: point.y + len))
+            drawLHandle(
+                context: context, corner: point,
+                end1: CGPoint(x: point.x - len, y: point.y),
+                end2: CGPoint(x: point.x, y: point.y + len))
         case .top, .bottom:
-            drawEdgeHandle(context: context, center: point,
-                           horizontal: true, length: len)
+            drawEdgeHandle(
+                context: context, center: point, horizontal: true, length: len)
         case .left, .right:
-            drawEdgeHandle(context: context, center: point,
-                           horizontal: false, length: len)
+            drawEdgeHandle(
+                context: context, center: point, horizontal: false, length: len)
         }
     }
 
-    private func drawLHandle(context: CGContext,
-                             corner: NSPoint,
-                             end1: CGPoint,
-                             end2: CGPoint) {
+    private func drawLHandle(
+        context: CGContext, corner: NSPoint, end1: CGPoint, end2: CGPoint
+    ) {
         context.move(to: end1)
         context.addLine(to: CGPoint(x: corner.x, y: corner.y))
         context.addLine(to: end2)
         context.strokePath()
     }
 
-    private func drawEdgeHandle(context: CGContext,
-                                center: NSPoint,
-                                horizontal: Bool,
-                                length: CGFloat) {
+    private func drawEdgeHandle(
+        context: CGContext, center: NSPoint, horizontal: Bool, length: CGFloat
+    ) {
         let halfLen = length / 2
         if horizontal {
             context.move(to: CGPoint(x: center.x - halfLen, y: center.y))
@@ -603,8 +606,9 @@ extension CropEditorCanvasView {
         needsDisplay = true
     }
 
-    private func hitTestHandle(point: NSPoint,
-                               cropFrame: NSRect) -> HandlePosition? {
+    private func hitTestHandle(
+        point: NSPoint, cropFrame: NSRect
+    ) -> HandlePosition? {
         for position in HandlePosition.allCases {
             let handlePoint = handleCornerPoint(for: position, cropFrame: cropFrame)
             let dist = hypot(point.x - handlePoint.x, point.y - handlePoint.y)
@@ -661,8 +665,9 @@ extension CropEditorCanvasView {
 
     // MARK: - Handle Resize
 
-    private func handleResize(position: HandlePosition,
-                              currentPoint: NSPoint) {
+    private func handleResize(
+        position: HandlePosition, currentPoint: NSPoint
+    ) {
         let deltaX = currentPoint.x - dragStartPoint.x
         let deltaY = currentPoint.y - dragStartPoint.y
         let imgRect = dragStartImageDrawRect
@@ -746,8 +751,9 @@ extension CropEditorCanvasView {
     }
 
     /// フリーリサイズ時のピクセルベースcropFrame計算
-    private func freeResizeFrame(position: HandlePosition,
-                                 deltaX: CGFloat, deltaY: CGFloat) -> NSRect {
+    private func freeResizeFrame(
+        position: HandlePosition, deltaX: CGFloat, deltaY: CGFloat
+    ) -> NSRect {
         let startFrame = dragStartCropFrame
         let imgRect = dragStartImageDrawRect
         let minPixelW = AppConstants.cropMinProportion * imgRect.width

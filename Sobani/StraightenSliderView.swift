@@ -143,7 +143,8 @@ final class StraightenSliderView: NSView {
                     labelColor = NSColor.secondaryLabelColor
                 }
                 let attrs: [NSAttributedString.Key: Any] = [
-                    .font: NSFont.monospacedDigitSystemFont(ofSize: Self.tickLabelFontSize, weight: .regular),
+                    .font: NSFont.monospacedDigitSystemFont(
+                        ofSize: Self.tickLabelFontSize, weight: .regular),
                     .foregroundColor: labelColor
                 ]
                 let attrString = NSAttributedString(string: labelText, attributes: attrs)

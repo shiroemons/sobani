@@ -158,7 +158,8 @@ final class DraggableImageView: NSImageView {
         if event.modifierFlags.contains(.option) {
             let allWindows = allCharacterWindows
             for charWindow in allWindows {
-                resizeWindow(charWindow.window, imageView: charWindow.imageView, scaleFactor: scaleFactor)
+                resizeWindow(
+                    charWindow.window, imageView: charWindow.imageView, scaleFactor: scaleFactor)
             }
         } else {
             guard let window = window else { return }
@@ -166,8 +167,8 @@ final class DraggableImageView: NSImageView {
         }
     }
 
-    private func resizeWindow(_ window: NSWindow, imageView: DraggableImageView,
-                              scaleFactor: CGFloat) {
+    private func resizeWindow(
+        _ window: NSWindow, imageView: DraggableImageView, scaleFactor: CGFloat) {
         let frames = Self.calculateResizedFrames(
             currentHeight: imageView.frame.height,
             scaleFactor: scaleFactor,
@@ -217,8 +218,7 @@ final class DraggableImageView: NSImageView {
         }
         let croppedImage = NSImage(
             cgImage: croppedCG,
-            size: NSSize(width: croppedCG.width, height: croppedCG.height)
-        )
+            size: NSSize(width: croppedCG.width, height: croppedCG.height))
         image = croppedImage
         if CGFloat(croppedCG.height) > 0 {
             aspectRatio = CGFloat(croppedCG.width) / CGFloat(croppedCG.height)
@@ -256,8 +256,7 @@ final class DraggableImageView: NSImageView {
             bitsPerSample: 8, samplesPerPixel: 4,
             hasAlpha: true, isPlanar: false,
             colorSpaceName: .deviceRGB,
-            bytesPerRow: 0, bitsPerPixel: 0
-        ) else {
+            bytesPerRow: 0, bitsPerPixel: 0) else {
             return nil
         }
 
@@ -265,8 +264,7 @@ final class DraggableImageView: NSImageView {
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
         nsImage.draw(
             in: NSRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight),
-            from: .zero, operation: .copy, fraction: 1.0
-        )
+            from: .zero, operation: .copy, fraction: 1.0)
         NSGraphicsContext.restoreGraphicsState()
 
         return bitmapRep.cgImage

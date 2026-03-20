@@ -322,8 +322,10 @@ enum CropGeometry {
             return (offset: .zero, zoom: 1.0)
         }
 
-        let imageAspect = imageSize.width / max(imageSize.height, AppConstants.floatingPointTolerance)
-        let canvasAspect = canvasSize.width / max(canvasSize.height, AppConstants.floatingPointTolerance)
+        let imageAspect = imageSize.width
+            / max(imageSize.height, AppConstants.floatingPointTolerance)
+        let canvasAspect = canvasSize.width
+            / max(canvasSize.height, AppConstants.floatingPointTolerance)
 
         // Zoom is the reciprocal of the crop fraction that fills the smaller canvas dimension.
         let zoom = 1.0 / max(cropRect.width, cropRect.height)
@@ -373,8 +375,10 @@ enum CropGeometry {
     static func roundedRectPath(rect: CGRect, radii: CornerRadii, shorterSide: CGFloat) -> CGPath {
         let radiusTopLeft = pixelCornerRadius(normalized: radii.topLeft, shorterSide: shorterSide)
         let radiusTopRight = pixelCornerRadius(normalized: radii.topRight, shorterSide: shorterSide)
-        let radiusBottomLeft = pixelCornerRadius(normalized: radii.bottomLeft, shorterSide: shorterSide)
-        let radiusBottomRight = pixelCornerRadius(normalized: radii.bottomRight, shorterSide: shorterSide)
+        let radiusBottomLeft = pixelCornerRadius(
+            normalized: radii.bottomLeft, shorterSide: shorterSide)
+        let radiusBottomRight = pixelCornerRadius(
+            normalized: radii.bottomRight, shorterSide: shorterSide)
 
         let path = CGMutablePath()
         // Start from top-left corner, moving clockwise
@@ -382,27 +386,31 @@ enum CropGeometry {
         path.move(to: CGPoint(x: rect.minX + radiusTopLeft, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.maxX - radiusTopRight, y: rect.maxY))
         // Top-right corner
-        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.maxY),
-                    tangent2End: CGPoint(x: rect.maxX, y: rect.maxY - radiusTopRight),
-                    radius: radiusTopRight)
+        path.addArc(
+            tangent1End: CGPoint(x: rect.maxX, y: rect.maxY),
+            tangent2End: CGPoint(x: rect.maxX, y: rect.maxY - radiusTopRight),
+            radius: radiusTopRight)
         // Right edge (top-right to bottom-right)
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + radiusBottomRight))
         // Bottom-right corner
-        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.minY),
-                    tangent2End: CGPoint(x: rect.maxX - radiusBottomRight, y: rect.minY),
-                    radius: radiusBottomRight)
+        path.addArc(
+            tangent1End: CGPoint(x: rect.maxX, y: rect.minY),
+            tangent2End: CGPoint(x: rect.maxX - radiusBottomRight, y: rect.minY),
+            radius: radiusBottomRight)
         // Bottom edge (bottom-right to bottom-left)
         path.addLine(to: CGPoint(x: rect.minX + radiusBottomLeft, y: rect.minY))
         // Bottom-left corner
-        path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.minY),
-                    tangent2End: CGPoint(x: rect.minX, y: rect.minY + radiusBottomLeft),
-                    radius: radiusBottomLeft)
+        path.addArc(
+            tangent1End: CGPoint(x: rect.minX, y: rect.minY),
+            tangent2End: CGPoint(x: rect.minX, y: rect.minY + radiusBottomLeft),
+            radius: radiusBottomLeft)
         // Left edge (bottom-left to top-left)
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - radiusTopLeft))
         // Top-left corner
-        path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.maxY),
-                    tangent2End: CGPoint(x: rect.minX + radiusTopLeft, y: rect.maxY),
-                    radius: radiusTopLeft)
+        path.addArc(
+            tangent1End: CGPoint(x: rect.minX, y: rect.maxY),
+            tangent2End: CGPoint(x: rect.minX + radiusTopLeft, y: rect.maxY),
+            radius: radiusTopLeft)
         path.closeSubpath()
         return path
     }
@@ -410,7 +418,8 @@ enum CropGeometry {
     /// 正規化された角丸半径をピクセル値に変換
     /// normalizedRadius 1.0 = 短辺の半分（最大丸み）
     static func pixelCornerRadius(normalized: CGFloat, shorterSide: CGFloat) -> CGFloat {
-        let clamped = max(AppConstants.cornerRadiusMin, min(AppConstants.cornerRadiusMax, normalized))
+        let clamped = max(
+            AppConstants.cornerRadiusMin, min(AppConstants.cornerRadiusMax, normalized))
         return clamped * shorterSide / 2
     }
 

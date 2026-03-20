@@ -156,7 +156,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let y: CGFloat = Self.pageIndicatorY
 
         for (step, frame) in frames.enumerated() {
-            let dot = NSView(frame: NSRect(x: frame.origin.x, y: y, width: frame.width, height: frame.height))
+            let dot = NSView(
+                frame: NSRect(x: frame.origin.x, y: y, width: frame.width, height: frame.height))
             dot.wantsLayer = true
             dot.layer?.cornerRadius = Self.dotSize / 2
             dot.layer?.backgroundColor = step == currentStep
@@ -174,14 +175,16 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let config = Self.navigationButtonConfig(currentStep: currentStep, totalSteps: totalSteps)
 
         if config.showBack {
-            let backButton = NSButton(title: L("onboarding.button.prev"), target: self, action: #selector(prevStep))
+            let backButton = NSButton(
+                title: L("onboarding.button.prev"), target: self, action: #selector(prevStep))
             backButton.frame = NSRect(x: 20, y: buttonY, width: 80, height: 32)
             backButton.bezelStyle = .rounded
             container.addSubview(backButton)
         }
 
         if config.showSkip {
-            let skipButton = NSButton(title: L("onboarding.button.skip"), target: self, action: #selector(skipOnboarding))
+            let skipButton = NSButton(
+                title: L("onboarding.button.skip"), target: self, action: #selector(skipOnboarding))
             skipButton.frame = NSRect(x: (width - 80) / 2, y: buttonY, width: 80, height: 32)
             skipButton.bezelStyle = .rounded
             skipButton.isBordered = false
@@ -201,7 +204,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
 
         if config.showNext {
-            let nextButton = NSButton(title: L("onboarding.button.next"), target: self, action: #selector(nextStep))
+            let nextButton = NSButton(
+                title: L("onboarding.button.next"), target: self, action: #selector(nextStep))
             nextButton.frame = NSRect(x: width - 100, y: buttonY, width: 80, height: 32)
             nextButton.bezelStyle = .rounded
             nextButton.keyEquivalent = "\r"
@@ -209,7 +213,9 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
 
         if config.showStart {
-            let startButton = NSButton(title: L("onboarding.button.start"), target: self, action: #selector(finishOnboarding))
+            let startButton = NSButton(
+                title: L("onboarding.button.start"), target: self,
+                action: #selector(finishOnboarding))
             startButton.frame = NSRect(x: (width - 110) / 2, y: buttonY, width: 110, height: 32)
             startButton.bezelStyle = .rounded
             startButton.keyEquivalent = "\r"
@@ -217,7 +223,9 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
 
         if config.showClose {
-            let closeButton = NSButton(title: L("onboarding.button.close"), target: self, action: #selector(skipOnboarding))
+            let closeButton = NSButton(
+                title: L("onboarding.button.close"), target: self,
+                action: #selector(skipOnboarding))
             closeButton.frame = NSRect(x: width - 100, y: buttonY, width: 80, height: 32)
             closeButton.bezelStyle = .rounded
             container.addSubview(closeButton)
@@ -245,7 +253,9 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
     @objc private func finishOnboarding() {
         panel?.close()
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.finishDelay) { @Sendable [weak self] in
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + Self.finishDelay
+        ) { @Sendable [weak self] in
             MainActor.assumeIsolated {
                 self?.onFinish?()
             }
@@ -315,29 +325,40 @@ extension OnboardingWindowController {
         container.addSubview(iconView)
 
         let titleLabel = makeTitleLabel(L("onboarding.step1.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
+        titleLabel.frame = NSRect(
+            x: Self.contentPadding, y: Self.titleY,
+            width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
         let desc1 = makeDescriptionLabel(L("onboarding.step1.description1"))
-        desc1.frame = NSRect(x: Self.contentPadding, y: Self.descriptionY, width: width - Self.contentPadding * 2, height: 40)
+        desc1.frame = NSRect(
+            x: Self.contentPadding, y: Self.descriptionY,
+            width: width - Self.contentPadding * 2, height: 40)
         container.addSubview(desc1)
 
         // Simulated menu bar icon display
         let bgWidth = Self.step1IconBackgroundWidth
         let bgHeight = Self.step1IconBackgroundHeight
-        let iconBackground = NSView(frame: NSRect(x: (width - bgWidth) / 2, y: Self.step1IconBackgroundY, width: bgWidth, height: bgHeight))
+        let iconBackground = NSView(frame: NSRect(
+            x: (width - bgWidth) / 2, y: Self.step1IconBackgroundY,
+            width: bgWidth, height: bgHeight))
         iconBackground.wantsLayer = true
         iconBackground.layer?.cornerRadius = Self.step1IconBackgroundCornerRadius
-        iconBackground.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
+        iconBackground.layer?.backgroundColor =
+            NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
         container.addSubview(iconBackground)
 
         let statusSize = Self.step1StatusIconSize
         let statusIcon = makeSymbolView("person.fill", size: statusSize, color: .labelColor)
-        statusIcon.frame = NSRect(x: (width - statusSize) / 2, y: Self.step1StatusIconY, width: statusSize, height: statusSize)
+        statusIcon.frame = NSRect(
+            x: (width - statusSize) / 2, y: Self.step1StatusIconY,
+            width: statusSize, height: statusSize)
         container.addSubview(statusIcon)
 
         let hintLabel = makeDescriptionLabel(L("onboarding.step1.hint"))
-        hintLabel.frame = NSRect(x: Self.contentPadding, y: Self.step1HintY, width: width - Self.contentPadding * 2, height: Self.step1HintHeight)
+        hintLabel.frame = NSRect(
+            x: Self.contentPadding, y: Self.step1HintY,
+            width: width - Self.contentPadding * 2, height: Self.step1HintHeight)
         hintLabel.textColor = .secondaryLabelColor
         hintLabel.font = NSFont.systemFont(ofSize: Self.smallFontSize)
         container.addSubview(hintLabel)
@@ -349,10 +370,13 @@ extension OnboardingWindowController {
         let width = container.bounds.width
 
         let titleLabel = makeTitleLabel(L("onboarding.step2.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.step2TitleY, width: width - Self.contentPadding * 2, height: 30)
+        titleLabel.frame = NSRect(
+            x: Self.contentPadding, y: Self.step2TitleY,
+            width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
-        let symbols = ["hand.draw", "scroll", "contextualmenu.and.cursorarrow", "eye", "face.dashed"]
+        let symbols = [
+            "hand.draw", "scroll", "contextualmenu.and.cursorarrow", "eye", "face.dashed"]
         let labels = [
             L("onboarding.step2.dragLabel"), L("onboarding.step2.scrollLabel"),
             L("onboarding.step2.rightClickLabel"), L("onboarding.step2.hotkeyLabel"),
@@ -376,10 +400,13 @@ extension OnboardingWindowController {
 
         for index in 0..<symbols.count {
             let rowY = startY - CGFloat(index) * rowHeight
-            let content = StepRowContent(symbol: symbols[index], label: labels[index], description: descriptions[index], hint: hints[index])
+            let content = StepRowContent(
+                symbol: symbols[index], label: labels[index],
+                description: descriptions[index], hint: hints[index])
             let context = StepRowContext(
                 rowY: rowY, iconX: iconX, labelX: labelX,
-                contentWidth: contentWidth, containerWidth: width, addSeparator: index < symbols.count - 1
+                contentWidth: contentWidth, containerWidth: width,
+                addSeparator: index < symbols.count - 1
             )
             buildStepRow(in: container, content: content, context: context)
         }
@@ -395,14 +422,19 @@ extension OnboardingWindowController {
         container.addSubview(iconView)
 
         let titleLabel = makeTitleLabel(L("onboarding.step4.title"))
-        titleLabel.frame = NSRect(x: Self.contentPadding, y: Self.titleY, width: width - Self.contentPadding * 2, height: 30)
+        titleLabel.frame = NSRect(
+            x: Self.contentPadding, y: Self.titleY,
+            width: width - Self.contentPadding * 2, height: 30)
         container.addSubview(titleLabel)
 
         let descLabel = makeDescriptionLabel(L("onboarding.step4.description"))
-        descLabel.frame = NSRect(x: Self.contentPadding, y: 250, width: width - Self.contentPadding * 2, height: 60)
+        descLabel.frame = NSRect(
+            x: Self.contentPadding, y: 250, width: width - Self.contentPadding * 2, height: 60)
         container.addSubview(descLabel)
 
-        let ctaButton = NSButton(title: L("onboarding.step4.cta"), target: self, action: #selector(addImageFromOnboarding))
+        let ctaButton = NSButton(
+            title: L("onboarding.step4.cta"), target: self,
+            action: #selector(addImageFromOnboarding))
         ctaButton.frame = NSRect(x: (width - 200) / 2, y: 200, width: 200, height: 36)
         ctaButton.bezelStyle = .rounded
         ctaButton.font = NSFont.systemFont(ofSize: 14)

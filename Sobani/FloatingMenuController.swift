@@ -50,8 +50,8 @@ final class FloatingMenuController {
         let panelWidth = AppConstants.floatingMenuPadding * 2
             + AppConstants.floatingMenuColumnWidth * CGFloat(buttonCount)
             + AppConstants.floatingMenuGap * CGFloat(buttonCount - 1)
-        let panelHeight = AppConstants.floatingMenuPadding * 2
-            + AppConstants.floatingMenuButtonSize + Self.labelTopGap + Self.labelHeight
+        let panelHeight = AppConstants.floatingMenuPadding * 2 + AppConstants.floatingMenuButtonSize
+            + Self.labelTopGap + Self.labelHeight
             + AppConstants.floatingMenuSeparatorHeight + AppConstants.floatingMenuSliderRowHeight
 
         // Convert window-local point to screen coordinates
@@ -60,14 +60,16 @@ final class FloatingMenuController {
         // Determine position: prefer above, fall back to below if off-screen
         var origin = NSPoint(x: screenPoint.x - panelWidth / 2, y: screenPoint.y + Self.aboveOffset)
 
-        let targetScreen = NSScreen.screens.first(where: { $0.frame.contains(screenPoint) }) ?? NSScreen.main
+        let targetScreen = NSScreen.screens.first(where: { $0.frame.contains(screenPoint) })
+            ?? NSScreen.main
         if let screen = targetScreen {
             // If panel would go above visible area, show below instead
             if origin.y + panelHeight > screen.visibleFrame.maxY {
                 origin.y = screenPoint.y - panelHeight - Self.aboveOffset
             }
             // Clamp horizontally
-            origin.x = max(screen.visibleFrame.minX, min(origin.x, screen.visibleFrame.maxX - panelWidth))
+            origin.x = max(
+                screen.visibleFrame.minX, min(origin.x, screen.visibleFrame.maxX - panelWidth))
         }
 
         // Lazy-initialize the panel on first show
@@ -77,8 +79,7 @@ final class FloatingMenuController {
                 contentRect: panelRect,
                 styleMask: [.borderless, .nonactivatingPanel],
                 backing: .buffered,
-                defer: false
-            )
+                defer: false)
             newPanel.isFloatingPanel = true
             newPanel.becomesKeyOnlyIfNeeded = true
             newPanel.level = .floating + 1
@@ -122,11 +123,7 @@ final class FloatingMenuController {
     // MARK: - Button Setup
 
     private static func buttonCount() -> Int {
-        if #available(macOS 14.0, *) {
-            return 8
-        } else {
-            return 7
-        }
+        if #available(macOS 14.0, *) { return 8 } else { return 7 }
     }
 
     private struct ButtonSpec {
@@ -138,20 +135,17 @@ final class FloatingMenuController {
 
     private func setupButtons(in container: NSView) {
         var buttons: [ButtonSpec] = [
-            ButtonSpec(symbolName: "crop",
-                       tooltip: L("floating_menu.crop"),
-                       label: L("floating_menu.label.crop"),
-                       action: #selector(cropTapped)),
+            ButtonSpec(
+                symbolName: "crop", tooltip: L("floating_menu.crop"),
+                label: L("floating_menu.label.crop"), action: #selector(cropTapped)),
             ButtonSpec(
                 symbolName: "arrow.left.and.right.righttriangle.left.righttriangle.right",
                 tooltip: L("floating_menu.flip"),
                 label: L("floating_menu.label.flip"),
-                action: #selector(flipTapped)
-            ),
+                action: #selector(flipTapped)),
             ButtonSpec(
                 symbolName: "slider.horizontal.3", tooltip: L("floating_menu.adjust"),
-                label: L("floating_menu.label.adjust"), action: #selector(adjustTapped)
-            )
+                label: L("floating_menu.label.adjust"), action: #selector(adjustTapped))
         ]
 
         var removeBackgroundIndex: Int?
@@ -161,39 +155,45 @@ final class FloatingMenuController {
                 symbolName: "eraser.fill",
                 tooltip: L("floating_menu.remove_background"),
                 label: L("floating_menu.label.remove_background"),
-                action: #selector(removeBackgroundTapped)
-            ))
+                action: #selector(removeBackgroundTapped)))
         }
 
         buttons.append(ButtonSpec(
             symbolName: AppConstants.ghostModeSymbol, tooltip: L("floating_menu.ghost_mode"),
-            label: L("floating_menu.label.ghost_mode"), action: #selector(ghostModeTapped)
-        ))
+            label: L("floating_menu.label.ghost_mode"), action: #selector(ghostModeTapped)))
         buttons.append(ButtonSpec(
             symbolName: "arrow.counterclockwise", tooltip: L("floating_menu.reset_display"),
             label: L("floating_menu.label.reset_display"),
-            action: #selector(resetDisplayTapped)
-        ))
+            action: #selector(resetDisplayTapped)))
         buttons.append(ButtonSpec(
             symbolName: AppConstants.hiddenWindowSymbol, tooltip: L("floating_menu.hide"),
-            label: L("floating_menu.label.hide"), action: #selector(hideTapped)
-        ))
+            label: L("floating_menu.label.hide"), action: #selector(hideTapped)))
         buttons.append(ButtonSpec(
             symbolName: AppConstants.closeSymbol, tooltip: L("floating_menu.close"),
-            label: L("floating_menu.label.close"), action: #selector(closeTapped)
-        ))
+            label: L("floating_menu.label.close"), action: #selector(closeTapped)))
 
         let sliderAreaHeight = AppConstants.floatingMenuSliderRowHeight + AppConstants.floatingMenuSeparatorHeight
         for (index, spec) in buttons.enumerated() {
-            createButtonView(spec: spec, index: index, removeBackgroundIndex: removeBackgroundIndex, sliderAreaHeight: sliderAreaHeight, in: container)
+            createButtonView(
+                spec: spec, index: index,
+                removeBackgroundIndex: removeBackgroundIndex,
+                sliderAreaHeight: sliderAreaHeight, in: container)
         }
     }
 
-    private func createButtonView(spec: ButtonSpec, index: Int, removeBackgroundIndex: Int?, sliderAreaHeight: CGFloat, in container: NSView) {
-        let columnX = AppConstants.floatingMenuPadding + (AppConstants.floatingMenuColumnWidth + AppConstants.floatingMenuGap) * CGFloat(index)
-        let buttonX = columnX + (AppConstants.floatingMenuColumnWidth - AppConstants.floatingMenuButtonSize) / 2
-        let buttonY = sliderAreaHeight + AppConstants.floatingMenuPadding + Self.labelHeight + Self.labelTopGap
-        let buttonFrame = NSRect(x: buttonX, y: buttonY, width: AppConstants.floatingMenuButtonSize, height: AppConstants.floatingMenuButtonSize)
+    private func createButtonView(
+        spec: ButtonSpec, index: Int, removeBackgroundIndex: Int?,
+        sliderAreaHeight: CGFloat, in container: NSView) {
+        let columnX = AppConstants.floatingMenuPadding
+            + (AppConstants.floatingMenuColumnWidth + AppConstants.floatingMenuGap) * CGFloat(index)
+        let buttonX = columnX
+            + (AppConstants.floatingMenuColumnWidth - AppConstants.floatingMenuButtonSize) / 2
+        let buttonY = sliderAreaHeight
+            + AppConstants.floatingMenuPadding + Self.labelHeight + Self.labelTopGap
+        let buttonFrame = NSRect(
+            x: buttonX, y: buttonY,
+            width: AppConstants.floatingMenuButtonSize,
+            height: AppConstants.floatingMenuButtonSize)
 
         let button = NSButton(frame: buttonFrame)
         button.bezelStyle = .regularSquare
@@ -204,7 +204,8 @@ final class FloatingMenuController {
         button.target = self
         button.action = spec.action
 
-        button.image = SFSymbolUtils.icon(spec.symbolName, pointSize: Self.buttonIconPointSize, weight: .medium)
+        button.image = SFSymbolUtils.icon(
+            spec.symbolName, pointSize: Self.buttonIconPointSize, weight: .medium)
 
         // Hover effect via tracking area
         button.wantsLayer = true
@@ -212,15 +213,16 @@ final class FloatingMenuController {
             rect: button.bounds,
             options: [.mouseEnteredAndExited, .activeAlways],
             owner: button,
-            userInfo: nil
-        )
+            userInfo: nil)
         button.addTrackingArea(trackingArea)
 
         container.addSubview(button)
 
         // Label below button
         let labelY = sliderAreaHeight + AppConstants.floatingMenuPadding
-        let labelFrame = NSRect(x: columnX, y: labelY, width: AppConstants.floatingMenuColumnWidth, height: Self.labelHeight)
+        let labelFrame = NSRect(
+            x: columnX, y: labelY,
+            width: AppConstants.floatingMenuColumnWidth, height: Self.labelHeight)
         let label = NSTextField(frame: labelFrame)
         label.stringValue = spec.label
         label.isEditable = false
@@ -249,8 +251,7 @@ final class FloatingMenuController {
         let separatorWidth = containerBounds.width - AppConstants.floatingMenuPadding * 2
         let separator = NSBox(frame: NSRect(
             x: AppConstants.floatingMenuPadding, y: separatorY,
-            width: separatorWidth, height: AppConstants.floatingMenuSeparatorHeight
-        ))
+            width: separatorWidth, height: AppConstants.floatingMenuSeparatorHeight))
         separator.boxType = .separator
         container.addSubview(separator)
 
@@ -258,9 +259,9 @@ final class FloatingMenuController {
         let iconSize: CGFloat = 16
         let iconX = AppConstants.floatingMenuPadding + 4
         let iconPointSize: CGFloat = 12
-        let iconView = NSImageView(frame: NSRect(x: iconX,
-                                                y: sliderRowY + (rowHeight - iconSize) / 2,
-                                                width: iconSize, height: iconSize))
+        let iconView = NSImageView(frame: NSRect(
+            x: iconX, y: sliderRowY + (rowHeight - iconSize) / 2,
+            width: iconSize, height: iconSize))
         iconView.image = SFSymbolUtils.icon(AppConstants.opacitySymbol, pointSize: iconPointSize)
         iconView.imageScaling = .scaleProportionallyDown
         container.addSubview(iconView)
@@ -271,7 +272,8 @@ final class FloatingMenuController {
         label.font = NSFont.systemFont(ofSize: 10)
         label.textColor = .secondaryLabelColor
         label.sizeToFit()
-        label.frame.origin = NSPoint(x: labelX, y: sliderRowY + (rowHeight - label.frame.height) / 2)
+        label.frame.origin = NSPoint(
+            x: labelX, y: sliderRowY + (rowHeight - label.frame.height) / 2)
         container.addSubview(label)
 
         // Percent label (right side)
@@ -281,7 +283,8 @@ final class FloatingMenuController {
         percentLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
         percentLabel.alignment = .right
         let percentY = sliderRowY + (rowHeight - percentLabel.frame.height) / 2
-        percentLabel.frame = NSRect(x: percentX, y: percentY, width: percentWidth, height: percentLabel.frame.height)
+        percentLabel.frame = NSRect(
+            x: percentX, y: percentY, width: percentWidth, height: percentLabel.frame.height)
         container.addSubview(percentLabel)
         opacityLabel = percentLabel
 
@@ -294,9 +297,9 @@ final class FloatingMenuController {
             minValue: Double(AppConstants.opacityMin),
             maxValue: Double(AppConstants.opacityMax),
             target: self,
-            action: #selector(opacitySliderChanged(_:))
-        )
-        slider.frame = NSRect(x: sliderX, y: sliderRowY + (rowHeight - sliderHeight) / 2, width: sliderWidth, height: sliderHeight)
+            action: #selector(opacitySliderChanged(_:)))
+        slider.frame = NSRect(x: sliderX, y: sliderRowY + (rowHeight - sliderHeight) / 2,
+            width: sliderWidth, height: sliderHeight)
         slider.isContinuous = true
         container.addSubview(slider)
         opacitySlider = slider
@@ -352,16 +355,14 @@ final class FloatingMenuController {
 
     private func installEventMonitors() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(
-            matching: [.leftMouseDown, .rightMouseDown]
-        ) { [weak self] _ in
+            matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             DispatchQueue.main.async {
                 self?.dismiss()
             }
         }
 
         localMonitor = NSEvent.addLocalMonitorForEvents(
-            matching: [.leftMouseDown, .rightMouseDown, .keyDown]
-        ) { [weak self] event in
+            matching: [.leftMouseDown, .rightMouseDown, .keyDown]) { [weak self] event in
             guard let self else { return event }
 
             if event.type == .keyDown && event.keyCode == AppConstants.escKeyCode {
@@ -382,14 +383,8 @@ final class FloatingMenuController {
     }
 
     nonisolated private func removeEventMonitors() {
-        if let monitor = globalMonitor {
-            NSEvent.removeMonitor(monitor)
-            globalMonitor = nil
-        }
-        if let monitor = localMonitor {
-            NSEvent.removeMonitor(monitor)
-            localMonitor = nil
-        }
+        if let monitor = globalMonitor { NSEvent.removeMonitor(monitor); globalMonitor = nil }
+        if let monitor = localMonitor { NSEvent.removeMonitor(monitor); localMonitor = nil }
     }
 
     deinit {

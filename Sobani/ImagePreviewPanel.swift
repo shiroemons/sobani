@@ -69,9 +69,9 @@ final class ImagePreviewPanel {
     // MARK: - Testable Static Methods
 
     /// 画像サイズを最大寸法に収まるようスケーリング
-    nonisolated static func scaledSize(for imageSize: NSSize,
-                                       maxDimension: CGFloat = AppConstants.previewMaxDimension)
-        -> NSSize {
+    nonisolated static func scaledSize(
+        for imageSize: NSSize,
+        maxDimension: CGFloat = AppConstants.previewMaxDimension) -> NSSize {
         guard imageSize.width > 0, imageSize.height > 0 else {
             return NSSize(width: maxDimension, height: maxDimension)
         }
@@ -168,9 +168,8 @@ final class ImagePreviewPanel {
 
     // MARK: - Private
 
-    private func calculatePosition(menuItem: NSMenuItem,
-                                   menu: NSMenu,
-                                   panelSize: NSSize) -> NSPoint {
+    private func calculatePosition(
+        menuItem: NSMenuItem, menu: NSMenu, panelSize: NSSize) -> NSPoint {
         let menuWindows = Self.findMenuWindows(excluding: panel)
         let windowFrames = menuWindows.map { $0.frame }
 

@@ -52,8 +52,8 @@ final class RotationDialView: NSView {
         // Outer circle
         context.setStrokeColor(NSColor.separatorColor.cgColor)
         context.setLineWidth(Self.outerLineWidth)
-        context.addArc(center: center, radius: radius, startAngle: 0, endAngle: .pi * 2,
-                       clockwise: false)
+        context.addArc(
+            center: center, radius: radius, startAngle: 0, endAngle: .pi * 2, clockwise: false)
         context.strokePath()
 
         // Tick marks every 45 degrees
@@ -246,8 +246,8 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
 
             let contentView = NSView(frame: panelRect)
 
-            setupRotationSection(in: contentView, angle: state.angle,
-                                 offsetY: Self.rotationSectionOffsetY)
+            setupRotationSection(
+                in: contentView, angle: state.angle, offsetY: Self.rotationSectionOffsetY)
 
             // Separator between rotation and position/size
             let sep1 = NSBox(frame: NSRect(

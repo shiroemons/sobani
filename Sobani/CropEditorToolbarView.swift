@@ -272,7 +272,9 @@ final class CropEditorToolbarView: NSView {
     }
 
     /// 全モードの角度を一括同期する（初期化・Undo/Redo共通）
-    func syncAngles(straighten: CGFloat, verticalPerspective: CGFloat, horizontalPerspective: CGFloat) {
+    func syncAngles(
+        straighten: CGFloat, verticalPerspective: CGFloat, horizontalPerspective: CGFloat
+    ) {
         modeAngles[.straighten] = straighten
         modeAngles[.verticalPerspective] = verticalPerspective
         modeAngles[.horizontalPerspective] = horizontalPerspective
@@ -299,7 +301,8 @@ private extension CropEditorToolbarView {
 
         for (index, buttonView) in modeButtonViews.enumerated() {
             let buttonX = startX + CGFloat(index) * (Self.modeButtonSize + Self.modeButtonSpacing)
-            buttonView.frame = NSRect(x: buttonX, y: buttonY, width: Self.modeButtonSize, height: Self.modeButtonSize)
+            buttonView.frame = NSRect(
+                x: buttonX, y: buttonY, width: Self.modeButtonSize, height: Self.modeButtonSize)
             buttonView.isHidden = false
         }
 
@@ -334,7 +337,8 @@ private extension CropEditorToolbarView {
 
         // 下段: アスペクト比セレクタ（形状セレクタから16pt下）
         let selectorY = shapeY - Self.toolbarRowSpacing - selectorHeight
-        selectorView?.frame = NSRect(x: 0, y: selectorY, width: bounds.width, height: selectorHeight)
+        selectorView?.frame = NSRect(
+            x: 0, y: selectorY, width: bounds.width, height: selectorHeight)
         selectorView?.isHidden = false
     }
 }
@@ -406,11 +410,13 @@ private class ModeButtonView: NSView {
         let rect = bounds.insetBy(dx: Self.inset, dy: Self.inset)
         let center = CGPoint(x: bounds.midX, y: bounds.midY)
         let radius = min(rect.width, rect.height) / 2
-        let ellipseRect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
+        let ellipseRect = CGRect(
+            x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
 
         if abs(angle) < Self.zeroAngleThreshold {
             // 値=0: サークル全体を描画
-            let baseColor: NSColor = isSelected ? .labelColor : .secondaryLabelColor.withAlphaComponent(0.5)
+            let baseColor: NSColor = isSelected
+                ? .labelColor : .secondaryLabelColor.withAlphaComponent(0.5)
             let baseWidth: CGFloat = isSelected ? Self.arcLineWidth : Self.baseCircleLineWidth
             context.setStrokeColor(baseColor.cgColor)
             context.setLineWidth(baseWidth)
@@ -421,7 +427,8 @@ private class ModeButtonView: NSView {
             if isSelected {
                 let isDark = NSAppearance.currentDrawing().isDark
                 if isDark {
-                    context.setFillColor(NSColor(white: 1.0, alpha: AppConstants.cropEditorModeButtonSelectedDarkAlpha).cgColor)
+                    let darkAlpha = AppConstants.cropEditorModeButtonSelectedDarkAlpha
+                    context.setFillColor(NSColor(white: 1.0, alpha: darkAlpha).cgColor)
                 } else {
                     context.setFillColor(NSColor.white.cgColor)
                 }
@@ -447,14 +454,17 @@ private class ModeButtonView: NSView {
             context.setLineCap(.round)
             let startAngle = CGFloat.pi / 2
             let endAngle = startAngle - arcAngle
-            context.addArc(center: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
+            context.addArc(
+                center: center, radius: radius,
+                startAngle: startAngle, endAngle: endAngle, clockwise: true)
             context.strokePath()
 
             // 数値テキスト表示
             let textColor: NSColor = angle > 0 ? .systemOrange : .labelColor
             let text = String(format: "%.0f", angle)
             let attrs: [NSAttributedString.Key: Any] = [
-                .font: NSFont.monospacedDigitSystemFont(ofSize: Self.angleFontSize, weight: .semibold),
+                .font: NSFont.monospacedDigitSystemFont(
+                    ofSize: Self.angleFontSize, weight: .semibold),
                 .foregroundColor: textColor
             ]
             let attrString = NSAttributedString(string: text, attributes: attrs)
@@ -473,9 +483,11 @@ private class ModeButtonView: NSView {
         if let cached = cachedIcon {
             icon = cached
         } else {
-            guard let baseImage = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) else { return }
+            guard let baseImage = NSImage(
+                systemSymbolName: symbolName, accessibilityDescription: nil) else { return }
             let colorConfig = NSImage.SymbolConfiguration(paletteColors: [iconColor])
-            let sizeConfig = NSImage.SymbolConfiguration(pointSize: Self.iconPointSize, weight: .medium)
+            let sizeConfig = NSImage.SymbolConfiguration(
+                pointSize: Self.iconPointSize, weight: .medium)
             let config = sizeConfig.applying(colorConfig)
             icon = baseImage.withSymbolConfiguration(config) ?? baseImage
             cachedIcon = icon
