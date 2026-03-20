@@ -328,4 +328,14 @@ struct ImagePreviewPanelTests {
         #expect(abs(result.rightmostX - 300) < AppConstants.floatingPointTolerance)
         #expect(abs(result.leftmostX - 100) < AppConstants.floatingPointTolerance)
     }
+
+    // MARK: - DI Tests
+
+    @Test("createUI=false でインスタンス生成可能")
+    @MainActor
+    func canCreateInstanceWithoutUI() {
+        let panel = ImagePreviewPanel(createUI: false)
+        #expect(panel !== ImagePreviewPanel.shared)
+        #expect(!panel.isVisible)
+    }
 }

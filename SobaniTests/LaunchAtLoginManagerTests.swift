@@ -37,7 +37,7 @@ import Testing
 
     /// DI用の新しいインスタンスが作成できることを検証
     @Test func canCreateNewInstance() {
-        let instance = LaunchAtLoginManager()
+        let instance = LaunchAtLoginManager(service: SMAppService.mainApp)
         #expect(instance !== LaunchAtLoginManager.shared)
     }
 
@@ -49,5 +49,81 @@ import Testing
         } else {
             #expect(manager.isEnabled == false)
         }
+    }
+
+    // MARK: - DI Tests
+
+    /// モックサービスでisEnabledがtrueを返すことを検証
+    @Test func diMockServiceEnabled() {
+        let mock = MockLoginItemService(mockStatus: .enabled)
+        let manager = LaunchAtLoginManager(service: mock)
+        #expect(manager.isEnabled)
+        #expect(manager.status == .enabled)
+    }
+
+    /// モックサービスでisEnabledがfalseを返すことを検証
+    @Test func diMockServiceNotRegistered() {
+        let mock = MockLoginItemService(mockStatus: .notRegistered)
+        let manager = LaunchAtLoginManager(service: mock)
+        #expect(!manager.isEnabled)
+        #expect(manager.status == .notRegistered)
+    }
+
+    /// モックサービスでtoggle()がregisterを呼ぶことを検証
+    @Test func diMockServiceToggleCallsRegister() throws {
+        let mock = MockLoginItemService(mockStatus: .notRegistered)
+        let manager = LaunchAtLoginManager(service: mock)
+        try manager.toggle()
+        #expect(mock.registerCalled)
+        #expect(!mock.unregisterCalled)
+    }
+
+    /// モックサービスでtoggle()がunregisterを呼ぶことを検証
+    @Test func diMockServiceToggleCallsUnregister() throws {
+        let mock = MockLoginItemService(mockStatus: .enabled)
+        let manager = LaunchAtLoginManager(service: mock)
+        try manager.toggle()
+        #expect(mock.unregisterCalled)
+        #expect(!mock.registerCalled)
+    }
+
+    /// モックサービスのエラーがtoggle()で伝播されることを検証
+    @Test func diMockServiceToggleError() {
+        let mock = MockLoginItemService(mockStatus: .notRegistered, shouldThrow: true)
+        let manager = LaunchAtLoginManager(service: mock)
+        #expect(throws: (any Error).self) { try manager.toggle() }
+    }
+}
+
+/// テスト用のモックログインアイテムサービス
+/// `@unchecked Sendable` は `@MainActor` テストスイート内でのみ使用すること。
+/// 並行テストではレースコンディションのリスクがある。
+final class MockLoginItemService: LoginItemService, @unchecked Sendable {
+    let mockStatus: SMAppService.Status
+    private let shouldThrow: Bool
+    var registerCalled = false
+    var unregisterCalled = false
+
+    init(mockStatus: SMAppService.Status, shouldThrow: Bool = false) {
+        self.mockStatus = mockStatus
+        self.shouldThrow = shouldThrow
+    }
+
+    var status: SMAppService.Status {
+        mockStatus
+    }
+
+    func register() throws {
+        if shouldThrow { throw MockError.testError }
+        registerCalled = true
+    }
+
+    func unregister() throws {
+        if shouldThrow { throw MockError.testError }
+        unregisterCalled = true
+    }
+
+    enum MockError: Error {
+        case testError
     }
 }

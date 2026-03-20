@@ -173,9 +173,11 @@ final class CropEditorToolbarView: NSView {
     }
 
     private func switchStraightenMode(to mode: StraightenMode) {
-        if mode == straightenMode {
-            // 同じモードを再タップ → その補正をリセット
-            resetAngleForMode(mode)
+        let result = Self.resolveModeSwitchAngle(
+            targetMode: mode, currentMode: straightenMode, modeAngles: modeAngles
+        )
+        if result.shouldReset {
+            modeAngles = Self.anglesAfterReset(modeAngles, resettingMode: mode)
             sliderView?.angle = 0
             updateModeButtonViews()
             onStraightenAngleChanged?(0)
@@ -183,22 +185,16 @@ final class CropEditorToolbarView: NSView {
             return
         }
         straightenMode = mode
-        // 切り替えたモードの角度をルーラーに反映
-        sliderView?.angle = angleForMode(mode)
+        sliderView?.angle = result.newAngle
         onModeChanged?(mode)
         updateModeButtonViews()
-        // 選択中ボタンが中央に来るようにレイアウトを更新
         layout()
-    }
-
-    private func resetAngleForMode(_ mode: StraightenMode) {
-        modeAngles[mode] = 0
     }
 
     // MARK: - Slider Callback
 
     private func handleSliderAngleChanged(_ angle: CGFloat) {
-        modeAngles[straightenMode] = angle
+        modeAngles = Self.anglesAfterSliderChange(modeAngles, currentMode: straightenMode, newAngle: angle)
         onStraightenAngleChanged?(angle)
         updateModeButtonViews()
     }
@@ -226,9 +222,7 @@ final class CropEditorToolbarView: NSView {
     }
 
     func resetStraightenAngle() {
-        for mode in StraightenMode.allCases {
-            modeAngles[mode] = 0
-        }
+        modeAngles = Self.anglesAfterFullReset()
         sliderView?.reset()
         updateModeButtonViews()
     }
@@ -275,11 +269,71 @@ final class CropEditorToolbarView: NSView {
     func syncAngles(
         straighten: CGFloat, verticalPerspective: CGFloat, horizontalPerspective: CGFloat
     ) {
-        modeAngles[.straighten] = straighten
-        modeAngles[.verticalPerspective] = verticalPerspective
-        modeAngles[.horizontalPerspective] = horizontalPerspective
+        modeAngles = Self.buildSyncedAngles(
+            straighten: straighten,
+            verticalPerspective: verticalPerspective,
+            horizontalPerspective: horizontalPerspective
+        )
         sliderView?.angle = angleForMode(straightenMode)
         updateModeButtonViews()
+    }
+
+    // MARK: - Testable Static Methods
+
+    /// モード切替時の角度を決定する
+    /// - Returns: (newAngle, shouldReset) — newAngle: スライダーに設定すべき角度, shouldReset: リセット操作かどうか
+    nonisolated static func resolveModeSwitchAngle(
+        targetMode: StraightenMode,
+        currentMode: StraightenMode,
+        modeAngles: [StraightenMode: CGFloat]
+    ) -> (newAngle: CGFloat, shouldReset: Bool) {
+        if targetMode == currentMode {
+            return (0, true)
+        }
+        return (modeAngles[targetMode, default: 0], false)
+    }
+
+    /// 全モードの角度を一括更新した新しい辞書を返す
+    nonisolated static func buildSyncedAngles(
+        straighten: CGFloat,
+        verticalPerspective: CGFloat,
+        horizontalPerspective: CGFloat
+    ) -> [StraightenMode: CGFloat] {
+        [
+            .straighten: straighten,
+            .verticalPerspective: verticalPerspective,
+            .horizontalPerspective: horizontalPerspective
+        ]
+    }
+
+    /// 指定モードの角度をリセットした新しい辞書を返す
+    nonisolated static func anglesAfterReset(
+        _ modeAngles: [StraightenMode: CGFloat],
+        resettingMode: StraightenMode
+    ) -> [StraightenMode: CGFloat] {
+        var result = modeAngles
+        result[resettingMode] = 0
+        return result
+    }
+
+    /// 全モードの角度をリセットした辞書を返す
+    nonisolated static func anglesAfterFullReset() -> [StraightenMode: CGFloat] {
+        [
+            .straighten: 0,
+            .verticalPerspective: 0,
+            .horizontalPerspective: 0
+        ]
+    }
+
+    /// スライダー角度変更時に更新された辞書を返す
+    nonisolated static func anglesAfterSliderChange(
+        _ modeAngles: [StraightenMode: CGFloat],
+        currentMode: StraightenMode,
+        newAngle: CGFloat
+    ) -> [StraightenMode: CGFloat] {
+        var result = modeAngles
+        result[currentMode] = newAngle
+        return result
     }
 }
 

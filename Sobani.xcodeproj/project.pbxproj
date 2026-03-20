@@ -107,6 +107,8 @@
 		F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PT000001000000000001 /* ImagePreviewPanelTests.swift */; };
 		F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */; };
 		F0SMB00002000000000001 /* AppDelegate+StatusBarMenuBuilders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SMB00001000000000001 /* AppDelegate+StatusBarMenuBuilders.swift */; };
+		F0WA000002000000000001 /* AppDelegate+StatusBarMenuWindowActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0WA000001000000000001 /* AppDelegate+StatusBarMenuWindowActions.swift */; };
+		F0HL000002000000000001 /* AppDelegate+StatusBarMenuHighlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HL000001000000000001 /* AppDelegate+StatusBarMenuHighlight.swift */; };
 		F0SN000002000000000001 /* SnapUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SN000001000000000001 /* SnapUtils.swift */; };
 		F0SN000004000000000001 /* SnapUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SN000003000000000001 /* SnapUtilsTests.swift */; };
 		F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000001000000000001 /* ScreenRestorationUtils.swift */; };
@@ -114,6 +116,7 @@
 		F0SS000002000000000001 /* StraightenSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SS000001000000000001 /* StraightenSliderView.swift */; };
 		F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SV000001000000000001 /* AppDelegate+Services.swift */; };
 		F0TB000002000000000001 /* CropEditorToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TB000001000000000001 /* CropEditorToolbarView.swift */; };
+		F0CETV0004000000000001 /* CropEditorToolbarViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CETV0003000000000001 /* CropEditorToolbarViewTests.swift */; };
 		F0TH000002000000000001 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TH000001000000000001 /* AppThemeTests.swift */; };
 		F0UW000002000000000001 /* UnconstrainedWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0UW000001000000000001 /* UnconstrainedWindow.swift */; };
 		F0WH000002000000000001 /* WindowStateHiddenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0WH000001000000000001 /* WindowStateHiddenTests.swift */; };
@@ -208,6 +211,7 @@
 		F0CETH0001000000000001 /* CropEditorPanelController+ToolbarHandlers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CropEditorPanelController+ToolbarHandlers.swift"; sourceTree = "<group>"; };
 		F0CG000001000000000001 /* CropGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropGeometry.swift; sourceTree = "<group>"; };
 		F0CG000003000000000001 /* CropGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropGeometryTests.swift; sourceTree = "<group>"; };
+		F0CETV0003000000000001 /* CropEditorToolbarViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorToolbarViewTests.swift; sourceTree = "<group>"; };
 		F0CI000001000000000001 /* CropImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessor.swift; sourceTree = "<group>"; };
 		F0CI000003000000000001 /* CropImageProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessorTests.swift; sourceTree = "<group>"; };
 		F0CBR00001000000000001 /* CharacterWindow+BackgroundRemoval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+BackgroundRemoval.swift"; sourceTree = "<group>"; };
@@ -249,6 +253,8 @@
 		F0PT000001000000000001 /* ImagePreviewPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanelTests.swift; sourceTree = "<group>"; };
 		F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuSliders.swift"; sourceTree = "<group>"; };
 		F0SMB00001000000000001 /* AppDelegate+StatusBarMenuBuilders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuBuilders.swift"; sourceTree = "<group>"; };
+		F0WA000001000000000001 /* AppDelegate+StatusBarMenuWindowActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuWindowActions.swift"; sourceTree = "<group>"; };
+		F0HL000001000000000001 /* AppDelegate+StatusBarMenuHighlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuHighlight.swift"; sourceTree = "<group>"; };
 		F0SN000001000000000001 /* SnapUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapUtils.swift; sourceTree = "<group>"; };
 		F0SN000003000000000001 /* SnapUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapUtilsTests.swift; sourceTree = "<group>"; };
 		F0SR000001000000000001 /* ScreenRestorationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtils.swift; sourceTree = "<group>"; };
@@ -339,6 +345,8 @@
 				DD000014 /* AppDelegate+StatusBarMenu.swift */,
 				F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */,
 				F0SMB00001000000000001 /* AppDelegate+StatusBarMenuBuilders.swift */,
+				F0WA000001000000000001 /* AppDelegate+StatusBarMenuWindowActions.swift */,
+				F0HL000001000000000001 /* AppDelegate+StatusBarMenuHighlight.swift */,
 				F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */,
 				F0HK000001000000000001 /* AppDelegate+Hotkey.swift */,
 				DD000006 /* CharacterWindow.swift */,
@@ -449,6 +457,7 @@
 				C0F10001AAAA000000000007 /* CropRectExtendedTests.swift */,
 				F0AR000003000000000001 /* AspectRatioPresetTests.swift */,
 				F0CG000003000000000001 /* CropGeometryTests.swift */,
+				F0CETV0003000000000001 /* CropEditorToolbarViewTests.swift */,
 				F0CI000003000000000001 /* CropImageProcessorTests.swift */,
 				F0EH000003000000000001 /* CropEditHistoryTests.swift */,
 				F0JP000003000000000001 /* JSONPersistenceTests.swift */,
@@ -597,6 +606,8 @@
 				APPS00002000000000001 /* AdjustmentPanelController+PositionSize.swift in Sources */,
 				DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */,
 				F0SMB00002000000000001 /* AppDelegate+StatusBarMenuBuilders.swift in Sources */,
+				F0WA000002000000000001 /* AppDelegate+StatusBarMenuWindowActions.swift in Sources */,
+				F0HL000002000000000001 /* AppDelegate+StatusBarMenuHighlight.swift in Sources */,
 				EE000001 /* LaunchAtLoginManager.swift in Sources */,
 				FF000001 /* ScreenRestorationManager.swift in Sources */,
 				FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */,
@@ -701,6 +712,7 @@
 				C0F10002AAAA000000000005 /* CropRectTests.swift in Sources */,
 				C0F10002AAAA000000000007 /* CropRectExtendedTests.swift in Sources */,
 				F0AR000004000000000001 /* AspectRatioPresetTests.swift in Sources */,
+				F0CETV0004000000000001 /* CropEditorToolbarViewTests.swift in Sources */,
 				F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */,
 				F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */,
 				F0JP000004000000000001 /* JSONPersistenceTests.swift in Sources */,

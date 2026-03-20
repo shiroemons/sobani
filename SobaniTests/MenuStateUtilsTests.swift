@@ -347,4 +347,5 @@ struct MenuStateUtilsTests {
         #expect(info.leftText == "100: test (#9999)")
         #expect(info.rightText == "[3840\u{00d7}2160] Monitor")
     }
+
 }

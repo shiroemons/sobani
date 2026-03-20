@@ -10,32 +10,44 @@ final class ImagePreviewPanel {
     private static let padding: CGFloat = 8
     private static let cornerRadius: CGFloat = 8
 
-    init() {
-        panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 1, height: 1),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: true
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.popUpMenuWindow)) + 1)
-        panel.configureForFloating()
-        panel.isMovable = false
+    /// テストDI用。プロダクションコードでは `shared` を使用すること。
+    /// - Parameter createUI: false を指定するとパネル・画像ビュー生成をスキップする（テスト用）
+    init(createUI: Bool = true) {
+        if createUI {
+            panel = NSPanel(
+                contentRect: NSRect(x: 0, y: 0, width: 1, height: 1),
+                styleMask: [.borderless, .nonactivatingPanel],
+                backing: .buffered,
+                defer: true
+            )
+            panel.isOpaque = false
+            panel.backgroundColor = .clear
+            panel.hasShadow = true
+            panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.popUpMenuWindow)) + 1)
+            panel.configureForFloating()
+            panel.isMovable = false
 
-        let contentView = NSView()
-        contentView.wantsLayer = true
-        contentView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-        contentView.layer?.cornerRadius = Self.cornerRadius
-        contentView.layer?.masksToBounds = true
-        panel.contentView = contentView
+            let contentView = NSView()
+            contentView.wantsLayer = true
+            contentView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+            contentView.layer?.cornerRadius = Self.cornerRadius
+            contentView.layer?.masksToBounds = true
+            panel.contentView = contentView
 
-        imageView = NSImageView()
-        imageView.imageScaling = .scaleProportionallyUpOrDown
-        imageView.imageAlignment = .alignCenter
-        imageView.wantsLayer = true
-        contentView.addSubview(imageView)
+            imageView = NSImageView()
+            imageView.imageScaling = .scaleProportionallyUpOrDown
+            imageView.imageAlignment = .alignCenter
+            imageView.wantsLayer = true
+            contentView.addSubview(imageView)
+        } else {
+            panel = NSPanel(
+                contentRect: .zero,
+                styleMask: [.borderless],
+                backing: .buffered,
+                defer: true
+            )
+            imageView = NSImageView()
+        }
     }
 
     func show(image: NSImage, relativeTo menuItem: NSMenuItem, ofMenu menu: NSMenu) {
