@@ -87,8 +87,12 @@ import Testing
     @Test func coordinateConversion_roundTrip() {
         let original = CGPoint(x: 2500, y: 300)
         let screenOrigin = CGPoint(x: 1920, y: -200)
-        let relative = AdjustmentPanelController.globalToMonitorRelative(original, screenOrigin: screenOrigin)
-        let restored = AdjustmentPanelController.monitorRelativeToGlobal(relative, screenOrigin: screenOrigin)
+        let relative = AdjustmentPanelController.globalToMonitorRelative(
+            original, screenOrigin: screenOrigin
+        )
+        let restored = AdjustmentPanelController.monitorRelativeToGlobal(
+            relative, screenOrigin: screenOrigin
+        )
         #expect(abs(restored.x - original.x) < AppConstants.floatingPointTolerance)
         #expect(abs(restored.y - original.y) < AppConstants.floatingPointTolerance)
     }
@@ -97,45 +101,63 @@ import Testing
 
     /// 正常な幅入力でアスペクト比を維持したサイズを返すことを検証
     @Test func clampedSize_normalWidth() throws {
-        let result = try #require(AdjustmentPanelController.clampedSize(newValue: 400, aspectRatio: 2.0, isWidth: true))
+        let result = try #require(
+            AdjustmentPanelController.clampedSize(newValue: 400, aspectRatio: 2.0, isWidth: true)
+        )
         #expect(abs(result.width - 400) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 200) < AppConstants.floatingPointTolerance)
     }
 
     /// 正常な高さ入力でアスペクト比を維持したサイズを返すことを検証
     @Test func clampedSize_normalHeight() throws {
-        let result = try #require(AdjustmentPanelController.clampedSize(newValue: 200, aspectRatio: 2.0, isWidth: false))
+        let result = try #require(
+            AdjustmentPanelController.clampedSize(newValue: 200, aspectRatio: 2.0, isWidth: false)
+        )
         #expect(abs(result.width - 400) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 200) < AppConstants.floatingPointTolerance)
     }
 
     /// 最小サイズ以下の入力がクランプされることを検証
     @Test func clampedSize_clampToMinimum() throws {
-        let result = try #require(AdjustmentPanelController.clampedSize(newValue: 10, aspectRatio: 1.0, isWidth: false))
-        #expect(abs(result.height - AppConstants.minImageHeight) < AppConstants.floatingPointTolerance)
+        let result = try #require(
+            AdjustmentPanelController.clampedSize(newValue: 10, aspectRatio: 1.0, isWidth: false)
+        )
+        #expect(
+            abs(result.height - AppConstants.minImageHeight) < AppConstants.floatingPointTolerance
+        )
     }
 
     /// 最大サイズ以上の入力がクランプされることを検証
     @Test func clampedSize_clampToMaximum() throws {
-        let result = try #require(AdjustmentPanelController.clampedSize(newValue: 10000, aspectRatio: 1.0, isWidth: false))
-        #expect(abs(result.height - AppConstants.maxImageHeight) < AppConstants.floatingPointTolerance)
+        let result = try #require(
+            AdjustmentPanelController.clampedSize(newValue: 10000, aspectRatio: 1.0, isWidth: false)
+        )
+        #expect(
+            abs(result.height - AppConstants.maxImageHeight) < AppConstants.floatingPointTolerance
+        )
     }
 
     /// 0の入力で nil を返すことを検証
     @Test func clampedSize_zeroValue() {
-        let result = AdjustmentPanelController.clampedSize(newValue: 0, aspectRatio: 1.0, isWidth: true)
+        let result = AdjustmentPanelController.clampedSize(
+            newValue: 0, aspectRatio: 1.0, isWidth: true
+        )
         #expect(result == nil)
     }
 
     /// 負の入力で nil を返すことを検証
     @Test func clampedSize_negativeValue() {
-        let result = AdjustmentPanelController.clampedSize(newValue: -100, aspectRatio: 1.0, isWidth: true)
+        let result = AdjustmentPanelController.clampedSize(
+            newValue: -100, aspectRatio: 1.0, isWidth: true
+        )
         #expect(result == nil)
     }
 
     /// 無効なアスペクト比で nil を返すことを検証
     @Test func clampedSize_invalidAspectRatio() {
-        let result = AdjustmentPanelController.clampedSize(newValue: 400, aspectRatio: 0, isWidth: true)
+        let result = AdjustmentPanelController.clampedSize(
+            newValue: 400, aspectRatio: 0, isWidth: true
+        )
         #expect(result == nil)
     }
 

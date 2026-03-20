@@ -126,7 +126,9 @@ struct MenuStateUtilsTests {
 
     @Test("isBulkResetEnabled: ゴーストのみ")
     func isBulkResetEnabledGhostOnly() {
-        #expect(MenuStateUtils.isBulkResetEnabled(hasRotation: false, hasOpacity: false, hasGhost: true))
+        #expect(
+            MenuStateUtils.isBulkResetEnabled(hasRotation: false, hasOpacity: false, hasGhost: true)
+        )
     }
 
     // MARK: - canMoveForward Tests

@@ -41,7 +41,10 @@ import Testing
 
     /// 同じバージョンで完了済みの場合に表示不要と判定されることを検証
     @Test func shouldShowOnboarding_sameVersion() {
-        testDefaults.set(AppConstants.Onboarding.currentVersion, forKey: AppConstants.Onboarding.completedVersionKey)
+        testDefaults.set(
+            AppConstants.Onboarding.currentVersion,
+            forKey: AppConstants.Onboarding.completedVersionKey
+        )
         #expect(!manager.shouldShowOnboarding)
     }
 

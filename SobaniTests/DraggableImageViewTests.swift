@@ -52,7 +52,8 @@ struct DraggableImageViewTests {
             currentHeight: 200, scaleFactor: 0.01, aspectRatio: 1.0,
             rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
         )
-        #expect(abs(frames.imageViewFrame.height - AppConstants.minImageHeight) < AppConstants.floatingPointTolerance)
+        let minDiff = abs(frames.imageViewFrame.height - AppConstants.minImageHeight)
+        #expect(minDiff < AppConstants.floatingPointTolerance)
     }
 
     @Test("最大高さでクランプ")
@@ -61,7 +62,8 @@ struct DraggableImageViewTests {
             currentHeight: 5000, scaleFactor: 2.0, aspectRatio: 1.0,
             rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
         )
-        #expect(abs(frames.imageViewFrame.height - AppConstants.maxImageHeight) < AppConstants.floatingPointTolerance)
+        let maxDiff = abs(frames.imageViewFrame.height - AppConstants.maxImageHeight)
+        #expect(maxDiff < AppConstants.floatingPointTolerance)
     }
 
     @Test("ウィンドウ中心が維持される")

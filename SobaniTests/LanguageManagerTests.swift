@@ -14,7 +14,8 @@ import Testing
     private let manager: LanguageManager
 
     init() throws {
-        let testDefaults = try #require(UserDefaults(suiteName: "test-language-\(UUID().uuidString)"))
+        let suiteName = "test-language-\(UUID().uuidString)"
+        let testDefaults = try #require(UserDefaults(suiteName: suiteName))
         self.testDefaults = testDefaults
         self.manager = LanguageManager(defaults: testDefaults)
     }

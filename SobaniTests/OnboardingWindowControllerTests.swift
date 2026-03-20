@@ -9,7 +9,9 @@ import Testing
 
     /// 最初のステップではback非表示、skip・next表示を検証
     @Test func navigationButtonConfig_firstStep() {
-        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 0, totalSteps: 4)
+        let config = OnboardingWindowController.navigationButtonConfig(
+            currentStep: 0, totalSteps: 4
+        )
         #expect(config.showBack == false)
         #expect(config.showSkip == true)
         #expect(config.showNext == true)
@@ -19,7 +21,9 @@ import Testing
 
     /// 中間ステップではback・skip・next表示を検証
     @Test func navigationButtonConfig_middleStep() {
-        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 1, totalSteps: 4)
+        let config = OnboardingWindowController.navigationButtonConfig(
+            currentStep: 1, totalSteps: 4
+        )
         #expect(config.showBack == true)
         #expect(config.showSkip == true)
         #expect(config.showNext == true)
@@ -29,7 +33,9 @@ import Testing
 
     /// 最終ステップではstart・close表示、skip・next非表示を検証
     @Test func navigationButtonConfig_lastStep() {
-        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 3, totalSteps: 4)
+        let config = OnboardingWindowController.navigationButtonConfig(
+            currentStep: 3, totalSteps: 4
+        )
         #expect(config.showBack == true)
         #expect(config.showSkip == false)
         #expect(config.showNext == false)
@@ -39,7 +45,9 @@ import Testing
 
     /// totalSteps=1の場合、最初かつ最終ステップとして扱われることを検証
     @Test func navigationButtonConfig_singleStep() {
-        let config = OnboardingWindowController.navigationButtonConfig(currentStep: 0, totalSteps: 1)
+        let config = OnboardingWindowController.navigationButtonConfig(
+            currentStep: 0, totalSteps: 1
+        )
         #expect(config.showBack == false)
         #expect(config.showSkip == false)
         #expect(config.showNext == false)
@@ -76,7 +84,8 @@ import Testing
         let dotSpacing: CGFloat = 12
         let totalSteps = 4
         let frames = OnboardingWindowController.pageIndicatorDotFrames(
-            totalSteps: totalSteps, containerWidth: containerWidth, dotSize: dotSize, dotSpacing: dotSpacing
+            totalSteps: totalSteps, containerWidth: containerWidth,
+            dotSize: dotSize, dotSpacing: dotSpacing
         )
         let firstFrame = try #require(frames.first)
         let lastFrame = try #require(frames.last)
@@ -84,7 +93,8 @@ import Testing
         let expectedStartX = (containerWidth - totalWidth) / 2
         #expect(abs(firstFrame.origin.x - expectedStartX) < AppConstants.floatingPointTolerance)
         let expectedEndX = expectedStartX + totalWidth
-        #expect(abs((lastFrame.origin.x + lastFrame.width) - expectedEndX) < AppConstants.floatingPointTolerance)
+        let lastEndX = lastFrame.origin.x + lastFrame.width
+        #expect(abs(lastEndX - expectedEndX) < AppConstants.floatingPointTolerance)
     }
 
     /// 1ステップの場合、1つのフレームが中央に配置されることを検証

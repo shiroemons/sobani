@@ -10,7 +10,9 @@ import Testing
     init() throws {
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory, withIntermediateDirectories: true
+        )
         presetManager = LayoutPresetManager(baseDirectory: tempDirectory)
     }
 
@@ -45,7 +47,9 @@ import Testing
         encoder: JSONEncoder, directory: URL,
         id: UUID = UUID()
     ) throws {
-        let preset = LayoutPreset(id: id, name: name, createdAt: createdAt, states: [makeState(originX: originX)])
+        let preset = LayoutPreset(
+            id: id, name: name, createdAt: createdAt, states: [makeState(originX: originX)]
+        )
         let data = try encoder.encode(preset)
         try data.write(to: directory.appendingPathComponent("\(name).json"), options: .atomic)
     }
@@ -92,12 +96,9 @@ import Testing
         encoder.dateEncodingStrategy = .iso8601
         let now = Date()
 
-        try writePreset(name: "OldPreset", originX: 1, createdAt: now.addingTimeInterval(-200),
-                       encoder: encoder, directory: layoutsDir)
-        try writePreset(name: "MiddlePreset", originX: 2, createdAt: now.addingTimeInterval(-100),
-                       encoder: encoder, directory: layoutsDir)
-        try writePreset(name: "NewPreset", originX: 3, createdAt: now,
-                       encoder: encoder, directory: layoutsDir)
+        try writePreset(name: "OldPreset", originX: 1, createdAt: now.addingTimeInterval(-200), encoder: encoder, directory: layoutsDir)
+        try writePreset(name: "MiddlePreset", originX: 2, createdAt: now.addingTimeInterval(-100), encoder: encoder, directory: layoutsDir)
+        try writePreset(name: "NewPreset", originX: 3, createdAt: now, encoder: encoder, directory: layoutsDir)
 
         let all = presetManager.loadPresets()
         #expect(all.count == 3)
@@ -183,7 +184,9 @@ import Testing
         // ファイルがlayoutsディレクトリ内に保存されたことを検証
         let layoutsDirUnwrapped = try #require(presetManager.layoutsDirectoryURL)
         let resolvedLayoutsDir = layoutsDirUnwrapped.standardizedFileURL.path
-        let files = try FileManager.default.contentsOfDirectory(at: layoutsDirUnwrapped, includingPropertiesForKeys: nil)
+        let files = try FileManager.default.contentsOfDirectory(
+            at: layoutsDirUnwrapped, includingPropertiesForKeys: nil
+        )
         let jsonFiles = files.filter { $0.pathExtension == "json" }
         #expect(!jsonFiles.isEmpty, "Preset file should exist in layouts directory")
         for file in jsonFiles {
@@ -310,7 +313,9 @@ import Testing
         #expect(preset1 != preset3)
 
         let differentStates = [makeState(imageName: "other.png")]
-        let preset4 = LayoutPreset(id: sharedId, name: "Same", createdAt: date, states: differentStates)
+        let preset4 = LayoutPreset(
+            id: sharedId, name: "Same", createdAt: date, states: differentStates
+        )
         #expect(preset1 != preset4)
 
         // 異なるidを持つプリセットは等しくない
@@ -333,7 +338,9 @@ import Testing
         let layoutsDir = try #require(presetManager.layoutsDirectoryURL)
 
         var isDirectory: ObjCBool = false
-        let exists = FileManager.default.fileExists(atPath: layoutsDir.path, isDirectory: &isDirectory)
+        let exists = FileManager.default.fileExists(
+            atPath: layoutsDir.path, isDirectory: &isDirectory
+        )
         #expect(exists)
         #expect(isDirectory.boolValue)
     }

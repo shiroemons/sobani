@@ -12,7 +12,9 @@ import Testing
     init() throws {
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory, withIntermediateDirectories: true
+        )
         imageManager = ImageManager(baseDirectory: tempDirectory)
     }
 
@@ -60,8 +62,12 @@ import Testing
 
         try createTestImageFile(named: "test.png", in: imagesDir)
         try createTestImageFile(named: "test.jpg", in: imagesDir)
-        try "not an image".write(to: imagesDir.appendingPathComponent("test.txt"), atomically: true, encoding: .utf8)
-        try "not an image".write(to: imagesDir.appendingPathComponent("test.pdf"), atomically: true, encoding: .utf8)
+        try "not an image".write(
+            to: imagesDir.appendingPathComponent("test.txt"), atomically: true, encoding: .utf8
+        )
+        try "not an image".write(
+            to: imagesDir.appendingPathComponent("test.pdf"), atomically: true, encoding: .utf8
+        )
 
         let names = imageManager.registeredImageNames()
         #expect(names == ["test.jpg", "test.png"])
@@ -243,7 +249,8 @@ import Testing
         let url = sourceDir.appendingPathComponent("document.\(ext)")
         try "not an image".write(to: url, atomically: true, encoding: .utf8)
 
-        #expect(imageManager.registerImage(from: url) == nil, "拡張子 .\(ext) の登録は拒否すべき")
+        let registered = imageManager.registerImage(from: url)
+        #expect(registered == nil, "拡張子 .\(ext) の登録は拒否すべき")
     }
 
     // MARK: - Custom Default Tests
@@ -287,7 +294,9 @@ import Testing
         try? createTestPNGData().write(to: targetFile)
 
         // パストラバーサルを試みる
-        imageManager.removeRegisteredImage(named: "../SobaniTestsOutside-\(outsideDir.lastPathComponent)/should_not_be_deleted.png")
+        let dirName = outsideDir.lastPathComponent
+        let traversalName = "../SobaniTestsOutside-\(dirName)/should_not_be_deleted.png"
+        imageManager.removeRegisteredImage(named: traversalName)
 
         // ファイルは削除されていないことを確認
         #expect(FileManager.default.fileExists(atPath: targetFile.path))

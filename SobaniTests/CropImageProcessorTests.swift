@@ -191,7 +191,10 @@ private struct PixelRGBA {
         guard let data = context.data else { return nil }
         let buffer = data.bindMemory(to: UInt8.self, capacity: image.width * image.height * 4)
         let offset = (y * image.width + x) * 4
-        return PixelRGBA(red: buffer[offset], green: buffer[offset + 1], blue: buffer[offset + 2], alpha: buffer[offset + 3])
+        return PixelRGBA(
+            red: buffer[offset], green: buffer[offset + 1],
+            blue: buffer[offset + 2], alpha: buffer[offset + 3]
+        )
     }
 
     /// 指定座標のピクセルのアルファ値を取得するヘルパー
@@ -366,7 +369,9 @@ private struct PixelRGBA {
 
         // 下半分（CGContextリードバックでy=150）は赤であること（画像の上半分）
         let bottomPixel = try #require(pixelRGBA(of: result, atX: 50, y: 150))
-        #expect(bottomPixel.red > 200, "下半分のピクセルは赤（画像の上半分）であるべき")
+        #expect(
+            bottomPixel.red > 200, "下半分のピクセルは赤（画像の上半分）であるべき"
+        )
         #expect(bottomPixel.blue < 50, "Y軸が反転している場合、青が表示される")
 
         // 上半分（CGContextリードバックでy=50）は透明であること（画像外）
@@ -381,20 +386,30 @@ private struct PixelRGBA {
     @Test func extractCGImage_preservesOrientation() throws {
         // 100x100 の2トーン画像を生成（上半分: 赤, 下半分: 青）
         let cgImage = try #require(makeTwoToneImage(width: 100, height: 100))
-        let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+        let nsImage = NSImage(
+            cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height)
+        )
 
         // extractCGImage で取得
         let extracted = try #require(DraggableImageView.extractCGImage(from: nsImage))
 
         // 上端付近（CGContextリードバックでy=25）は赤であること
         let topPixel = try #require(pixelRGBA(of: extracted, atX: 50, y: 25))
-        #expect(topPixel.red > 200, "上半分のピクセルは赤であるべき（Y軸が保持されている）")
-        #expect(topPixel.blue < 50, "上半分のピクセルが青になっている場合はY軸が反転している")
+        #expect(
+            topPixel.red > 200, "上半分のピクセルは赤であるべき（Y軸が保持されている）"
+        )
+        #expect(
+            topPixel.blue < 50, "上半分のピクセルが青になっている場合はY軸が反転している"
+        )
 
         // 下端付近（CGContextリードバックでy=75）は青であること
         let bottomPixel = try #require(pixelRGBA(of: extracted, atX: 50, y: 75))
-        #expect(bottomPixel.blue > 200, "下半分のピクセルは青であるべき（Y軸が保持されている）")
-        #expect(bottomPixel.red < 50, "下半分のピクセルが赤になっている場合はY軸が反転している")
+        #expect(
+            bottomPixel.blue > 200, "下半分のピクセルは青であるべき（Y軸が保持されている）"
+        )
+        #expect(
+            bottomPixel.red < 50, "下半分のピクセルが赤になっている場合はY軸が反転している"
+        )
     }
 
 }

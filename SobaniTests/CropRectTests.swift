@@ -165,7 +165,9 @@ import Testing
         #expect(abs(AppConstants.floatingMenuButtonSize - 36) < AppConstants.floatingPointTolerance)
         #expect(abs(AppConstants.floatingMenuPadding - 8) < AppConstants.floatingPointTolerance)
         #expect(abs(AppConstants.floatingMenuGap - 4) < AppConstants.floatingPointTolerance)
-        #expect(abs(AppConstants.floatingMenuCornerRadius - 10) < AppConstants.floatingPointTolerance)
+        #expect(
+            abs(AppConstants.floatingMenuCornerRadius - 10) < AppConstants.floatingPointTolerance
+        )
     }
 
     /// Crop関連定数が正の値であることを検証

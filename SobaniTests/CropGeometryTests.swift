@@ -18,7 +18,9 @@ import Testing
 
     @Test func zoomScale_negativeAngle_sameAsPositive() {
         let scalePos = CropGeometry.zoomScaleForStraighten(angleDegrees: 20, aspectRatio: 4.0 / 3.0)
-        let scaleNeg = CropGeometry.zoomScaleForStraighten(angleDegrees: -20, aspectRatio: 4.0 / 3.0)
+        let scaleNeg = CropGeometry.zoomScaleForStraighten(
+            angleDegrees: -20, aspectRatio: 4.0 / 3.0
+        )
         #expect(abs(scalePos - scaleNeg) < AppConstants.floatingPointTolerance)
     }
 
@@ -48,13 +50,15 @@ import Testing
 
     @Test func clampStraightenAngle_withinRange() {
         #expect(abs(CropGeometry.clampStraightenAngle(0) - 0) < AppConstants.floatingPointTolerance)
-        #expect(abs(CropGeometry.clampStraightenAngle(30) - 30) < AppConstants.floatingPointTolerance)
-        #expect(abs(CropGeometry.clampStraightenAngle(-30) - (-30)) < AppConstants.floatingPointTolerance)
+        let tol = AppConstants.floatingPointTolerance
+        #expect(abs(CropGeometry.clampStraightenAngle(30) - 30) < tol)
+        #expect(abs(CropGeometry.clampStraightenAngle(-30) - (-30)) < tol)
     }
 
     @Test func clampStraightenAngle_clampsExtremes() {
-        #expect(abs(CropGeometry.clampStraightenAngle(90) - 45) < AppConstants.floatingPointTolerance)
-        #expect(abs(CropGeometry.clampStraightenAngle(-90) - (-45)) < AppConstants.floatingPointTolerance)
+        let tol = AppConstants.floatingPointTolerance
+        #expect(abs(CropGeometry.clampStraightenAngle(90) - 45) < tol)
+        #expect(abs(CropGeometry.clampStraightenAngle(-90) - (-45)) < tol)
     }
 
     // MARK: - cropRectForAspectRatio テスト
@@ -117,7 +121,9 @@ import Testing
     @Test func viewRectToNormalizedCrop_fullImage() {
         let cropFrame = CGRect(x: 100, y: 100, width: 400, height: 300)
         let imageRect = CGRect(x: 100, y: 100, width: 400, height: 300)
-        let result = CropGeometry.viewRectToNormalizedCrop(cropFrame: cropFrame, imageRect: imageRect)
+        let result = CropGeometry.viewRectToNormalizedCrop(
+            cropFrame: cropFrame, imageRect: imageRect
+        )
         #expect(abs(result.x - 0) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - 0) < AppConstants.floatingPointTolerance)
         #expect(abs(result.width - 1) < AppConstants.floatingPointTolerance)
@@ -127,7 +133,9 @@ import Testing
     @Test func viewRectToNormalizedCrop_halfCrop() {
         let cropFrame = CGRect(x: 200, y: 175, width: 200, height: 150)
         let imageRect = CGRect(x: 100, y: 100, width: 400, height: 300)
-        let result = CropGeometry.viewRectToNormalizedCrop(cropFrame: cropFrame, imageRect: imageRect)
+        let result = CropGeometry.viewRectToNormalizedCrop(
+            cropFrame: cropFrame, imageRect: imageRect
+        )
         #expect(abs(result.x - 0.25) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - 0.25) < AppConstants.floatingPointTolerance)
         #expect(abs(result.width - 0.5) < AppConstants.floatingPointTolerance)
@@ -184,7 +192,9 @@ import Testing
         // 左端がアンカー（bottomRightドラッグ）
         #expect(abs(result.originX - 0.1) < AppConstants.floatingPointTolerance)
         // 上端がアンカー
-        #expect(abs(result.originY - (0.1 + 0.5 - result.height)) < AppConstants.floatingPointTolerance)
+        #expect(
+            abs(result.originY - (0.1 + 0.5 - result.height)) < AppConstants.floatingPointTolerance
+        )
     }
 
     @Test func constrainedResize_cornerHandle_selectsSmallerArea() {
@@ -417,7 +427,9 @@ extension CropGeometryTests {
             height: drawHeight
         )
 
-        let result = CropGeometry.viewRectToNormalizedCrop(cropFrame: cropFrame, imageRect: imageRect)
+        let result = CropGeometry.viewRectToNormalizedCrop(
+            cropFrame: cropFrame, imageRect: imageRect
+        )
 
         #expect(abs(result.x - originalX) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - originalY) < AppConstants.floatingPointTolerance)

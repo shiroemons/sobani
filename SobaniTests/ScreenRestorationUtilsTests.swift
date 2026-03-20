@@ -12,7 +12,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: 100, y: 100)
         let windowSize = NSSize(width: 200, height: 200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 100)
         #expect(result.y == 100)
     }
@@ -22,7 +24,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: -50, y: 100)
         let windowSize = NSSize(width: 200, height: 200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 0)
         #expect(result.y == 100)
     }
@@ -32,7 +36,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: 1800, y: 100)
         let windowSize = NSSize(width: 200, height: 200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 1720)
         #expect(result.y == 100)
     }
@@ -42,7 +48,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: 100, y: -50)
         let windowSize = NSSize(width: 200, height: 200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 100)
         #expect(result.y == 0)
     }
@@ -52,7 +60,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: 100, y: 950)
         let windowSize = NSSize(width: 200, height: 200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 100)
         #expect(result.y == 880)
     }
@@ -62,7 +72,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: -100, y: -100)
         let windowSize = NSSize(width: 200, height: 200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 0)
         #expect(result.y == 0)
     }
@@ -72,7 +84,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: -100, y: -50)
         let windowSize = NSSize(width: 2000, height: 1200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == -100)
         #expect(result.y == -50)
     }
@@ -82,7 +96,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: -100, y: -50)
         let windowSize = NSSize(width: 2000, height: 200)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == -100)
         #expect(result.y == 0)
     }
@@ -92,7 +108,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: 1800, y: 100)
         let windowSize = NSSize(width: 200, height: 200)
         let screenFrame = NSRect(x: 1920, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 1920)
         #expect(result.y == 100)
     }
@@ -102,7 +120,9 @@ struct ScreenRestorationUtilsTests {
         let origin = NSPoint(x: 0, y: 0)
         let windowSize = NSSize(width: 1920, height: 1080)
         let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
-        let result = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screenFrame)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
         #expect(result.x == 0)
         #expect(result.y == 0)
     }
@@ -252,7 +272,8 @@ struct ScreenRestorationUtilsScreenSearchTests {
         let screens = [mainScreen, secondaryScreen]
         let savedFrame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
         let result = ScreenRestorationUtils.findTargetScreen(
-            savedDisplayID: 99, savedScreenFrame: savedFrame, availableScreens: screens, tolerance: 100
+            savedDisplayID: 99, savedScreenFrame: savedFrame,
+            availableScreens: screens, tolerance: 100
         )
         #expect(result != nil)
         #expect(result?.displayID == 2)
@@ -263,7 +284,8 @@ struct ScreenRestorationUtilsScreenSearchTests {
         let screens = [mainScreen, secondaryScreen]
         let savedFrame = NSRect(x: 5000, y: 5000, width: 800, height: 600)
         let result = ScreenRestorationUtils.findTargetScreen(
-            savedDisplayID: 99, savedScreenFrame: savedFrame, availableScreens: screens, tolerance: 100
+            savedDisplayID: 99, savedScreenFrame: savedFrame,
+            availableScreens: screens, tolerance: 100
         )
         #expect(result == nil)
     }

@@ -30,35 +30,45 @@ struct AppDelegateTests {
 
     @Test("resolveImageName: デフォルト画像名と一致する場合 → デフォルトを返す")
     func resolveImageNameDefault() {
-        let result = AppDelegate.resolveImageName("default", defaultImageName: "default", registeredImageExists: false)
+        let result = AppDelegate.resolveImageName(
+            "default", defaultImageName: "default", registeredImageExists: false
+        )
         #expect(result.resolvedName == "default")
         #expect(result.isDefault == true)
     }
 
     @Test("resolveImageName: デフォルト画像名と一致する場合（登録画像あり） → デフォルトを返す")
     func resolveImageNameDefaultEvenIfRegistered() {
-        let result = AppDelegate.resolveImageName("default", defaultImageName: "default", registeredImageExists: true)
+        let result = AppDelegate.resolveImageName(
+            "default", defaultImageName: "default", registeredImageExists: true
+        )
         #expect(result.resolvedName == "default")
         #expect(result.isDefault == true)
     }
 
     @Test("resolveImageName: 登録画像が存在する場合 → その名前を返す")
     func resolveImageNameRegistered() {
-        let result = AppDelegate.resolveImageName("custom.png", defaultImageName: "default", registeredImageExists: true)
+        let result = AppDelegate.resolveImageName(
+            "custom.png", defaultImageName: "default", registeredImageExists: true
+        )
         #expect(result.resolvedName == "custom.png")
         #expect(result.isDefault == false)
     }
 
     @Test("resolveImageName: 登録画像が存在しない場合 → デフォルトにフォールバック")
     func resolveImageNameFallback() {
-        let result = AppDelegate.resolveImageName("missing.png", defaultImageName: "default", registeredImageExists: false)
+        let result = AppDelegate.resolveImageName(
+            "missing.png", defaultImageName: "default", registeredImageExists: false
+        )
         #expect(result.resolvedName == "default")
         #expect(result.isDefault == true)
     }
 
     @Test("resolveImageName: 空文字列で登録画像が存在しない場合 → デフォルトにフォールバック")
     func resolveImageNameEmptyString() {
-        let result = AppDelegate.resolveImageName("", defaultImageName: "default", registeredImageExists: false)
+        let result = AppDelegate.resolveImageName(
+            "", defaultImageName: "default", registeredImageExists: false
+        )
         #expect(result.resolvedName == "default")
         #expect(result.isDefault == true)
     }

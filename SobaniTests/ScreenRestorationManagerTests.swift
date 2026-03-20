@@ -11,22 +11,13 @@ import Testing
 
     init() throws {
         manager = ScreenRestorationManager(timeout: 300)
-        tempDirectory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
+        tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("SobaniTests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
         ioManager = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
     }
 
     private func makeState(windowId: Int = 1, originX: CGFloat = 100, originY: CGFloat = 200) -> WindowState {
-        WindowState(
-            imageName: "テスト",
-            originX: originX,
-            originY: originY,
-            width: 300,
-            height: 400,
-            isFlippedHorizontally: false,
-            windowId: windowId
-        )
+        WindowState(imageName: "テスト", originX: originX, originY: originY, width: 300, height: 400, isFlippedHorizontally: false, windowId: windowId)
     }
 
     // MARK: - addPending
@@ -95,23 +86,11 @@ import Testing
     // MARK: - purgeExpired
 
     /// タイムアウト境界値でエントリの保持・パージが正しく動作することを検証
-    @Test(arguments: [
-        (0.0, true),
-        (299.0, true),
-        (300.0, true),
-        (301.0, false),
-        (600.0, false)
-    ])
+    @Test(arguments: [(0.0, true), (299.0, true), (300.0, true), (301.0, false), (600.0, false)])
     func purgeExpiredBoundary(elapsed: Double, shouldKeep: Bool) {
         let baseDate = Date()
         manager.currentDate = { baseDate }
-        manager.addPending(
-            windowId: 1,
-            originalState: makeState(),
-            displayID: 0,
-            adjustedOriginX: 50,
-            adjustedOriginY: 60
-        )
+        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
 
         manager.currentDate = { baseDate.addingTimeInterval(elapsed) }
         manager.purgeExpired()
@@ -132,12 +111,9 @@ import Testing
         let state2 = makeState(windowId: 2, originX: 200)
         manager.addPending(windowId: 1, originalState: state1, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
         manager.addPending(windowId: 2, originalState: state2, displayID: 999999, adjustedOriginX: 70, adjustedOriginY: 80)
-
         manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
-        let results = manager.restorableEntries()
-
         // displayID: 999999 は実スクリーンと一致しないため空になる
-        #expect(results.isEmpty)
+        #expect(manager.restorableEntries().isEmpty)
     }
 
     /// restorableEntriesが期限切れエントリをパージすることを検証
@@ -145,11 +121,8 @@ import Testing
         let baseDate = Date()
         manager.currentDate = { baseDate }
         manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
-
-        // Advance time past timeout
         manager.currentDate = { baseDate.addingTimeInterval(301) }
         let results = manager.restorableEntries()
-
         #expect(results.isEmpty)
         #expect(manager.pendingRestorations.isEmpty)
     }
@@ -159,11 +132,8 @@ import Testing
         // displayID が非0で実スクリーンに存在しない場合は空
         let state = makeState(windowId: 1, originX: 100, originY: 200)
         manager.addPending(windowId: 1, originalState: state, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
-
         manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
-        let results = manager.restorableEntries()
-
-        #expect(results.isEmpty)
+        #expect(manager.restorableEntries().isEmpty)
     }
 
     /// displayID 0かつ画面外位置で復元対象にならないことを検証
@@ -171,12 +141,9 @@ import Testing
         // displayID: 0（スリープなし切断）かつ画面外の位置 → 空（元の位置がまだ不可視）
         let state = makeState(windowId: 1, originX: -99999, originY: -99999)
         manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
-
         manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
-        let results = manager.restorableEntries()
-
         // 元の位置が不可視のため、復元対象にならない
-        #expect(results.isEmpty)
+        #expect(manager.restorableEntries().isEmpty)
     }
 
     // MARK: - Persistence
@@ -193,10 +160,8 @@ import Testing
         let state = makeState(windowId: 1, originX: 100, originY: 200)
         ioManager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 50, adjustedOriginY: 60)
         ioManager.savePending()
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-
         #expect(loader.pendingRestorations.count == 1)
         let entry = loader.pendingRestorations[0]
         #expect(entry.windowId == 1)
@@ -213,10 +178,8 @@ import Testing
         ioManager.addPending(windowId: 1, originalState: state1, displayID: 10, adjustedOriginX: 10, adjustedOriginY: 20)
         ioManager.addPending(windowId: 2, originalState: state2, displayID: 20, adjustedOriginX: 30, adjustedOriginY: 40)
         ioManager.savePending()
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-
         #expect(loader.pendingRestorations.count == 2)
     }
 
@@ -245,12 +208,9 @@ import Testing
         let state = makeState(windowId: 1)
         ioManager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
         ioManager.savePending()
-
-        // タイムアウト超過した時刻でロード
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.currentDate = { baseDate.addingTimeInterval(301) }
         loader.loadPending()
-
         #expect(loader.pendingRestorations.isEmpty)
     }
 
@@ -260,10 +220,8 @@ import Testing
         let stateOld = makeState(windowId: 1, originX: 100)
         ioManager.addPending(windowId: 1, originalState: stateOld, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
         ioManager.savePending()
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-
         // 起動時に新しいエントリで上書き
         let stateNew = makeState(windowId: 1, originX: 999)
         loader.addPending(windowId: 1, originalState: stateNew, displayID: 0, adjustedOriginX: 70, adjustedOriginY: 80)
@@ -275,7 +233,6 @@ import Testing
     /// 空キューの保存で空ファイルが生成されることを検証
     @Test func saveEmptyQueueProducesEmptyFile() {
         ioManager.savePending()
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
         #expect(loader.pendingRestorations.isEmpty)
@@ -287,10 +244,8 @@ import Testing
         let state = makeState(windowId: 1)
         ioManager.addPending(windowId: 1, originalState: state, displayID: displayID, adjustedOriginX: 0, adjustedOriginY: 0)
         ioManager.savePending()
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-
         #expect(loader.pendingRestorations[0].displayID == displayID)
     }
 
@@ -300,9 +255,7 @@ import Testing
     @Test func addPendingWithScreenFrame() {
         let state = makeState()
         let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
-        manager.addPending(windowId: 1, originalState: state, displayID: 42,
-                          adjustedOriginX: 50, adjustedOriginY: 60,
-                          preSleepScreenFrame: frame)
+        manager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 50, adjustedOriginY: 60, preSleepScreenFrame: frame)
         #expect(manager.pendingRestorations.count == 1)
         #expect(manager.pendingRestorations[0].preSleepScreenFrame == frame)
     }
@@ -310,8 +263,7 @@ import Testing
     /// スリープ前画面フレーム省略時にnilがデフォルトになることを検証
     @Test func addPendingWithoutScreenFrameDefaultsToNil() {
         let state = makeState()
-        manager.addPending(windowId: 1, originalState: state, displayID: 42,
-                          adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 50, adjustedOriginY: 60)
         #expect(manager.pendingRestorations[0].preSleepScreenFrame == nil)
     }
 
@@ -319,59 +271,33 @@ import Testing
     @Test func screenFramePreservedAcrossSaveLoad() {
         let state = makeState(windowId: 1)
         let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
-        ioManager.addPending(windowId: 1, originalState: state, displayID: 42,
-                            adjustedOriginX: 0, adjustedOriginY: 0,
-                            preSleepScreenFrame: frame)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 0, adjustedOriginY: 0, preSleepScreenFrame: frame)
         ioManager.savePending()
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-
         #expect(loader.pendingRestorations[0].preSleepScreenFrame == frame)
     }
 
     /// nilのスリープ前画面フレームが保存・読み込みで保持されることを検証
     @Test func nilScreenFramePreservedAcrossSaveLoad() {
         let state = makeState(windowId: 1)
-        ioManager.addPending(windowId: 1, originalState: state, displayID: 42,
-                            adjustedOriginX: 0, adjustedOriginY: 0)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 0, adjustedOriginY: 0)
         ioManager.savePending()
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-
         #expect(loader.pendingRestorations[0].preSleepScreenFrame == nil)
     }
 
     /// screenFrameフィールドなしの旧フォーマットJSONが読み込めることを検証
     @Test func loadPendingBackwardCompatibilityWithoutScreenFrame() throws {
         // 古いフォーマット（screenFrame フィールドなし）のJSONを読み込めることを確認
-        let oldFormatJSON = """
-        [
-            {
-                "windowId": 1,
-                "originalState": {
-                    "imageName": "テスト",
-                    "originX": 100,
-                    "originY": 200,
-                    "width": 300,
-                    "height": 400,
-                    "isFlippedHorizontally": false,
-                    "windowId": 1
-                },
-                "displayID": 42,
-                "adjustedOriginX": 50,
-                "adjustedOriginY": 60,
-                "createdAt": \(Date().timeIntervalSinceReferenceDate)
-            }
-        ]
-        """
+        let createdAt = Date().timeIntervalSinceReferenceDate
+        // swiftlint:disable:next line_length
+        let oldFormatJSON = "[{\"windowId\":1,\"originalState\":{\"imageName\":\"テスト\",\"originX\":100,\"originY\":200,\"width\":300,\"height\":400,\"isFlippedHorizontally\":false,\"windowId\":1},\"displayID\":42,\"adjustedOriginX\":50,\"adjustedOriginY\":60,\"createdAt\":\(createdAt)}]"
         let url = try #require(ioManager.pendingFileURL)
         try Data(oldFormatJSON.utf8).write(to: url, options: .atomic)
-
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
-
         #expect(loader.pendingRestorations.count == 1)
         #expect(loader.pendingRestorations[0].preSleepScreenFrame == nil)
     }

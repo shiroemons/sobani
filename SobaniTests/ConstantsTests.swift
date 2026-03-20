@@ -50,7 +50,10 @@ import os.log
     /// 全タグのrawValueが一意であることを検証
     @Test func menuItemTag_AllValuesUnique() {
         let rawValues = MenuItemTag.allCases.map { $0.rawValue }
-        #expect(rawValues.count == Set(rawValues).count, "MenuItemTag に重複するrawValueがあります")
+        #expect(
+            rawValues.count == Set(rawValues).count,
+            "MenuItemTag に重複するrawValueがあります"
+        )
     }
 
     /// 全タグ値が1001以上であることを検証
@@ -251,7 +254,9 @@ import os.log
 
         UserDefaults.standard.removeObject(forKey: key)
         let alpha = GhostModeSettings.globalAlpha
-        #expect(abs(alpha - AppConstants.ghostModeAlphaDefault) < AppConstants.floatingPointTolerance)
+        #expect(
+            abs(alpha - AppConstants.ghostModeAlphaDefault) < AppConstants.floatingPointTolerance
+        )
     }
 
     /// 範囲外の値がクランプされることを検証
@@ -268,10 +273,16 @@ import os.log
         }
 
         GhostModeSettings.globalAlpha = 0.0
-        #expect(abs(GhostModeSettings.globalAlpha - AppConstants.ghostModeAlphaMin) < AppConstants.floatingPointTolerance)
+        #expect(
+            abs(GhostModeSettings.globalAlpha - AppConstants.ghostModeAlphaMin)
+                < AppConstants.floatingPointTolerance
+        )
 
         GhostModeSettings.globalAlpha = 1.0
-        #expect(abs(GhostModeSettings.globalAlpha - AppConstants.ghostModeAlphaMax) < AppConstants.floatingPointTolerance)
+        #expect(
+            abs(GhostModeSettings.globalAlpha - AppConstants.ghostModeAlphaMax)
+                < AppConstants.floatingPointTolerance
+        )
     }
 
     /// UserDefaultsへの保存・読み出しラウンドトリップを検証

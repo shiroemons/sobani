@@ -6,7 +6,9 @@ import Testing
 /// WindowStateの非表示機能に関するテスト
 @Suite @MainActor struct WindowStateHiddenTests {
     private func fakeScreens() -> [ScreenInfo] {
-        [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)]
+        [ScreenInfo(
+            frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true
+        )]
     }
 
     @Test func encodeDecodeWithHidden() throws {

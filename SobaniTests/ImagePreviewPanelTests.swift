@@ -19,7 +19,9 @@ struct ImagePreviewPanelTests {
     /// 最大寸法を超える横長画像が正しく縮小されることを検証
     @Test("最大寸法を超える横長画像は縮小")
     func scaledSizeLandscapeOverMax() {
-        let result = ImagePreviewPanel.scaledSize(for: NSSize(width: 512, height: 256), maxDimension: 256)
+        let result = ImagePreviewPanel.scaledSize(
+            for: NSSize(width: 512, height: 256), maxDimension: 256
+        )
         #expect(abs(result.width - 256) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 128) < AppConstants.floatingPointTolerance)
     }
@@ -27,7 +29,9 @@ struct ImagePreviewPanelTests {
     /// 最大寸法を超える縦長画像が正しく縮小されることを検証
     @Test("最大寸法を超える縦長画像は縮小")
     func scaledSizePortraitOverMax() {
-        let result = ImagePreviewPanel.scaledSize(for: NSSize(width: 256, height: 512), maxDimension: 256)
+        let result = ImagePreviewPanel.scaledSize(
+            for: NSSize(width: 256, height: 512), maxDimension: 256
+        )
         #expect(abs(result.width - 128) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 256) < AppConstants.floatingPointTolerance)
     }
@@ -35,7 +39,9 @@ struct ImagePreviewPanelTests {
     /// 正方形画像のスケーリングが正しいことを検証
     @Test("正方形画像のスケーリング")
     func scaledSizeSquare() {
-        let result = ImagePreviewPanel.scaledSize(for: NSSize(width: 400, height: 400), maxDimension: 200)
+        let result = ImagePreviewPanel.scaledSize(
+            for: NSSize(width: 400, height: 400), maxDimension: 200
+        )
         #expect(abs(result.width - 200) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 200) < AppConstants.floatingPointTolerance)
     }
@@ -43,7 +49,9 @@ struct ImagePreviewPanelTests {
     /// ゼロサイズの画像でフォールバックサイズが返されることを検証
     @Test("ゼロサイズの画像")
     func scaledSizeZero() {
-        let result = ImagePreviewPanel.scaledSize(for: NSSize(width: 0, height: 0), maxDimension: 256)
+        let result = ImagePreviewPanel.scaledSize(
+            for: NSSize(width: 0, height: 0), maxDimension: 256
+        )
         #expect(abs(result.width - 256) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 256) < AppConstants.floatingPointTolerance)
     }
@@ -51,7 +59,9 @@ struct ImagePreviewPanelTests {
     /// 幅のみゼロの画像でフォールバックサイズが返されることを検証
     @Test("幅ゼロの画像")
     func scaledSizeZeroWidth() {
-        let result = ImagePreviewPanel.scaledSize(for: NSSize(width: 0, height: 100), maxDimension: 256)
+        let result = ImagePreviewPanel.scaledSize(
+            for: NSSize(width: 0, height: 100), maxDimension: 256
+        )
         #expect(abs(result.width - 256) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 256) < AppConstants.floatingPointTolerance)
     }
@@ -59,7 +69,9 @@ struct ImagePreviewPanelTests {
     /// ちょうど最大寸法の画像はそのまま返されることを検証
     @Test("ちょうど最大寸法の画像")
     func scaledSizeExactMax() {
-        let result = ImagePreviewPanel.scaledSize(for: NSSize(width: 256, height: 200), maxDimension: 256)
+        let result = ImagePreviewPanel.scaledSize(
+            for: NSSize(width: 256, height: 200), maxDimension: 256
+        )
         #expect(abs(result.width - 256) < AppConstants.floatingPointTolerance)
         #expect(abs(result.height - 200) < AppConstants.floatingPointTolerance)
     }
@@ -160,7 +172,9 @@ struct ImagePreviewPanelTests {
     func fallbackPositionBasic() {
         let mouse = NSPoint(x: 500, y: 500)
         let panelSize = NSSize(width: 200, height: 200)
-        let result = ImagePreviewPanel.fallbackPosition(mouseLocation: mouse, panelSize: panelSize, offset: 20)
+        let result = ImagePreviewPanel.fallbackPosition(
+            mouseLocation: mouse, panelSize: panelSize, offset: 20
+        )
         #expect(abs(result.x - 520) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - 400) < AppConstants.floatingPointTolerance)
     }
@@ -181,7 +195,9 @@ struct ImagePreviewPanelTests {
     func fallbackPositionAtOrigin() {
         let mouse = NSPoint(x: 0, y: 0)
         let panelSize = NSSize(width: 100, height: 100)
-        let result = ImagePreviewPanel.fallbackPosition(mouseLocation: mouse, panelSize: panelSize, offset: 10)
+        let result = ImagePreviewPanel.fallbackPosition(
+            mouseLocation: mouse, panelSize: panelSize, offset: 10
+        )
         #expect(abs(result.x - 10) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - (-50)) < AppConstants.floatingPointTolerance)
     }
@@ -240,7 +256,9 @@ struct ImagePreviewPanelTests {
             (frame: NSRect(x: 200, y: 0, width: 200, height: 300), level: 50),   // レベル不足
             (frame: NSRect(x: 300, y: 0, width: 200, height: 300), level: 150),
         ]
-        let result = ImagePreviewPanel.filterMenuWindowFrames(frames: frames, menuLevel: 100, minWidth: 60)
+        let result = ImagePreviewPanel.filterMenuWindowFrames(
+            frames: frames, menuLevel: 100, minWidth: 60
+        )
         #expect(result.count == 2)
         #expect(abs(result[0].origin.x - 0) < AppConstants.floatingPointTolerance)
         #expect(abs(result[1].origin.x - 300) < AppConstants.floatingPointTolerance)
@@ -262,7 +280,9 @@ struct ImagePreviewPanelTests {
             (frame: NSRect(x: 0, y: 0, width: 10, height: 300), level: 100),  // 幅不足
             (frame: NSRect(x: 0, y: 0, width: 200, height: 300), level: 10),  // レベル不足
         ]
-        let result = ImagePreviewPanel.filterMenuWindowFrames(frames: frames, menuLevel: 100, minWidth: 60)
+        let result = ImagePreviewPanel.filterMenuWindowFrames(
+            frames: frames, menuLevel: 100, minWidth: 60
+        )
         #expect(result.isEmpty)
     }
 

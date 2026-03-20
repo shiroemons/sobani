@@ -11,7 +11,9 @@ import Testing
     init() throws {
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory, withIntermediateDirectories: true
+        )
         stateManager = WindowStateManager(baseDirectory: tempDirectory)
     }
 
@@ -42,7 +44,9 @@ import Testing
     }
 
     private func fakeScreens() -> [ScreenInfo] {
-        [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)]
+        [ScreenInfo(
+            frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true
+        )]
     }
 
     // MARK: - Encode/Decode Tests

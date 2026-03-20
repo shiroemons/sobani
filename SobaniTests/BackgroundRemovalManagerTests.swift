@@ -58,11 +58,12 @@ import Testing
         guard #available(macOS 14.0, *) else { return }
         let emptyImage = NSImage()
 
-        let result: Result<NSImage, BackgroundRemovalError> = await withCheckedContinuation { continuation in
-            BackgroundRemovalManager.shared.removeBackground(from: emptyImage) { result in
-                continuation.resume(returning: result)
+        let result: Result<NSImage, BackgroundRemovalError> =
+            await withCheckedContinuation { continuation in
+                BackgroundRemovalManager.shared.removeBackground(from: emptyImage) { result in
+                    continuation.resume(returning: result)
+                }
             }
-        }
         switch result {
         case .failure(let error):
             #expect(error == .cgImageConversionFailed)
@@ -76,11 +77,12 @@ import Testing
         guard #available(macOS 14.0, *) else { return }
         let image = try createTestImage()
 
-        let _: Result<NSImage, BackgroundRemovalError> = await withCheckedContinuation { continuation in
-            BackgroundRemovalManager.shared.removeBackground(from: image) { result in
-                continuation.resume(returning: result)
+        let _: Result<NSImage, BackgroundRemovalError> =
+            await withCheckedContinuation { continuation in
+                BackgroundRemovalManager.shared.removeBackground(from: image) { result in
+                    continuation.resume(returning: result)
+                }
             }
-        }
     }
 
     /// removeBackgroundの完了コールバックがメインスレッドで呼ばれることを検証

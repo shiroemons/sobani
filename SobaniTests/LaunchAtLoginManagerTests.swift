@@ -20,7 +20,9 @@ import Testing
     /// statusが有効なSMAppService.Statusのいずれかであることを検証
     @Test func statusCanBeRead() {
         let status = LaunchAtLoginManager.shared.status
-        let validStatuses: [SMAppService.Status] = [.enabled, .requiresApproval, .notRegistered, .notFound]
+        let validStatuses: [SMAppService.Status] = [
+            .enabled, .requiresApproval, .notRegistered, .notFound
+        ]
         #expect(validStatuses.contains(status))
     }
 

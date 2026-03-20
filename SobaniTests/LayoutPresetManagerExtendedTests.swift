@@ -10,7 +10,9 @@ import Testing
     init() throws {
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory, withIntermediateDirectories: true
+        )
         presetManager = LayoutPresetManager(baseDirectory: tempDirectory)
     }
 

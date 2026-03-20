@@ -74,8 +74,7 @@ import Testing
 
     /// Command+Shift+MキーのショートカットがVK_ANSIに正しく変換されることを検証
     @Test func shortcutDisplayString_commandShiftM() {
-        #expect(
-            KeyCodeMapper.shortcutDisplayString(keyCode: 46, modifiers: [.command, .shift]) == "⇧⌘M"
-        )
+        let result = KeyCodeMapper.shortcutDisplayString(keyCode: 46, modifiers: [.command, .shift])
+        #expect(result == "⇧⌘M")
     }
 }

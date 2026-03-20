@@ -91,7 +91,9 @@ import Testing
         let rect = CropRect(
             x: 0.1, y: 0.2, width: 0.5, height: 0.6,
             shape: .roundedRectangle,
-            cornerRadii: CornerRadii(topLeft: 0.1, topRight: 0.2, bottomLeft: 0.3, bottomRight: 0.4),
+            cornerRadii: CornerRadii(
+                topLeft: 0.1, topRight: 0.2, bottomLeft: 0.3, bottomRight: 0.4
+            ),
             cornersLinked: false
         )
         let data = try JSONEncoder().encode(rect)

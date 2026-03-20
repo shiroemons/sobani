@@ -67,7 +67,9 @@ struct CharacterWindowTests {
     func roundTripNoRotation() {
         let originalWindowFrame = NSRect(x: 150, y: 250, width: 200, height: 200)
         let imageSize = NSSize(width: 200, height: 200)
-        let imgOrigin = CharacterWindow.imageOrigin(windowFrame: originalWindowFrame, imageViewSize: imageSize)
+        let imgOrigin = CharacterWindow.imageOrigin(
+            windowFrame: originalWindowFrame, imageViewSize: imageSize
+        )
         let recoveredWindowOrigin = CharacterWindow.windowOrigin(
             forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: 0
         )
@@ -83,7 +85,9 @@ struct CharacterWindowTests {
             width: imageSize.width, height: imageSize.height, angleDegrees: rotationAngle
         )
         let originalWindowFrame = NSRect(x: 150, y: 250, width: bbSize.width, height: bbSize.height)
-        let imgOrigin = CharacterWindow.imageOrigin(windowFrame: originalWindowFrame, imageViewSize: imageSize)
+        let imgOrigin = CharacterWindow.imageOrigin(
+            windowFrame: originalWindowFrame, imageViewSize: imageSize
+        )
         let recoveredWindowOrigin = CharacterWindow.windowOrigin(
             forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: rotationAngle
         )
@@ -237,8 +241,15 @@ struct CharacterWindowTests {
 
     @Test("複数のタグで正しいキーが返る")
     func menuTitleLocalizationKeyMultiple() {
-        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.changeImageSubmenu.rawValue) == "image.change")
-        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.flipContext.rawValue) == "adjust.flip")
-        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.close.rawValue) == "menu.close_image")
+        let changeImageTag = MenuItemTag.changeImageSubmenu.rawValue
+        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: changeImageTag) == "image.change")
+        #expect(
+            CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.flipContext.rawValue)
+                == "adjust.flip"
+        )
+        #expect(
+            CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.close.rawValue)
+                == "menu.close_image"
+        )
     }
 }
