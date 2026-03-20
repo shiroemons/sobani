@@ -113,6 +113,11 @@ struct WindowState: Codable, Equatable, Sendable {
 
 // MARK: - Window State Manager
 
+/// ウィンドウ状態の永続化を管理するシングルトン。
+///
+/// `window_states.json` への保存・読み込みを担当し、起動時の状態復元と
+/// 終了時の状態保存を `AppDelegate` から呼び出される。
+/// レガシー画像名（`"デフォルト"` → `"default"`）の正規化も行う。
 @MainActor
 final class WindowStateManager {
     static let shared = WindowStateManager()
@@ -128,6 +133,9 @@ final class WindowStateManager {
         appSupportURL?.appendingPathComponent("window_states.json")
     }
 
+    /// 全ウィンドウの状態を JSON にエンコードして保存する。
+    ///
+    /// - Parameter states: 保存するウィンドウ状態の配列。Z-order は配列順で表現される。
     func saveStates(_ states: [WindowState]) {
         guard let url = statesFileURL else { return }
         JSONPersistence.save(
@@ -135,6 +143,11 @@ final class WindowStateManager {
         )
     }
 
+    /// 保存済みのウィンドウ状態を JSON から読み込む。
+    ///
+    /// レガシー画像名の正規化を自動的に行う。
+    /// ファイルが存在しない場合は空配列を返す。
+    /// - Returns: デコードされたウィンドウ状態の配列。
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
         guard var states = JSONPersistence.load(
@@ -147,6 +160,10 @@ final class WindowStateManager {
         return states
     }
 
+    /// 指定されたウィンドウの現在の状態をキャプチャする。
+    ///
+    /// - Parameter charWindow: 状態を取得するキャラクターウィンドウ。
+    /// - Returns: 現在のウィンドウ状態を表す `WindowState`。
     @MainActor static func captureState(from charWindow: CharacterWindow) -> WindowState {
         let windowCenter = NSPoint(x: charWindow.window.frame.midX, y: charWindow.window.frame.midY)
         let baseWidth = charWindow.imageView.frame.width

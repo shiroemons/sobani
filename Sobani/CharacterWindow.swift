@@ -12,6 +12,11 @@ private final class RotatableContainer: NSView {
 
 // MARK: - Character Window
 
+/// デスクトップに表示される透明キャラクターウィンドウ。
+///
+/// 各ウィンドウは `NSWindow`（ボーダーレス透明）と `DraggableImageView` を保持し、
+/// コンテキストメニュー、ゴーストモード、クロップ編集、背景除去、不透明度調整を提供する。
+/// Z-order は `AppDelegate.zOrderedWindows` 配列で管理される。
 @MainActor
 final class CharacterWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
@@ -20,6 +25,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         didSet { imageView.characterWindowDelegate = delegate }
     }
     var displayName: String = AppConstants.defaultImageName
+    /// ウィンドウの一意識別子。`AppDelegate.nextWindowId` から順次割り当てられる。
     var windowId: Int = 0
     private(set) var adjustmentPanelController: AdjustmentPanelController?
     var spinnerOverlay: NSProgressIndicator?
@@ -28,6 +34,8 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         !isRemovingBackground && !imageHasAlpha()
     }
     var cachedHasAlpha: Bool?
+    /// ゴーストモードの状態。有効時は `ignoresMouseEvents = true` かつ画像の alpha が 0.3 になる。
+    /// 無効化時は alpha がウィンドウ固有の `opacityLevel` に戻る（1.0 ではない）。
     private(set) var isGhostMode: Bool = false
     private(set) var isHidden: Bool = false
     private(set) var customGhostAlpha: CGFloat?

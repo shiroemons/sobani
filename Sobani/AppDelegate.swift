@@ -4,6 +4,11 @@ import ServiceManagement
 
 // MARK: - App Delegate
 
+/// Sobani アプリケーションのメインデリゲート。
+///
+/// メニューバー専用アプリ（`LSUIElement`）として動作し、ステータスバーメニュー、
+/// ウィンドウのライフサイクル管理、ホットキー監視、画面復元を統括する。
+/// ウィンドウの重なり順は `zOrderedWindows` 配列で管理される。
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let logger = Logger(category: "AppDelegate")
@@ -206,6 +211,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         windowCount == 0 && !isApplyingLayout
     }
 
+    /// すべてのウィンドウが閉じられた場合にアプリを終了する。
+    ///
+    /// `applicationShouldTerminate` は常に `.terminateCancel` を返すため、
+    /// 終了は `shouldTerminate` フラグを設定してからこのメソッドを呼ぶか、
+    /// 明示的な終了アクション経由で行う必要がある。
     func quitIfNoWindows() {
         if Self.shouldQuitApp(
             windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout
@@ -233,6 +243,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         shouldTerminate = true
     }
 
+    /// 新しいキャラクターウィンドウを作成して表示する。
+    ///
+    /// - Parameter imageName: 表示する画像名。`nil` の場合はデフォルト画像を使用する。
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
             areWindowsHidden = false

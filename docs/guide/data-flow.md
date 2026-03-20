@@ -51,6 +51,7 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `cropRect` | `CropRect?` | クロップ状態（詳細は下記の CropRect 構造体を参照）、nilはクロップなし | `nil` |
 | `isGhostMode` | `Bool` | ゴーストモード（クリックスルー）の状態 | `false` |
 | `customGhostAlpha` | `CGFloat?` | ゴーストモード個別不透明度（nilはグローバル設定に従う） | `nil` |
+| `isHidden` | `Bool` | ウィンドウ非表示状態（一時的な非表示操作時の保存用） | `false` |
 
 > **注**: `cropRect` は `decodeIfPresent` を使用してデコードされるため、cropRectフィールドが無い既存JSONも正常に読み込み可能です（後方互換性）。
 
@@ -74,6 +75,9 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `aspectRatioPreset` | `String?` | 選択中のアスペクト比プリセット名 | `nil` |
 | `verticalPerspective` | `CGFloat` | 垂直パースペクティブ補正（-45°〜+45°） | `0` |
 | `horizontalPerspective` | `CGFloat` | 水平パースペクティブ補正（-45°〜+45°） | `0` |
+| `shape` | `CropShape?` | クロップ形状（`.rectangle` / `.ellipse` / `.roundedRectangle`）。未知の値は `.rectangle` にフォールバック | `.rectangle` |
+| `cornerRadii` | `CornerRadii?` | 角丸の半径（各角独立: `topLeft`, `topRight`, `bottomLeft`, `bottomRight`） | `.zero` |
+| `cornersLinked` | `Bool` | 角丸半径を4隅連動させるかどうか | `true` |
 
 > **注**: すべてのフィールドは `decodeIfPresent` でデコードされるため、旧バージョンで保存されたJSONファイル（フィールドが不足するもの）も正常に読み込めます（後方互換性）。
 

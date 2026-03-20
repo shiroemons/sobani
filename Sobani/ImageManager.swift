@@ -3,6 +3,10 @@ import os.log
 
 // MARK: - Image Manager
 
+/// 画像の登録・読み込み・削除を管理するシングルトン。
+///
+/// `~/Library/Application Support/Sobani/images/` に画像を格納し、
+/// パストラバーサル防止、拡張子チェック、重複ファイル名のリネームを行う。
 @MainActor
 final class ImageManager {
     private let logger = Logger(category: "ImageManager")
@@ -47,6 +51,7 @@ final class ImageManager {
         cachedImageNames?.removeAll { $0 == name }
     }
 
+    /// 登録済み画像名をソート済みリストで返す。結果はキャッシュされる。
     func registeredImageNames() -> [String] {
         if let cached = cachedImageNames {
             return cached
@@ -70,6 +75,7 @@ final class ImageManager {
         return result
     }
 
+    /// 指定名の登録済み画像を読み込む。パストラバーサル対策済み。
     func loadRegisteredImage(named name: String) -> NSImage? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
         guard let url = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
@@ -103,6 +109,7 @@ final class ImageManager {
         return image
     }
 
+    /// 外部 URL から画像を `images/` にコピーして登録する。重複名は自動リネームされる。
     @discardableResult
     func registerImage(from url: URL) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
@@ -134,6 +141,7 @@ final class ImageManager {
         }
     }
 
+    /// NSImage を PNG として `images/` に保存して登録する。重複名は自動リネームされる。
     @discardableResult
     func registerImage(_ image: NSImage, name: String) -> String? {
         guard let imagesDir = imagesDirectoryURL else { return nil }
@@ -178,6 +186,7 @@ final class ImageManager {
         return FileManager.default.fileExists(atPath: url.path)
     }
 
+    /// デフォルト画像を返す。カスタムデフォルトが存在すればそれを、なければ内蔵アセットを返す。
     func defaultImage() -> NSImage? {
         if let cached = cachedDefaultImage {
             return cached
