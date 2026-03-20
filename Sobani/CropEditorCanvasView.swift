@@ -94,7 +94,9 @@ final class CropEditorCanvasView: NSView {
             shapePath = path
         case .roundedRectangle:
             let shorterSide = min(cropFrame.width, cropFrame.height)
-            shapePath = CropGeometry.roundedRectPath(rect: cropFrame, radii: cornerRadii, shorterSide: shorterSide)
+            shapePath = CropGeometry.roundedRectPath(
+                rect: cropFrame, radii: cornerRadii, shorterSide: shorterSide
+            )
         }
 
         // 画像がキャンバス領域外に描画されないようクリッピング
@@ -198,7 +200,9 @@ extension CropEditorCanvasView {
         let cropAspect = (cropRect.width * effectiveWidth)
             / max(cropRect.height * effectiveHeight, AppConstants.floatingPointTolerance)
 
-        let availableRect = bounds.insetBy(dx: AppConstants.cropEditorCanvasPadding, dy: AppConstants.cropEditorCanvasPadding)
+        let availableRect = bounds.insetBy(
+            dx: AppConstants.cropEditorCanvasPadding, dy: AppConstants.cropEditorCanvasPadding
+        )
         guard availableRect.width > 0, availableRect.height > 0 else { return .zero }
 
         let frameWidth: CGFloat
@@ -227,7 +231,8 @@ extension CropEditorCanvasView {
 
         // zoom=1.0でクロップ枠にちょうど画像全体が収まるスケールを基準にする
         let baseWidth = cropFrame.width / max(cropRect.width, AppConstants.floatingPointTolerance)
-        let baseHeight = cropFrame.height / max(cropRect.height, AppConstants.floatingPointTolerance)
+        let baseHeight = cropFrame.height
+            / max(cropRect.height, AppConstants.floatingPointTolerance)
 
         let drawWidth = baseWidth * imageZoom
         let drawHeight = baseHeight * imageZoom
@@ -261,7 +266,8 @@ extension CropEditorCanvasView {
         let hasVertPerspective = !GeometryUtils.isApproximatelyZero(cropRect.verticalPerspective)
         let hasHorizPerspective = !GeometryUtils.isApproximatelyZero(cropRect.horizontalPerspective)
 
-        guard hasQuarterTurns || hasStraighten || hasFlip || hasVertPerspective || hasHorizPerspective else {
+        guard hasQuarterTurns || hasStraighten || hasFlip
+                || hasVertPerspective || hasHorizPerspective else {
             image.draw(in: imageDrawRect)
             return
         }
@@ -349,7 +355,9 @@ extension CropEditorCanvasView {
 
     private func drawOverlay(context: CGContext, cropFrame: NSRect, shapePath: CGPath?) {
         context.saveGState()
-        context.setFillColor(NSColor.black.withAlphaComponent(AppConstants.cropEditorOverlayAlpha).cgColor)
+        context.setFillColor(
+            NSColor.black.withAlphaComponent(AppConstants.cropEditorOverlayAlpha).cgColor
+        )
 
         switch cropShape {
         case .rectangle:
@@ -502,7 +510,9 @@ extension CropEditorCanvasView {
         }
     }
 
-    private func hitTestCornerRadiusHandle(point: NSPoint, cropFrame: NSRect) -> CropGeometry.Corner? {
+    private func hitTestCornerRadiusHandle(
+        point: NSPoint, cropFrame: NSRect
+    ) -> CropGeometry.Corner? {
         let tolerance = AppConstants.cornerRadiusHandleHitTolerance
         for corner in CropGeometry.Corner.allCases {
             let radius = cornerRadii.radius(for: corner)

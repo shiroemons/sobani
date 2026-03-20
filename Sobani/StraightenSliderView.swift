@@ -75,8 +75,7 @@ final class StraightenSliderView: NSView {
         let maxAngle = Int(AppConstants.straightenMaxAngle)
 
         for tickDeg in minAngle...maxAngle {
-            let tickAngle = CGFloat(tickDeg)
-            let tickX = centerX + tickAngle * tickSpacing + rulerOffset
+            let tickX = centerX + CGFloat(tickDeg) * tickSpacing + rulerOffset
 
             // ビューの範囲外は描画しない（パフォーマンス最適化）
             guard tickX >= bounds.minX - tickSpacing && tickX <= bounds.maxX + tickSpacing else {
@@ -93,16 +92,20 @@ final class StraightenSliderView: NSView {
             let fadeProgress: CGFloat?
             if let fadeStart = fadingTicks[tickDeg] {
                 let elapsed = CACurrentMediaTime() - fadeStart
-                fadeProgress = min(CGFloat(elapsed) / Double(AppConstants.straightenFadeDuration), 1.0)
+                fadeProgress = min(
+                    CGFloat(elapsed) / Double(AppConstants.straightenFadeDuration), 1.0
+                )
             } else {
                 fadeProgress = nil
             }
 
             if let progress = fadeProgress {
-                let normalHeight: CGFloat = isMajor ? Self.majorTickHeight : isMinor ? Self.minorTickHeight : Self.normalTickHeight
+                let normalHeight: CGFloat = isMajor ? Self.majorTickHeight
+                    : isMinor ? Self.minorTickHeight : Self.normalTickHeight
                 tickHeight = AppConstants.straightenFadeHighlightHeight
                     - (AppConstants.straightenFadeHighlightHeight - normalHeight) * progress
-                let normalWidth: CGFloat = isMajor ? Self.majorTickWidth : isMinor ? Self.minorTickWidth : Self.normalTickWidth
+                let normalWidth: CGFloat = isMajor ? Self.majorTickWidth
+                    : isMinor ? Self.minorTickWidth : Self.normalTickWidth
                 lineWidth = AppConstants.straightenFadeHighlightWidth
                     - (AppConstants.straightenFadeHighlightWidth - normalWidth) * progress
                 tickColor = NSColor.labelColor.blended(
@@ -248,7 +251,8 @@ final class StraightenSliderView: NSView {
 
     @discardableResult
     private func startInertiaIfNeeded() -> Bool {
-        guard abs(inertiaVelocity) >= AppConstants.straightenInertiaMinVelocity else { return false }
+        guard abs(inertiaVelocity) >= AppConstants.straightenInertiaMinVelocity
+        else { return false }
         inertiaTimer = Timer.scheduledTimer(
             withTimeInterval: AppConstants.straightenInertiaFrameInterval,
             repeats: true
@@ -274,7 +278,8 @@ final class StraightenSliderView: NSView {
         }
 
         // 端到達で停止
-        if newAngle == AppConstants.straightenMinAngle || newAngle == AppConstants.straightenMaxAngle {
+        if newAngle == AppConstants.straightenMinAngle
+            || newAngle == AppConstants.straightenMaxAngle {
             angle = newAngle
             onAngleChanged?(angle)
             stopInertia()
@@ -335,7 +340,9 @@ final class StraightenSliderView: NSView {
 
     private func updateFade() {
         let now = CACurrentMediaTime()
-        fadingTicks = fadingTicks.filter { now - $0.value < Double(AppConstants.straightenFadeDuration) }
+        fadingTicks = fadingTicks.filter {
+            now - $0.value < Double(AppConstants.straightenFadeDuration)
+        }
         if fadingTicks.isEmpty {
             fadeTimer?.invalidate()
             fadeTimer = nil

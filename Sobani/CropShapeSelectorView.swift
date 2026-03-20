@@ -157,7 +157,8 @@ final class CropShapeSelectorView: NSView {
 
             if isSelected {
                 button.contentTintColor = .labelColor
-                button.layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(AppConstants.selectorSelectedAlpha).cgColor
+                button.layer?.backgroundColor = NSColor.labelColor
+                    .withAlphaComponent(AppConstants.selectorSelectedAlpha).cgColor
                 button.layer?.cornerRadius = AppConstants.selectorCornerRadius
             } else {
                 button.contentTintColor = .secondaryLabelColor
@@ -205,8 +206,11 @@ final class CropShapeSelectorView: NSView {
 
     private func updateLinkButtonAppearance() {
         let symbolName = cornersLinked ? "link" : "link.badge.plus"
-        linkButton?.image = SFSymbolUtils.icon(symbolName, pointSize: AppConstants.menuIconPointSize, weight: .medium)
-        linkButton?.toolTip = cornersLinked ? L("crop_editor.corners_linked") : L("crop_editor.corners_unlinked")
+        linkButton?.image = SFSymbolUtils.icon(
+            symbolName, pointSize: AppConstants.menuIconPointSize, weight: .medium
+        )
+        linkButton?.toolTip = cornersLinked
+            ? L("crop_editor.corners_linked") : L("crop_editor.corners_unlinked")
         linkButton?.contentTintColor = cornersLinked ? .systemYellow : .secondaryLabelColor
     }
 }

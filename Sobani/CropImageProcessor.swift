@@ -27,7 +27,9 @@ enum CropImageProcessor {
         ) {
             return ctx
         }
-        logger.warning("CGContext creation failed with original bitmapInfo \(image.bitmapInfo.rawValue), falling back to premultiplied RGBA")
+        logger.warning(
+            "CGContext creation failed with original bitmapInfo \(image.bitmapInfo.rawValue), falling back to premultiplied RGBA"
+        )
         return CGContext(
             data: nil, width: width, height: height,
             bitsPerComponent: 8,
@@ -66,7 +68,9 @@ enum CropImageProcessor {
         if !GeometryUtils.isApproximatelyZero(cropRect.verticalPerspective)
             || !GeometryUtils.isApproximatelyZero(cropRect.horizontalPerspective) {
             guard let perspectiveCorrected = applyPerspective(
-                to: current, vertical: cropRect.verticalPerspective, horizontal: cropRect.horizontalPerspective
+                to: current,
+                vertical: cropRect.verticalPerspective,
+                horizontal: cropRect.horizontalPerspective
             ) else {
                 logger.error("applyPerspective failed")
                 return nil
@@ -87,7 +91,9 @@ enum CropImageProcessor {
             // 傾き補正なし: クロップのみ
             result = applyCropRect(to: current, cropRect: cropRect)
             if result == nil {
-                logger.error("applyCropRect failed for rect=(\(cropRect.x), \(cropRect.y), \(cropRect.width), \(cropRect.height))")
+                logger.error(
+                    "applyCropRect failed for rect=(\(cropRect.x), \(cropRect.y), \(cropRect.width), \(cropRect.height))"
+                )
             }
         }
 
@@ -155,7 +161,9 @@ enum CropImageProcessor {
     }
 
     /// パース補正を適用する
-    static func applyPerspective(to image: CGImage, vertical: CGFloat, horizontal: CGFloat) -> CGImage? {
+    static func applyPerspective(
+        to image: CGImage, vertical: CGFloat, horizontal: CGFloat
+    ) -> CGImage? {
         guard !GeometryUtils.isApproximatelyZero(vertical)
             || !GeometryUtils.isApproximatelyZero(horizontal) else {
             return image
@@ -317,7 +325,9 @@ enum CropImageProcessor {
             context.addEllipse(in: fullRect)
         case .roundedRectangle:
             let shorterSide = CGFloat(min(width, height))
-            let path = CropGeometry.roundedRectPath(rect: fullRect, radii: cropRect.cornerRadii, shorterSide: shorterSide)
+            let path = CropGeometry.roundedRectPath(
+                rect: fullRect, radii: cropRect.cornerRadii, shorterSide: shorterSide
+            )
             context.addPath(path)
         case .rectangle:
             break // already handled by guard

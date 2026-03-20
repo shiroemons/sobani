@@ -31,7 +31,9 @@ final class CropEditorPanelController: NSObject {
     /// 現在の外観に応じたピル背景色を返す
     private static func pillBackgroundCGColor() -> CGColor {
         if NSApp.effectiveAppearance.isDark {
-            return NSColor(white: 1.0, alpha: AppConstants.cropEditorPillBackgroundDarkAlpha).cgColor
+            return NSColor(
+                white: 1.0, alpha: AppConstants.cropEditorPillBackgroundDarkAlpha
+            ).cgColor
         } else {
             return NSColor.white.cgColor
         }
@@ -122,12 +124,18 @@ final class CropEditorPanelController: NSObject {
 
         // Top bar (2-row iPhone-style)
         let topBar = createTopBar(width: AppConstants.cropEditorPanelWidth)
-        topBar.frame.origin = NSPoint(x: 0, y: AppConstants.cropEditorPanelHeight - AppConstants.cropEditorTopBarHeight)
+        topBar.frame.origin = NSPoint(
+            x: 0, y: AppConstants.cropEditorPanelHeight - AppConstants.cropEditorTopBarHeight
+        )
         contentView.addSubview(topBar)
 
         // Bottom toolbar
         let toolbar = CropEditorToolbarView(
-            frame: NSRect(x: 0, y: 0, width: AppConstants.cropEditorPanelWidth, height: AppConstants.cropEditorToolbarHeight)
+            frame: NSRect(
+                x: 0, y: 0,
+                width: AppConstants.cropEditorPanelWidth,
+                height: AppConstants.cropEditorToolbarHeight
+            )
         )
         toolbar.onStraightenAngleChanged = { [weak self] angle in
             self?.handleStraightenAngleChanged(angle)
@@ -152,25 +160,7 @@ final class CropEditorPanelController: NSObject {
         syncToolbarState(to: currentCropRect)
 
         // Central canvas
-        let canvasY = AppConstants.cropEditorToolbarHeight + AppConstants.cropEditorCanvasGap
-        let canvasHeight = AppConstants.cropEditorPanelHeight
-            - AppConstants.cropEditorTopBarHeight
-            - AppConstants.cropEditorToolbarHeight
-            - AppConstants.cropEditorCanvasGap * 2
-        let canvas = CropEditorCanvasView(
-            frame: NSRect(x: 0, y: canvasY, width: AppConstants.cropEditorPanelWidth, height: canvasHeight)
-        )
-        canvas.setImage(image)
-        canvas.initializeFromCropRect(currentCropRect)
-        canvas.onCropRectChanged = { [weak self] newRect in
-            self?.currentCropRect = newRect
-            self?.updateRevertButtonVisibility()
-        }
-        canvas.onDragEnded = { [weak self] in
-            self?.recordCurrentState()
-        }
-        contentView.addSubview(canvas)
-        canvasView = canvas
+        setupCanvasView(image: image, contentView: contentView)
 
         newPanel.contentView = contentView
 
@@ -185,6 +175,31 @@ final class CropEditorPanelController: NSObject {
         installKeyMonitor()
         installAppearanceObserver()
         logger.debug("Crop editor panel shown")
+    }
+
+    private func setupCanvasView(image: NSImage, contentView: NSView) {
+        let canvasY = AppConstants.cropEditorToolbarHeight + AppConstants.cropEditorCanvasGap
+        let canvasHeight = AppConstants.cropEditorPanelHeight
+            - AppConstants.cropEditorTopBarHeight
+            - AppConstants.cropEditorToolbarHeight
+            - AppConstants.cropEditorCanvasGap * 2
+        let canvas = CropEditorCanvasView(
+            frame: NSRect(
+                x: 0, y: canvasY,
+                width: AppConstants.cropEditorPanelWidth, height: canvasHeight
+            )
+        )
+        canvas.setImage(image)
+        canvas.initializeFromCropRect(currentCropRect)
+        canvas.onCropRectChanged = { [weak self] newRect in
+            self?.currentCropRect = newRect
+            self?.updateRevertButtonVisibility()
+        }
+        canvas.onDragEnded = { [weak self] in
+            self?.recordCurrentState()
+        }
+        contentView.addSubview(canvas)
+        canvasView = canvas
     }
 
     func close() {
@@ -276,12 +291,15 @@ final class CropEditorPanelController: NSObject {
         let correctionBtn = modeButtons[0]
         let aspectRatioBtn = modeButtons[1]
 
-        correctionBtn.contentTintColor = currentMode == .correction ? .labelColor : .tertiaryLabelColor
-        aspectRatioBtn.contentTintColor = currentMode == .aspectRatio ? .labelColor : .tertiaryLabelColor
+        correctionBtn.contentTintColor =
+            currentMode == .correction ? .labelColor : .tertiaryLabelColor
+        aspectRatioBtn.contentTintColor =
+            currentMode == .aspectRatio ? .labelColor : .tertiaryLabelColor
     }
 
     private func restoreSavedToolbarMode() -> ToolbarMode {
-        if let saved = UserDefaults.standard.string(forKey: AppConstants.cropEditorLastToolbarModeKey),
+        let key = AppConstants.cropEditorLastToolbarModeKey
+        if let saved = UserDefaults.standard.string(forKey: key),
            let mode = ToolbarMode(rawValue: saved) {
             return mode
         }
@@ -447,7 +465,9 @@ extension CropEditorPanelController {
         guard let ratio = resolveAspectRatio(for: preset, imageSize: imageSize) else {
             return rect
         }
-        let constrained = CropGeometry.constrainCropRect(rect, toAspectRatio: ratio, within: imageSize)
+        let constrained = CropGeometry.constrainCropRect(
+            rect, toAspectRatio: ratio, within: imageSize
+        )
         return rect.with(
             x: constrained.x, y: constrained.y,
             width: constrained.width, height: constrained.height
@@ -537,7 +557,9 @@ extension CropEditorPanelController {
 extension CropEditorPanelController {
 
     private func createTopBar(width: CGFloat) -> NSView {
-        let bar = NSView(frame: NSRect(x: 0, y: 0, width: width, height: AppConstants.cropEditorTopBarHeight))
+        let bar = NSView(frame: NSRect(
+            x: 0, y: 0, width: width, height: AppConstants.cropEditorTopBarHeight
+        ))
         bar.wantsLayer = true
         bar.layer?.backgroundColor = Self.toolbarBackgroundCGColor()
         topBarView = bar
@@ -568,9 +590,13 @@ extension CropEditorPanelController {
         bar.addSubview(cancelPill)
         pillContainers.append(cancelPill)
 
-        let (donePill, doneBtn) = makePillButton(symbolName: "checkmark", action: #selector(doneTapped))
+        let (donePill, doneBtn) = makePillButton(
+            symbolName: "checkmark", action: #selector(doneTapped)
+        )
         doneBtn.keyEquivalent = "\r"
-        donePill.frame = NSRect(x: width - sidePad - pillSize, y: rowY, width: pillSize, height: pillSize)
+        donePill.frame = NSRect(
+            x: width - sidePad - pillSize, y: rowY, width: pillSize, height: pillSize
+        )
         bar.addSubview(donePill)
         doneButton = doneBtn
         donePillContainer = donePill
@@ -586,7 +612,9 @@ extension CropEditorPanelController {
             width: groupWidth
         )
         let groupX = (width - groupWidth) / 2
-        undoRedoResult.container.frame = NSRect(x: groupX, y: rowY, width: groupWidth, height: pillSize)
+        undoRedoResult.container.frame = NSRect(
+            x: groupX, y: rowY, width: groupWidth, height: pillSize
+        )
         bar.addSubview(undoRedoResult.container)
         pillContainers.append(undoRedoResult.container)
         separatorViews.append(contentsOf: undoRedoResult.separators)
@@ -607,19 +635,26 @@ extension CropEditorPanelController {
         let groupWidth = pillSize * 2 + Self.separatorWidth
         let flipRotateResult = makeGroupedPill(
             symbols: [
-                ("arrow.left.and.right.righttriangle.left.righttriangle.right", #selector(flipTapped)),
+                (
+                    "arrow.left.and.right.righttriangle.left.righttriangle.right",
+                    #selector(flipTapped)
+                ),
                 ("rotate.left", #selector(rotate90Tapped))
             ],
             width: groupWidth
         )
-        flipRotateResult.container.frame = NSRect(x: sidePad, y: rowY, width: groupWidth, height: pillSize)
+        flipRotateResult.container.frame = NSRect(
+            x: sidePad, y: rowY, width: groupWidth, height: pillSize
+        )
         bar.addSubview(flipRotateResult.container)
         pillContainers.append(flipRotateResult.container)
         separatorViews.append(contentsOf: flipRotateResult.separators)
 
         // Center: "戻す" revert button
         let revertX = (width - Self.revertPillWidth) / 2
-        let revertContainer = makePillContainer(frame: NSRect(x: revertX, y: rowY, width: Self.revertPillWidth, height: pillSize))
+        let revertContainer = makePillContainer(
+            frame: NSRect(x: revertX, y: rowY, width: Self.revertPillWidth, height: pillSize)
+        )
 
         let revertBtn = NSButton(frame: revertContainer.bounds)
         revertBtn.bezelStyle = .regularSquare
@@ -644,7 +679,9 @@ extension CropEditorPanelController {
             ],
             width: modeGroupWidth
         )
-        modeResult.container.frame = NSRect(x: width - sidePad - modeGroupWidth, y: rowY, width: modeGroupWidth, height: pillSize)
+        modeResult.container.frame = NSRect(
+            x: width - sidePad - modeGroupWidth, y: rowY, width: modeGroupWidth, height: pillSize
+        )
         bar.addSubview(modeResult.container)
         modeButtons = modeResult.buttons
         pillContainers.append(modeResult.container)
@@ -665,12 +702,16 @@ extension CropEditorPanelController {
         button.imagePosition = .imageOnly
         button.target = self
         button.action = action
-        button.image = SFSymbolUtils.icon(symbolName, pointSize: Self.pillIconPointSize, weight: .medium)
+        button.image = SFSymbolUtils.icon(
+            symbolName, pointSize: Self.pillIconPointSize, weight: .medium
+        )
         button.contentTintColor = .labelColor
     }
 
     /// Creates a pill-shaped container with a single icon button inside.
-    private func makePillButton(symbolName: String, action: Selector) -> (container: NSView, button: NSButton) {
+    private func makePillButton(
+        symbolName: String, action: Selector
+    ) -> (container: NSView, button: NSButton) {
         let size = AppConstants.cropEditorPillButtonSize
         let container = makePillContainer(frame: NSRect(x: 0, y: 0, width: size, height: size))
 
@@ -687,17 +728,22 @@ extension CropEditorPanelController {
     }
 
     /// Creates a grouped pill with multiple icon buttons separated by a 1px vertical line.
-    private func makeGroupedPill(symbols: [(String, Selector)], width: CGFloat) -> GroupedPillResult {
+    private func makeGroupedPill(
+        symbols: [(String, Selector)], width: CGFloat
+    ) -> GroupedPillResult {
         let height = AppConstants.cropEditorPillButtonSize
         let container = makePillContainer(frame: NSRect(x: 0, y: 0, width: width, height: height))
 
-        let buttonWidth = (width - CGFloat(symbols.count - 1) * Self.separatorWidth) / CGFloat(symbols.count)
+        let buttonWidth =
+            (width - CGFloat(symbols.count - 1) * Self.separatorWidth) / CGFloat(symbols.count)
         var buttons: [NSButton] = []
         var separators: [NSView] = []
 
         for (index, (symbolName, action)) in symbols.enumerated() {
             let buttonX = CGFloat(index) * (buttonWidth + Self.separatorWidth)
-            let button = NSButton(frame: NSRect(x: buttonX, y: 0, width: buttonWidth, height: height))
+            let button = NSButton(frame: NSRect(
+                x: buttonX, y: 0, width: buttonWidth, height: height
+            ))
             configureIconButton(button, symbolName: symbolName, action: action)
             container.addSubview(button)
             buttons.append(button)
@@ -705,7 +751,10 @@ extension CropEditorPanelController {
             // Add 1px separator between buttons
             if index < symbols.count - 1 {
                 let sepX = buttonX + buttonWidth
-                let separator = NSView(frame: NSRect(x: sepX, y: Self.separatorInset, width: Self.separatorWidth, height: height - Self.separatorInset * 2))
+                let separator = NSView(frame: NSRect(
+                    x: sepX, y: Self.separatorInset,
+                    width: Self.separatorWidth, height: height - Self.separatorInset * 2
+                ))
                 separator.wantsLayer = true
                 separator.layer?.backgroundColor = Self.separatorCGColor()
                 container.addSubview(separator)
