@@ -129,6 +129,9 @@
 		JJ000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = JJ000004 /* InfoPlist.strings */; };
 		KK000001 /* WakeRestorationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = KK000002 /* WakeRestorationContext.swift */; };
 		SM000002 /* SparkleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = SM000001 /* SparkleManager.swift */; };
+		RDV000002000000000001 /* RotationDialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = RDV000001000000000001 /* RotationDialView.swift */; };
+		APPS00002000000000001 /* AdjustmentPanelController+PositionSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = APPS00001000000000001 /* AdjustmentPanelController+PositionSize.swift */; };
+		HKS000002000000000001 /* HotkeySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = HKS000001000000000001 /* HotkeySettings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -269,6 +272,9 @@
 		JJ000003 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		KK000002 /* WakeRestorationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContext.swift; sourceTree = "<group>"; };
 		SM000001 /* SparkleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleManager.swift; sourceTree = "<group>"; };
+		RDV000001000000000001 /* RotationDialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotationDialView.swift; sourceTree = "<group>"; };
+		APPS00001000000000001 /* AdjustmentPanelController+PositionSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdjustmentPanelController+PositionSize.swift"; sourceTree = "<group>"; };
+		HKS000001000000000001 /* HotkeySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeySettings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -345,10 +351,13 @@
 				DD000002 /* ImageManager.swift */,
 				SM000001 /* SparkleManager.swift */,
 				DD000016 /* AdjustmentPanelController.swift */,
+				RDV000001000000000001 /* RotationDialView.swift */,
+				APPS00001000000000001 /* AdjustmentPanelController+PositionSize.swift */,
 				EE000002 /* LaunchAtLoginManager.swift */,
 				FF000002 /* ScreenRestorationManager.swift */,
 				FF000006 /* AppDelegate+ScreenRestoration.swift */,
 				GG000002 /* Constants.swift */,
+				HKS000001000000000001 /* HotkeySettings.swift */,
 				KK000002 /* WakeRestorationContext.swift */,
 				II000002 /* LanguageManager.swift */,
 				F0BG000001000000000001 /* BackgroundRemovalManager.swift */,
@@ -584,12 +593,15 @@
 				SM000002 /* SparkleManager.swift in Sources */,
 				DD000009 /* WindowStateManager.swift in Sources */,
 				DD000015 /* AdjustmentPanelController.swift in Sources */,
+				RDV000002000000000001 /* RotationDialView.swift in Sources */,
+				APPS00002000000000001 /* AdjustmentPanelController+PositionSize.swift in Sources */,
 				DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */,
 				F0SMB00002000000000001 /* AppDelegate+StatusBarMenuBuilders.swift in Sources */,
 				EE000001 /* LaunchAtLoginManager.swift in Sources */,
 				FF000001 /* ScreenRestorationManager.swift in Sources */,
 				FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */,
 				GG000001 /* Constants.swift in Sources */,
+				HKS000002000000000001 /* HotkeySettings.swift in Sources */,
 				KK000001 /* WakeRestorationContext.swift in Sources */,
 				II000001 /* LanguageManager.swift in Sources */,
 				F0BG000002000000000001 /* BackgroundRemovalManager.swift in Sources */,
