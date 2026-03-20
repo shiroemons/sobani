@@ -7,7 +7,8 @@ extension Notification.Name {
 
 /// スレッドセーフなバンドル参照。任意のスレッドから読み取り可能。
 /// 書き込みは @MainActor (LanguageManager.updateBundle()) からのみ行われる。
-/// Bundle は不変オブジェクトであり、参照の代入は64bitでアトミックなため安全。
+/// Bundle は不変オブジェクトであり、
+/// 参照の代入は64bitでアトミックなため安全。
 nonisolated(unsafe) var sharedLocalizationBundle: Bundle?
 
 enum Language: String, CaseIterable, Sendable {

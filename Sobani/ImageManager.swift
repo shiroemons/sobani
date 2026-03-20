@@ -28,7 +28,9 @@ final class ImageManager {
         let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger)
         self.appSupportURL = appDir
         if let appDir {
-            self.imagesDirectoryURL = AppSupportDirectory.ensureSubdirectory("images", in: appDir, logger: logger)
+            self.imagesDirectoryURL = AppSupportDirectory.ensureSubdirectory(
+                "images", in: appDir, logger: logger
+            )
         } else {
             self.imagesDirectoryURL = nil
         }
@@ -83,7 +85,9 @@ final class ImageManager {
         }
         guard let image = loadRegisteredImage(named: name) else { return nil }
         if previewImageCache.count >= Self.previewCacheCountLimit {
-            if let lruKey = previewImageCache.min(by: { $0.value.lastAccess < $1.value.lastAccess })?.key {
+            if let lruKey = previewImageCache.min(
+                by: { $0.value.lastAccess < $1.value.lastAccess }
+            )?.key {
                 previewImageCache.removeValue(forKey: lruKey)
                 logger.debug("Cache eviction: \(lruKey)")
             }
@@ -114,7 +118,9 @@ final class ImageManager {
         do {
             try fm.copyItem(at: url, to: finalURL)
             insertIntoCache(finalName)
-            NotificationCenter.default.post(name: AppConstants.registeredImagesDidChange, object: nil)
+            NotificationCenter.default.post(
+                name: AppConstants.registeredImagesDidChange, object: nil
+            )
             return finalName
         } catch {
             logger.error("Failed to copy image: \(error.localizedDescription)")
@@ -132,7 +138,9 @@ final class ImageManager {
         do {
             try pngData.write(to: destURL)
             insertIntoCache(destURL.lastPathComponent)
-            NotificationCenter.default.post(name: AppConstants.registeredImagesDidChange, object: nil)
+            NotificationCenter.default.post(
+                name: AppConstants.registeredImagesDidChange, object: nil
+            )
         } catch {
             logger.error("Failed to write image data: \(error.localizedDescription)")
             return nil
@@ -147,7 +155,9 @@ final class ImageManager {
             try FileManager.default.removeItem(at: url)
             removeFromCache(name)
             previewImageCache.removeValue(forKey: name)
-            NotificationCenter.default.post(name: AppConstants.registeredImagesDidChange, object: nil)
+            NotificationCenter.default.post(
+                name: AppConstants.registeredImagesDidChange, object: nil
+            )
         } catch {
             logger.error("Failed to remove image: \(error.localizedDescription)")
         }

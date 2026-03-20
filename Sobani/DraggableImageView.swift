@@ -166,7 +166,8 @@ final class DraggableImageView: NSImageView {
         }
     }
 
-    private func resizeWindow(_ window: NSWindow, imageView: DraggableImageView, scaleFactor: CGFloat) {
+    private func resizeWindow(_ window: NSWindow, imageView: DraggableImageView,
+                              scaleFactor: CGFloat) {
         let frames = Self.calculateResizedFrames(
             currentHeight: imageView.frame.height,
             scaleFactor: scaleFactor,
@@ -227,7 +228,8 @@ final class DraggableImageView: NSImageView {
     }
 
     /// NSImage から CGImage を安全に取得する
-    /// cgImage(forProposedRect:) が nil を返す場合は NSBitmapImageRep に描画してフォールバック
+    /// cgImage(forProposedRect:) が nil を返す場合は
+    /// NSBitmapImageRep に描画してフォールバック
     nonisolated static func extractCGImage(from nsImage: NSImage) -> CGImage? {
         // 高速パス: 埋め込みCGImageを直接取得
         if let cgImage = nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil) {
@@ -375,6 +377,7 @@ extension DraggableImageView {
     }
 
     override func concludeDragOperation(_ sender: NSDraggingInfo?) {
-        // NSImageView のデフォルト動作（image プロパティの自動差し替え）を無効化
+        // NSImageView のデフォルト動作
+        // （image プロパティの自動差し替え）を無効化
     }
 }

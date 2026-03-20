@@ -69,7 +69,9 @@ final class ImagePreviewPanel {
     // MARK: - Testable Static Methods
 
     /// 画像サイズを最大寸法に収まるようスケーリング
-    nonisolated static func scaledSize(for imageSize: NSSize, maxDimension: CGFloat = AppConstants.previewMaxDimension) -> NSSize {
+    nonisolated static func scaledSize(for imageSize: NSSize,
+                                       maxDimension: CGFloat = AppConstants.previewMaxDimension)
+        -> NSSize {
         guard imageSize.width > 0, imageSize.height > 0 else {
             return NSSize(width: maxDimension, height: maxDimension)
         }
@@ -106,7 +108,8 @@ final class ImagePreviewPanel {
 
         // Clamp vertical position to screen bounds
         let minY = visibleFrame?.minY ?? 0
-        let maxY = (visibleFrame?.maxY ?? screenFrame?.maxY ?? AppConstants.fallbackScreenHeight) - panelSize.height
+        let fallbackMaxY = screenFrame?.maxY ?? AppConstants.fallbackScreenHeight
+        let maxY = (visibleFrame?.maxY ?? fallbackMaxY) - panelSize.height
         let clampedY = min(max(panelY, minY), maxY)
 
         return NSPoint(x: panelX, y: clampedY)
@@ -114,14 +117,18 @@ final class ImagePreviewPanel {
 
     /// フォールバック位置を計算
     nonisolated static func fallbackPosition(
-        mouseLocation: NSPoint, panelSize: NSSize, offset: CGFloat = AppConstants.previewFallbackMouseOffset
+        mouseLocation: NSPoint,
+        panelSize: NSSize,
+        offset: CGFloat = AppConstants.previewFallbackMouseOffset
     ) -> NSPoint {
         return NSPoint(x: mouseLocation.x + offset, y: mouseLocation.y - panelSize.height / 2)
     }
 
     /// 画像サイズからパネルサイズと画像フレームを計算
     nonisolated static func calculatePanelFrames(
-        imageSize: NSSize, maxDimension: CGFloat = AppConstants.previewMaxDimension, padding: CGFloat = 8
+        imageSize: NSSize,
+        maxDimension: CGFloat = AppConstants.previewMaxDimension,
+        padding: CGFloat = 8
     ) -> (panelSize: NSSize, imageFrame: NSRect) {
         let previewSize = scaledSize(for: imageSize, maxDimension: maxDimension)
         let panelSize = NSSize(
@@ -139,15 +146,19 @@ final class ImagePreviewPanel {
 
     /// ウィンドウフレーム情報からメニューウィンドウをフィルタリング
     nonisolated static func filterMenuWindowFrames(
-        frames: [(frame: NSRect, level: Int)], menuLevel: Int, minWidth: CGFloat = AppConstants.menuWindowMinWidth
+        frames: [(frame: NSRect, level: Int)],
+        menuLevel: Int,
+        minWidth: CGFloat = AppConstants.menuWindowMinWidth
     ) -> [NSRect] {
         return frames
             .filter { $0.level >= menuLevel && $0.frame.width > minWidth }
             .map { $0.frame }
     }
 
-    /// メニューウィンドウフレーム群の境界（右端最大値と左端最小値）を計算
-    nonisolated static func menuWindowBounds(frames: [NSRect]) -> (rightmostX: CGFloat, leftmostX: CGFloat)? {
+    /// メニューウィンドウフレーム群の境界
+    /// （右端最大値と左端最小値）を計算
+    nonisolated static func menuWindowBounds(frames: [NSRect])
+        -> (rightmostX: CGFloat, leftmostX: CGFloat)? {
         guard let rightmostX = frames.map({ $0.maxX }).max(),
               let leftmostX = frames.map({ $0.minX }).min() else {
             return nil
@@ -157,7 +168,9 @@ final class ImagePreviewPanel {
 
     // MARK: - Private
 
-    private func calculatePosition(menuItem: NSMenuItem, menu: NSMenu, panelSize: NSSize) -> NSPoint {
+    private func calculatePosition(menuItem: NSMenuItem,
+                                   menu: NSMenu,
+                                   panelSize: NSSize) -> NSPoint {
         let menuWindows = Self.findMenuWindows(excluding: panel)
         let windowFrames = menuWindows.map { $0.frame }
 
@@ -193,7 +206,8 @@ final class ImagePreviewPanel {
 // MARK: - Shared Preview Helper
 
 extension ImagePreviewPanel {
-    /// メニュー項目に応じてプレビューを表示または非表示にする共通ヘルパー。
+    /// メニュー項目に応じてプレビューを表示または
+    /// 非表示にする共通ヘルパー。
     ///
     /// - Parameters:
     ///   - item: ハイライトされたメニュー項目（nilの場合は非表示）

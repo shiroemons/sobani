@@ -67,7 +67,9 @@ final class BackgroundRemovalManager: @unchecked Sendable {
                 DispatchQueue.main.async { @Sendable in completion(.failure(error)) }
             } catch {
                 self.logger.error("Unexpected error: \(String(describing: error))")
-                DispatchQueue.main.async { @Sendable in completion(.failure(.maskGenerationFailed)) }
+                DispatchQueue.main.async { @Sendable in
+                    completion(.failure(.maskGenerationFailed))
+                }
             }
         }
     }
@@ -109,7 +111,8 @@ final class BackgroundRemovalManager: @unchecked Sendable {
             throw BackgroundRemovalError.filterOutputFailed
         }
 
-        guard let outputCGImage = ciContext.createCGImage(outputCIImage, from: inputCIImage.extent) else {
+        guard let outputCGImage = ciContext.createCGImage(outputCIImage,
+                                                          from: inputCIImage.extent) else {
             throw BackgroundRemovalError.finalImageConversionFailed
         }
 
