@@ -16,9 +16,9 @@
   <link rel="dns-prefetch" href="https://www.youtube.com">
   <link rel="preconnect" href="https://www.youtube.com" crossorigin>
   <title>Sobani — お気に入りを、そばに。</title>
-  <meta name="description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ・管理パネル対応。">
+  <meta name="description" content="好きな画像を常に最前面に表示するmacOSアプリ。透過ウィンドウでアクリルスタンドのようにデスクトップに飾れます。複数画像・背景除去・クロップ・管理パネル対応。完全無料。">
   <meta property="og:title" content="Sobani — お気に入りを、そばに。">
-  <meta property="og:description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ・管理パネル対応。">
+  <meta property="og:description" content="好きな画像を常に最前面に表示するmacOSアプリ。透過ウィンドウでアクリルスタンドのようにデスクトップに飾れます。複数画像・背景除去・クロップ・管理パネル対応。完全無料。">
   <meta property="og:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
@@ -27,7 +27,7 @@
   <meta property="og:site_name" content="Sobani">
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:title" content="Sobani — お気に入りを、そばに。">
-  <meta name="twitter:description" content="お気に入りを、そばに。好きな画像をアクリルスタンドのようにMacデスクトップに飾れる無料macOSアプリ。透過表示・最前面・複数画像・背景除去・クロップ・管理パネル対応。">
+  <meta name="twitter:description" content="好きな画像を常に最前面に表示するmacOSアプリ。透過ウィンドウでアクリルスタンドのようにデスクトップに飾れます。複数画像・背景除去・クロップ・管理パネル対応。完全無料。">
   <meta name="twitter:image" content="https://xn--xckxf.jp/sobani/images/og-image.png">
   <meta name="twitter:site" content="@shiroemons">
   <meta name="twitter:creator" content="@shiroemons">
@@ -43,6 +43,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192.png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <script>
     (function() {
       var theme = localStorage.getItem('theme');
@@ -62,17 +63,8 @@
     })();
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {}
-      }
-    }
-  </script>
-  <style>
-    html { scroll-behavior: smooth; }
-  </style>
+  <script src="js/tailwind.config.js"></script>
+  <link rel="stylesheet" href="css/style.css">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -114,10 +106,10 @@
   }
   </script>
 </head>
-<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+<body class="bg-warm-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300" style="background-color: var(--warm-bg);">
 
   <!-- ヘッダー -->
-  <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+  <header class="sticky top-0 z-50 header-glass">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <a href="#" class="text-xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">Sobani</a>
@@ -127,7 +119,6 @@
           <a href="#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
           <a href="#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
           <a href="#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
-          <a href="#usecases" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.usecases">使い方いろいろ</a>
           <a href="features.html" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.allFeatures">すべての機能</a>
           <a href="faq.html" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.faq">FAQ</a>
           <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
@@ -158,7 +149,6 @@
         <a href="#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
         <a href="#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
         <a href="#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
-        <a href="#usecases" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.usecases">使い方いろいろ</a>
         <a href="features.html" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.allFeatures">すべての機能</a>
         <a href="faq.html" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.faq">FAQ</a>
         <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
@@ -181,21 +171,18 @@
 
   <main>
   <!-- ヒーローセクション -->
-  <section class="relative overflow-hidden">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
+  <section class="relative overflow-hidden hero-gradient">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-36">
       <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
         <div class="text-center lg:text-left lg:flex-1">
           <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
-            <span class="text-amber-600 dark:text-amber-400" data-i18n="hero.headingLine1">お気に入りを、</span><br>
+            <span class="text-amber-600 dark:text-amber-400 hero-title-gradient" data-i18n="hero.headingLine1">お気に入りを、</span><br>
             <span class="text-slate-900 dark:text-slate-100" data-i18n="hero.headingLine2">そばに。</span>
           </h1>
-          <p class="mt-4 text-lg sm:text-xl font-medium text-slate-500 dark:text-slate-400" data-i18n="hero.subheading">デスクトップアクスタアプリ for macOS</p>
-          <p class="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400" data-i18n="hero.universalBinary">Apple Silicon・Intel Mac 両対応（ユニバーサルバイナリ）</p>
+          <p class="mt-4 text-lg sm:text-xl font-medium text-slate-500 dark:text-slate-400" data-i18n="hero.subheading">macOS 14+ ／ Apple Silicon・Intel 対応</p>
           <p class="mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl mx-auto lg:mx-0" data-i18n="hero.description">
-            好きな画像を、アクリルスタンドのようにデスクトップに飾れるアプリ。スマホの写真もそのまま使えます。いつでも目に入る場所に、お気に入りを。
+            好きな画像を常に最前面に表示できるmacOSアプリ。透過ウィンドウでアクリルスタンドのようにデスクトップに飾れます。スマホの写真もそのまま使えます。
           </p>
-          <p class="mt-2 text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto lg:mx-0" data-i18n="hero.broadAppeal">キャラクター、アイドル、ペット、愛車——好きな画像を、いつでもそばに。</p>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 italic max-w-xl mx-auto lg:mx-0" data-i18n="hero.nameOrigin"></p>
           <p class="mt-3 text-sm font-medium text-slate-500 dark:text-slate-400" data-i18n="hero.free">完全無料・オープンソース（MIT ライセンス）</p>
           <div class="mt-10 space-y-3">
             <div class="flex justify-center lg:justify-start">
@@ -213,7 +200,7 @@
               <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
                 <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
-                <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー" data-i18n-attr="aria-label:hero.copyCommand,title:hero.copyTitle">
+                <button onclick="SobaniDocs.copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー" data-i18n-attr="aria-label:hero.copyCommand,title:hero.copyTitle">
                   <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                   <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </button>
@@ -229,54 +216,39 @@
   </section>
 
   <!-- 特長 -->
-  <section id="features" class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+  <section id="features" class="scroll-mt-20 bg-warm-50 dark:bg-slate-800/50" style="background-color: var(--warm-bg-alt);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="features.sectionTitle">特長</h2>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="features.sectionTitle" data-animate>特長</h2>
         <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="features.sectionSubtitle">「飾る」に特化した、軽くてシンプルなアプリ</p>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+        <div class="glass-card p-6" data-animate data-animate-delay="0">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5C2;&#xFE0F;</div>
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card2Title">好きな画像を自由に</h3>
           <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card2Desc">PNG・JPEG・GIF・TIFF・HEICに対応。好きな画像を何枚でも登録して、気分に合わせて切り替えられます。</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+        <div class="glass-card p-6" data-animate data-animate-delay="100">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5BC;&#xFE0F;</div>
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card3Title">いつでも最前面に</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card3Desc">透過ウィンドウで画像だけを最前面に表示。すべての仮想デスクトップに対応しています。</p>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card3Desc">透過ウィンドウで画像を常に最前面に表示。すべての仮想デスクトップに対応し、他のウィンドウに隠れません。</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+        <div class="glass-card p-6" data-animate data-animate-delay="200">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5B1;&#xFE0F;</div>
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card4Title">直感的な操作</h3>
           <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card4Desc">ドラッグで移動、スクロールでサイズ変更、画像ファイルのドロップで追加。回転や不透明度もパネルから調整。Option + H でワンタッチ非表示・再表示。個別ウィンドウの非表示にも対応。右クリックメニューですべての操作にすぐアクセスできます。</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-          <div class="text-3xl mb-4" aria-hidden="true">&#x1F39B;&#xFE0F;</div>
-          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card5Title">フローティングツールバー</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card5Desc">ダブルクリックでツールバーを表示。切り取り・反転・調整・ゴースト・背景削除・非表示にワンクリックでアクセス。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-          <div class="text-3xl mb-4" aria-hidden="true">&#x1FA9F;</div>
-          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card6Title">好きなだけ並べて飾れる</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card6Desc">同時に複数の画像を表示できます。複数モニターにも対応。重ね順の管理やOptionキー一括操作で、自由にレイアウト。プリセット保存で配置をワンクリック切り替え。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+        <div class="glass-card p-6" data-animate data-animate-delay="0">
           <div class="text-3xl mb-4" aria-hidden="true">&#x2702;&#xFE0F;</div>
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card7Title">画像の切り取り</h3>
           <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card7Desc">iPhone写真アプリ風のクロップエディタ。矩形・円形・角丸矩形の形状クロップ、アスペクト比プリセット、傾き・パースペクティブ補正、Undo/Redo対応の非破壊編集。</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+        <div class="glass-card p-6" data-animate data-animate-delay="100">
           <div class="text-3xl mb-4" aria-hidden="true">&#x2702;&#xFE0F;</div>
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card8Title">かんたん背景除去</h3>
           <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card8Desc">JPEG・HEICなどの写真から被写体を自動で切り抜き。透過PNGを準備する手間なく、お気に入りの写真をそのまま飾れます</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-          <div class="text-3xl mb-4" aria-hidden="true">&#x1F47B;</div>
-          <h3 class="text-lg font-semibold mb-2" data-i18n="features.card9Title">ゴーストモード</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card9Desc">Option+G でウィンドウをクリック透過に。半透明のゴースト表示で作業の邪魔にならず、お気に入りをそばに置けます。不透明度のカスタマイズも可能。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+        <div class="glass-card p-6" data-animate data-animate-delay="200">
           <div class="text-3xl mb-4" aria-hidden="true">&#x1F5C2;&#xFE0F;</div>
           <h3 class="text-lg font-semibold mb-2" data-i18n="features.card10Title">管理パネル</h3>
           <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="features.card10Desc">すべてのウィンドウをひとつのパネルで管理。ミニマップで配置確認、位置・サイズの数値編集、レイアウトプリセット管理、画像ライブラリ管理、各種設定が一画面に。</p>
@@ -287,56 +259,14 @@
     </div>
   </section>
 
-  <!-- 使い方いろいろ -->
-  <section id="usecases" class="scroll-mt-20">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="usecases.sectionTitle">使い方いろいろ</h2>
-        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="usecases.sectionSubtitle">キャラクターだけじゃない。あなたの「好き」を、デスクトップに。</p>
-      </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow text-center">
-          <div class="text-3xl mb-3" aria-hidden="true">&#x1F3AE;</div>
-          <h3 class="text-base font-semibold mb-1" data-i18n="usecases.card1Title">アニメ・ゲームキャラ</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="usecases.card1Desc">推しキャラをデスクトップに飾って、作業のおともに。透過PNG画像を使えば、背景なしのアクスタ風表示に。回転や不透明度を調整して、お気に入りの配置を見つけよう。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow text-center">
-          <div class="text-3xl mb-3" aria-hidden="true">&#x1F3A4;</div>
-          <h3 class="text-base font-semibold mb-1" data-i18n="usecases.card2Title">アイドル・K-POP</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="usecases.card2Desc">推しメンの写真をいつでも目の前に。スマホで撮った写真（JPEG）もそのまま使えます。複数並べてグループ再現も。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow text-center">
-          <div class="text-3xl mb-3" aria-hidden="true">&#x1F43E;</div>
-          <h3 class="text-base font-semibold mb-1" data-i18n="usecases.card3Title">ペットの写真</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="usecases.card3Desc">お気に入りのペット写真をデスクトップに。スマホのJPEG写真もそのまま飾れます。癒やしの存在がいつもそばに。背景除去機能で切り抜けば、まるで本物のアクスタに。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow text-center">
-          <div class="text-3xl mb-3" aria-hidden="true">&#x26BD;</div>
-          <h3 class="text-base font-semibold mb-1" data-i18n="usecases.card4Title">スポーツ・推しチーム</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="usecases.card4Desc">チームロゴや選手の写真で応援気分を盛り上げよう。複数の画像を並べて、推しチームのデスクトップに。試合の日は推し選手を最前面に表示して気分を上げよう。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow text-center">
-          <div class="text-3xl mb-3" aria-hidden="true">&#x1F4F7;</div>
-          <h3 class="text-base font-semibold mb-1" data-i18n="usecases.card5Title">趣味の写真（愛車・鉄道等）</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="usecases.card5Desc">一眼レフやミラーレスの高解像度写真もそのまま表示。TIFF・HEICにも対応しています。愛車や鉄道など、こだわりの一枚をデスクトップの主役に。</p>
-        </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow text-center">
-          <div class="text-3xl mb-3" aria-hidden="true">&#x1F399;&#xFE0F;</div>
-          <h3 class="text-base font-semibold mb-1" data-i18n="usecases.card6Title">VTuber・配信者</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="usecases.card6Desc">推しVTuberの立ち絵をデスクトップに常駐。透過PNGなら背景なしで表示。配信中も一緒に。複数のVTuberを並べて、推しグループを再現することも。</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- 使い方ガイド -->
   <section id="howto" class="scroll-mt-20">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="howto.sectionTitle">使い方</h2>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="howto.sectionTitle" data-animate>使い方</h2>
         <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="howto.sectionSubtitle">かんたん3ステップで、すぐに飾れます</p>
       </div>
-      <div class="space-y-16 lg:space-y-24">
+      <div class="space-y-10 lg:space-y-14">
 
         <!-- Step 1: インストールして起動 -->
         <div>
@@ -357,19 +287,8 @@
           <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-sm mb-4">2</div>
           <h3 class="text-2xl font-bold mb-4" data-i18n="howto.step2Title">お気に入りの画像に差し替える</h3>
           <p class="text-slate-600 dark:text-slate-400 mb-4 leading-relaxed" data-i18n-html="howto.step2Desc">メニューバーから「デフォルト画像を変更...」を選んで、好きな画像を設定するだけ。<br>右クリック →「表示画像の変更」で、画像の追加登録や切り替えもできます。</p>
-          <div class="space-y-2">
-            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-              <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step2Hint0">&#x1F4A1; ヒント: スマホで撮った写真（JPEG）もそのまま使えます。特別な加工は必要ありません。</p>
-            </div>
-            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-              <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step2Hint1">&#x1F4A1; ヒント: 透過処理されたPNG画像を使うと、背景なしで画像だけが表示されます。</p>
-            </div>
-            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-              <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step2Hint2">&#x1F4A1; ヒント: アニメーションGIFやアニメーションPNG（APNG）も表示できます。動く画像をそばに飾りましょう。</p>
-            </div>
-            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-              <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step2Hint3">&#x1F4A1; ヒント: 画像ファイルをウィンドウにドラッグ＆ドロップするだけでも追加できます。</p>
-            </div>
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+            <p class="text-sm text-amber-800 dark:text-amber-300" data-i18n-html="howto.step2Hint0">&#x1F4A1; ヒント: スマホで撮った写真（JPEG）もそのまま使えます。特別な加工は必要ありません。</p>
           </div>
         </div>
 
@@ -387,11 +306,13 @@
     </div>
   </section>
 
+  <hr class="section-divider max-w-6xl mx-auto">
+
   <!-- 動画セクション -->
-  <section id="video" class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+  <section id="video" class="scroll-mt-20 bg-warm-50 dark:bg-slate-800/50" style="background-color: var(--warm-bg-alt);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <div class="text-center mb-12">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100" data-i18n="video.sectionTitle">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100" data-i18n="video.sectionTitle" data-animate>
           使用例
         </h2>
         <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="video.sectionSubtitle">
@@ -415,14 +336,16 @@
     </div>
   </section>
 
+  <hr class="section-divider max-w-6xl mx-auto">
+
   <!-- 他アプリとの比較 -->
-  <section class="scroll-mt-20 bg-slate-50 dark:bg-slate-800/50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+  <section class="scroll-mt-20 bg-warm-50 dark:bg-slate-800/50" style="background-color: var(--warm-bg-alt);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <div class="text-center mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="comparison.sectionTitle">他のデスクトップマスコットとの違い</h2>
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="comparison.sectionTitle" data-animate>他のデスクトップマスコットとの違い</h2>
         <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="comparison.sectionSubtitle">Sobaniは「Macのデスクトップに画像を飾る」ことに特化した、無料のデスクトップアクスタアプリです</p>
       </div>
-      <div class="max-w-4xl mx-auto overflow-x-auto">
+      <div class="max-w-4xl mx-auto glass-card p-6 border border-slate-200 dark:border-slate-700 overflow-x-auto">
         <table class="w-full text-sm text-left">
           <thead>
             <tr class="border-b-2 border-slate-200 dark:border-slate-700">
@@ -498,11 +421,13 @@
     </div>
   </section>
 
+  <hr class="section-divider max-w-6xl mx-auto">
+
   <!-- ダウンロード CTA -->
-  <section id="download" class="scroll-mt-20">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+  <section id="download" class="scroll-mt-20 hero-gradient">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <div class="max-w-2xl mx-auto text-center">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight" data-animate>
           <span class="text-amber-600 dark:text-amber-400" data-i18n="download.headingHighlight">お気に入りを、</span><span data-i18n="download.headingRest">そばに置こう。</span>
         </h2>
         <p class="mt-4 text-slate-600 dark:text-slate-400" data-i18n="download.subtitle">さあ、あなたの「好き」をデスクトップに。完全無料。</p>
@@ -510,13 +435,13 @@
         <div class="mt-8 space-y-6">
           <!-- 直接ダウンロードボタン -->
           <div class="flex justify-center">
-            <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="inline-flex items-center justify-center px-8 py-4 rounded-xl text-base font-bold bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-400 text-white shadow-lg hover:shadow-xl transition-all">
+            <a href="https://github.com/shiroemons/sobani/releases/latest/download/Sobani-universal.dmg" class="btn-primary">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span data-i18n="download.downloadButton">Sobani-universal.dmg をダウンロード</span>
             </a>
           </div>
           <!-- 手動インストール手順 -->
-          <div class="text-left max-w-lg mx-auto bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
+          <div class="text-left max-w-lg mx-auto bg-warm-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-200 dark:border-slate-700" style="background-color: var(--warm-bg-alt);">
             <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3" data-i18n="download.manualTitle">手動インストール手順</p>
             <ol class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
               <li class="flex items-start gap-2"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold text-xs">1</span><span data-i18n="download.manualStep1">ダウンロードした DMG ファイルを開く</span></li>
@@ -531,7 +456,7 @@
               <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 font-mono text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 <span class="text-slate-400 dark:text-slate-500 mr-2 select-none">$</span>
                 <code class="flex-1 overflow-x-auto">brew install --cask shiroemons/tap/sobani</code>
-                <button onclick="copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー" data-i18n-attr="aria-label:download.copyCommand,title:download.copyTitle">
+                <button onclick="SobaniDocs.copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="ml-3 flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="コマンドをコピー" title="コピー" data-i18n-attr="aria-label:download.copyCommand,title:download.copyTitle">
                   <svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                   <svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </button>
@@ -551,8 +476,8 @@
   </main>
 
   <!-- フッター -->
-  <footer class="border-t border-slate-200 dark:border-slate-700">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <footer class="border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="text-center space-y-4">
         <p class="text-sm text-slate-500 dark:text-slate-400">&copy; 2026 Sobani. MIT License.</p>
         <div>
@@ -571,7 +496,7 @@
       ja: {
         meta: {
           title: "Sobani \u2014 \u63a8\u3057\u3092\u3001\u305d\u3070\u306b\u3002",
-          description: "\u63A8\u3057\u3092\u3001\u305D\u3070\u306B\u3002\u597D\u304D\u306A\u753B\u50CF\u3092\u30A2\u30AF\u30EA\u30EB\u30B9\u30BF\u30F3\u30C9\u306E\u3088\u3046\u306BMac\u30C7\u30B9\u30AF\u30C8\u30C3\u30D7\u306B\u98FE\u308C\u308B\u7121\u6599macOS\u30A2\u30D7\u30EA\u3002\u900F\u904E\u8868\u793A\u30FB\u6700\u524D\u9762\u30FB\u8907\u6570\u753B\u50CF\u30FB\u80CC\u666F\u9664\u53BB\u30FB\u30AF\u30ED\u30C3\u30D7\u5BFE\u5FDC\u3002",
+          description: "好きな画像を常に最前面に表示するmacOSアプリ。透過ウィンドウでアクリルスタンドのようにデスクトップに飾れます。複数画像・背景除去・クロップ・管理パネル対応。完全無料。",
           keywords: "macOS,\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30de\u30b9\u30b3\u30c3\u30c8,\u30a2\u30af\u30ea\u30eb\u30b9\u30bf\u30f3\u30c9,\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30a2\u30af\u30b9\u30bf,Sobani,\u63a8\u3057,\u5e38\u306b\u6700\u524d\u9762,\u6700\u524d\u9762\u8868\u793a,PNG\u900f\u904e\u8868\u793a,\u900f\u904e\u30a6\u30a3\u30f3\u30c9\u30a6,\u8907\u6570\u753b\u50cf\u8868\u793a,\u30c9\u30e9\u30c3\u30b0\u79fb\u52d5,\u56de\u8ee2,\u900f\u660e\u5ea6\u8abf\u6574,\u4eee\u60f3\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u5bfe\u5fdc,Swift,\u7121\u6599,\u8efd\u91cf,ペット写真,アイドル,K-POP,VTuber,スポーツ,趣味の写真,デスクトップカスタマイズ"
         },
         nav: {
@@ -593,7 +518,7 @@
           headingLine2: "\u305d\u3070\u306b\u3002",
           subheading: "\u30c7\u30b9\u30af\u30c8\u30c3\u30d7\u30a2\u30af\u30b9\u30bf\u30a2\u30d7\u30ea for macOS",
           universalBinary: "Apple Silicon\u30fbIntel Mac \u4e21\u5bfe\u5fdc\uff08\u30e6\u30cb\u30d0\u30fc\u30b5\u30eb\u30d0\u30a4\u30ca\u30ea\uff09",
-          description: "好きな画像を、アクリルスタンドのようにデスクトップに飾れるアプリ。スマホの写真もそのまま使えます。いつでも目に入る場所に、お気に入りを。",
+          description: "好きな画像を常に最前面に表示できるmacOSアプリ。透過ウィンドウでアクリルスタンドのようにデスクトップに飾れます。スマホの写真もそのまま使えます。",
           broadAppeal: "キャラクター、アイドル、ペット、愛車——好きな画像を、いつでもそばに。",
           downloadButton: "Sobani-universal.dmg \u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9",
           copyCommand: "\u30b3\u30de\u30f3\u30c9\u3092\u30b3\u30d4\u30fc",
@@ -608,7 +533,7 @@
           card2Title: "\u597d\u304d\u306a\u753b\u50cf\u3092\u81ea\u7531\u306b",
           card2Desc: "PNG\u30fbJPEG\u30fbGIF\u30fbTIFF\u30fbHEIC\u306b\u5bfe\u5fdc\u3002\u597d\u304d\u306a\u753b\u50cf\u3092\u4f55\u679a\u3067\u3082\u767b\u9332\u3057\u3066\u3001\u6c17\u5206\u306b\u5408\u308f\u305b\u3066\u5207\u308a\u66ff\u3048\u3089\u308c\u307e\u3059\u3002",
           card3Title: "\u3044\u3064\u3067\u3082\u6700\u524d\u9762\u306b",
-          card3Desc: "透過ウィンドウで画像だけを最前面に表示。すべての仮想デスクトップに対応しています。",
+          card3Desc: "透過ウィンドウで画像を常に最前面に表示。すべての仮想デスクトップに対応し、他のウィンドウに隠れません。",
           card4Title: "\u76f4\u611f\u7684\u306a\u64cd\u4f5c",
           card4Desc: "ドラッグで移動、スクロールでサイズ変更、画像ファイルのドロップで追加。回転や不透明度もパネルから調整。Option + H でワンタッチ非表示・再表示。個別ウィンドウの非表示にも対応。右クリックメニューですべての操作にすぐアクセスできます。",
           card5Title: "\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30C4\u30FC\u30EB\u30D0\u30FC",
@@ -728,7 +653,7 @@
       en: {
         meta: {
           title: "Sobani \u2014 Your Favorites, Always Close.",
-          description: "Display your favorite images on your Mac desktop like acrylic stands. A free macOS app with transparent display, always-on-top, multiple images, background removal, and cropping.",
+          description: "A macOS app that displays your favorite images always on top. Show them on your desktop like acrylic stands with transparent windows. Multiple images, background removal, crop editor, management panel. Free and open source.",
           keywords: "macOS,desktop mascot,acrylic stand,desktop character,Sobani,always on top,PNG transparent,transparent window,multiple images,drag to move,rotate,opacity,virtual desktop,Swift,free,lightweight,pet photos,idol,K-POP,VTuber,sports,hobby photography,desktop customization"
         },
         nav: {
@@ -750,7 +675,7 @@
           headingLine2: "always close.",
           subheading: "Desktop Acrylic Stand App for macOS",
           universalBinary: "Supports both Apple Silicon and Intel Mac (Universal Binary)",
-          description: "Display your favorite images on the desktop like acrylic stands. Smartphone photos work too — no special preparation needed. Keep your favorites right where you can always see them.",
+          description: "A macOS app that displays your favorite images always on top. Show them on your desktop like acrylic stands with transparent windows. Works with smartphone photos too.",
           broadAppeal: "Characters, idols, pets, your car — keep any image close, always.",
           downloadButton: "Download Sobani-universal.dmg",
           nameOrigin: "\"Sobani\" comes from the Japanese word \"sobani\" (\u305d\u3070\u306b), meaning \"by your side.\"",
@@ -765,7 +690,7 @@
           card2Title: "Any Image You Like",
           card2Desc: "Supports PNG, JPEG, GIF, TIFF, and HEIC. Register as many images as you want and switch between them anytime.",
           card3Title: "Always on Top",
-          card3Desc: "Displays only your image in an always-on-top transparent window, across all virtual desktops.",
+          card3Desc: "Displays your image always on top in a transparent window, across all virtual desktops — never hidden by other windows.",
           card4Title: "Intuitive Controls",
           card4Desc: "Drag to move, scroll to resize, drop image files to add. Adjust rotation and opacity from the panel. Option + H to instantly hide/show all. Hide individual windows too. Right-click for instant access to all controls.",
           card5Title: "Floating Toolbar",
@@ -885,183 +810,8 @@
     };
   </script>
 
-  <script>
-    // モバイルメニュー
-    var menuBtn = document.getElementById('mobile-menu-btn');
-    var mobileMenu = document.getElementById('mobile-menu');
-    var iconOpen = document.getElementById('menu-icon-open');
-    var iconClose = document.getElementById('menu-icon-close');
-
-    menuBtn.addEventListener('click', function() {
-      var isOpen = !mobileMenu.classList.contains('hidden');
-      mobileMenu.classList.toggle('hidden');
-      iconOpen.classList.toggle('hidden');
-      iconClose.classList.toggle('hidden');
-      menuBtn.setAttribute('aria-expanded', String(!isOpen));
-    });
-
-    // モバイルメニュー内のリンクをクリックしたら閉じる
-    var mobileLinks = mobileMenu.querySelectorAll('a');
-    for (var i = 0; i < mobileLinks.length; i++) {
-      mobileLinks[i].addEventListener('click', function() {
-        mobileMenu.classList.add('hidden');
-        iconOpen.classList.remove('hidden');
-        iconClose.classList.add('hidden');
-        menuBtn.setAttribute('aria-expanded', 'false');
-      });
-    }
-
-    // テーマ切替（ライト → ダーク → システム → ライト...）
-    function getEffectiveTheme() {
-      var theme = localStorage.getItem('theme');
-      if (!theme || theme === 'system') return 'system';
-      return theme;
-    }
-
-    function applyTheme(theme) {
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else if (theme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        // system
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-      updateThemeIcons(theme);
-    }
-
-    function updateThemeIcons(theme) {
-      var icons = document.querySelectorAll('.theme-icon-light, .theme-icon-dark, .theme-icon-system');
-      for (var i = 0; i < icons.length; i++) {
-        icons[i].classList.add('hidden');
-      }
-      var showClass = 'theme-icon-' + theme;
-      var targets = document.querySelectorAll('.' + showClass);
-      for (var i = 0; i < targets.length; i++) {
-        targets[i].classList.remove('hidden');
-      }
-    }
-
-    function cycleTheme() {
-      var current = getEffectiveTheme();
-      var next;
-      if (current === 'light') next = 'dark';
-      else if (current === 'dark') next = 'system';
-      else next = 'light';
-      localStorage.setItem('theme', next);
-      applyTheme(next);
-    }
-
-    // 初期化
-    applyTheme(getEffectiveTheme());
-
-    // システムテーマ変更を監視
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
-      if (getEffectiveTheme() === 'system') {
-        applyTheme('system');
-      }
-    });
-
-    document.getElementById('theme-toggle').addEventListener('click', cycleTheme);
-    document.getElementById('theme-toggle-mobile').addEventListener('click', cycleTheme);
-
-    // コピーボタン
-    function copyCommand(text, button) {
-      navigator.clipboard.writeText(text).then(function() {
-        var copyIcon = button.querySelector('.copy-icon');
-        var checkIcon = button.querySelector('.check-icon');
-        copyIcon.classList.add('hidden');
-        checkIcon.classList.remove('hidden');
-        setTimeout(function() {
-          copyIcon.classList.remove('hidden');
-          checkIcon.classList.add('hidden');
-        }, 2000);
-      });
-    }
-
-    // Language switching
-    function getLanguage() {
-      var params = new URLSearchParams(window.location.search);
-      var urlLang = params.get('lang');
-      if (urlLang === 'ja' || urlLang === 'en') {
-        localStorage.setItem('lang', urlLang);
-        return urlLang;
-      }
-      var saved = localStorage.getItem('lang');
-      if (saved) return saved;
-      var browserLang = (navigator.language || 'ja').toLowerCase();
-      return browserLang.startsWith('ja') ? 'ja' : 'en';
-    }
-
-    function applyLanguage(lang) {
-      document.documentElement.lang = lang;
-
-      var t = translations[lang];
-
-      // Update data-i18n elements (textContent)
-      var elems = document.querySelectorAll('[data-i18n]');
-      for (var i = 0; i < elems.length; i++) {
-        var key = elems[i].getAttribute('data-i18n');
-        var val = getNestedValue(t, key);
-        if (val !== undefined) {
-          elems[i].textContent = val;
-          if (val === '') {
-            elems[i].setAttribute('hidden', '');
-          } else {
-            elems[i].removeAttribute('hidden');
-          }
-        }
-      }
-
-      // Update data-i18n-html elements (innerHTML)
-      // Note: All HTML content comes from hardcoded translations, not user input
-      var htmlElems = document.querySelectorAll('[data-i18n-html]');
-      for (var i = 0; i < htmlElems.length; i++) {
-        var key = htmlElems[i].getAttribute('data-i18n-html');
-        var val = getNestedValue(t, key);
-        if (val !== undefined) htmlElems[i].innerHTML = val;
-      }
-
-      // Update data-i18n-attr elements (attributes)
-      var attrElems = document.querySelectorAll('[data-i18n-attr]');
-      for (var i = 0; i < attrElems.length; i++) {
-        var pairs = attrElems[i].getAttribute('data-i18n-attr').split(',');
-        for (var j = 0; j < pairs.length; j++) {
-          var parts = pairs[j].split(':');
-          var attrName = parts[0].trim();
-          var key = parts[1].trim();
-          var val = getNestedValue(t, key);
-          if (val !== undefined) attrElems[i].setAttribute(attrName, val);
-        }
-      }
-    }
-
-    function getNestedValue(obj, path) {
-      var parts = path.split('.');
-      var current = obj;
-      for (var i = 0; i < parts.length; i++) {
-        if (current === undefined || current === null) return undefined;
-        current = current[parts[i]];
-      }
-      return current;
-    }
-
-    function toggleLanguage() {
-      var next = getLanguage() === 'ja' ? 'en' : 'ja';
-      localStorage.setItem('lang', next);
-      applyLanguage(next);
-    }
-
-    // Language initialization
-    applyLanguage(getLanguage());
-
-    document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
-    document.getElementById('lang-toggle-mobile').addEventListener('click', toggleLanguage);
-  </script>
+  <script src="js/common.js"></script>
+  <script>SobaniDocs.init(translations);</script>
 
 </body>
 </html>

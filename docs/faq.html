@@ -41,6 +41,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192.png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <script>
     (function() {
       var theme = localStorage.getItem('theme');
@@ -60,21 +61,8 @@
     })();
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {}
-      }
-    }
-  </script>
-  <style>
-    html { scroll-behavior: smooth; }
-    details summary { cursor: pointer; }
-    details summary::-webkit-details-marker { display: none; }
-    details[open] summary .faq-chevron { transform: rotate(180deg); }
-    .faq-chevron { transition: transform 0.2s ease; }
-  </style>
+  <script src="js/tailwind.config.js"></script>
+  <link rel="stylesheet" href="css/style.css">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -462,10 +450,10 @@
   }
   </script>
 </head>
-<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+<body class="bg-warm-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300" style="background-color: var(--warm-bg);">
 
   <!-- ヘッダー -->
-  <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+  <header class="sticky top-0 z-50 header-glass">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <a href="index.html" class="text-xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">Sobani</a>
@@ -475,7 +463,6 @@
           <a href="index.html#howto" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
           <a href="index.html#video" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
           <a href="index.html#download" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
-          <a href="index.html#usecases" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.usecases">使い方いろいろ</a>
           <a href="features.html" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.allFeatures">すべての機能</a>
           <a href="faq.html" class="text-sm font-medium text-amber-600 dark:text-amber-400 font-bold" data-i18n="nav.faq" aria-current="page">FAQ</a>
           <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
@@ -506,7 +493,6 @@
         <a href="index.html#howto" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.howto">使い方</a>
         <a href="index.html#video" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.video">動画</a>
         <a href="index.html#download" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.download">ダウンロード</a>
-        <a href="index.html#usecases" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.usecases">使い方いろいろ</a>
         <a href="features.html" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors" data-i18n="nav.allFeatures">すべての機能</a>
         <a href="faq.html" class="block text-sm font-medium text-amber-600 dark:text-amber-400 font-bold" data-i18n="nav.faq" aria-current="page">FAQ</a>
         <a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">GitHub</a>
@@ -525,19 +511,19 @@
   </header>
 
   <main>
-    <!-- パンくずリスト -->
-    <nav class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6" aria-label="パンくずリスト">
-      <ol class="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
-        <li><a href="index.html" class="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">Sobani</a></li>
-        <li><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></li>
-        <li class="text-slate-900 dark:text-slate-100 font-medium">FAQ</li>
-      </ol>
-    </nav>
-
-    <!-- FAQ ヒーロー -->
-    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100" data-i18n="faq.pageTitle">よくある質問</h1>
-      <p class="mt-4 text-lg text-slate-600 dark:text-slate-300" data-i18n="faq.pageSubtitle">Sobaniについてよく寄せられる質問と回答をまとめました。</p>
+    <!-- ヒーロー -->
+    <section class="hero-gradient">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+        <nav class="mb-6" aria-label="パンくずリスト">
+          <ol class="flex items-center space-x-2 text-xs text-slate-400 dark:text-slate-500">
+            <li><a href="index.html" class="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">Sobani</a></li>
+            <li><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></li>
+            <li class="text-slate-600 dark:text-slate-300 font-medium" data-i18n="faq.pageTitle">よくある質問</li>
+          </ol>
+        </nav>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight" data-i18n="faq.pageTitle">よくある質問</h1>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400" data-i18n="faq.pageSubtitle">Sobaniについてよく寄せられる質問と回答をまとめました。</p>
+      </div>
     </section>
 
     <!-- FAQ セクション -->
@@ -545,9 +531,9 @@
 
       <!-- はじめに -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryGettingStarted">はじめに</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryGettingStarted" data-animate>はじめに</h2>
         <div class="space-y-3">
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q1">Sobaniとは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -555,15 +541,15 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a1">Sobaniは、お気に入りの画像を「デスクトップアクスタ」としてMacの画面に飾れる無料のmacOSアプリです。実物のアクリルスタンドのように、透明な背景で画像だけを表示し、常に最前面のウィンドウとして全ての仮想デスクトップに表示されます。ネイティブSwift製で外部依存ゼロ、非常に軽量に動作します。推しのキャラクターやアイドル写真、ペットの写真、愛車や趣味の写真など、どんな画像でもお使いいただけます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q3">インストール方法は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a3">2つの方法でインストールできます。<br><br><strong>Homebrew（推奨）</strong><br>ターミナルで以下のコマンドを実行してください。<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="コピー" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>手動ダウンロード</strong><br><a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">ダウンロードページ</a>からSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。<br><br>Mac App Storeでは配布していません。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a3">2つの方法でインストールできます。<br><br><strong>Homebrew（推奨）</strong><br>ターミナルで以下のコマンドを実行してください。<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="SobaniDocs.copyCommand('brew install --cask shiroemons/tap/sobani', this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="コピー" data-i18n-attr="title:faq.copyTooltip"><svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></button></div><br><strong>手動ダウンロード</strong><br><a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">ダウンロードページ</a>からSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。<br><br>Mac App Storeでは配布していません。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q4">動作環境は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -571,7 +557,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a4">macOS 14.0（Sonoma）以降が必要です。Intel Mac と Apple Silicon（M1/M2/M3/M4）の両方に対応したユニバーサルバイナリです。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q5">無料ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -579,7 +565,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a5">はい、Sobaniは完全無料です。MIT ライセンスのオープンソースソフトウェアとして公開されており、誰でも自由に使用できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q18">Dockにアイコンが表示されないのはなぜですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -587,7 +573,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a18">ご安心ください。Sobaniは正常に動作しています。Sobaniはメニューバー常駐型アプリとして設計されています。Dockにアイコンを表示せず、画面上部のメニューバーにアイコンが表示されます。これにより、Dockのスペースを消費せず、デスクトップアクスタとしての役割に集中できます。すべての操作はメニューバーのアイコンまたは画像の右クリックメニューから行えます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q19">起動時に自動的に立ち上げるには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -595,7 +581,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a19">メニューバーのSobaniアイコンをクリックし、「設定」>「ログイン時に起動」にチェックを入れてください。次回のMac起動時からSobaniが自動的に立ち上がり、前回終了時のウィンドウ配置が復元されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q38">初回起動時のガイドについて</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -603,7 +589,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a38">初回起動時に、3ステップのガイドが表示されます。<br><br><strong>ステップ1:</strong> ドラッグで移動<br><strong>ステップ2:</strong> スクロールでサイズ変更<br><strong>ステップ3:</strong> 右クリックでメニュー表示<br><br>ガイドはスキップすることもできます。一度完了すると次回以降は表示されません。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q26">バッテリーやメモリへの影響は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -615,9 +601,9 @@
 
       <!-- 操作・カスタマイズ -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUsage">操作・カスタマイズ</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUsage" data-animate>操作・カスタマイズ</h2>
         <div class="space-y-3">
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q7">画像の追加・変更方法は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -625,7 +611,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a7">メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。また、画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップして追加することもできます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q36">ドラッグ＆ドロップで画像を追加できますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -633,7 +619,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a36">画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップするだけで、新しいウィンドウとして追加できます。FinderやWebブラウザからの直接ドロップにも対応しています。<br><br><strong>Option</strong>キーを押しながらドロップすると、新しいウィンドウを追加する代わりに、既存のウィンドウの画像を差し替えます。位置・サイズ・回転・不透明度はそのまま維持されるので、レイアウトを崩さずに画像だけを入れ替えられます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q37">画像を差し替えたとき、位置やサイズは維持されますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -641,7 +627,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a37">はい。右クリックメニューの「画像を変更」で画像を差し替えると、ウィンドウの位置・サイズ・回転角度・不透明度がすべて維持されます。<strong>Option</strong>キーを押しながらドラッグ＆ドロップした場合も同様です。<br><br>季節やイベントごとに画像を入れ替えるときに便利です。レイアウトを一から作り直す必要はありません。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q41">画像を季節やイベントごとに簡単に入れ替えるコツは？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -649,7 +635,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a41">いくつかの方法で簡単に入れ替えられます。<br><br><strong>方法1: 右クリック「画像を変更」</strong><br>位置・サイズ・回転・不透明度を維持したまま画像だけを差し替えます。<br><br><strong>方法2: Option + ドラッグ＆ドロップ</strong><br>Optionキーを押しながら新しい画像をドロップしても、同じく位置を維持して差し替えられます。<br><br>大きくレイアウトを変える場合は、事前にデータフォルダのバックアップをおすすめします。季節の写真やイベントのビジュアルで、デスクトップの模様替えをお楽しみください。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q42">レイアウトプリセットとは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -657,7 +643,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a42">現在のウィンドウ配置（画像・位置・サイズ・回転角度・不透明度）を名前を付けて保存し、いつでもワンクリックで復元できる機能です。メニューバーの「レイアウト」メニューから操作します。「現在のレイアウトを保存...」で保存し、プリセット名をクリックで読み込みます。仕事中・配信中・リラックスなど、シーンごとにレイアウトを保存しておくと便利です。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q43">レイアウトプリセットはどこに保存されますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -665,7 +651,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a43">レイアウトプリセットは ~/Library/Application Support/Sobani/layouts/ フォルダに、プリセットごとに個別のJSONファイルとして保存されます。ファイルを別のMacにコピーすることで、レイアウトを移行することもできます。ただし、使用している画像も同じパスに存在する必要があります。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q44">画像を画面の端やメニューバーの上まで配置できますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -673,7 +659,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a44">はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。キャラクターが画面の端から顔を出しているような演出が可能です。アプリを再起動した際も、配置位置は正確に復元されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q31">デフォルト画像を変更するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -681,7 +667,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a31">メニューバーのSobaniアイコンをクリックし、「設定」>「デフォルト画像を変更...」を選択してください。ファイル選択ダイアログが開くので、好きな画像を選ぶだけです。<br><br>デフォルト画像をリセットしたい場合は、「設定」メニューから「デフォルト画像をリセット」を選択すると初期画像に戻ります。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q2">対応している画像形式は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -689,7 +675,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a2">スマートフォンで撮った写真（JPEG/HEIC）もそのまま使えます。PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q25">透過PNGとは？JPEG写真でも使えますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -697,7 +683,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a25">スマートフォンで撮った写真（JPEG/HEIC）や普通のPNG画像もそのまま使えます。特別な加工は必要ありません。<br><br>「透過PNG」とは、背景が透明な画像のことです。透過PNGを使うと、背景なしで画像だけがデスクトップに表示され、まるで本物のアクリルスタンドのような仕上がりになります。<br><br>透過PNGは必須ではありません。お手元のJPEG写真でも十分にお楽しみいただけます。<br><br>わかりやすく言えば、写真の被写体だけを残して背景を消した画像のことです。デジタルの切り抜きと考えてください。Sobaniには背景を自動で除去する機能も搭載されています。詳しくは「背景除去機能とは何ですか？」をご覧ください。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q27">透過PNG画像はどこで入手・作成できますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -705,7 +691,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a27">Sobaniだけで透過PNG画像を作成できます。JPEG写真やHEIC画像など、PNG以外の形式からはもちろん、透過されていない通常のPNG画像からでも透過PNGを作れます。<br><br><strong>Sobaniの背景除去機能（おすすめ）</strong><br>macOS 14（Sonoma）以降なら、Sobani上で直接背景を除去できます。右クリックメニューの「画像を変更」→「背景を除去」で、JPEG・HEIC・GIF・TIFFはもちろん、透過されていない通常のPNG画像からも被写体だけを切り抜いた透過PNGが自動で作成されます。外部ツール不要で最も手軽な方法です。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q20">複数の画像を同時に表示できますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -713,7 +699,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a20">はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q28">複数モニターで使えますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -721,7 +707,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a28">はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。<br><br>たとえば、メインモニターにキャラクター、外部モニターにペットの写真——といった使い分けも自由自在。MacBookのクラムシェルモード（外部モニターのみ）でも問題なく動作します。<br><br>モニター切断時の復元については「モニター切断/スリープ後にウィンドウが移動した」をご覧ください。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q33">一眼レフやミラーレスの高解像度写真も使えますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -729,7 +715,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a33">はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q8">キーボードショートカットは？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -737,7 +723,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a8">Option + H で全ウィンドウの表示/非表示を切り替え、Option + G でゴーストモード（クリック透過）を一括切り替えできます。Option + ドラッグで全ウィンドウを同時に移動、Option + スクロールで全ウィンドウを同時にリサイズできます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q9">非表示にしたウィンドウを再表示するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -745,7 +731,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a9">Option + H で非表示にした後、別のアプリにフォーカスが移った場合は、再度 Option + H を押しても表示されないことがあります。その場合は、メニューバーのSobaniアイコンをクリックし、「すべて表示」を選択してください。メニューバーからの操作は、どのアプリがフォーカスされていても確実に動作します。<br><br>個別に非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H でまとめて再表示することもできます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q32">仕事中にすばやく非表示にしたい</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -753,7 +739,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a32">ビデオ会議や画面共有の前に、<strong>Option + H</strong> ですべてのウィンドウを一瞬で非表示にできます。特定のウィンドウだけを非表示にしたい場合は、フローティングメニューや右クリックメニューから個別に非表示にすることもできます。再表示の方法など詳しくは「キーボードショートカットは？」「非表示にしたウィンドウを再表示するには？」をご覧ください。<br><br>Web会議、画面共有、オンライン授業、配信中の画面共有など、さまざまな場面で活用できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q40">配信（OBS等）でSobaniの画像を映すには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -761,7 +747,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a40">Sobaniのウィンドウは常に最前面に表示されるため、OBSなどの配信ソフトの「画面キャプチャ」（Display Capture）でそのまま映ります。<br><br>特定のSobaniウィンドウだけを映したい場合は、「ウィンドウキャプチャ」（Window Capture）で個別に指定することも可能です。<br><br>配信中にSobaniを映したくない場合は、<strong>Option + H</strong> で一括非表示にできます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q21">画像の回転や不透明度を調整するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -769,7 +755,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a21">表示中の画像を右クリックし、「調整」を選択すると調整パネルが表示されます。回転ダイヤル（0〜360度、5度刻み）と不透明度スライダー（10%〜100%）でリアルタイムに調整できます。設定はアプリ終了時に自動保存されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q45">ゴーストモードとは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -777,7 +763,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a45">ゴーストモードはウィンドウをクリック透過にする機能です。有効にすると、ウィンドウが半透明になり、マウス操作はウィンドウを通過して背後のアプリに届きます。Option + G で全ウィンドウを一括切り替えできます。右クリックメニューやフローティングメニューから個別に切り替えることもできます。透明度はメニューバーの「設定」からカスタマイズ可能です。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q46">画像をトリミング（切り取り）するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -785,7 +771,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a46">右クリックメニューの「画像の切り取り」またはフローティングメニューのクロップボタンからクロップエディタを開けます。iPhone写真アプリのようなインターフェースで、アスペクト比プリセット（1:1、4:3、16:9など）を選択でき、傾き補正やパースペクティブ補正も可能です。<br><br>形状セレクタから矩形・円形・角丸矩形の3種類の形状を選んでクロップできます。すべての編集はUndo/Redo対応の非破壊編集で、元の画像はそのまま保持されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q47">フローティングメニューとは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -793,7 +779,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a47">キャラクターウィンドウをダブルクリックすると表示されるツールバーです。切り取り・反転・調整・ゴーストモード・背景削除・非表示・表示をリセット・閉じるの操作にワンクリックでアクセスできます。メニュー外をクリックするかESCキーで閉じます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q48">ウィンドウを個別に非表示にするには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -801,7 +787,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a48">フローティングメニュー（ダブルクリックで表示）または右クリックメニューの「その他」から「非表示」を選択すると、そのウィンドウだけを非表示にできます。<br><br>非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H ですべてのウィンドウをまとめて再表示することも可能です。非表示状態はアプリを終了しても保持されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q49">円形や角丸矩形で画像をクロップできますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -809,7 +795,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a49">はい、クロップエディタの形状セレクタから矩形・円形・角丸矩形の3種類の形状を選択してクロップできます。形状クロップはアスペクト比プリセットや傾き補正などの他の機能と併用できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q50">外観モード（テーマ）を変更するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -817,7 +803,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a50">ステータスバーメニューの「設定」から「外観モード」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q17">画像の最大表示サイズが6000pxなのはなぜですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -825,7 +811,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a17">Sobaniでは画像の回転表示に対応しているため、回転時に生成される外接矩形（バウンディングボックス）が元の画像サイズよりも大きくなります。macOSはGPUを使って画像を高速に描画しますが、GPUが一度に処理できるテクスチャサイズには上限があります（Intel Macでは8,192px）。6000pxの画像であれば、一般的な縦長の画像を任意の角度に回転してもGPUの処理範囲内に収まるため、Intel Mac・Apple Siliconの両方ですべての操作が滑らかに動作します。この値は、GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作するよう設計された上限値です。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q22">動画ファイル（MP4等）には対応していますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -833,7 +819,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a22">Sobaniは「デスクトップアクスタ」をコンセプトとしたアプリです。実物のアクリルスタンドと同じように、お気に入りの画像をそのままデスクトップに飾ることを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q34">背景除去機能とは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -841,7 +827,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a34">Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を変更」→「背景を除去」から実行できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q35">背景除去はどの画像で使えますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -853,9 +839,9 @@
 
       <!-- 管理パネル -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryManagement">管理パネル</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryManagement" data-animate>管理パネル</h2>
         <div class="space-y-3">
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q51">管理パネルを開くには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -863,7 +849,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a51">メニューバーのSobaniアイコンをクリックし、「管理パネルを開く」を選択してください。管理パネルはフローティングウィンドウとして表示され、デスクトップ操作を続けながら使用できます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q52">ホットキーを変更・リセットするには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -871,7 +857,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a52">管理パネルの「設定」タブを開き、「ホットキー」セクションでホットキーをカスタマイズできます。各ホットキー行の入力フィールドをクリックして新しいキーを押すだけで変更できます。個別にリセットしたい場合は各行の元に戻すボタンを、すべてデフォルトに戻したい場合は「すべてリセット」ボタンを押してください。ホットキー機能を使用するにはアクセシビリティ権限が必要です。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q53">管理パネルでレイアウトプリセットを使うには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -879,7 +865,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a53">管理パネルの「レイアウト管理」タブからプリセットを管理できます。保存ボタンで現在のレイアウトを名前を付けて保存し、一覧から選んで読み込み・上書き更新・削除・リネームが行えます。プリセットをクリックすると詳細画面でミニマップ付きのウィンドウ情報を確認できます。削除後は一定時間内に「元に戻す」で復元も可能です。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q54">登録済み画像を管理するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -891,9 +877,9 @@
 
       <!-- データとプライバシー -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryDataPrivacy">データとプライバシー</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryDataPrivacy" data-animate>データとプライバシー</h2>
         <div class="space-y-3">
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q10">データはどこに保存されますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -901,7 +887,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a10">すべてのデータは ~/Library/Application Support/Sobani/ に保存されます。登録した画像は images/ フォルダに、ウィンドウの状態は window_states.json に保存されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q23">アプリ終了後にウィンドウの配置は保存されますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -909,7 +895,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a23">はい。ウィンドウの位置、サイズ、表示画像、回転角度、不透明度、左右反転、表示順序がすべて自動的に保存されます。次回起動時に前回の状態がそのまま復元されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q11">プライバシーについて</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -917,7 +903,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a11">Sobaniはネットワーク通信をアップデート確認（appcast.xml の取得）のみに使用します。ユーザーの画像やデータを外部に送信することはありません。すべてのデータはローカルに保存されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q6">アンインストール方法は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -925,7 +911,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a6">Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q30">データのバックアップ・復元方法は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -933,7 +919,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a30">Sobaniのすべてのデータは <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/</code> フォルダにまとまっています。<br><br><strong>バックアップ</strong><br>このフォルダをまるごとコピーするだけでOKです。USBメモリ、クラウドストレージ、Time Machineなどお好みの方法でバックアップできます。<br><br><strong>復元</strong><br>バックアップしたフォルダを同じ場所に戻してからSobaniを起動すれば、画像・配置・設定がすべて復元されます。<br><br>Sobaniを終了した状態でバックアップ・復元を行ってください。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q29">設定ファイルの形式は？（上級者向け）</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -945,9 +931,9 @@
 
       <!-- アップデート -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUpdate">アップデート</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUpdate" data-animate>アップデート</h2>
         <div class="space-y-3">
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q12">自動アップデートはありますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -955,7 +941,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a12">はい。Sparkle フレームワークにより、24時間ごとにバックグラウンドで自動チェックを行います。新しいバージョンがあればダイアログで通知し、ワンクリックでアップデートできます。すべてのアップデートは EdDSA 署名で検証されます。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q15">アップデートに失敗する</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -967,9 +953,9 @@
 
       <!-- トラブルシューティング -->
       <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryTroubleshooting">トラブルシューティング</h2>
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryTroubleshooting" data-animate>トラブルシューティング</h2>
         <div class="space-y-3">
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q24">「開発元が未確認」と表示されて起動できない</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -977,7 +963,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a24">ご安心ください。これはmacOSのGatekeeper機能による警告で、Mac App Store以外から入手したすべてのアプリに表示される一般的なものです。Sobani自体に問題はありません。<br><br>Sobani.appを右クリック（またはControlキーを押しながらクリック）し、「開く」を選択してください。確認ダイアログが表示されるので「開く」をクリックします。この操作は初回のみ必要です。<br><br>Homebrewでインストールした場合はこの問題は発生しません。<br><br>Sobaniはオープンソースソフトウェアで、ソースコードは誰でも<a href="https://github.com/shiroemons/sobani" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 underline">GitHub</a>で確認できます。世界中の開発者が内容を検証可能な透明性の高いアプリです。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q39">メニューバーのアイコンが見つかりません</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -985,7 +971,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a39">Sobaniのアイコンは、メニューバーの右端エリア（時計やWi-Fiアイコンの近く）に表示されます。<br><br>メニューバーにアイコンが多い場合、画面幅に収まりきらず隠れてしまうことがあります。<strong>Command</strong>キーを押しながらアイコンをドラッグすると、メニューバー内のアイコンを並び替えられます。<br><br>それでも見つからない場合は、Sobaniが起動しているか確認してください。アクティビティモニタで「Sobani」を検索するか、アプリケーションフォルダからSobaniを再度起動してみてください。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q13">モニター切断/スリープ後にウィンドウが移動した</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -993,7 +979,7 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a13">Sobaniは3段階の復元システムを備えています。モニターの切断やスリープ/復帰時にウィンドウ位置を自動的に復元します。モニターが再接続されると、元の位置に戻ります。復元されない場合は、5分以内にモニターを再接続してください。</div>
           </details>
 
-          <details class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q14">画像が表示されない</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1008,8 +994,8 @@
   </main>
 
   <!-- フッター -->
-  <footer class="border-t border-slate-200 dark:border-slate-700">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <footer class="border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="text-center space-y-4">
         <p class="text-sm text-slate-500 dark:text-slate-400">&copy; 2026 Sobani. MIT License.</p>
         <div>
@@ -1059,7 +1045,7 @@
           q2: "対応している画像形式は？",
           a2: "スマートフォンで撮った写真（JPEG/HEIC）もそのまま使えます。PNG、JPEG（JPG）、GIF、TIFF、HEIC形式に対応しています。透過PNG画像を使用すると、背景が透明になり、画像だけがデスクトップに表示されます。",
           q3: "インストール方法は？",
-          a3: '2つの方法でインストールできます。<br><br><strong>Homebrew（推奨）</strong><br>ターミナルで以下のコマンドを実行してください。<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="コピー" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>手動ダウンロード</strong><br><a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">ダウンロードページ</a>からSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。<br><br>Mac App Storeでは配布していません。',
+          a3: '2つの方法でインストールできます。<br><br><strong>Homebrew（推奨）</strong><br>ターミナルで以下のコマンドを実行してください。<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="SobaniDocs.copyCommand(\'brew install --cask shiroemons/tap/sobani\', this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="コピー" data-i18n-attr="title:faq.copyTooltip"><svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></button></div><br><strong>手動ダウンロード</strong><br><a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">ダウンロードページ</a>からSobani-universal.dmgをダウンロードし、開いてSobani.appをアプリケーションフォルダにドラッグ＆ドロップしてください。<br><br>Mac App Storeでは配布していません。',
           copyTooltip: "コピー",
           q4: "動作環境は？",
           a4: "macOS 14.0（Sonoma）以降が必要です。Intel Mac と Apple Silicon（M1/M2/M3/M4）の両方に対応したユニバーサルバイナリです。",
@@ -1200,7 +1186,7 @@
           q2: "What image formats are supported?",
           a2: "Photos taken with your smartphone (JPEG/HEIC) can be used as-is. Sobani supports PNG, JPEG (JPG), GIF, TIFF, and HEIC formats. Using transparent PNG images allows the background to be invisible, displaying only the image on your desktop.",
           q3: "How do I install Sobani?",
-          a3: 'There are two ways to install Sobani.<br><br><strong>Homebrew (Recommended)</strong><br>Run the following command in Terminal:<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="copyBrewCommand(this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Copy" data-i18n-attr="title:faq.copyTooltip"><svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div><br><strong>Manual Download</strong><br>Download Sobani-universal.dmg from the <a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">download page</a>, open it, and drag Sobani.app to your Applications folder.<br><br>Not available on the Mac App Store.',
+          a3: 'There are two ways to install Sobani.<br><br><strong>Homebrew (Recommended)</strong><br>Run the following command in Terminal:<div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2 my-2 max-w-fit"><code class="text-sm font-mono select-all">brew install --cask shiroemons/tap/sobani</code><button onclick="SobaniDocs.copyCommand(\'brew install --cask shiroemons/tap/sobani\', this)" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Copy" data-i18n-attr="title:faq.copyTooltip"><svg class="w-5 h-5 copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><svg class="w-5 h-5 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></button></div><br><strong>Manual Download</strong><br>Download Sobani-universal.dmg from the <a href="index.html#download" class="text-amber-600 dark:text-amber-400 underline">download page</a>, open it, and drag Sobani.app to your Applications folder.<br><br>Not available on the Mac App Store.',
           copyTooltip: "Copy",
           q4: "What are the system requirements?",
           a4: "Requires macOS 14.0 (Sonoma) or later. It is a universal binary supporting both Intel Mac and Apple Silicon (M1/M2/M3/M4).",
@@ -1310,179 +1296,8 @@
     };
   </script>
 
-  <script>
-    // モバイルメニュー
-    var menuBtn = document.getElementById('mobile-menu-btn');
-    var mobileMenu = document.getElementById('mobile-menu');
-    var iconOpen = document.getElementById('menu-icon-open');
-    var iconClose = document.getElementById('menu-icon-close');
-
-    menuBtn.addEventListener('click', function() {
-      var isOpen = !mobileMenu.classList.contains('hidden');
-      mobileMenu.classList.toggle('hidden');
-      iconOpen.classList.toggle('hidden');
-      iconClose.classList.toggle('hidden');
-      menuBtn.setAttribute('aria-expanded', String(!isOpen));
-    });
-
-    // モバイルメニュー内のリンクをクリックしたら閉じる
-    var mobileLinks = mobileMenu.querySelectorAll('a');
-    for (var i = 0; i < mobileLinks.length; i++) {
-      mobileLinks[i].addEventListener('click', function() {
-        mobileMenu.classList.add('hidden');
-        iconOpen.classList.remove('hidden');
-        iconClose.classList.add('hidden');
-        menuBtn.setAttribute('aria-expanded', 'false');
-      });
-    }
-
-    // テーマ切替（ライト → ダーク → システム → ライト...）
-    function getEffectiveTheme() {
-      var theme = localStorage.getItem('theme');
-      if (!theme || theme === 'system') return 'system';
-      return theme;
-    }
-
-    function applyTheme(theme) {
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else if (theme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        // system
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-      updateThemeIcons(theme);
-    }
-
-    function updateThemeIcons(theme) {
-      var icons = document.querySelectorAll('.theme-icon-light, .theme-icon-dark, .theme-icon-system');
-      for (var i = 0; i < icons.length; i++) {
-        icons[i].classList.add('hidden');
-      }
-      var showClass = 'theme-icon-' + theme;
-      var targets = document.querySelectorAll('.' + showClass);
-      for (var i = 0; i < targets.length; i++) {
-        targets[i].classList.remove('hidden');
-      }
-    }
-
-    function cycleTheme() {
-      var current = getEffectiveTheme();
-      var next;
-      if (current === 'light') next = 'dark';
-      else if (current === 'dark') next = 'system';
-      else next = 'light';
-      localStorage.setItem('theme', next);
-      applyTheme(next);
-    }
-
-    // 初期化
-    applyTheme(getEffectiveTheme());
-
-    // システムテーマ変更を監視
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
-      if (getEffectiveTheme() === 'system') {
-        applyTheme('system');
-      }
-    });
-
-    document.getElementById('theme-toggle').addEventListener('click', cycleTheme);
-    document.getElementById('theme-toggle-mobile').addEventListener('click', cycleTheme);
-
-    // Language switching
-    function getLanguage() {
-      var params = new URLSearchParams(window.location.search);
-      var urlLang = params.get('lang');
-      if (urlLang === 'ja' || urlLang === 'en') {
-        localStorage.setItem('lang', urlLang);
-        return urlLang;
-      }
-      var saved = localStorage.getItem('lang');
-      if (saved) return saved;
-      var browserLang = (navigator.language || 'ja').toLowerCase();
-      return browserLang.startsWith('ja') ? 'ja' : 'en';
-    }
-
-    function applyLanguage(lang) {
-      document.documentElement.lang = lang;
-
-      var t = translations[lang];
-
-      // Update data-i18n elements (textContent)
-      var elems = document.querySelectorAll('[data-i18n]');
-      for (var i = 0; i < elems.length; i++) {
-        var key = elems[i].getAttribute('data-i18n');
-        var val = getNestedValue(t, key);
-        if (val !== undefined) {
-          elems[i].textContent = val;
-          if (val === '') {
-            elems[i].setAttribute('hidden', '');
-          } else {
-            elems[i].removeAttribute('hidden');
-          }
-        }
-      }
-
-      // Update data-i18n-html elements (innerHTML)
-      var htmlElems = document.querySelectorAll('[data-i18n-html]');
-      for (var i = 0; i < htmlElems.length; i++) {
-        var key = htmlElems[i].getAttribute('data-i18n-html');
-        var val = getNestedValue(t, key);
-        if (val !== undefined) {
-          htmlElems[i].innerHTML = val;
-        }
-      }
-
-      // Update data-i18n-attr elements (attributes)
-      var attrElems = document.querySelectorAll('[data-i18n-attr]');
-      for (var i = 0; i < attrElems.length; i++) {
-        var pairs = attrElems[i].getAttribute('data-i18n-attr').split(',');
-        for (var j = 0; j < pairs.length; j++) {
-          var parts = pairs[j].split(':');
-          var attrName = parts[0].trim();
-          var key = parts[1].trim();
-          var val = getNestedValue(t, key);
-          if (val !== undefined) attrElems[i].setAttribute(attrName, val);
-        }
-      }
-    }
-
-    function getNestedValue(obj, path) {
-      var parts = path.split('.');
-      var current = obj;
-      for (var i = 0; i < parts.length; i++) {
-        if (current === undefined || current === null) return undefined;
-        current = current[parts[i]];
-      }
-      return current;
-    }
-
-    function toggleLanguage() {
-      var next = getLanguage() === 'ja' ? 'en' : 'ja';
-      localStorage.setItem('lang', next);
-      applyLanguage(next);
-    }
-
-    function copyBrewCommand(btn) {
-      navigator.clipboard.writeText('brew install --cask shiroemons/tap/sobani').then(function() {
-        var svg = btn.querySelector('svg');
-        var original = svg.innerHTML;
-        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
-        setTimeout(function() { svg.innerHTML = original; }, 1500);
-      });
-    }
-
-    // Language initialization
-    applyLanguage(getLanguage());
-
-    document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
-    document.getElementById('lang-toggle-mobile').addEventListener('click', toggleLanguage);
-  </script>
+  <script src="js/common.js"></script>
+  <script>SobaniDocs.init(translations);</script>
 
 </body>
 </html>
