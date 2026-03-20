@@ -7,7 +7,10 @@ extension AppDelegate {
     private static let screenRestorationLogger = Logger(category: "ScreenRestoration")
 
     func setupScreenRestorationObservers() {
-        Self.screenRestorationLogger.debug("[ScreenRestoration] observers registered, screens=\(NSScreen.screens.count, privacy: .public)")
+        let screenCount = NSScreen.screens.count
+        Self.screenRestorationLogger.debug(
+            "[ScreenRestoration] observers registered, screens=\(screenCount, privacy: .public)"
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleScreenChange),
@@ -56,7 +59,10 @@ extension AppDelegate {
         screenChangeDebounceTimer?.invalidate()
         if wakeContext.isActive {
             // Wake 復元中のスクリーン変更 → 復元リトライをトリガー（1.5秒デバウンス）
-            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeDebounceInterval, repeats: false) { @Sendable [weak self] _ in
+            screenChangeDebounceTimer = Timer.scheduledTimer(
+                withTimeInterval: AppConstants.wakeDebounceInterval,
+                repeats: false
+            ) { @Sendable [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.attemptWakeRestoration()
                 }
@@ -64,7 +70,10 @@ extension AppDelegate {
         } else {
             // 通常時 → ペンディング復元を試行（1秒デバウンス）
             let interval = AppConstants.screenChangeDebounceInterval
-            screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { @Sendable [weak self] _ in
+            screenChangeDebounceTimer = Timer.scheduledTimer(
+                withTimeInterval: interval,
+                repeats: false
+            ) { @Sendable [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.attemptPendingRestorations()
                 }
@@ -90,27 +99,33 @@ extension AppDelegate {
             }
         }
         let savedCount = wakeContext.states.count
-        Self.screenRestorationLogger.info("[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows")
+        Self.screenRestorationLogger.info(
+            "[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows"
+        )
         for (wid, origin) in wakeContext.windowOrigins {
             let did = wakeContext.displayIDs[wid] ?? AppConstants.unknownDisplayID
             let sFrame = wakeContext.screenFrames[did]
             let sFrameDesc = sFrame.debugDescription
             let originDesc = NSStringFromPoint(origin)
-            Self.screenRestorationLogger.debug(
-                "  #\(wid, privacy: .public): origin=\(originDesc, privacy: .public), displayID=\(did, privacy: .public), sf=\(sFrameDesc, privacy: .public)"
-            )
+            let logMsg = "  #\(wid): origin=\(originDesc), displayID=\(did), sf=\(sFrameDesc)"
+            Self.screenRestorationLogger.debug("\(logMsg, privacy: .public)")
         }
     }
 
     @objc func handleDidWake() {
         let restoreCount = wakeContext.states.count
-        Self.screenRestorationLogger.info("[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore")
+        Self.screenRestorationLogger.info(
+            "[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore"
+        )
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
         wakeContext.isActive = true
         wakeContext.retryCount = 0
         screenChangeDebounceTimer?.invalidate()
-        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: AppConstants.wakeInitialDelay, repeats: false) { @Sendable [weak self] _ in
+        screenChangeDebounceTimer = Timer.scheduledTimer(
+            withTimeInterval: AppConstants.wakeInitialDelay,
+            repeats: false
+        ) { @Sendable [weak self] _ in
             MainActor.assumeIsolated {
                 self?.attemptWakeRestoration()
             }
@@ -128,9 +143,8 @@ extension AppDelegate {
         wakeContext.retryCount += 1
         let retryNum = wakeContext.retryCount
         let screenInfo = NSScreen.screens.map { "\($0.frame)" }.joined(separator: ", ")
-        Self.screenRestorationLogger.debug(
-            "attempt #\(retryNum, privacy: .public): restoredAll=\(restoredAll, privacy: .public), screens=[\(screenInfo, privacy: .public)]"
-        )
+        let attemptMsg = "attempt #\(retryNum): restoredAll=\(restoredAll), screens=[\(screenInfo)]"
+        Self.screenRestorationLogger.debug("\(attemptMsg, privacy: .public)")
 
         if restoredAll && wakeContext.retryCount <= AppConstants.wakeRetryCountThreshold {
             // 全復元完了だが、macOS が後から再配置する可能性があるため追加リトライ
@@ -157,14 +171,20 @@ extension AppDelegate {
             guard let savedOrigin = wakeContext.windowOrigins[charWindow.windowId] else { continue }
 
             let savedDisplayID = wakeContext.displayIDs[charWindow.windowId]
-            let targetScreen = findTargetScreen(displayID: savedDisplayID, windowId: charWindow.windowId, availableScreens: availableScreens)
+            let targetScreen = findTargetScreen(
+                displayID: savedDisplayID,
+                windowId: charWindow.windowId,
+                availableScreens: availableScreens
+            )
 
             if let screen = targetScreen {
                 let newOrigin = computeRestoredOrigin(
                     savedOrigin: savedOrigin, savedDisplayID: savedDisplayID, currentScreen: screen
                 )
                 let windowSize = charWindow.window.frame.size
-                let clamped = ScreenRestorationUtils.clampOrigin(newOrigin, windowSize: windowSize, to: screen.frame)
+                let clamped = ScreenRestorationUtils.clampOrigin(
+                    newOrigin, windowSize: windowSize, to: screen.frame
+                )
                 charWindow.window.setFrameOrigin(clamped)
                 let wid = charWindow.windowId
                 let screenFrame = screen.frame
@@ -173,16 +193,17 @@ extension AppDelegate {
                 let clampedDesc = NSStringFromPoint(clamped)
                 let sizeDesc = NSStringFromSize(windowSize)
                 let frameDesc = NSStringFromRect(screenFrame)
-                let restoreMsg = "restore #\(wid): saved=\(savedDesc) -> \(computedDesc) -> \(clampedDesc)"
+                let restoreMsg = "restore #\(wid): saved=\(savedDesc)"
+                    + " -> \(computedDesc) -> \(clampedDesc)"
                 Self.screenRestorationLogger.debug("\(restoreMsg, privacy: .public)")
                 let detailMsg = "  winSize=\(sizeDesc), screen=\(frameDesc)"
                 Self.screenRestorationLogger.debug("\(detailMsg, privacy: .public)")
             } else {
                 restoredAll = false
                 let displayIDValue = savedDisplayID ?? AppConstants.unknownDisplayID
-                Self.screenRestorationLogger.error(
-                    "restore #\(charWindow.windowId, privacy: .public): screen not found (displayID=\(displayIDValue, privacy: .public))"
-                )
+                let errMsg = "restore #\(charWindow.windowId): screen not found"
+                    + " (displayID=\(displayIDValue))"
+                Self.screenRestorationLogger.error("\(errMsg, privacy: .public)")
             }
         }
         return restoredAll
@@ -190,11 +211,16 @@ extension AppDelegate {
 
     /// スリープ前のスクリーン位置を基にウィンドウの相対位置を計算し、
     /// 新しいスクリーン位置に変換する。
-    private func computeRestoredOrigin(savedOrigin: NSPoint, savedDisplayID: CGDirectDisplayID?,
-                                       currentScreen: NSScreen) -> NSPoint {
+    private func computeRestoredOrigin(
+        savedOrigin: NSPoint,
+        savedDisplayID: CGDirectDisplayID?,
+        currentScreen: NSScreen
+    ) -> NSPoint {
         let oldFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
         return ScreenRestorationUtils.computeRestoredOrigin(
-            savedOrigin: savedOrigin, oldScreenFrame: oldFrame, currentScreenFrame: currentScreen.frame
+            savedOrigin: savedOrigin,
+            oldScreenFrame: oldFrame,
+            currentScreenFrame: currentScreen.frame
         )
     }
 
@@ -203,7 +229,11 @@ extension AppDelegate {
         let availableScreens = currentAvailableScreens
         for windowId in wakeContext.states.keys {
             let savedDisplayID = wakeContext.displayIDs[windowId]
-            guard findTargetScreen(displayID: savedDisplayID, windowId: windowId, availableScreens: availableScreens) == nil else { continue }
+            guard findTargetScreen(
+                displayID: savedDisplayID,
+                windowId: windowId,
+                availableScreens: availableScreens
+            ) == nil else { continue }
             guard let savedState = wakeContext.states[windowId] else { continue }
 
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
@@ -223,7 +253,10 @@ extension AppDelegate {
 
     private func scheduleWakeRetry(interval: TimeInterval) {
         screenChangeDebounceTimer?.invalidate()
-        screenChangeDebounceTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { @Sendable [weak self] _ in
+        screenChangeDebounceTimer = Timer.scheduledTimer(
+            withTimeInterval: interval,
+            repeats: false
+        ) { @Sendable [weak self] _ in
             MainActor.assumeIsolated {
                 self?.attemptWakeRestoration()
             }
@@ -253,16 +286,21 @@ extension AppDelegate {
         let pendingAvailableScreens = currentAvailableScreens
         let restorable = screenRestorationManager.restorableEntries()
         for entry in restorable {
-            guard let charWindow = zOrderedWindows.first(where: { $0.windowId == entry.windowId }) else {
+            guard let charWindow = zOrderedWindows.first(where: { $0.windowId == entry.windowId })
+            else {
                 screenRestorationManager.removePending(windowId: entry.windowId)
                 continue
             }
             // 対象モニタが見つかったら無条件でクランプ位置に復元
-            let targetScreen = findTargetScreenForPending(entry, availableScreens: pendingAvailableScreens)
+            let targetScreen = findTargetScreenForPending(
+                entry, availableScreens: pendingAvailableScreens
+            )
             if let screen = targetScreen {
                 let windowSize = charWindow.window.frame.size
                 let origin = NSPoint(x: entry.originalState.originX, y: entry.originalState.originY)
-                let clamped = ScreenRestorationUtils.clampOrigin(origin, windowSize: windowSize, to: screen.frame)
+                let clamped = ScreenRestorationUtils.clampOrigin(
+                    origin, windowSize: windowSize, to: screen.frame
+                )
                 charWindow.window.setFrameOrigin(clamped)
             }
             screenRestorationManager.removePending(windowId: entry.windowId)
@@ -280,7 +318,11 @@ extension AppDelegate {
     }
 
     /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
-    private func findTargetScreen(displayID: CGDirectDisplayID?, windowId: Int, availableScreens: [(displayID: UInt32, frame: NSRect)]) -> NSScreen? {
+    private func findTargetScreen(
+        displayID: CGDirectDisplayID?,
+        windowId: Int,
+        availableScreens: [(displayID: UInt32, frame: NSRect)]
+    ) -> NSScreen? {
         guard let savedID = displayID else { return nil }
         let savedFrame = wakeContext.screenFrames[savedID]
         guard let result = ScreenRestorationUtils.findTargetScreen(
@@ -293,7 +335,10 @@ extension AppDelegate {
     }
 
     /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置を含むスクリーン
-    private func findTargetScreenForPending(_ entry: PendingRestoration, availableScreens: [(displayID: UInt32, frame: NSRect)]) -> NSScreen? {
+    private func findTargetScreenForPending(
+        _ entry: PendingRestoration,
+        availableScreens: [(displayID: UInt32, frame: NSRect)]
+    ) -> NSScreen? {
         let originalRect = NSRect(
             x: entry.originalState.originX, y: entry.originalState.originY,
             width: entry.originalState.width, height: entry.originalState.height

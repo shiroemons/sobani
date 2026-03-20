@@ -59,7 +59,9 @@ extension AppDelegate {
     func setupHotkeyMonitors() {
         let config = HotkeySettings.buildConfig()
 
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: .keyDown
+        ) { @Sendable [weak self] event in
             guard let self else { return }
             if let action = self.hotkeyAction(for: event, config: config) {
                 DispatchQueue.main.async { @Sendable [weak self] in
@@ -67,7 +69,9 @@ extension AppDelegate {
                 }
             }
         }
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { @Sendable [weak self] event in
+        localMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: .keyDown
+        ) { @Sendable [weak self] event in
             guard let self else { return event }
             if let action = self.hotkeyAction(for: event, config: config) {
                 DispatchQueue.main.async { @Sendable [weak self] in

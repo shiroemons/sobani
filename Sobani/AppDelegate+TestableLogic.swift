@@ -1,5 +1,4 @@
 import Cocoa
-import Foundation
 
 // MARK: - Testable Static Methods
 

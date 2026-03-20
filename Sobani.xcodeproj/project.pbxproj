@@ -100,6 +100,7 @@
 		F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PS000003000000000001 /* PathSanitizerTests.swift */; };
 		F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0PT000001000000000001 /* ImagePreviewPanelTests.swift */; };
 		F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */; };
+		F0SMB00002000000000001 /* AppDelegate+StatusBarMenuBuilders.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SMB00001000000000001 /* AppDelegate+StatusBarMenuBuilders.swift */; };
 		F0SN000002000000000001 /* SnapUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SN000001000000000001 /* SnapUtils.swift */; };
 		F0SN000004000000000001 /* SnapUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SN000003000000000001 /* SnapUtilsTests.swift */; };
 		F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000001000000000001 /* ScreenRestorationUtils.swift */; };
@@ -232,6 +233,7 @@
 		F0PS000003000000000001 /* PathSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizerTests.swift; sourceTree = "<group>"; };
 		F0PT000001000000000001 /* ImagePreviewPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanelTests.swift; sourceTree = "<group>"; };
 		F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuSliders.swift"; sourceTree = "<group>"; };
+		F0SMB00001000000000001 /* AppDelegate+StatusBarMenuBuilders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatusBarMenuBuilders.swift"; sourceTree = "<group>"; };
 		F0SN000001000000000001 /* SnapUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapUtils.swift; sourceTree = "<group>"; };
 		F0SN000003000000000001 /* SnapUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapUtilsTests.swift; sourceTree = "<group>"; };
 		F0SR000001000000000001 /* ScreenRestorationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtils.swift; sourceTree = "<group>"; };
@@ -318,6 +320,7 @@
 				DD000008 /* AppDelegate.swift */,
 				DD000014 /* AppDelegate+StatusBarMenu.swift */,
 				F0SL000001000000000001 /* AppDelegate+StatusBarMenuSliders.swift */,
+				F0SMB00001000000000001 /* AppDelegate+StatusBarMenuBuilders.swift */,
 				F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */,
 				F0HK000001000000000001 /* AppDelegate+Hotkey.swift */,
 				DD000006 /* CharacterWindow.swift */,
@@ -564,6 +567,7 @@
 				DD000009 /* WindowStateManager.swift in Sources */,
 				DD000015 /* AdjustmentPanelController.swift in Sources */,
 				DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */,
+				F0SMB00002000000000001 /* AppDelegate+StatusBarMenuBuilders.swift in Sources */,
 				EE000001 /* LaunchAtLoginManager.swift in Sources */,
 				FF000001 /* ScreenRestorationManager.swift in Sources */,
 				FF000005 /* AppDelegate+ScreenRestoration.swift in Sources */,

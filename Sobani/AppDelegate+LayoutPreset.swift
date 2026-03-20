@@ -221,7 +221,9 @@ extension AppDelegate {
         guard confirmOverwriteIfNeeded(name: newName) else { return }
 
         if !LayoutPresetManager.shared.renamePreset(from: name, to: newName) {
-            layoutPresetLogger.warning("renamePreset failed: '\(name, privacy: .public)' -> '\(newName, privacy: .public)'")
+            layoutPresetLogger.warning(
+                "renamePreset failed: '\(name, privacy: .public)' -> '\(newName, privacy: .public)'"
+            )
         }
     }
 

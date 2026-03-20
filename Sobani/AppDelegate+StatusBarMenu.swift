@@ -7,8 +7,14 @@ extension AppDelegate {
     func setupStatusBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "person.fill", accessibilityDescription: "Sobani")
-            button.image?.size = NSSize(width: AppConstants.statusBarIconSize, height: AppConstants.statusBarIconSize)
+            button.image = NSImage(
+                systemSymbolName: "person.fill",
+                accessibilityDescription: "Sobani"
+            )
+            button.image?.size = NSSize(
+                width: AppConstants.statusBarIconSize,
+                height: AppConstants.statusBarIconSize
+            )
         }
         let menu = NSMenu()
         menu.delegate = self
@@ -21,7 +27,11 @@ extension AppDelegate {
 
         let imageNames = ImageManager.shared.registeredImageNames()
 
-        let aboutItem = NSMenuItem(title: L("menu.about"), action: #selector(showAbout), keyEquivalent: "")
+        let aboutItem = NSMenuItem(
+            title: L("menu.about"),
+            action: #selector(showAbout),
+            keyEquivalent: ""
+        )
         aboutItem.target = self
         aboutItem.image = menuIcon("info.circle")
         menu.addItem(aboutItem)
@@ -44,11 +54,7 @@ extension AppDelegate {
                 StatusBadge(value: hiddenCount, format: L("status.hidden_count"))
             ]
         )
-        let countItem = NSMenuItem(
-            title: countTitle,
-            action: nil,
-            keyEquivalent: ""
-        )
+        let countItem = NSMenuItem(title: countTitle, action: nil, keyEquivalent: "")
         if !zOrderedWindows.isEmpty {
             countItem.submenu = buildCharacterWindowsSubmenu(imageNames: imageNames)
         } else {
@@ -58,60 +64,7 @@ extension AppDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        let toggleTitle = areWindowsHidden ? L("window.show_all") : L("window.hide_all")
-        let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleAllWindowsVisibility), keyEquivalent: "h")
-        toggleItem.keyEquivalentModifierMask = [.option]
-        toggleItem.target = self
-        toggleItem.isEnabled = !zOrderedWindows.isEmpty
-        toggleItem.image = menuIcon(areWindowsHidden ? AppConstants.visibleWindowSymbol : AppConstants.hiddenWindowSymbol)
-        menu.addItem(toggleItem)
-
-        let bringFrontItem = NSMenuItem(title: L("window.bring_to_front"), action: #selector(bringAllToFront), keyEquivalent: "f")
-        bringFrontItem.target = self
-        bringFrontItem.image = menuIcon("square.3.layers.3d.top.filled")
-        menu.addItem(bringFrontItem)
-
-        menu.addItem(buildLayoutMenuItem())
-
-        menu.addItem(NSMenuItem.separator())
-
-        menu.addItem(buildBulkResetMenuItem(ghostCount: ghostCount))
-
-        let closeAllItem = NSMenuItem(title: L("menu.close_all"), action: #selector(closeAllWindows), keyEquivalent: "")
-        closeAllItem.target = self
-        closeAllItem.image = menuIcon(AppConstants.closeSymbol)
-        menu.addItem(closeAllItem)
-
-        menu.addItem(NSMenuItem.separator())
-
-        menu.addItem(buildSettingsMenuItem())
-
-        let managementItem = NSMenuItem(
-            title: L("management.title"),
-            action: #selector(showManagementPanel),
-            keyEquivalent: "m"
-        )
-        managementItem.keyEquivalentModifierMask = [.option]
-        managementItem.target = self
-        managementItem.tag = MenuItemTag.managementPanel.rawValue
-        managementItem.image = menuIcon("macwindow.on.rectangle")
-        menu.addItem(managementItem)
-
-        let onboardingItem = NSMenuItem(
-            title: L("menu.show_onboarding"),
-            action: #selector(showOnboarding),
-            keyEquivalent: ""
-        )
-        onboardingItem.target = self
-        onboardingItem.tag = MenuItemTag.showOnboarding.rawValue
-        onboardingItem.image = menuIcon("questionmark.circle")
-        menu.addItem(onboardingItem)
-
-        menu.addItem(NSMenuItem.separator())
-        let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitFromMenu), keyEquivalent: "q")
-        quitItem.target = self
-        quitItem.image = menuIcon("power")
-        menu.addItem(quitItem)
+        buildWindowControlMenuItems(into: menu, ghostCount: ghostCount)
     }
 
     func buildUpdateMenuItem() -> NSMenuItem {
@@ -192,27 +145,47 @@ extension AppDelegate {
         submenu.addItem(ghostResetItem)
 
         item.submenu = submenu
-        item.isEnabled = MenuStateUtils.isBulkResetEnabled(hasRotation: hasRotation, hasOpacity: hasOpacity, hasGhost: hasGhost)
+        item.isEnabled = MenuStateUtils.isBulkResetEnabled(
+            hasRotation: hasRotation,
+            hasOpacity: hasOpacity,
+            hasGhost: hasGhost
+        )
         return item
     }
 
     func buildNewWindowMenuItem(imageNames: [String]) -> NSMenuItem {
-        let newWindowItem = NSMenuItem(title: L("image.add_display"), action: nil, keyEquivalent: "")
+        let newWindowItem = NSMenuItem(
+            title: L("image.add_display"),
+            action: nil,
+            keyEquivalent: ""
+        )
         newWindowItem.image = menuIcon("plus.rectangle.on.rectangle")
         let submenu = NSMenu()
         submenu.delegate = self
 
-        let selectImageItem = NSMenuItem(title: L("image.select"), action: #selector(addNewWindowWithNewImageFromMenu), keyEquivalent: "")
+        let selectImageItem = NSMenuItem(
+            title: L("image.select"),
+            action: #selector(addNewWindowWithNewImageFromMenu),
+            keyEquivalent: ""
+        )
         selectImageItem.target = self
         selectImageItem.image = menuIcon("photo")
         submenu.addItem(selectImageItem)
 
-        let defaultWindowItem = NSMenuItem(title: L("image.default"), action: #selector(addNewWindowFromMenu), keyEquivalent: "")
+        let defaultWindowItem = NSMenuItem(
+            title: L("image.default"),
+            action: #selector(addNewWindowFromMenu),
+            keyEquivalent: ""
+        )
         defaultWindowItem.target = self
         defaultWindowItem.image = menuIcon("person.fill")
         submenu.addItem(defaultWindowItem)
 
-        submenu.addRegisteredImageItems(names: imageNames, target: self, action: #selector(addNewWindowWithImageFromMenu(_:)))
+        submenu.addRegisteredImageItems(
+            names: imageNames,
+            target: self,
+            action: #selector(addNewWindowWithImageFromMenu(_:))
+        )
 
         newWindowItem.submenu = submenu
         return newWindowItem
@@ -226,13 +199,19 @@ extension AppDelegate {
 
         let font = NSFont.menuFont(ofSize: 0)
 
-        typealias WindowInfo = (charWindow: CharacterWindow, info: (leftText: String, rightText: String))
+        typealias WindowInfo = (
+            charWindow: CharacterWindow,
+            info: (leftText: String, rightText: String)
+        )
         let windowInfoList: [WindowInfo] = orderedWindows.enumerated().map { index, charWindow in
             let rawName = charWindow.window.screen?.localizedName ?? ""
             let info = MenuStateUtils.buildWindowInfoText(
                 index: index, displayName: charWindow.localizedDisplayName,
                 windowId: charWindow.windowId,
-                imageSize: (Int(charWindow.imageView.frame.width), Int(charWindow.imageView.frame.height)),
+                imageSize: (
+                    Int(charWindow.imageView.frame.width),
+                    Int(charWindow.imageView.frame.height)
+                ),
                 screenName: rawName.isEmpty ? L("image.unknown") : rawName
             )
             return (charWindow, info)
@@ -266,33 +245,57 @@ extension AppDelegate {
                 item.image = ghostIcon
             }
             item.representedObject = charWindow
-            item.submenu = buildWindowActionsSubmenu(for: charWindow, orderedWindows: orderedWindows, imageNames: imageNames)
+            item.submenu = buildWindowActionsSubmenu(
+                for: charWindow,
+                orderedWindows: orderedWindows,
+                imageNames: imageNames
+            )
             submenu.addItem(item)
         }
         return submenu
     }
 
-    func buildWindowActionsSubmenu(for charWindow: CharacterWindow, orderedWindows: [CharacterWindow], imageNames: [String]) -> NSMenu {
+    func buildWindowActionsSubmenu(
+        for charWindow: CharacterWindow,
+        orderedWindows: [CharacterWindow],
+        imageNames: [String]
+    ) -> NSMenu {
         let submenu = NSMenu()
         submenu.autoenablesItems = false
         let windowNumber = charWindow.window.windowNumber
         let index = orderedWindows.firstIndex(where: { $0 === charWindow }) ?? 0
         let count = orderedWindows.count
-        let canReorder = MenuStateUtils.canReorder(areWindowsHidden: areWindowsHidden, windowCount: count)
+        let canReorder = MenuStateUtils.canReorder(
+            areWindowsHidden: areWindowsHidden,
+            windowCount: count
+        )
 
-        buildLayerOrderItems(into: submenu, windowNumber: windowNumber, index: index, count: count, canReorder: canReorder)
+        buildLayerOrderItems(
+            into: submenu,
+            windowNumber: windowNumber,
+            index: index,
+            count: count,
+            canReorder: canReorder
+        )
 
         submenu.addItem(NSMenuItem.separator())
 
         let changeImageItem = NSMenuItem(title: L("image.change"), action: nil, keyEquivalent: "")
-        changeImageItem.submenu = buildChangeImageSubmenuForWindow(charWindow: charWindow, imageNames: imageNames)
+        changeImageItem.submenu = buildChangeImageSubmenuForWindow(
+            charWindow: charWindow,
+            imageNames: imageNames
+        )
         changeImageItem.isEnabled = !areWindowsHidden && !charWindow.isHidden
         changeImageItem.image = menuIcon(AppConstants.changeImageSymbol)
         submenu.addItem(changeImageItem)
 
         submenu.addItem(NSMenuItem.separator())
 
-        let flipItem = NSMenuItem(title: L("adjust.flip"), action: #selector(toggleFlipByWindowNumber(_:)), keyEquivalent: "")
+        let flipItem = NSMenuItem(
+            title: L("adjust.flip"),
+            action: #selector(toggleFlipByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         flipItem.target = self
         flipItem.state = charWindow.imageView.isFlippedHorizontally ? .on : .off
         flipItem.tag = windowNumber
@@ -303,48 +306,30 @@ extension AppDelegate {
 
         submenu.addItem(NSMenuItem.separator())
 
-        let adjustItem = NSMenuItem(title: L("adjust.open"), action: #selector(showAdjustmentPanelByWindowNumber(_:)), keyEquivalent: "")
-        adjustItem.target = self
-        adjustItem.tag = windowNumber
-        adjustItem.isEnabled = !areWindowsHidden && !charWindow.isHidden
-        adjustItem.image = menuIcon("slider.horizontal.3")
-        submenu.addItem(adjustItem)
-
-        let resetRotationItem = NSMenuItem(title: L("adjust.reset_rotation"), action: #selector(resetRotationByWindowNumber(_:)), keyEquivalent: "")
-        resetRotationItem.target = self
-        resetRotationItem.tag = windowNumber
-        resetRotationItem.isEnabled = MenuStateUtils.isRotationResetEnabled(angle: charWindow.imageView.rotationAngle)
-        resetRotationItem.image = menuIcon("arrow.counterclockwise")
-        submenu.addItem(resetRotationItem)
-
-        let resetOpacityItem = NSMenuItem(title: L("adjust.reset_opacity"), action: #selector(resetOpacityByWindowNumber(_:)), keyEquivalent: "")
-        resetOpacityItem.target = self
-        resetOpacityItem.tag = windowNumber
-        resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(opacity: charWindow.imageView.opacityLevel)
-        resetOpacityItem.image = menuIcon(AppConstants.opacitySymbol)
-        submenu.addItem(resetOpacityItem)
-
-        submenu.addItem(NSMenuItem.separator())
-
-        let resetDisplayItem = NSMenuItem(title: L("adjust.reset_display"), action: #selector(resetDisplayByWindowNumber(_:)), keyEquivalent: "")
-        resetDisplayItem.target = self
-        resetDisplayItem.tag = windowNumber
-        resetDisplayItem.image = menuIcon(AppConstants.resetSymbol)
-        submenu.addItem(resetDisplayItem)
-
+        buildAdjustmentMenuItems(into: submenu, for: charWindow, windowNumber: windowNumber)
         buildGhostAndBackgroundItems(into: submenu, for: charWindow)
 
         submenu.addItem(NSMenuItem.separator())
 
         let hideTitle = charWindow.isHidden ? L("window.show") : L("window.hide")
-        let hideIcon = charWindow.isHidden ? AppConstants.visibleWindowSymbol : AppConstants.hiddenWindowSymbol
-        let hideItem = NSMenuItem(title: hideTitle, action: #selector(toggleHiddenByWindowNumber(_:)), keyEquivalent: "")
+        let hideIcon = charWindow.isHidden
+            ? AppConstants.visibleWindowSymbol
+            : AppConstants.hiddenWindowSymbol
+        let hideItem = NSMenuItem(
+            title: hideTitle,
+            action: #selector(toggleHiddenByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         hideItem.target = self
         hideItem.tag = windowNumber
         hideItem.image = menuIcon(hideIcon)
         submenu.addItem(hideItem)
 
-        let closeItem = NSMenuItem(title: L("menu.close_image"), action: #selector(closeWindowByWindowNumber(_:)), keyEquivalent: "")
+        let closeItem = NSMenuItem(
+            title: L("menu.close_image"),
+            action: #selector(closeWindowByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         closeItem.target = self
         closeItem.tag = windowNumber
         closeItem.image = menuIcon(AppConstants.closeSymbol)
@@ -353,11 +338,18 @@ extension AppDelegate {
         return submenu
     }
 
-    private func buildGhostAndBackgroundItems(into submenu: NSMenu, for charWindow: CharacterWindow) {
+    private func buildGhostAndBackgroundItems(
+        into submenu: NSMenu,
+        for charWindow: CharacterWindow
+    ) {
         let windowNumber = charWindow.window.windowNumber
         submenu.addItem(NSMenuItem.separator())
 
-        let ghostItem = NSMenuItem(title: L("ghost.toggle"), action: #selector(toggleGhostModeByWindowNumber(_:)), keyEquivalent: "")
+        let ghostItem = NSMenuItem(
+            title: L("ghost.toggle"),
+            action: #selector(toggleGhostModeByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         ghostItem.target = self
         ghostItem.tag = windowNumber
         ghostItem.state = charWindow.isGhostMode ? .on : .off
@@ -370,7 +362,11 @@ extension AppDelegate {
 
         if #available(macOS 14.0, *) {
             submenu.addItem(NSMenuItem.separator())
-            let removeBackgroundItem = NSMenuItem(title: L("image.remove_background"), action: #selector(removeBackgroundByWindowNumber(_:)), keyEquivalent: "")
+            let removeBackgroundItem = NSMenuItem(
+                title: L("image.remove_background"),
+                action: #selector(removeBackgroundByWindowNumber(_:)),
+                keyEquivalent: ""
+            )
             removeBackgroundItem.target = self
             removeBackgroundItem.tag = windowNumber
             removeBackgroundItem.isEnabled = !areWindowsHidden && !charWindow.imageHasAlpha()
@@ -379,19 +375,30 @@ extension AppDelegate {
         }
     }
 
-    func buildChangeImageSubmenuForWindow(charWindow: CharacterWindow, imageNames: [String]) -> NSMenu {
+    func buildChangeImageSubmenuForWindow(
+        charWindow: CharacterWindow,
+        imageNames: [String]
+    ) -> NSMenu {
         let changeSubmenu = NSMenu()
         changeSubmenu.delegate = self
         changeSubmenu.autoenablesItems = false
         let windowNumber = charWindow.window.windowNumber
 
-        let selectItem = NSMenuItem(title: L("image.change_select"), action: #selector(changeImageByWindowNumber(_:)), keyEquivalent: "")
+        let selectItem = NSMenuItem(
+            title: L("image.change_select"),
+            action: #selector(changeImageByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         selectItem.target = self
         selectItem.tag = windowNumber
         selectItem.image = menuIcon("photo")
         changeSubmenu.addItem(selectItem)
 
-        let resetItem = NSMenuItem(title: L("image.default_reset"), action: #selector(resetToDefaultByWindowNumber(_:)), keyEquivalent: "")
+        let resetItem = NSMenuItem(
+            title: L("image.default_reset"),
+            action: #selector(resetToDefaultByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         resetItem.target = self
         resetItem.tag = windowNumber
         resetItem.isEnabled = charWindow.displayName != AppConstants.defaultImageName
@@ -410,32 +417,62 @@ extension AppDelegate {
         return changeSubmenu
     }
 
-    func buildLayerOrderItems(into menu: NSMenu, windowNumber: Int, index: Int, count: Int, canReorder: Bool) {
-        let toFrontItem = NSMenuItem(title: L("window.move_to_front"), action: #selector(moveWindowToFrontByWindowNumber(_:)), keyEquivalent: "")
+    func buildLayerOrderItems(
+        into menu: NSMenu,
+        windowNumber: Int,
+        index: Int,
+        count: Int,
+        canReorder: Bool
+    ) {
+        let toFrontItem = NSMenuItem(
+            title: L("window.move_to_front"),
+            action: #selector(moveWindowToFrontByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         toFrontItem.target = self
         toFrontItem.tag = windowNumber
         toFrontItem.isEnabled = MenuStateUtils.canMoveForward(index: index, canReorder: canReorder)
         toFrontItem.image = menuIcon("square.3.layers.3d.top.filled")
         menu.addItem(toFrontItem)
 
-        let forwardItem = NSMenuItem(title: L("window.move_forward"), action: #selector(moveWindowForwardByWindowNumber(_:)), keyEquivalent: "")
+        let forwardItem = NSMenuItem(
+            title: L("window.move_forward"),
+            action: #selector(moveWindowForwardByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         forwardItem.target = self
         forwardItem.tag = windowNumber
         forwardItem.isEnabled = MenuStateUtils.canMoveForward(index: index, canReorder: canReorder)
         forwardItem.image = menuIcon("chevron.up")
         menu.addItem(forwardItem)
 
-        let backwardItem = NSMenuItem(title: L("window.move_backward"), action: #selector(moveWindowBackwardByWindowNumber(_:)), keyEquivalent: "")
+        let backwardItem = NSMenuItem(
+            title: L("window.move_backward"),
+            action: #selector(moveWindowBackwardByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         backwardItem.target = self
         backwardItem.tag = windowNumber
-        backwardItem.isEnabled = MenuStateUtils.canMoveBackward(index: index, count: count, canReorder: canReorder)
+        backwardItem.isEnabled = MenuStateUtils.canMoveBackward(
+            index: index,
+            count: count,
+            canReorder: canReorder
+        )
         backwardItem.image = menuIcon("chevron.down")
         menu.addItem(backwardItem)
 
-        let toBackItem = NSMenuItem(title: L("window.move_to_back"), action: #selector(moveWindowToBackByWindowNumber(_:)), keyEquivalent: "")
+        let toBackItem = NSMenuItem(
+            title: L("window.move_to_back"),
+            action: #selector(moveWindowToBackByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
         toBackItem.target = self
         toBackItem.tag = windowNumber
-        toBackItem.isEnabled = MenuStateUtils.canMoveBackward(index: index, count: count, canReorder: canReorder)
+        toBackItem.isEnabled = MenuStateUtils.canMoveBackward(
+            index: index,
+            count: count,
+            canReorder: canReorder
+        )
         toBackItem.image = menuIcon("square.3.layers.3d.bottom.filled")
         menu.addItem(toBackItem)
     }
@@ -528,7 +565,11 @@ extension AppDelegate {
         let languageSubmenu = NSMenu()
         let currentLanguage = LanguageManager.shared.currentLanguage
         for language in Language.allCases {
-            let item = NSMenuItem(title: language.displayName, action: #selector(changeLanguage(_:)), keyEquivalent: "")
+            let item = NSMenuItem(
+                title: language.displayName,
+                action: #selector(changeLanguage(_:)),
+                keyEquivalent: ""
+            )
             item.target = self
             item.representedObject = language.rawValue
             item.state = language == currentLanguage ? .on : .off
@@ -544,7 +585,11 @@ extension AppDelegate {
         let themeSubmenu = NSMenu()
         let currentTheme = AppThemeSettings.currentTheme
         for theme in AppTheme.allCases {
-            let item = NSMenuItem(title: theme.displayName, action: #selector(changeTheme(_:)), keyEquivalent: "")
+            let item = NSMenuItem(
+                title: theme.displayName,
+                action: #selector(changeTheme(_:)),
+                keyEquivalent: ""
+            )
             item.target = self
             item.representedObject = theme.rawValue
             item.state = theme == currentTheme ? .on : .off
@@ -621,7 +666,9 @@ extension AppDelegate {
 
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
 
-        if let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == windowNumber }) {
+        if let charWindow = zOrderedWindows.first(where: {
+            $0.window.windowNumber == windowNumber
+        }) {
             charWindow.applyOpacity(value)
         }
     }
@@ -635,7 +682,9 @@ extension AppDelegate {
     }
 
     @objc func togglePerWindowGhostAlphaCustom(_ sender: NSButton) {
-        guard let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == sender.tag }) else { return }
+        guard let charWindow = zOrderedWindows.first(where: {
+            $0.window.windowNumber == sender.tag
+        }) else { return }
         charWindow.setCustomGhostAlpha(sender.state == .on ? GhostModeSettings.globalAlpha : nil)
 
         guard let container = sender.superview else { return }
@@ -645,7 +694,9 @@ extension AppDelegate {
             slider.doubleValue = Double(currentAlpha)
             slider.isEnabled = isCustom
         }
-        if let percentLabel = container.subviews.last(where: { $0 is NSTextField }) as? NSTextField {
+        if let percentLabel = container.subviews.last(where: {
+            $0 is NSTextField
+        }) as? NSTextField {
             percentLabel.stringValue = FormatUtils.formatOpacity(currentAlpha)
             percentLabel.alphaValue = isCustom ? 1.0 : 0.5
         }
@@ -655,7 +706,8 @@ extension AppDelegate {
         let value = CGFloat(sender.doubleValue)
         GhostModeSettings.globalAlpha = value
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-        for charWindow in zOrderedWindows where charWindow.isGhostMode && charWindow.customGhostAlpha == nil {
+        for charWindow in zOrderedWindows
+        where charWindow.isGhostMode && charWindow.customGhostAlpha == nil {
             charWindow.window.alphaValue = value
         }
     }
@@ -742,7 +794,8 @@ extension AppDelegate {
 
     private func refreshDefaultImageWindows() {
         guard let newDefault = ImageManager.shared.defaultImage() else { return }
-        for charWindow in zOrderedWindows where charWindow.displayName == AppConstants.defaultImageName {
+        for charWindow in zOrderedWindows
+        where charWindow.displayName == AppConstants.defaultImageName {
             charWindow.applyImage(newDefault)
         }
     }
