@@ -72,7 +72,9 @@ sequenceDiagram
 
 ## 画面復元
 
-モニターの切断やスリープ/復帰が発生した際に、ウィンドウの位置を自動的に復元する仕組みです。3つのフェーズで構成されています。
+モニターの切断やスリープ/復帰が発生した際に、ウィンドウの位置を自動的に復元する仕組みです。3つのフェーズに加え、ディスプレイスリープ（`willSleepNotification` が発火しないケース）にも対応するスナップショット機構を備えています。
+
+macOS のネイティブウィンドウ復元（`NSWindow.isRestorable`）は無効化されており、Sobani 独自の復元ロジックが全ての画面復元を担います。
 
 ### 3フェーズの概要
 
@@ -83,18 +85,28 @@ flowchart TD
     Event -->|"NSApplication<br/>didChangeScreenParameters"| P0
     Event -->|"NSWorkspace<br/>willSleep"| P1S
     Event -->|"NSWorkspace<br/>didWake"| P1W
+    Event -->|"imageWindowState<br/>DidChange"| SNAP["updateScreenSnapshot<br/>(0.3秒デバウンス)"]
+    SNAP --> SNAPSTORE["screenSnapshot に保存"]
 
-    subgraph Phase0["Phase 0: モニター切断"]
-        P0["handleScreenChange<br/>(デバウンス: 通常1秒/Wake中1.5秒)"]
+    subgraph Phase0["Phase 0: モニター切断 / ディスプレイスリープ"]
+        P0["handleScreenChange"]
+        P0RACE{"wakeContext.states<br/>非空 & !isActive?"}
+        P0SNAP{"screenSnapshot<br/>にスクリーン減少?"}
         P0CHK{"wakeContext<br/>.isActive?"}
         P0VIS{"各ウィンドウ<br/>画面内?"}
         P0MOVE["メイン画面に移動<br/>+ addPending"]
         P0REST{"ペンディングに<br/>復元可能なもの?"}
         P0OK["元の位置に復元<br/>+ removePending"]
 
-        P0 --> P0CHK
-        P0CHK -->|No| P0VIS
+        P0 --> P0RACE
+        P0RACE -->|"Yes (レース条件)"| P0ACTIVATE["wakeContext.isActive = true"]
+        P0RACE -->|No| P0SNAP
+        P0SNAP -->|"Yes (ディスプレイスリープ)"| P0COPY["screenSnapshot → wakeContext<br/>isActive = true"]
+        P0SNAP -->|No| P0CHK
+        P0ACTIVATE --> P0CHK
+        P0COPY --> P0CHK
         P0CHK -->|Yes| P0SKIP["1.5秒デバウンスで<br/>attemptWakeRestoration() を実行"]
+        P0CHK -->|No| P0VIS
         P0VIS -->|画面内| P0SKIP2["変更なし"]
         P0VIS -->|画面外| P0MOVE
         P0MOVE --> P0REST
@@ -103,7 +115,7 @@ flowchart TD
     end
 
     subgraph Phase1["Phase 1: スリープ/復帰"]
-        P1S["handleWillSleep<br/>全ウィンドウの状態保存"]
+        P1S["handleWillSleep<br/>captureWindowStates() で<br/>全ウィンドウの状態保存"]
         P1W["handleDidWake<br/>3秒後に復元開始"]
         P1FIND{"保存時の<br/>モニター検索"}
         P1ID["displayID 一致"]
@@ -126,23 +138,27 @@ flowchart TD
     P1PENDING --> P0
 ```
 
-### Phase 0: モニター切断
+### Phase 0: モニター切断 / ディスプレイスリープ
 
-`NSApplication.didChangeScreenParametersNotification` を受信したとき、デバウンス（通常1秒、Wake中1.5秒）後に `handleScreenChange` がデバウンスタイマー経由で `attemptPendingRestorations()` を呼び出し、実際のオフスクリーン検出とウィンドウ移動処理が実行されます。
+`NSApplication.didChangeScreenParametersNotification` を受信したとき、`handleScreenChange` はまず以下の2つのチェックを行います:
 
-**処理の流れ:**
+1. **レース条件チェック**: `wakeContext.states` が非空（`handleWillSleep` が保存済み）かつ `wakeContext.isActive` が `false`（`handleDidWake` 未着）の場合、ウェイクモードを有効化します。これは `willSleepNotification`（`NSWorkspace.notificationCenter`）と `didChangeScreenParametersNotification`（`NotificationCenter.default`）が異なる通知センターから配信されるため、配信順序が保証されないことへの対策です。
+2. **スナップショットチェック**: `wakeContext` が空で、`screenSnapshot` に保存されたスクリーン構成と比較してスクリーンが減少している場合、スナップショットから `wakeContext` に復元データをコピーしてウェイクモードを有効化します。これによりホットコーナー等によるディスプレイスリープ（`willSleepNotification` が発火しない）にも対応します。
 
-1. `wakeContext.isActive` が `true` の場合はスリープ/復帰処理中（Phase 1）として委譲し、Phase 0 の処理はスキップします。
-2. `attemptPendingRestorations()` 内で全ウィンドウの位置を確認し、いずれかの画面内に収まっているか検査します。
+ウェイクモードが有効化された場合はデバウンス（1.5秒）後に `attemptWakeRestoration()` が呼び出され、Phase 1 と同じ復元ロジックが実行されます。
+
+ウェイクモードが有効でない場合は、デバウンス（1秒）後に `attemptPendingRestorations()` を呼び出し、以下を実行します:
+
+1. 全ウィンドウの位置を確認し、いずれかの画面内に収まっているか検査します。
    - 画面外のウィンドウ → メイン画面の表示可能領域に移動し、`displayID: 0` としてペンディングキューに追加します。
-3. 既存のペンディングキューを確認し、元のモニターが再接続されている場合は元の位置に復元して `removePending` します。
+2. 既存のペンディングキューを確認し、元のモニターが再接続されている場合は元の位置に復元して `removePending` します。
 
 ### Phase 1: スリープ/復帰
 
 **スリープ前 (`handleWillSleep`):**
 
 - ペンディングキューと `wakeContext` をクリアします。
-- 全ウィンドウの現在の状態（位置・サイズ・`displayID`・画面フレーム・ウィンドウの生の origin（captureState の座標変換を回避））をスナップショットとして `wakeContext` に保存します。
+- `captureWindowStates()` で全ウィンドウの現在の状態（位置・サイズ・`displayID`・画面フレーム・ウィンドウの生の origin（captureState の座標変換を回避））をキャプチャし、`wakeContext` に保存します。
 
 **復帰後 (`handleDidWake`):**
 
@@ -184,6 +200,23 @@ struct PendingRestoration: Codable {
 ```
 
 `restorableEntries()` を呼び出すと、期限切れエントリを除去した上で、現在接続されているモニターと `displayID` または geometry が一致するエントリを返します。一致したエントリは元の位置に復元され、`removePending` でキューから削除されます。
+
+### スナップショット機構
+
+`willSleepNotification` が発火しないケース（ホットコーナーによるディスプレイスリープ等）に対応するため、ウィンドウ位置をプロアクティブに保存する仕組みです。
+
+**保存タイミング:**
+
+- `imageWindowStateDidChange` / `imageWindowListDidChange` 通知を受信したとき（0.3秒デバウンス付き）
+- アプリ起動完了時（`applicationDidFinishLaunching`）
+
+**保存先:** `AppDelegate.screenSnapshot`（`WakeRestorationContext` 型、メモリ内のみ）
+
+**保存内容:** `captureWindowStates()` で `handleWillSleep` と同一の情報（全ウィンドウの `WindowState`・生の origin・`displayID`・画面フレーム）をキャプチャします。
+
+**復元中のガード:** `wakeContext.isActive` が `true` のとき（復元処理中）はスナップショットを更新しません。macOS が一時的に移動したウィンドウの位置を保存しないためです。
+
+**使用タイミング:** `handleScreenChange` でスクリーン減少を検知し、`wakeContext` が空の場合に `screenSnapshot` から `wakeContext` にコピーしてウェイクモードを有効化します。
 
 ---
 
