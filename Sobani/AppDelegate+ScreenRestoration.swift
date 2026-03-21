@@ -29,10 +29,23 @@ extension AppDelegate {
             name: NSWorkspace.didWakeNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleWindowStateChange),
+            name: AppConstants.imageWindowStateDidChange,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleWindowStateChange),
+            name: AppConstants.imageWindowListDidChange,
+            object: nil
+        )
     }
 
     func teardownScreenRestorationObservers() {
         screenChangeDebounceTimer?.invalidate()
+        snapshotDebounceTimer?.invalidate()
         NotificationCenter.default.removeObserver(
             self,
             name: NSApplication.didChangeScreenParametersNotification,
@@ -48,14 +61,53 @@ extension AppDelegate {
             name: NSWorkspace.didWakeNotification,
             object: nil
         )
+        NotificationCenter.default.removeObserver(
+            self,
+            name: AppConstants.imageWindowStateDidChange,
+            object: nil
+        )
+        NotificationCenter.default.removeObserver(
+            self,
+            name: AppConstants.imageWindowListDidChange,
+            object: nil
+        )
     }
 
     @objc func handleScreenChange() {
+        // handleWillSleep が位置を保存済みだが handleDidWake がまだ発火していない場合、
+        // スリープ復帰中のスクリーン変更として扱う（通知センター間のレース条件対策）
+        if !wakeContext.isActive {
+            if !wakeContext.states.isEmpty {
+                wakeContext.isActive = true
+                wakeContext.retryCount = 0
+                let raceModeMsg = "screenChange: activated wake mode (willSleep saved but didWake not yet received)"
+                Self.screenRestorationLogger.info("\(raceModeMsg, privacy: .public)")
+            } else if !screenSnapshot.states.isEmpty {
+                // ディスプレイスリープ等で willSleep が発火しない場合
+                let currentScreenIDs = Set(NSScreen.screens.compactMap { $0.displayID })
+                let snapshotScreenIDs = Set(screenSnapshot.screenFrames.keys)
+                let disconnectedScreens = snapshotScreenIDs.subtracting(currentScreenIDs)
+                if !disconnectedScreens.isEmpty {
+                    wakeContext = screenSnapshot
+                    wakeContext.isActive = true
+                    wakeContext.retryCount = 0
+                    let snapMsg = "screenChange: activated wake mode from snapshot"
+                        + " (disconnected: \(disconnectedScreens))"
+                    Self.screenRestorationLogger.info("\(snapMsg, privacy: .public)")
+                }
+            }
+        }
         let isWake = wakeContext.isActive
         let count = NSScreen.screens.count
         Self.screenRestorationLogger.debug(
             "screenChange: isWake=\(isWake, privacy: .public), screens=\(count, privacy: .public)"
         )
+        for screen in NSScreen.screens {
+            let did = screen.displayID ?? AppConstants.unknownDisplayID
+            let frameDesc = NSStringFromRect(screen.frame)
+            let screenMsg = "  screen displayID=\(did), frame=\(frameDesc)"
+            Self.screenRestorationLogger.debug("\(screenMsg, privacy: .public)")
+        }
         screenChangeDebounceTimer?.invalidate()
         if wakeContext.isActive {
             // Wake 復元中のスクリーン変更 → 復元リトライをトリガー（1.5秒デバウンス）
@@ -87,17 +139,11 @@ extension AppDelegate {
         screenChangeDebounceTimer?.invalidate()
 
         screenRestorationManager.clearAll()
-        for imageWindow in zOrderedWindows {
-            let state = WindowStateManager.captureState(from: imageWindow)
-            wakeContext.states[imageWindow.windowId] = state
-            // ウィンドウフレームの原点を直接保存（captureState のイメージ中心座標変換を回避）
-            wakeContext.windowOrigins[imageWindow.windowId] = imageWindow.window.frame.origin
-            if let screen = NSScreen.screen(containing: imageWindow.window.frame),
-               let displayID = screen.displayID {
-                wakeContext.displayIDs[imageWindow.windowId] = displayID
-                wakeContext.screenFrames[displayID] = screen.frame
-            }
-        }
+        let captured = captureWindowStates()
+        wakeContext.states = captured.states
+        wakeContext.windowOrigins = captured.windowOrigins
+        wakeContext.displayIDs = captured.displayIDs
+        wakeContext.screenFrames = captured.screenFrames
         let savedCount = wakeContext.states.count
         Self.screenRestorationLogger.info(
             "[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows"
@@ -117,6 +163,22 @@ extension AppDelegate {
         Self.screenRestorationLogger.info(
             "[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore"
         )
+        let wakeScreenCount = NSScreen.screens.count
+        Self.screenRestorationLogger.info(
+            "  didWake screens=\(wakeScreenCount, privacy: .public)"
+        )
+        for screen in NSScreen.screens {
+            let did = screen.displayID ?? AppConstants.unknownDisplayID
+            let frameDesc = NSStringFromRect(screen.frame)
+            let wakeScreenMsg = "  didWake screen displayID=\(did), frame=\(frameDesc)"
+            Self.screenRestorationLogger.debug("\(wakeScreenMsg, privacy: .public)")
+        }
+        for imageWindow in zOrderedWindows {
+            let wid = imageWindow.windowId
+            let pos = NSStringFromPoint(imageWindow.window.frame.origin)
+            let wakeWinMsg = "  didWake window #\(wid): currentPos=\(pos)"
+            Self.screenRestorationLogger.debug("\(wakeWinMsg, privacy: .public)")
+        }
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
         wakeContext.isActive = true
@@ -145,6 +207,14 @@ extension AppDelegate {
         let screenInfo = NSScreen.screens.map { "\($0.frame)" }.joined(separator: ", ")
         let attemptMsg = "attempt #\(retryNum): restoredAll=\(restoredAll), screens=[\(screenInfo)]"
         Self.screenRestorationLogger.debug("\(attemptMsg, privacy: .public)")
+        if retryNum >= 2 {
+            for imageWindow in zOrderedWindows {
+                let wid = imageWindow.windowId
+                let pos = NSStringFromPoint(imageWindow.window.frame.origin)
+                let driftMsg = "  retry #\(retryNum) window #\(wid): currentPos=\(pos)"
+                Self.screenRestorationLogger.debug("\(driftMsg, privacy: .public)")
+            }
+        }
 
         if restoredAll && wakeContext.retryCount <= AppConstants.wakeRetryCountThreshold {
             // 全復元完了だが、macOS が後から再配置する可能性があるため追加リトライ
@@ -178,6 +248,23 @@ extension AppDelegate {
             )
 
             if let screen = targetScreen {
+                let oldFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
+                let currentFrame = screen.frame
+                let frameMatch = oldFrame.map {
+                    ScreenRestorationUtils.isFrameMatch($0, currentFrame, tolerance: AppConstants.screenMatchTolerance)
+                } ?? false
+                let currentPos = imageWindow.window.frame.origin
+                let diagMsg = "  diag #\(imageWindow.windowId): oldFrame=\(oldFrame.debugDescription)"
+                    + ", currentFrame=\(NSStringFromRect(currentFrame))"
+                    + ", frameMatch=\(frameMatch)"
+                    + ", currentPos=\(NSStringFromPoint(currentPos))"
+                Self.screenRestorationLogger.debug("\(diagMsg, privacy: .public)")
+                if let savedID = savedDisplayID, let currentID = screen.displayID {
+                    let idMatch = savedID == currentID
+                    let idMsg = "  diag #\(imageWindow.windowId): savedDisplayID=\(savedID)"
+                        + ", currentDisplayID=\(currentID), idMatch=\(idMatch)"
+                    Self.screenRestorationLogger.debug("\(idMsg, privacy: .public)")
+                }
                 let newOrigin = computeRestoredOrigin(
                     savedOrigin: savedOrigin, savedDisplayID: savedDisplayID, currentScreen: screen
                 )
@@ -307,7 +394,43 @@ extension AppDelegate {
         }
     }
 
+    @objc private func handleWindowStateChange() {
+        snapshotDebounceTimer?.invalidate()
+        snapshotDebounceTimer = Timer.scheduledTimer(
+            withTimeInterval: 0.3,
+            repeats: false
+        ) { @Sendable [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.updateScreenSnapshot()
+            }
+        }
+    }
+
+    /// 現在のウィンドウ位置をスナップショットに保存する。
+    /// ディスプレイ切断時（willSleep なし）の復元に使用される。
+    func updateScreenSnapshot() {
+        // 復元中はスナップショットを更新しない（macOS が一時的に移動した位置を保存しないため）
+        guard !wakeContext.isActive else { return }
+        screenSnapshot = captureWindowStates()
+    }
+
     // MARK: - Private Helpers
+
+    /// zOrderedWindows の現在位置を WakeRestorationContext に収集して返す。
+    private func captureWindowStates() -> WakeRestorationContext {
+        var ctx = WakeRestorationContext()
+        for imageWindow in zOrderedWindows {
+            let state = WindowStateManager.captureState(from: imageWindow)
+            ctx.states[imageWindow.windowId] = state
+            ctx.windowOrigins[imageWindow.windowId] = imageWindow.window.frame.origin
+            if let screen = NSScreen.screen(containing: imageWindow.window.frame),
+               let displayID = screen.displayID {
+                ctx.displayIDs[imageWindow.windowId] = displayID
+                ctx.screenFrames[displayID] = screen.frame
+            }
+        }
+        return ctx
+    }
 
     /// 現在接続されているスクリーンの displayID とフレームのリストを返す
     private var currentAvailableScreens: [(displayID: UInt32, frame: NSRect)] {

@@ -26,7 +26,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
+    var snapshotDebounceTimer: Timer?
     var wakeContext = WakeRestorationContext()
+    /// ディスプレイ切断時の復元用スナップショット。安定状態で定期的に更新される。
+    var screenSnapshot = WakeRestorationContext()
     var onboardingController: OnboardingWindowController?
     var isApplyingLayout = false
     weak var lastHighlightedWindow: ImageWindow?
@@ -110,6 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         setupScreenRestorationObservers()
+        updateScreenSnapshot()
 
         // ペンディングキューが存在する場合、起動直後に画面変化チェックをトリガー
         if screenRestorationManager.hasPending {
