@@ -60,6 +60,13 @@ sequenceDiagram
 - `SparkleManager.isInstallingUpdate` フラグにより、Sparkle がアップデートをインストール中であることを `AppDelegate.applicationShouldTerminate` に伝達
 - 通常の終了ガード（`terminateCancel`）をバイパスし、Sparkle によるアプリ再起動を許可
 
+### LSUIElement アプリでの前面表示
+
+Sobani は `LSUIElement`（Dock アイコンなし）アプリのため、Sparkle のダイアログがバックグラウンドに表示されてしまう問題があります。これに対応するため、`SPUStandardUserDriverDelegate` で以下の制御を行っています:
+
+- **ダイアログ表示前**: `NSApp.setActivationPolicy(.regular)` で一時的に Dock アイコンを表示し、`NSApp.activate(ignoringOtherApps: true)` でアプリを前面化
+- **セッション終了後**: `NSApp.setActivationPolicy(.accessory)` で Dock アイコンを非表示に復元
+
 ### 設定値（Info.plist）
 
 | キー | 値 | 説明 |
@@ -68,6 +75,7 @@ sequenceDiagram
 | `SUPublicEDKey` | `1AdG0un/J5hcpoyPEKw7/M4U/oA5mLZ8j6K9+xFtFpg=` | EdDSA 公開鍵 |
 | `SUEnableAutomaticChecks` | `true` | 自動チェックの有効化 |
 | `SUScheduledCheckInterval` | `86400` | チェック間隔（秒）= 24時間 |
+| `SUAutomaticallyUpdate` | `false` | ダイアログなしの自動インストールを無効化 |
 
 ---
 
