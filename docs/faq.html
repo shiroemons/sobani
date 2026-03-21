@@ -121,7 +121,7 @@
         "name": "画像の追加・変更方法は？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。また、画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップして追加することもできます。"
+          "text": "メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックし「画像を差し替え（配置を維持）」>「画像を変更...」で別の画像に変更できます。また、画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップして追加することもできます。"
         }
       },
       {
@@ -137,7 +137,7 @@
         "name": "複数の画像を同時に表示できますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。"
+          "text": "はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X」メニューから個別に管理できます。"
         }
       },
       {
@@ -270,10 +270,18 @@
       },
       {
         "@type": "Question",
+        "name": "デザインや勉強の参考画像表示に使えますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい、Sobaniはデザイン・イラスト制作の参考資料や、学習用の教材・チートシートを最前面に表示するのに最適です。参考画像を常に手前に固定できるので、アプリを切り替える手間がなくなります。ゴーストモードを使えばクリック透過になり、作業の邪魔になりません。"
+        }
+      },
+      {
+        "@type": "Question",
         "name": "透過PNG画像はどこで入手・作成できますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Sobaniだけで透過PNG画像を作成できます。JPEG写真やHEIC画像など、PNG以外の形式からはもちろん、透過されていない通常のPNG画像からでも透過PNGを作れます。右クリックメニューの「画像を変更」→「背景を除去」で被写体だけを切り抜いた透過PNGが自動で作成されます。そのほか、macOSプレビューの「インスタントアルファ」、iPhoneの「被写体を切り抜き」（iOS 16以降）、remove.bgなどのWebサービスでも作成できます。"
+          "text": "Sobaniだけで透過PNG画像を作成できます。JPEG写真やHEIC画像など、PNG以外の形式からはもちろん、透過されていない通常のPNG画像からでも透過PNGを作れます。右クリックメニューの「画像を差し替え（配置を維持）」>「背景を除去」で被写体だけを切り抜いた透過PNGが自動で作成されます。そのほか、macOSプレビューの「インスタントアルファ」、iPhoneの「被写体を切り抜き」（iOS 16以降）、remove.bgなどのWebサービスでも作成できます。"
         }
       },
       {
@@ -281,15 +289,7 @@
         "name": "複数モニターで使えますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。たとえば、メインモニターにキャラクター、外部モニターにペットの写真といった使い分けも自由自在。MacBookのクラムシェルモードでも問題なく動作します。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。"
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "設定ファイルの形式は？（上級者向け）",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "ウィンドウの状態は ~/Library/Application Support/Sobani/window_states.json にJSON形式で保存されています。windowId, imagePath, x, y, width, height, isFlipped, rotation, opacity, zOrderIndex のフィールドがあります。編集する場合は、必ずSobaniを終了してから行ってください。"
+          "text": "はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。たとえば、メインモニターに参考画像、外部モニターにペットの写真といった使い分けも自由自在。MacBookのクラムシェルモードでも問題なく動作します。モニターを切断した場合はメインモニターに一時退避し、5分以内に再接続すると元の位置に自動で復元されます。"
         }
       },
       {
@@ -329,7 +329,7 @@
         "name": "背景除去機能とは何ですか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を変更」→「背景を除去」から実行できます。"
+          "text": "Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を差し替え（配置を維持）」>「背景を除去」から実行できます。"
         }
       },
       {
@@ -353,15 +353,7 @@
         "name": "画像を差し替えたとき、位置やサイズは維持されますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "はい。右クリックメニューの「画像を変更」で画像を差し替えると、ウィンドウの位置・サイズ・回転角度・不透明度がすべて維持されます。Optionキーを押しながらドラッグ＆ドロップした場合も同様です。季節やイベントごとに画像を入れ替えるときに便利です。"
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "初回起動時のガイドについて",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "初回起動時に、3ステップのガイドが表示されます。ドラッグで移動、スクロールでサイズ変更、右クリックでメニュー表示の3つの操作を案内します。ガイドはスキップすることもでき、一度完了すると次回以降は表示されません。"
+          "text": "はい。右クリックメニューの「画像を差し替え（配置を維持）」>「画像を変更...」で画像を変更すると、ウィンドウの位置・サイズ・回転角度・不透明度がすべて維持されます。Optionキーを押しながらドラッグ＆ドロップした場合も同様です。季節やイベントごとに画像を入れ替えるときに便利です。"
         }
       },
       {
@@ -374,18 +366,10 @@
       },
       {
         "@type": "Question",
-        "name": "配信（OBS等）でSobaniの画像を映すには？",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Sobaniのウィンドウは常に最前面に表示されるため、OBSなどの配信ソフトの「画面キャプチャ」でそのまま映ります。特定のウィンドウだけを映したい場合は「ウィンドウキャプチャ」で個別に指定することも可能です。配信中に映したくない場合はOption + Hで一括非表示にできます。"
-        }
-      },
-      {
-        "@type": "Question",
         "name": "画像を季節やイベントごとに簡単に入れ替えるコツは？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "いくつかの方法があります。右クリック「画像を変更」で位置・サイズを維持したまま差し替えができます。Optionキーを押しながらドラッグ＆ドロップでも同様に位置を維持して差し替えられます。大きくレイアウトを変える場合は、事前にデータフォルダのバックアップをおすすめします。"
+          "text": "いくつかの方法があります。右クリック「画像を差し替え（配置を維持）」から位置・サイズを維持したまま画像を変更できます。Optionキーを押しながらドラッグ＆ドロップでも同様に位置を維持して差し替えられます。大きくレイアウトを変える場合は、事前にデータフォルダのバックアップをおすすめします。"
         }
       },
       {
@@ -409,7 +393,7 @@
         "name": "画像を画面の端やメニューバーの上まで配置できますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。キャラクターが画面の端から顔を出しているような演出が可能です。アプリを再起動した際も、配置位置は正確に復元されます。"
+          "text": "はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。画像が画面の端からはみ出しているような配置が可能です。アプリを再起動した際も、配置位置は正確に復元されます。"
         }
       },
       {
@@ -417,7 +401,7 @@
         "name": "ウィンドウを個別に非表示にするには？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "フローティングメニュー（ダブルクリックで表示）または右クリックメニューの「その他」から「非表示」を選択すると、そのウィンドウだけを非表示にできます。非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H ですべてのウィンドウをまとめて再表示することも可能です。非表示状態はアプリを終了しても保持されます。"
+          "text": "フローティングメニュー（画像ウィンドウのダブルクリックで表示）または右クリックメニューの「その他」から「非表示」を選択すると、そのウィンドウだけを非表示にできます。非表示にしたウィンドウは、ステータスバーメニューの「非表示のウィンドウ」から個別に再表示できます。Option + H ですべてのウィンドウをまとめて再表示することも可能です。非表示状態はアプリを終了しても保持されます。"
         }
       },
       {
@@ -433,7 +417,23 @@
         "name": "外観モード（テーマ）を変更するには？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "ステータスバーメニューの「設定」から「外観モード」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。"
+          "text": "ステータスバーメニューの「設定」から「テーマ」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "配信や動画制作でオーバーレイとして使えますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい。画像素材を最前面に表示し、OBS等の配信ソフトで「ウィンドウキャプチャ」すれば、配信画面にオーバーレイとして表示できます。ゴーストモードを併用すれば、クリック操作を妨げずに画像を重ねられます。VTuber配信での立ち絵表示や、動画制作時の素材配置にも活用できます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "仕事用と趣味用でレイアウトを使い分けられますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい。レイアウトプリセット機能で、用途別のウィンドウ配置を保存・ワンクリックで切り替えられます。例えば「仕事用（参考資料配置）」と「趣味用（お気に入りの画像配置）」を別々のプリセットとして保存し、シーンに合わせて瞬時に切り替えできます。"
         }
       }
     ]
@@ -526,11 +526,29 @@
       </div>
     </section>
 
+    <!-- 目次 -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <nav class="glass-card p-6" aria-label="FAQカテゴリ">
+        <h2 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3" data-i18n="faq.tocTitle">カテゴリ</h2>
+        <ul class="flex flex-wrap gap-2">
+          <li><a href="#category-getting-started" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryGettingStarted">はじめに</a></li>
+          <li><a href="#category-image-management" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryImageManagement">画像の追加・管理</a></li>
+          <li><a href="#category-display-operation" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryDisplayOperation">表示・操作</a></li>
+          <li><a href="#category-image-editing" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryImageEditing">画像編集・調整</a></li>
+          <li><a href="#category-background-removal" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryBackgroundRemoval">背景除去</a></li>
+          <li><a href="#category-management" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryManagement">管理パネル</a></li>
+          <li><a href="#category-data-privacy" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryDataPrivacy">データとプライバシー</a></li>
+          <li><a href="#category-update" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryUpdate">アップデート</a></li>
+          <li><a href="#category-troubleshooting" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors" data-i18n="faq.categoryTroubleshooting">トラブルシューティング</a></li>
+        </ul>
+      </nav>
+    </section>
+
     <!-- FAQ セクション -->
     <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-12">
 
       <!-- はじめに -->
-      <div>
+      <div id="category-getting-started">
         <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryGettingStarted" data-animate>はじめに</h2>
         <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
@@ -583,32 +601,32 @@
 
           <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q38">初回起動時のガイドについて</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a38">初回起動時に、3ステップのガイドが表示されます。<br><br><strong>ステップ1:</strong> ドラッグで移動<br><strong>ステップ2:</strong> スクロールでサイズ変更<br><strong>ステップ3:</strong> 右クリックでメニュー表示<br><br>ガイドはスキップすることもできます。一度完了すると次回以降は表示されません。</div>
-          </details>
-
-          <details class="glass-card overflow-hidden group">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q26">バッテリーやメモリへの影響は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a26">ほとんどありません。SobaniはネイティブSwift製で、外部依存は自動アップデート用の Sparkle のみです。静止画表示中のCPU使用率はほぼ0%で、メモリ消費も最小限です。バッテリーへの影響は無視できるレベルなので、ノートブックでも安心して常時起動できます。</div>
           </details>
+
+          <details class="glass-card overflow-hidden group">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q55">デザインや勉強の参考画像表示に使えますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a55">はい、Sobaniはデザイン・イラスト制作の参考資料や、学習用の教材・チートシートを最前面に表示するのに最適です。参考画像を常に手前に固定できるので、アプリを切り替える手間がなくなります。ゴーストモードを使えばクリック透過になり、作業の邪魔になりません。</div>
+          </details>
         </div>
       </div>
 
-      <!-- 操作・カスタマイズ -->
-      <div>
-        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUsage" data-animate>操作・カスタマイズ</h2>
+      <!-- 画像の追加・管理 -->
+      <div id="category-image-management">
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryImageManagement" data-animate>画像の追加・管理</h2>
         <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q7">画像の追加・変更方法は？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a7">メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。また、画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップして追加することもできます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a7">メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックし「画像を差し替え（配置を維持）」>「画像を変更...」で別の画像に変更できます。また、画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップして追加することもできます。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -624,7 +642,7 @@
               <span data-i18n="faq.q37">画像を差し替えたとき、位置やサイズは維持されますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a37">はい。右クリックメニューの「画像を変更」で画像を差し替えると、ウィンドウの位置・サイズ・回転角度・不透明度がすべて維持されます。<strong>Option</strong>キーを押しながらドラッグ＆ドロップした場合も同様です。<br><br>季節やイベントごとに画像を入れ替えるときに便利です。レイアウトを一から作り直す必要はありません。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a37">はい。右クリックメニューの「画像を差し替え（配置を維持）」>「画像を変更...」で画像を変更すると、ウィンドウの位置・サイズ・回転角度・不透明度がすべて維持されます。<strong>Option</strong>キーを押しながらドラッグ＆ドロップした場合も同様です。<br><br>季節やイベントごとに画像を入れ替えるときに便利です。レイアウトを一から作り直す必要はありません。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -632,39 +650,7 @@
               <span data-i18n="faq.q41">画像を季節やイベントごとに簡単に入れ替えるコツは？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a41">いくつかの方法で簡単に入れ替えられます。<br><br><strong>方法1: 右クリック「画像を変更」</strong><br>位置・サイズ・回転・不透明度を維持したまま画像だけを差し替えます。<br><br><strong>方法2: Option + ドラッグ＆ドロップ</strong><br>Optionキーを押しながら新しい画像をドロップしても、同じく位置を維持して差し替えられます。<br><br>大きくレイアウトを変える場合は、事前にデータフォルダのバックアップをおすすめします。季節の写真やイベントのビジュアルで、デスクトップの模様替えをお楽しみください。</div>
-          </details>
-
-          <details class="glass-card overflow-hidden group">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q42">レイアウトプリセットとは何ですか？</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a42">現在のウィンドウ配置（画像・位置・サイズ・回転角度・不透明度）を名前を付けて保存し、いつでもワンクリックで復元できる機能です。メニューバーの「レイアウト」メニューから操作します。「現在のレイアウトを保存...」で保存し、プリセット名をクリックで読み込みます。仕事中・配信中・リラックスなど、シーンごとにレイアウトを保存しておくと便利です。</div>
-          </details>
-
-          <details class="glass-card overflow-hidden group">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q43">レイアウトプリセットはどこに保存されますか？</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a43">レイアウトプリセットは ~/Library/Application Support/Sobani/layouts/ フォルダに、プリセットごとに個別のJSONファイルとして保存されます。ファイルを別のMacにコピーすることで、レイアウトを移行することもできます。ただし、使用している画像も同じパスに存在する必要があります。</div>
-          </details>
-
-          <details class="glass-card overflow-hidden group">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q44">画像を画面の端やメニューバーの上まで配置できますか？</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a44">はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。キャラクターが画面の端から顔を出しているような演出が可能です。アプリを再起動した際も、配置位置は正確に復元されます。</div>
-          </details>
-
-          <details class="glass-card overflow-hidden group">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q31">デフォルト画像を変更するには？</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a31">メニューバーのSobaniアイコンをクリックし、「設定」>「デフォルト画像を変更...」を選択してください。ファイル選択ダイアログが開くので、好きな画像を選ぶだけです。<br><br>デフォルト画像をリセットしたい場合は、「設定」メニューから「デフォルト画像をリセット」を選択すると初期画像に戻ります。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a41">いくつかの方法で簡単に入れ替えられます。<br><br><strong>方法1: 右クリック「画像を差し替え（配置を維持）」</strong><br>位置・サイズ・回転・不透明度を維持したまま画像だけを変更できます。<br><br><strong>方法2: Option + ドラッグ＆ドロップ</strong><br>Optionキーを押しながら新しい画像をドロップしても、同じく位置を維持して差し替えられます。<br><br>大きくレイアウトを変える場合は、事前にデータフォルダのバックアップをおすすめします。季節の写真やイベントのビジュアルで、デスクトップの模様替えをお楽しみください。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -688,7 +674,53 @@
               <span data-i18n="faq.q27">透過PNG画像はどこで入手・作成できますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a27">Sobaniだけで透過PNG画像を作成できます。JPEG写真やHEIC画像など、PNG以外の形式からはもちろん、透過されていない通常のPNG画像からでも透過PNGを作れます。<br><br><strong>Sobaniの背景除去機能（おすすめ）</strong><br>macOS 14（Sonoma）以降なら、Sobani上で直接背景を除去できます。右クリックメニューの「画像を変更」→「背景を除去」で、JPEG・HEIC・GIF・TIFFはもちろん、透過されていない通常のPNG画像からも被写体だけを切り抜いた透過PNGが自動で作成されます。外部ツール不要で最も手軽な方法です。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a27">Sobaniだけで透過PNG画像を作成できます。JPEG写真やHEIC画像など、PNG以外の形式からはもちろん、透過されていない通常のPNG画像からでも透過PNGを作れます。<br><br><strong>Sobaniの背景除去機能（おすすめ）</strong><br>macOS 14（Sonoma）以降なら、Sobani上で直接背景を除去できます。右クリックメニューの「画像を差し替え（配置を維持）」>「背景を除去」で、JPEG・HEIC・GIF・TIFFはもちろん、透過されていない通常のPNG画像からも被写体だけを切り抜いた透過PNGが自動で作成されます。外部ツール不要で最も手軽な方法です。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。</div>
+          </details>
+
+          <details class="glass-card overflow-hidden group">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q31">デフォルト画像を変更するには？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a31">メニューバーのSobaniアイコンをクリックし、「設定」>「デフォルト画像を変更...」を選択してください。ファイル選択ダイアログが開くので、好きな画像を選ぶだけです。<br><br>デフォルト画像をリセットしたい場合は、「設定」メニューから「デフォルト画像をリセット」を選択すると初期画像に戻ります。</div>
+          </details>
+        </div>
+      </div>
+
+      <!-- 表示・操作 -->
+      <div id="category-display-operation">
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryDisplayOperation" data-animate>表示・操作</h2>
+        <div class="space-y-3">
+          <details class="glass-card overflow-hidden group">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q42">レイアウトプリセットとは何ですか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a42">現在のウィンドウ配置（画像・位置・サイズ・回転角度・不透明度）を名前を付けて保存し、いつでもワンクリックで復元できる機能です。メニューバーの「レイアウト」メニューから操作します。「現在のレイアウトを保存...」で保存し、プリセット名をクリックで読み込みます。仕事中・配信中・リラックスなど、シーンごとにレイアウトを保存しておくと便利です。</div>
+          </details>
+
+          <details class="glass-card overflow-hidden group">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q43">レイアウトプリセットはどこに保存されますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a43">レイアウトプリセットは ~/Library/Application Support/Sobani/layouts/ フォルダに、プリセットごとに個別のJSONファイルとして保存されます。ファイルを別のMacにコピーすることで、レイアウトを移行することもできます。ただし、使用している画像も同じパスに存在する必要があります。</div>
+          </details>
+
+          <details class="glass-card overflow-hidden group">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q57">仕事用と趣味用でレイアウトを使い分けられますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a57">はい。レイアウトプリセット機能で、用途別のウィンドウ配置を保存・ワンクリックで切り替えられます。例えば「仕事用（参考資料配置）」と「趣味用（お気に入りの画像配置）」を別々のプリセットとして保存し、シーンに合わせて瞬時に切り替えできます。</div>
+          </details>
+
+          <details class="glass-card overflow-hidden group">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q44">画像を画面の端やメニューバーの上まで配置できますか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a44">はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。画像が画面の端からはみ出しているような配置が可能です。アプリを再起動した際も、配置位置は正確に復元されます。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -696,7 +728,7 @@
               <span data-i18n="faq.q20">複数の画像を同時に表示できますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a20">はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a20">はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X」メニューから個別に管理できます。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -704,7 +736,7 @@
               <span data-i18n="faq.q28">複数モニターで使えますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a28">はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。<br><br>たとえば、メインモニターにキャラクター、外部モニターにペットの写真——といった使い分けも自由自在。MacBookのクラムシェルモード（外部モニターのみ）でも問題なく動作します。<br><br>モニター切断時の復元については「モニター切断/スリープ後にウィンドウが移動した」をご覧ください。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a28">はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。<br><br>たとえば、メインモニターに参考画像、外部モニターにペットの写真——といった使い分けも自由自在。MacBookのクラムシェルモード（外部モニターのみ）でも問題なく動作します。<br><br>モニター切断時の復元については「モニター切断/スリープ後にウィンドウが移動した」をご覧ください。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -713,6 +745,14 @@
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a33">はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。</div>
+          </details>
+
+          <details class="glass-card overflow-hidden group">
+            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
+              <span data-i18n="faq.q17">画像の最大表示サイズが6000pxなのはなぜですか？</span>
+              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a17">Sobaniでは画像の回転表示に対応しているため、回転時に生成される外接矩形（バウンディングボックス）が元の画像サイズよりも大きくなります。macOSはGPUを使って画像を高速に描画しますが、GPUが一度に処理できるテクスチャサイズには上限があります（Intel Macでは8,192px）。6000pxの画像であれば、一般的な縦長の画像を任意の角度に回転してもGPUの処理範囲内に収まるため、Intel Mac・Apple Siliconの両方ですべての操作が滑らかに動作します。この値は、GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作するよう設計された上限値です。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -741,12 +781,18 @@
 
           <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q40">配信（OBS等）でSobaniの画像を映すには？</span>
+              <span data-i18n="faq.q56">配信や動画制作でオーバーレイとして使えますか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a40">Sobaniのウィンドウは常に最前面に表示されるため、OBSなどの配信ソフトの「画面キャプチャ」（Display Capture）でそのまま映ります。<br><br>特定のSobaniウィンドウだけを映したい場合は、「ウィンドウキャプチャ」（Window Capture）で個別に指定することも可能です。<br><br>配信中にSobaniを映したくない場合は、<strong>Option + H</strong> で一括非表示にできます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a56">はい。画像素材を最前面に表示し、OBS等の配信ソフトで「ウィンドウキャプチャ」すれば、配信画面にオーバーレイとして表示できます。ゴーストモードを併用すれば、クリック操作を妨げずに画像を重ねられます。VTuber配信での立ち絵表示や、動画制作時の素材配置にも活用できます。</div>
           </details>
+        </div>
+      </div>
 
+      <!-- 画像編集・調整 -->
+      <div id="category-image-editing">
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryImageEditing" data-animate>画像編集・調整</h2>
+        <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q21">画像の回転や不透明度を調整するには？</span>
@@ -776,7 +822,7 @@
               <span data-i18n="faq.q47">フローティングメニューとは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a47">キャラクターウィンドウをダブルクリックすると表示されるツールバーです。切り取り・反転・調整・ゴーストモード・背景削除・非表示・表示をリセット・閉じるの操作にワンクリックでアクセスできます。メニュー外をクリックするかESCキーで閉じます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a47">画像ウィンドウをダブルクリックすると表示されるツールバーです。切り取り・反転・調整・背景削除・ゴースト・リセット・隠す・閉じるの操作にワンクリックでアクセスできます。メニュー外をクリックするかESCキーで閉じます。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -800,15 +846,7 @@
               <span data-i18n="faq.q50">外観モード（テーマ）を変更するには？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a50">ステータスバーメニューの「設定」から「外観モード」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。</div>
-          </details>
-
-          <details class="glass-card overflow-hidden group">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q17">画像の最大表示サイズが6000pxなのはなぜですか？</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a17">Sobaniでは画像の回転表示に対応しているため、回転時に生成される外接矩形（バウンディングボックス）が元の画像サイズよりも大きくなります。macOSはGPUを使って画像を高速に描画しますが、GPUが一度に処理できるテクスチャサイズには上限があります（Intel Macでは8,192px）。6000pxの画像であれば、一般的な縦長の画像を任意の角度に回転してもGPUの処理範囲内に収まるため、Intel Mac・Apple Siliconの両方ですべての操作が滑らかに動作します。この値は、GPUの性能を最大限に活かしつつ、すべてのMacで快適に動作するよう設計された上限値です。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a50">ステータスバーメニューの「設定」から「テーマ」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -818,13 +856,19 @@
             </summary>
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a22">Sobaniは画像をデスクトップに最前面表示することをコンセプトとしたアプリです。お気に入りの画像をそのままデスクトップに表示することを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。</div>
           </details>
+        </div>
+      </div>
 
+      <!-- 背景除去 -->
+      <div id="category-background-removal">
+        <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryBackgroundRemoval" data-animate>背景除去</h2>
+        <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
             <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
               <span data-i18n="faq.q34">背景除去機能とは何ですか？</span>
               <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a34">Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を変更」→「背景を除去」から実行できます。</div>
+            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n="faq.a34">Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を差し替え（配置を維持）」>「背景を除去」から実行できます。</div>
           </details>
 
           <details class="glass-card overflow-hidden group">
@@ -838,7 +882,7 @@
       </div>
 
       <!-- 管理パネル -->
-      <div>
+      <div id="category-management">
         <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryManagement" data-animate>管理パネル</h2>
         <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
@@ -876,7 +920,7 @@
       </div>
 
       <!-- データとプライバシー -->
-      <div>
+      <div id="category-data-privacy">
         <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryDataPrivacy" data-animate>データとプライバシー</h2>
         <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
@@ -919,18 +963,11 @@
             <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a30">Sobaniのすべてのデータは <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/</code> フォルダにまとまっています。<br><br><strong>バックアップ</strong><br>このフォルダをまるごとコピーするだけでOKです。USBメモリ、クラウドストレージ、Time Machineなどお好みの方法でバックアップできます。<br><br><strong>復元</strong><br>バックアップしたフォルダを同じ場所に戻してからSobaniを起動すれば、画像・配置・設定がすべて復元されます。<br><br>Sobaniを終了した状態でバックアップ・復元を行ってください。</div>
           </details>
 
-          <details class="glass-card overflow-hidden group">
-            <summary class="flex items-center justify-between px-6 py-4 text-left font-medium text-slate-900 dark:text-slate-100">
-              <span data-i18n="faq.q29">設定ファイルの形式は？（上級者向け）</span>
-              <svg class="faq-chevron w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </summary>
-            <div class="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed" data-i18n-html="faq.a29">ウィンドウの状態は <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code> にJSON形式で保存されています。<br><br>各エントリのフィールド:<br>・<code class="text-sm">windowId</code> — ウィンドウの一意ID<br>・<code class="text-sm">imagePath</code> — 表示画像のパス<br>・<code class="text-sm">x</code>, <code class="text-sm">y</code> — ウィンドウ位置<br>・<code class="text-sm">width</code>, <code class="text-sm">height</code> — ウィンドウサイズ<br>・<code class="text-sm">isFlipped</code> — 左右反転<br>・<code class="text-sm">rotation</code> — 回転角度（0〜360）<br>・<code class="text-sm">opacity</code> — 不透明度（0.1〜1.0）<br>・<code class="text-sm">zOrderIndex</code> — 重ね順<br><br>編集する場合は、必ずSobaniを終了してから行ってください。起動中に編集すると、終了時に上書きされます。</div>
-          </details>
         </div>
       </div>
 
       <!-- アップデート -->
-      <div>
+      <div id="category-update">
         <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryUpdate" data-animate>アップデート</h2>
         <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
@@ -952,7 +989,7 @@
       </div>
 
       <!-- トラブルシューティング -->
-      <div>
+      <div id="category-troubleshooting">
         <h2 class="text-xl font-bold text-amber-600 dark:text-amber-400 mb-4 flex items-center" data-i18n="faq.categoryTroubleshooting" data-animate>トラブルシューティング</h2>
         <div class="space-y-3">
           <details class="glass-card overflow-hidden group">
@@ -1034,8 +1071,12 @@
         faq: {
           pageTitle: "よくある質問",
           pageSubtitle: "Sobaniについてよく寄せられる質問と回答をまとめました。",
+          tocTitle: "カテゴリ",
           categoryGettingStarted: "はじめに",
-          categoryUsage: "操作・カスタマイズ",
+          categoryImageManagement: "画像の追加・管理",
+          categoryDisplayOperation: "表示・操作",
+          categoryImageEditing: "画像編集・調整",
+          categoryBackgroundRemoval: "背景除去",
           categoryManagement: "管理パネル",
           categoryDataPrivacy: "データとプライバシー",
           categoryUpdate: "アップデート",
@@ -1054,7 +1095,7 @@
           q6: "アンインストール方法は？",
           a6: "Sobani.appをゴミ箱に移動してください。設定やデータは ~/Library/Application Support/Sobani/ フォルダに保存されているため、完全に削除する場合はこのフォルダも削除してください。",
           q7: "画像の追加・変更方法は？",
-          a7: "メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックして「画像を変更」で別の画像に差し替えることもできます。また、画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップして追加することもできます。",
+          a7: "メニューバーのSobaniアイコンをクリックし、「画像を追加表示」から画像を選択します。表示中の画像を右クリックし「画像を差し替え（配置を維持）」>「画像を変更...」で別の画像に変更できます。また、画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップして追加することもできます。",
           q8: "キーボードショートカットは？",
           a8: "Option + H で全ウィンドウの表示/非表示を切り替え、Option + G でゴーストモード（クリック透過）を一括切り替えできます。Option + ドラッグで全ウィンドウを同時に移動、Option + スクロールで全ウィンドウを同時にリサイズできます。",
           q9: "非表示にしたウィンドウを再表示するには？",
@@ -1078,7 +1119,7 @@
           q19: "起動時に自動的に立ち上げるには？",
           a19: "メニューバーのSobaniアイコンをクリックし、「設定」>「ログイン時に起動」にチェックを入れてください。次回のMac起動時からSobaniが自動的に立ち上がり、前回終了時のウィンドウ配置が復元されます。",
           q20: "複数の画像を同時に表示できますか？",
-          a20: "はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X体」メニューから個別に管理できます。",
+          a20: "はい、複数の画像を同時にデスクトップに表示できます。メニューバーのSobaniアイコンから「画像を追加表示」を選択するたびに、新しいウィンドウが追加されます。各ウィンドウは独立してサイズ変更、移動、回転、不透明度調整が可能です。「表示中: X」メニューから個別に管理できます。",
           q21: "画像の回転や不透明度を調整するには？",
           a21: "表示中の画像を右クリックし、「調整」を選択すると調整パネルが表示されます。回転ダイヤル（0〜360度、5度刻み）と不透明度スライダー（10%〜100%）でリアルタイムに調整できます。設定はアプリ終了時に自動保存されます。",
           q45: "\u30B4\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u3068\u306F\u4F55\u3067\u3059\u304B\uFF1F",
@@ -1086,7 +1127,7 @@
           q46: "\u753B\u50CF\u3092\u30C8\u30EA\u30DF\u30F3\u30B0\uFF08\u5207\u308A\u53D6\u308A\uFF09\u3059\u308B\u306B\u306F\uFF1F",
           a46: "\u53F3\u30AF\u30EA\u30C3\u30AF\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u753B\u50CF\u306E\u5207\u308A\u53D6\u308A\u300D\u307E\u305F\u306F\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u306E\u30AF\u30ED\u30C3\u30D7\u30DC\u30BF\u30F3\u304B\u3089\u30AF\u30ED\u30C3\u30D7\u30A8\u30C7\u30A3\u30BF\u3092\u958B\u3051\u307E\u3059\u3002iPhone\u5199\u771F\u30A2\u30D7\u30EA\u306E\u3088\u3046\u306A\u30A4\u30F3\u30BF\u30FC\u30D5\u30A7\u30FC\u30B9\u3067\u3001\u30A2\u30B9\u30DA\u30AF\u30C8\u6BD4\u30D7\u30EA\u30BB\u30C3\u30C8\uFF081:1\u30014:3\u300116:9\u306A\u3069\uFF09\u3092\u9078\u629E\u3067\u304D\u3001\u50BE\u304D\u88DC\u6B63\u3084\u30D1\u30FC\u30B9\u30DA\u30AF\u30C6\u30A3\u30D6\u88DC\u6B63\u3082\u53EF\u80FD\u3067\u3059\u3002<br><br>\u5F62\u72B6\u30BB\u30EC\u30AF\u30BF\u304B\u3089\u77E9\u5F62\u30FB\u5186\u5F62\u30FB\u89D2\u4E38\u77E9\u5F62\u306E3\u7A2E\u985E\u306E\u5F62\u72B6\u3092\u9078\u3093\u3067\u30AF\u30ED\u30C3\u30D7\u3067\u304D\u307E\u3059\u3002\u3059\u3079\u3066\u306E\u7DE8\u96C6\u306FUndo/Redo\u5BFE\u5FDC\u306E\u975E\u7834\u58CA\u7DE8\u96C6\u3067\u3001\u5143\u306E\u753B\u50CF\u306F\u305D\u306E\u307E\u307E\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002",
           q47: "\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u3068\u306F\u4F55\u3067\u3059\u304B\uFF1F",
-          a47: "\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3059\u308B\u3068\u8868\u793A\u3055\u308C\u308B\u30C4\u30FC\u30EB\u30D0\u30FC\u3067\u3059\u3002\u5207\u308A\u53D6\u308A\u30FB\u53CD\u8EE2\u30FB\u8ABF\u6574\u30FB\u30B4\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u30FB\u80CC\u666F\u524A\u9664\u30FB\u975E\u8868\u793A\u30FB\u8868\u793A\u3092\u30EA\u30BB\u30C3\u30C8\u30FB\u9589\u3058\u308B\u306E\u64CD\u4F5C\u306B\u30EF\u30F3\u30AF\u30EA\u30C3\u30AF\u3067\u30A2\u30AF\u30BB\u30B9\u3067\u304D\u307E\u3059\u3002\u30E1\u30CB\u30E5\u30FC\u5916\u3092\u30AF\u30EA\u30C3\u30AF\u3059\u308B\u304BESC\u30AD\u30FC\u3067\u9589\u3058\u307E\u3059\u3002",
+          a47: "画像ウィンドウをダブルクリックすると表示されるツールバーです。切り取り・反転・調整・背景削除・ゴースト・リセット・隠す・閉じるの操作にワンクリックでアクセスできます。メニュー外をクリックするかESCキーで閉じます。",
           q22: "動画ファイル（MP4等）には対応していますか？",
           a22: "Sobaniは画像をデスクトップに最前面表示することをコンセプトとしたアプリです。お気に入りの画像をそのままデスクトップに表示することを大切にしているため、MP4やMOVなどの動画ファイルには対応していません。静止画に特化することで、CPU・メモリの消費を最小限に抑え、常時起動しても動作が軽い設計を実現しています。なお、アニメーションGIFやアニメーションPNG（APNG）には対応しているため、簡単なアニメーション表示は可能です。",
           q23: "アプリ終了後にウィンドウの配置は保存されますか？",
@@ -1098,11 +1139,9 @@
           q26: "バッテリーやメモリへの影響は？",
           a26: "ほとんどありません。SobaniはネイティブSwift製で、外部依存は自動アップデート用の Sparkle のみです。静止画表示中のCPU使用率はほぼ0%で、メモリ消費も最小限です。バッテリーへの影響は無視できるレベルなので、ノートブックでも安心して常時起動できます。",
           q27: "透過PNG画像はどこで入手・作成できますか？",
-          a27: 'Sobaniだけで透過PNG画像を作成できます。JPEG写真やHEIC画像など、PNG以外の形式からはもちろん、透過されていない通常のPNG画像からでも透過PNGを作れます。<br><br><strong>Sobaniの背景除去機能（おすすめ）</strong><br>macOS 14（Sonoma）以降なら、Sobani上で直接背景を除去できます。右クリックメニューの「画像を変更」→「背景を除去」で、JPEG・HEIC・GIF・TIFFはもちろん、透過されていない通常のPNG画像からも被写体だけを切り抜いた透過PNGが自動で作成されます。外部ツール不要で最も手軽な方法です。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。',
+          a27: 'Sobaniだけで透過PNG画像を作成できます。JPEG写真やHEIC画像など、PNG以外の形式からはもちろん、透過されていない通常のPNG画像からでも透過PNGを作れます。<br><br><strong>Sobaniの背景除去機能（おすすめ）</strong><br>macOS 14（Sonoma）以降なら、Sobani上で直接背景を除去できます。右クリックメニューの「画像を差し替え（配置を維持）」>「背景を除去」で、JPEG・HEIC・GIF・TIFFはもちろん、透過されていない通常のPNG画像からも被写体だけを切り抜いた透過PNGが自動で作成されます。外部ツール不要で最も手軽な方法です。<br><br><strong>macOSプレビュー</strong><br>画像をプレビューで開き、マークアップツールバーの「インスタントアルファ」で背景をクリックして削除できます。<br><br><strong>iPhoneの「被写体を切り抜き」</strong><br>iOS 16以降の写真アプリで、被写体を長押しすると背景を自動で切り抜けます。切り抜いた画像をMacに送れば透過PNGとして使えます。<br><br><strong>Webサービス</strong><br>remove.bgなどの背景除去サービスを使えば、写真をアップロードするだけで簡単に透過画像を作成できます。',
           q28: "複数モニターで使えますか？",
-          a28: 'はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。<br><br>たとえば、メインモニターにキャラクター、外部モニターにペットの写真——といった使い分けも自由自在。MacBookのクラムシェルモード（外部モニターのみ）でも問題なく動作します。<br><br>モニター切断時の復元については「モニター切断/スリープ後にウィンドウが移動した」をご覧ください。',
-          q29: "設定ファイルの形式は？（上級者向け）",
-          a29: 'ウィンドウの状態は <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code> にJSON形式で保存されています。<br><br>各エントリのフィールド:<br>・<code class="text-sm">windowId</code> — ウィンドウの一意ID<br>・<code class="text-sm">imagePath</code> — 表示画像のパス<br>・<code class="text-sm">x</code>, <code class="text-sm">y</code> — ウィンドウ位置<br>・<code class="text-sm">width</code>, <code class="text-sm">height</code> — ウィンドウサイズ<br>・<code class="text-sm">isFlipped</code> — 左右反転<br>・<code class="text-sm">rotation</code> — 回転角度（0〜360）<br>・<code class="text-sm">opacity</code> — 不透明度（0.1〜1.0）<br>・<code class="text-sm">zOrderIndex</code> — 重ね順<br><br>編集する場合は、必ずSobaniを終了してから行ってください。起動中に編集すると、終了時に上書きされます。',
+          a28: 'はい、複数モニター環境に完全対応しています。各モニターに自由に画像を配置でき、位置はモニターごとに記憶されます。<br><br>たとえば、メインモニターに参考画像、外部モニターにペットの写真——といった使い分けも自由自在。MacBookのクラムシェルモード（外部モニターのみ）でも問題なく動作します。<br><br>モニター切断時の復元については「モニター切断/スリープ後にウィンドウが移動した」をご覧ください。',
           q30: "データのバックアップ・復元方法は？",
           a30: 'Sobaniのすべてのデータは <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/</code> フォルダにまとまっています。<br><br><strong>バックアップ</strong><br>このフォルダをまるごとコピーするだけでOKです。USBメモリ、クラウドストレージ、Time Machineなどお好みの方法でバックアップできます。<br><br><strong>復元</strong><br>バックアップしたフォルダを同じ場所に戻してからSobaniを起動すれば、画像・配置・設定がすべて復元されます。<br><br>Sobaniを終了した状態でバックアップ・復元を行ってください。',
           q31: "デフォルト画像を変更するには？",
@@ -1112,33 +1151,35 @@
           q33: "一眼レフやミラーレスの高解像度写真も使えますか？",
           a33: 'はい、そのまま使えます。対応形式については「対応している画像形式は？」をご覧ください。<br><br>表示サイズはスクロールで100px〜6000pxの範囲で自由に調整できるので、大きな写真でも画面にちょうどよいサイズに縮小して表示できます。',
           q34: "背景除去機能とは何ですか？",
-          a34: "Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を変更」→「背景を除去」から実行できます。",
+          a34: "Sobaniに搭載されたAI背景除去機能です。JPEG写真などの背景付き画像から被写体だけを自動で切り抜き、透過PNGとして保存します。macOS 14（Sonoma）以降で利用可能で、macOS標準のVisionフレームワークを使用するため外部ツールは不要です。右クリックメニューの「画像を差し替え（配置を維持）」>「背景を除去」から実行できます。",
           q35: "背景除去はどの画像で使えますか？",
           a35: "JPEG、GIF、TIFF、HEICなど背景のある画像で利用できます。すでに背景が透過されている画像（透過PNG）では、メニュー項目が自動的に無効化されます。処理結果は「元のファイル名_nobg.png」として画像ライブラリに保存されます。",
           q36: "ドラッグ＆ドロップで画像を追加できますか？",
           a36: '画像ファイルをSobaniのウィンドウに直接ドラッグ＆ドロップするだけで、新しいウィンドウとして追加できます。FinderやWebブラウザからの直接ドロップにも対応しています。<br><br><strong>Option</strong>キーを押しながらドロップすると、新しいウィンドウを追加する代わりに、既存のウィンドウの画像を差し替えます。位置・サイズ・回転・不透明度はそのまま維持されるので、レイアウトを崩さずに画像だけを入れ替えられます。',
           q37: "画像を差し替えたとき、位置やサイズは維持されますか？",
-          a37: 'はい。右クリックメニューの「画像を変更」で画像を差し替えると、ウィンドウの位置・サイズ・回転角度・不透明度がすべて維持されます。<strong>Option</strong>キーを押しながらドラッグ＆ドロップした場合も同様です。<br><br>季節やイベントごとに画像を入れ替えるときに便利です。レイアウトを一から作り直す必要はありません。',
-          q38: "初回起動時のガイドについて",
-          a38: '初回起動時に、3ステップのガイドが表示されます。<br><br><strong>ステップ1:</strong> ドラッグで移動<br><strong>ステップ2:</strong> スクロールでサイズ変更<br><strong>ステップ3:</strong> 右クリックでメニュー表示<br><br>ガイドはスキップすることもできます。一度完了すると次回以降は表示されません。',
+          a37: 'はい。右クリックメニューの「画像を差し替え（配置を維持）」>「画像を変更...」で画像を変更すると、ウィンドウの位置・サイズ・回転角度・不透明度がすべて維持されます。<strong>Option</strong>キーを押しながらドラッグ＆ドロップした場合も同様です。<br><br>季節やイベントごとに画像を入れ替えるときに便利です。レイアウトを一から作り直す必要はありません。',
           q39: "メニューバーのアイコンが見つかりません",
           a39: 'Sobaniのアイコンは、メニューバーの右端エリア（時計やWi-Fiアイコンの近く）に表示されます。<br><br>メニューバーにアイコンが多い場合、画面幅に収まりきらず隠れてしまうことがあります。<strong>Command</strong>キーを押しながらアイコンをドラッグすると、メニューバー内のアイコンを並び替えられます。<br><br>それでも見つからない場合は、Sobaniが起動しているか確認してください。アクティビティモニタで「Sobani」を検索するか、アプリケーションフォルダからSobaniを再度起動してみてください。',
-          q40: "配信（OBS等）でSobaniの画像を映すには？",
-          a40: 'Sobaniのウィンドウは常に最前面に表示されるため、OBSなどの配信ソフトの「画面キャプチャ」（Display Capture）でそのまま映ります。<br><br>特定のSobaniウィンドウだけを映したい場合は、「ウィンドウキャプチャ」（Window Capture）で個別に指定することも可能です。<br><br>配信中にSobaniを映したくない場合は、<strong>Option + H</strong> で一括非表示にできます。',
+          q55: "デザインや勉強の参考画像表示に使えますか？",
+          a55: "はい、Sobaniはデザイン・イラスト制作の参考資料や、学習用の教材・チートシートを最前面に表示するのに最適です。参考画像を常に手前に固定できるので、アプリを切り替える手間がなくなります。ゴーストモードを使えばクリック透過になり、作業の邪魔になりません。",
+          q56: "配信や動画制作でオーバーレイとして使えますか？",
+          a56: "はい。画像素材を最前面に表示し、OBS等の配信ソフトで「ウィンドウキャプチャ」すれば、配信画面にオーバーレイとして表示できます。ゴーストモードを併用すれば、クリック操作を妨げずに画像を重ねられます。VTuber配信での立ち絵表示や、動画制作時の素材配置にも活用できます。",
+          q57: "仕事用と趣味用でレイアウトを使い分けられますか？",
+          a57: "はい。レイアウトプリセット機能で、用途別のウィンドウ配置を保存・ワンクリックで切り替えられます。例えば「仕事用（参考資料配置）」と「趣味用（お気に入りの画像配置）」を別々のプリセットとして保存し、シーンに合わせて瞬時に切り替えできます。",
           q41: "画像を季節やイベントごとに簡単に入れ替えるコツは？",
-          a41: 'いくつかの方法で簡単に入れ替えられます。<br><br><strong>方法1: 右クリック「画像を変更」</strong><br>位置・サイズ・回転・不透明度を維持したまま画像だけを差し替えます。<br><br><strong>方法2: Option + ドラッグ＆ドロップ</strong><br>Optionキーを押しながら新しい画像をドロップしても、同じく位置を維持して差し替えられます。<br><br>大きくレイアウトを変える場合は、事前にデータフォルダのバックアップをおすすめします。季節の写真やイベントのビジュアルで、デスクトップの模様替えをお楽しみください。',
+          a41: 'いくつかの方法で簡単に入れ替えられます。<br><br><strong>方法1: 右クリック「画像を差し替え（配置を維持）」</strong><br>位置・サイズ・回転・不透明度を維持したまま画像だけを変更できます。<br><br><strong>方法2: Option + ドラッグ＆ドロップ</strong><br>Optionキーを押しながら新しい画像をドロップしても、同じく位置を維持して差し替えられます。<br><br>大きくレイアウトを変える場合は、事前にデータフォルダのバックアップをおすすめします。季節の写真やイベントのビジュアルで、デスクトップの模様替えをお楽しみください。',
           q42: "レイアウトプリセットとは何ですか？",
           a42: '現在のウィンドウ配置（画像・位置・サイズ・回転角度・不透明度）を名前を付けて保存し、いつでもワンクリックで復元できる機能です。メニューバーの「レイアウト」メニューから操作します。「現在のレイアウトを保存...」で保存し、プリセット名をクリックで読み込みます。仕事中・配信中・リラックスなど、シーンごとにレイアウトを保存しておくと便利です。',
           q43: "レイアウトプリセットはどこに保存されますか？",
           a43: 'レイアウトプリセットは ~/Library/Application Support/Sobani/layouts/ フォルダに、プリセットごとに個別のJSONファイルとして保存されます。ファイルを別のMacにコピーすることで、レイアウトを移行することもできます。ただし、使用している画像も同じパスに存在する必要があります。',
           q44: "画像を画面の端やメニューバーの上まで配置できますか？",
-          a44: 'はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。キャラクターが画面の端から顔を出しているような演出が可能です。アプリを再起動した際も、配置位置は正確に復元されます。',
+          a44: 'はい。透過PNG画像はメニューバーの上を含め、画面の端を越えて自由に配置できます。画像が画面の端からはみ出しているような配置が可能です。アプリを再起動した際も、配置位置は正確に復元されます。',
           q48: "\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u500B\u5225\u306B\u975E\u8868\u793A\u306B\u3059\u308B\u306B\u306F\uFF1F",
           a48: '\u30D5\u30ED\u30FC\u30C6\u30A3\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\uFF08\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u8868\u793A\uFF09\u307E\u305F\u306F\u53F3\u30AF\u30EA\u30C3\u30AF\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u305D\u306E\u4ED6\u300D\u304B\u3089\u300C\u975E\u8868\u793A\u300D\u3092\u9078\u629E\u3059\u308B\u3068\u3001\u305D\u306E\u30A6\u30A3\u30F3\u30C9\u30A6\u3060\u3051\u3092\u975E\u8868\u793A\u306B\u3067\u304D\u307E\u3059\u3002<br><br>\u975E\u8868\u793A\u306B\u3057\u305F\u30A6\u30A3\u30F3\u30C9\u30A6\u306F\u3001\u30B9\u30C6\u30FC\u30BF\u30B9\u30D0\u30FC\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u975E\u8868\u793A\u306E\u30A6\u30A3\u30F3\u30C9\u30A6\u300D\u304B\u3089\u500B\u5225\u306B\u518D\u8868\u793A\u3067\u304D\u307E\u3059\u3002Option + H \u3067\u3059\u3079\u3066\u306E\u30A6\u30A3\u30F3\u30C9\u30A6\u3092\u307E\u3068\u3081\u3066\u518D\u8868\u793A\u3059\u308B\u3053\u3068\u3082\u53EF\u80FD\u3067\u3059\u3002\u975E\u8868\u793A\u72B6\u614B\u306F\u30A2\u30D7\u30EA\u3092\u7D42\u4E86\u3057\u3066\u3082\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002',
           q49: "\u5186\u5F62\u3084\u89D2\u4E38\u77E9\u5F62\u3067\u753B\u50CF\u3092\u30AF\u30ED\u30C3\u30D7\u3067\u304D\u307E\u3059\u304B\uFF1F",
           a49: "\u306F\u3044\u3001\u30AF\u30ED\u30C3\u30D7\u30A8\u30C7\u30A3\u30BF\u306E\u5F62\u72B6\u30BB\u30EC\u30AF\u30BF\u304B\u3089\u77E9\u5F62\u30FB\u5186\u5F62\u30FB\u89D2\u4E38\u77E9\u5F62\u306E3\u7A2E\u985E\u306E\u5F62\u72B6\u3092\u9078\u629E\u3057\u3066\u30AF\u30ED\u30C3\u30D7\u3067\u304D\u307E\u3059\u3002\u5F62\u72B6\u30AF\u30ED\u30C3\u30D7\u306F\u30A2\u30B9\u30DA\u30AF\u30C8\u6BD4\u30D7\u30EA\u30BB\u30C3\u30C8\u3084\u50BE\u304D\u88DC\u6B63\u306A\u3069\u306E\u4ED6\u306E\u6A5F\u80FD\u3068\u4F75\u7528\u3067\u304D\u307E\u3059\u3002",
           q50: "\u5916\u89B3\u30E2\u30FC\u30C9\uFF08\u30C6\u30FC\u30DE\uFF09\u3092\u5909\u66F4\u3059\u308B\u306B\u306F\uFF1F",
-          a50: "\u30B9\u30C6\u30FC\u30BF\u30B9\u30D0\u30FC\u30E1\u30CB\u30E5\u30FC\u306E\u300C\u8A2D\u5B9A\u300D\u304B\u3089\u300C\u5916\u89B3\u30E2\u30FC\u30C9\u300D\u3092\u9078\u629E\u3057\u3001\u81EA\u52D5\u30FB\u30E9\u30A4\u30C8\u30FB\u30C0\u30FC\u30AF\u306E3\u3064\u306E\u30E2\u30FC\u30C9\u304B\u3089\u9078\u3079\u307E\u3059\u3002\u300C\u81EA\u52D5\u300D\u306F\u30B7\u30B9\u30C6\u30E0\u306E\u8A2D\u5B9A\u306B\u5F93\u3044\u307E\u3059\u3002\u9078\u629E\u3057\u305F\u8A2D\u5B9A\u306F\u30A2\u30D7\u30EA\u3092\u518D\u8D77\u52D5\u3057\u3066\u3082\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002",
+          a50: "ステータスバーメニューの「設定」から「テーマ」を選択し、自動・ライト・ダークの3つのモードから選べます。「自動」はシステムの設定に従います。選択した設定はアプリを再起動しても保持されます。",
           q51: "管理パネルを開くには？",
           a51: "メニューバーのSobaniアイコンをクリックし、「管理パネルを開く」を選択してください。管理パネルはフローティングウィンドウとして表示され、デスクトップ操作を続けながら使用できます。",
           q52: "ホットキーを変更・リセットするには？",
@@ -1175,8 +1216,12 @@
         faq: {
           pageTitle: "Frequently Asked Questions",
           pageSubtitle: "Find answers to common questions about Sobani.",
+          tocTitle: "Categories",
           categoryGettingStarted: "Getting Started",
-          categoryUsage: "Usage & Customization",
+          categoryImageManagement: "Adding & Managing Images",
+          categoryDisplayOperation: "Display & Operation",
+          categoryImageEditing: "Image Editing & Adjustment",
+          categoryBackgroundRemoval: "Background Removal",
           categoryManagement: "Management Panel",
           categoryDataPrivacy: "Data & Privacy",
           categoryUpdate: "Updates",
@@ -1195,7 +1240,7 @@
           q6: "How do I uninstall Sobani?",
           a6: "Move Sobani.app to the Trash. Settings and data are stored in the ~/Library/Application Support/Sobani/ folder. To completely remove all data, delete this folder as well.",
           q7: "How do I add or change images?",
-          a7: "Click the Sobani icon in the menu bar and select an image from \"Add Image.\" You can also right-click a displayed image and choose \"Change Image\" to replace it with a different one. You can also add images by dragging and dropping image files directly onto Sobani windows.",
+          a7: "Click the Sobani icon in the menu bar and select an image from \"Add Image.\" You can also right-click a displayed image and select \"Replace Image (Keep Layout)\" > \"Change Image...\" to change to a different image. You can also add images by dragging and dropping image files directly onto Sobani windows.",
           q8: "What keyboard shortcuts are available?",
           a8: "Option + H toggles all windows visible/hidden, and Option + G toggles ghost mode (click-through) for all windows. Option + drag moves all windows simultaneously, Option + scroll resizes all windows at once.",
           q9: "How do I show hidden windows again?",
@@ -1227,7 +1272,7 @@
           q46: "How do I crop (trim) an image?",
           a46: "Open the crop editor from the right-click menu \"Crop Image\" or the floating menu's crop button. With an iPhone Photos-like interface, you can select aspect ratio presets (1:1, 4:3, 16:9, etc.), and adjust straighten and perspective correction.<br><br>Use the shape selector to crop in rectangle, circle, or rounded rectangle shapes. All edits are non-destructive with Undo/Redo support — your original image is always preserved.",
           q47: "What is the floating menu?",
-          a47: "A toolbar that appears when you double-click a character window. One-click access to crop, flip, adjust, ghost mode, background removal, hide, reset display, and close. Click outside or press ESC to dismiss.",
+          a47: "A toolbar that appears when you double-click an image window. One-click access to crop, flip, adjust, background removal, ghost, reset, hide, and close. Click outside or press ESC to dismiss.",
           q22: "Does Sobani support video files (MP4, etc.)?",
           a22: "Sobani is built around the concept of displaying images on your desktop, always on top. It's designed to display your favorite images as-is on your desktop, so it does not support video files such as MP4 or MOV. By focusing on still images, Sobani keeps CPU and memory usage minimal, ensuring lightweight operation even when running continuously. Note that animated GIFs and animated PNGs (APNG) are supported, so simple animations can be displayed.",
           q23: "Are window positions saved after quitting?",
@@ -1239,11 +1284,9 @@
           q26: "Does Sobani affect battery life or memory?",
           a26: "Barely at all. Sobani is built natively in Swift with only Sparkle (for auto-updates) as an external dependency. CPU usage while displaying still images is nearly 0%, and memory consumption is minimal. The impact on battery life is negligible, so you can keep it running on a laptop without worry.",
           q27: "Where can I get or create transparent PNG images?",
-          a27: 'You can create transparent PNGs right within Sobani — even from JPEG, HEIC, and other non-PNG formats, as well as regular (non-transparent) PNGs.<br><br><strong>Sobani\'s Background Removal (Recommended)</strong><br>On macOS 14 (Sonoma) or later, you can remove backgrounds directly in Sobani. Right-click an image, select "Change Image" \u2192 "Remove Background," and a transparent PNG of just the subject is automatically created from JPEG, HEIC, GIF, TIFF, and even regular (non-transparent) PNGs. No external tools needed — the easiest method available.<br><br><strong>macOS Preview</strong><br>Open an image in Preview, then use "Instant Alpha" from the markup toolbar to click and remove the background.<br><br><strong>iPhone "Lift Subject from Background"</strong><br>In the Photos app on iOS 16 or later, long-press on a subject to automatically cut it out. Send the cutout to your Mac and use it as a transparent PNG.<br><br><strong>Web Services</strong><br>Services like remove.bg let you upload a photo and easily create a transparent image.',
+          a27: 'You can create transparent PNGs right within Sobani — even from JPEG, HEIC, and other non-PNG formats, as well as regular (non-transparent) PNGs.<br><br><strong>Sobani\'s Background Removal (Recommended)</strong><br>On macOS 14 (Sonoma) or later, you can remove backgrounds directly in Sobani. Right-click an image, select "Replace Image (Keep Layout)" > "Remove Background," and a transparent PNG of just the subject is automatically created from JPEG, HEIC, GIF, TIFF, and even regular (non-transparent) PNGs. No external tools needed — the easiest method available.<br><br><strong>macOS Preview</strong><br>Open an image in Preview, then use "Instant Alpha" from the markup toolbar to click and remove the background.<br><br><strong>iPhone "Lift Subject from Background"</strong><br>In the Photos app on iOS 16 or later, long-press on a subject to automatically cut it out. Send the cutout to your Mac and use it as a transparent PNG.<br><br><strong>Web Services</strong><br>Services like remove.bg let you upload a photo and easily create a transparent image.',
           q28: "Does Sobani work with multiple monitors?",
-          a28: 'Yes, Sobani fully supports multi-monitor setups. You can freely place images on each monitor, and positions are remembered per-monitor.<br><br>For example, a character on your main monitor and a pet photo on an external display — mix and match however you like. Sobani also works great in MacBook clamshell mode (external monitor only).<br><br>For details on window restoration after disconnection, see "Windows moved after monitor disconnection or sleep."',
-          q29: "What is the configuration file format? (Advanced)",
-          a29: 'Window states are stored in JSON format at <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/window_states.json</code>.<br><br>Fields in each entry:<br>• <code class="text-sm">windowId</code> — Unique window ID<br>• <code class="text-sm">imagePath</code> — Path to the displayed image<br>• <code class="text-sm">x</code>, <code class="text-sm">y</code> — Window position<br>• <code class="text-sm">width</code>, <code class="text-sm">height</code> — Window size<br>• <code class="text-sm">isFlipped</code> — Horizontal flip<br>• <code class="text-sm">rotation</code> — Rotation angle (0–360)<br>• <code class="text-sm">opacity</code> — Opacity (0.1–1.0)<br>• <code class="text-sm">zOrderIndex</code> — Layer order<br><br>If you want to edit this file, make sure to quit Sobani first. Edits made while Sobani is running will be overwritten when it quits.',
+          a28: 'Yes, Sobani fully supports multi-monitor setups. You can freely place images on each monitor, and positions are remembered per-monitor.<br><br>For example, a reference image on your main monitor and a pet photo on an external display — mix and match however you like. Sobani also works great in MacBook clamshell mode (external monitor only).<br><br>For details on window restoration after disconnection, see "Windows moved after monitor disconnection or sleep."',
           q30: "How do I back up and restore my data?",
           a30: 'All of Sobani\'s data is stored in a single folder: <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">~/Library/Application Support/Sobani/</code>.<br><br><strong>Backup</strong><br>Simply copy this entire folder. Use USB drives, cloud storage, Time Machine, or any method you prefer.<br><br><strong>Restore</strong><br>Copy the backed-up folder back to the same location, then launch Sobani. All images, layouts, and settings will be restored.<br><br>Make sure Sobani is not running when you back up or restore.',
           q31: "How do I change the default image?",
@@ -1253,33 +1296,35 @@
           q33: "Can I use high-resolution DSLR/mirrorless photos?",
           a33: 'Yes, they work right out of the camera. See "What image formats are supported?" for the full list.<br><br>The display size can be freely adjusted from 100px to 6000px using scroll, so even large photos can be scaled down to fit comfortably on screen.',
           q34: "What is the background removal feature?",
-          a34: "It's an AI-powered background removal feature built into Sobani. It automatically cuts out subjects from images with backgrounds (like JPEG photos) and saves them as transparent PNGs. Available on macOS 14 (Sonoma) and later, it uses the built-in Vision framework so no external tools are needed. Access it from the right-click menu under 'Change Image' \u2192 'Remove Background'.",
+          a34: "It's an AI-powered background removal feature built into Sobani. It automatically cuts out subjects from images with backgrounds (like JPEG photos) and saves them as transparent PNGs. Available on macOS 14 (Sonoma) and later, it uses the built-in Vision framework so no external tools are needed. Access it from the right-click menu under 'Replace Image (Keep Layout)' > 'Remove Background'.",
           q35: "Which images can use background removal?",
           a35: "It works with images that have backgrounds, such as JPEG, GIF, TIFF, and HEIC formats. For images that are already transparent (transparent PNGs), the menu item is automatically disabled. Results are saved as 'original-filename_nobg.png' in the image library.",
           q36: "Can I add images via drag and drop?",
           a36: 'Just drag and drop image files directly onto a Sobani window to add them as a new window. Direct drops from Finder and web browsers are also supported.<br><br>Hold <strong>Option</strong> while dropping to replace the existing window\'s image instead of adding a new window. The position, size, rotation, and opacity are preserved, so you can swap images without disturbing your layout.',
           q37: "When I replace an image, are the position and size preserved?",
-          a37: 'Yes. When you replace an image via the right-click "Change Image" option, the window\'s position, size, rotation angle, and opacity are all preserved. The same applies when you Option + drag and drop.<br><br>This is convenient for swapping images by season or event — no need to rebuild your layout from scratch.',
-          q38: "About the first-launch guide",
-          a38: 'A 3-step guide appears on your first launch.<br><br><strong>Step 1:</strong> Drag to move<br><strong>Step 2:</strong> Scroll to resize<br><strong>Step 3:</strong> Right-click for the menu<br><br>You can skip the guide at any time. Once completed, it won\'t appear again.',
+          a37: 'Yes. When you change an image via right-click "Replace Image (Keep Layout)" > "Change Image...", the window\'s position, size, rotation angle, and opacity are all preserved. The same applies when you Option + drag and drop.<br><br>This is convenient for swapping images by season or event — no need to rebuild your layout from scratch.',
           q39: "I can't find the menu bar icon",
           a39: 'Sobani\'s icon appears in the right side of the menu bar (near the clock and Wi-Fi icons).<br><br>If you have many menu bar icons, Sobani\'s icon may be hidden because it doesn\'t fit in the available space. Hold <strong>Command</strong> and drag icons to rearrange them within the menu bar.<br><br>If you still can\'t find it, check whether Sobani is running. Search for "Sobani" in Activity Monitor, or try launching it again from the Applications folder.',
-          q40: "How do I show Sobani images in a stream (OBS, etc.)?",
-          a40: 'Since Sobani windows are always on top, they automatically appear in OBS and other streaming software when using "Display Capture."<br><br>If you want to capture only specific Sobani windows, you can use "Window Capture" to select them individually.<br><br>To hide Sobani during a stream, press <strong>Option + H</strong> to hide all windows at once.',
+          q55: "Can I use it for design references or study materials?",
+          a55: "Yes, Sobani is perfect for pinning design references, study materials, and cheat sheets on top of your workspace. Keep reference images always visible without switching apps. Use Ghost Mode to make them click-through so they never interfere with your work.",
+          q56: "Can I use it as an overlay for streaming or video production?",
+          a56: 'Yes. Display image assets on top and capture them with OBS or other streaming software using "Window Capture" to show them as overlays. Combined with Ghost Mode, images stay click-through and won\'t interfere with your workflow. Great for VTuber streaming setups and video production.',
+          q57: "Can I switch layouts between work and hobby?",
+          a57: 'Yes. Use the Layout Presets feature to save and switch between different window arrangements with one click. For example, save a "Work" preset with reference materials and a "Hobby" preset with your favorite images, then switch instantly between them.',
           q41: "Tips for easily swapping images by season or event?",
-          a41: 'There are several easy ways to swap images.<br><br><strong>Method 1: Right-click "Change Image"</strong><br>Replaces just the image while preserving position, size, rotation, and opacity.<br><br><strong>Method 2: Option + Drag & Drop</strong><br>Hold Option while dropping a new image to replace in-place, keeping the same layout.<br><br>If you\'re making major layout changes, we recommend backing up your data folder first. Have fun redecorating your desktop with seasonal photos and event visuals!',
+          a41: 'There are several easy ways to swap images.<br><br><strong>Method 1: Right-click "Replace Image (Keep Layout)"</strong><br>Changes the image while preserving position, size, rotation, and opacity.<br><br><strong>Method 2: Option + Drag & Drop</strong><br>Hold Option while dropping a new image to replace in-place, keeping the same layout.<br><br>If you\'re making major layout changes, we recommend backing up your data folder first. Have fun redecorating your desktop with seasonal photos and event visuals!',
           q42: "What are Layout Presets?",
           a42: 'Layout Presets let you save your current window arrangement (images, positions, sizes, rotation, opacity) with a name and restore it with one click. Access it from the "Layout" menu in the menu bar. Use "Save Current Layout..." to save, and click a preset name to load it. It\'s convenient to save layouts for different scenes like work, streaming, or relaxation.',
           q43: "Where are Layout Presets saved?",
           a43: 'Layout presets are saved as individual JSON files in the ~/Library/Application Support/Sobani/layouts/ folder. You can copy these files to another Mac to migrate your layouts. Note that the images used in the layout must also exist at the same paths.',
           q44: "Can I position images beyond screen edges or above the menu bar?",
-          a44: 'Yes. Transparent PNG images can be freely positioned beyond screen edges, including above the menu bar. This allows creative arrangements like a character peeking from the edge of the screen. The position is accurately restored when the app is restarted.',
+          a44: 'Yes. Transparent PNG images can be freely positioned beyond screen edges, including above the menu bar. This allows image placements that extend beyond the edges of the screen. The position is accurately restored when the app is restarted.',
           q48: "How do I hide individual windows?",
           a48: 'Select "Hide" from the floating menu (shown on double-click) or from "More" in the right-click menu to hide just that window.<br><br>Hidden windows can be restored individually from "Hidden Windows" in the status bar menu. You can also use Option + H to show all windows at once. The hidden state is preserved even after quitting the app.',
           q49: "Can I crop images in circle or rounded rectangle shapes?",
           a49: "Yes, you can select from rectangle, circle, or rounded rectangle shapes using the shape selector in the crop editor. Shape cropping works alongside other features like aspect ratio presets and straighten correction.",
           q50: "How do I change the appearance mode (theme)?",
-          a50: 'Select "Appearance Mode" from "Settings" in the status bar menu. Choose from three modes: Auto, Light, or Dark. "Auto" follows the system setting. Your selection is preserved even after restarting the app.',
+          a50: 'Select "Theme" from "Settings" in the status bar menu. Choose from three modes: Auto, Light, or Dark. "Auto" follows the system setting. Your selection is preserved even after restarting the app.',
           q51: "How do I open the Management Panel?",
           a51: 'Click the Sobani icon in the menu bar and select "Open Management Panel". The panel appears as a floating window, so you can continue using your desktop while managing settings.',
           q52: "How do I change or reset hotkeys?",

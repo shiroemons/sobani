@@ -64,7 +64,7 @@ enum MenuStateUtils {
 
     // MARK: - Text Formatting
 
-    /// 「表示中: X体」テキストを生成する
+    /// 「表示中: X」テキストを生成する
     static func formatWindowCountText(
         count: Int,
         isHidden: Bool,
