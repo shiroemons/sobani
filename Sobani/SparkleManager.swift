@@ -46,7 +46,7 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     /// LSUIElement アプリでダイアログが前面に表示されるよう
     /// NSApp をアクティブ化してから実行する。
     @objc func checkForUpdates(_ sender: Any?) {
-        NSApp.activate(ignoringOtherApps: true)
+        bringAppToForeground()
         updater.checkForUpdates()
     }
 
@@ -63,6 +63,17 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     /// アップデート確認が現在可能かどうか。
     var canCheckForUpdates: Bool {
         updater.canCheckForUpdates
+    }
+
+    // MARK: - Private Helpers
+
+    private func bringAppToForeground() {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func restoreBackgroundPolicy() {
+        NSApp.setActivationPolicy(.accessory)
     }
 
     // MARK: - SPUUpdaterDelegate
@@ -104,13 +115,31 @@ extension SparkleManager: @preconcurrency SPUStandardUserDriverDelegate {
         forUpdate update: SUAppcastItem,
         state: SPUUserUpdateState
     ) {
-        if handleShowingUpdate && !state.userInitiated {
+        if handleShowingUpdate {
             Task { @MainActor [weak self] in
-                NSApp.activate(ignoringOtherApps: true)
+                self?.bringAppToForeground()
                 self?.logger.info(
-                    "Sparkle: スケジュールされた更新のためアプリをアクティブ化しました"
+                    "Sparkle: 更新ダイアログ表示のためアプリを前面に移動しました"
                 )
             }
+        }
+    }
+
+    nonisolated func standardUserDriverWillShowModalAlert() {
+        Task { @MainActor [weak self] in
+            self?.bringAppToForeground()
+            self?.logger.info(
+                "Sparkle: モーダルアラート表示のためアプリを前面に移動しました"
+            )
+        }
+    }
+
+    nonisolated func standardUserDriverWillFinishUpdateSession() {
+        Task { @MainActor [weak self] in
+            self?.restoreBackgroundPolicy()
+            self?.logger.info(
+                "Sparkle: 更新セッション終了、アクティベーションポリシーを復元しました"
+            )
         }
     }
 }
