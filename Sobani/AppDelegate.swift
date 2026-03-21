@@ -51,7 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         if savedStates.isEmpty {
             guard let image = ImageManager.shared.defaultImage() else {
-                logger.error("Failed to load character image")
+                logger.error("Failed to load default image")
                 return
             }
             let imageWindow = ImageWindow(image: image)

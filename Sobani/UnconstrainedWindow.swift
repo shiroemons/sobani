@@ -3,7 +3,7 @@ import Cocoa
 // MARK: - Unconstrained Window
 
 /// NSWindow subclass that completely disables default screen edge constraints.
-/// Allows transparent character images to be freely positioned beyond screen edges.
+/// Allows transparent images to be freely positioned beyond screen edges.
 /// Safety is ensured by existing mechanisms:
 /// - `WindowState.isPositionVisible()` checks visibility on restore
 /// - `WindowState.adjustedToVisibleArea()` repositions off-screen windows

@@ -195,7 +195,7 @@ final class ImageManager {
         if let url = customDefaultURL, let customImage = NSImage(contentsOf: url) {
             image = customImage
         } else {
-            image = NSImage(named: "character")
+            image = NSImage(named: "default_image")
         }
         cachedDefaultImage = image
         return image
