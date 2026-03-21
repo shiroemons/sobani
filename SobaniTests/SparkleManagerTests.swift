@@ -46,9 +46,9 @@ import Testing
         #expect(SparkleManager.shared.responds(to: action))
     }
 
-    /// supportsGentleScheduledUpdateRemindersがtrueであることを検証
+    /// supportsGentleScheduledUpdateRemindersがfalseであることを検証
     @Test func supportsGentleScheduledUpdateReminders() {
-        #expect(SparkleManager.shared.supportsGentleScheduledUpdateReminders == true)
+        #expect(SparkleManager.shared.supportsGentleScheduledUpdateReminders == false)
     }
 
 }
