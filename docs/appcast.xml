@@ -6,16 +6,16 @@
     <description>Sobani アップデート情報</description>
     <language>ja</language>
     <item>
-      <title>v202603.41</title>
-      <pubDate>Sat, 21 Mar 2026 06:11:06 +0000</pubDate>
+      <title>v202603.42</title>
+      <pubDate>Sat, 21 Mar 2026 06:38:38 +0000</pubDate>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
       <enclosure
-        url="https://github.com/shiroemons/sobani/releases/download/v202603.41/Sobani-universal.dmg"
+        url="https://github.com/shiroemons/sobani/releases/download/v202603.42/Sobani-universal.dmg"
         type="application/octet-stream"
-        sparkle:version="202603.41"
-        sparkle:shortVersionString="202603.41"
-        length="7272843"
-        sparkle:edSignature="2QCF5ZGPLgDTwUEBfVUA5EUu33eSpGh65vR5nbx3vgIp0jwlErPaoe2BczuPd8223PN7bQYvmwcxkumQi82CAw=="
+        sparkle:version="202603.42"
+        sparkle:shortVersionString="202603.42"
+        length="7276486"
+        sparkle:edSignature="me4U7R+k2weh4TJExku++GfaznY9k0R6PQnbznbBO/5S/LXeKejiuHeZf+DUPJWEWL8UngW4tsPA0XSHe4tjAg=="
       />
     </item>
   </channel>
