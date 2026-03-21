@@ -97,7 +97,7 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
 // MARK: - SPUStandardUserDriverDelegate
 
 extension SparkleManager: @preconcurrency SPUStandardUserDriverDelegate {
-    nonisolated var supportsGentleScheduledUpdateReminders: Bool { true }
+    nonisolated var supportsGentleScheduledUpdateReminders: Bool { false }
 
     nonisolated func standardUserDriverWillHandleShowingUpdate(
         _ handleShowingUpdate: Bool,
