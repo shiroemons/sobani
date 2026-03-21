@@ -32,6 +32,9 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
         // 起動時に必ず更新チェックを実行するため、
         // 前回チェック時刻をリセット
         UserDefaults.standard.removeObject(forKey: Self.sparkleLastCheckTimeKey)
+        // ダイアログなしの自動インストールを無効化
+        // （UserDefaultsに保存された値がInfo.plistの設定を上書きするため）
+        UserDefaults.standard.removeObject(forKey: "SUAutomaticallyUpdate")
         do {
             try updater.start()
             logger.info("Sparkle アップデーターを開始しました")
