@@ -33,6 +33,22 @@
         }
       }
     },
+    "menu.quit_without_saving": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "終了（保存しない）"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit Without Saving"
+          }
+        }
+      }
+    },
     "menu.other": {
       "localizations": {
         "ja": {

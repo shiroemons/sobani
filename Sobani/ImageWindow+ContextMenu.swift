@@ -52,10 +52,23 @@ extension ImageWindow {
         menu.addItem(closeItem)
 
         let quitItem = NSMenuItem(title: L("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.keyEquivalentModifierMask = [.command]
         quitItem.tag = MenuItemTag.quit.rawValue
         quitItem.target = self
         quitItem.image = SFSymbolUtils.icon("power")
         menu.addItem(quitItem)
+
+        let quitWithoutSavingItem = NSMenuItem(
+            title: L("menu.quit_without_saving"),
+            action: #selector(quitAppWithoutSaving),
+            keyEquivalent: "q"
+        )
+        quitWithoutSavingItem.keyEquivalentModifierMask = [.command, .option]
+        quitWithoutSavingItem.isAlternate = true
+        quitWithoutSavingItem.tag = MenuItemTag.quitWithoutSaving.rawValue
+        quitWithoutSavingItem.target = self
+        quitWithoutSavingItem.image = SFSymbolUtils.icon("power")
+        menu.addItem(quitWithoutSavingItem)
         imageView.menu = menu
     }
 
@@ -250,7 +263,8 @@ extension ImageWindow {
         .addNewWindowSubmenu: "image.add_display",
         .otherSubmenu: "menu.other",
         .close: "menu.close_image",
-        .quit: "menu.quit"
+        .quit: "menu.quit",
+        .quitWithoutSaving: "menu.quit_without_saving"
     ]
 
     var localizedDisplayName: String {

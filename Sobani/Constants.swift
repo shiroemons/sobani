@@ -433,6 +433,7 @@ enum MenuItemTag: Int, CaseIterable, Sendable {
     case opacitySliderContext = 1036
     case hideWindowToggle = 1037
     case managementPanel = 1038
+    case quitWithoutSaving = 1039
 }
 
 enum AppTheme: String, CaseIterable, Sendable {

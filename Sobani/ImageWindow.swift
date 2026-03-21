@@ -295,6 +295,10 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         delegate?.requestQuit()
     }
 
+    @objc func quitAppWithoutSaving() {
+        delegate?.requestQuitWithoutSaving()
+    }
+
     @objc func resetDisplay() {
         if isGhostMode {
             setGhostMode(false)
@@ -518,4 +522,5 @@ protocol ImageWindowDelegate: AnyObject {
     func imageWindowDidBecomeActive(_ sender: ImageWindow)
     func imageWindowDidChangeHidden(_ sender: ImageWindow)
     func requestQuit()
+    func requestQuitWithoutSaving()
 }

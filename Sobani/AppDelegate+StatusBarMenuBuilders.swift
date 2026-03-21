@@ -73,9 +73,21 @@ extension AppDelegate {
             action: #selector(quitFromMenu),
             keyEquivalent: "q"
         )
+        quitItem.keyEquivalentModifierMask = [.command]
         quitItem.target = self
         quitItem.image = menuIcon("power")
         menu.addItem(quitItem)
+
+        let quitWithoutSavingItem = NSMenuItem(
+            title: L("menu.quit_without_saving"),
+            action: #selector(quitWithoutSavingFromMenu),
+            keyEquivalent: "q"
+        )
+        quitWithoutSavingItem.keyEquivalentModifierMask = [.command, .option]
+        quitWithoutSavingItem.isAlternate = true
+        quitWithoutSavingItem.target = self
+        quitWithoutSavingItem.image = menuIcon("power")
+        menu.addItem(quitWithoutSavingItem)
     }
 
     func buildAdjustmentMenuItems(

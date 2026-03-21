@@ -16,6 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var zOrderedWindows: [ImageWindow] = []
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
+    private var shouldSkipSave = false
     var areWindowsHidden = false
     // internal (not private) because AppDelegate+Hotkey.swift (a separate file) both reads
     // and writes these properties in setupHotkeyMonitors() / unregisterHotkeyMonitors().
@@ -243,6 +244,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func requestQuit() { quitFromMenu() }
 
+    @objc func quitWithoutSavingFromMenu() {
+        shouldSkipSave = true
+        shouldTerminate = true
+        NSApplication.shared.terminate(nil)
+    }
+
+    func requestQuitWithoutSaving() { quitWithoutSavingFromMenu() }
+
     func prepareShouldTerminate() {
         shouldTerminate = true
     }
@@ -291,12 +300,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        let states = captureCurrentWindowStates()
-        WindowStateManager.shared.saveStates(states)
-        screenRestorationManager.savePending()
-
+        if !shouldSkipSave {
+            let states = captureCurrentWindowStates()
+            WindowStateManager.shared.saveStates(states)
+            screenRestorationManager.savePending()
+        }
         unregisterHotkeyMonitors()
-
         teardownScreenRestorationObservers()
     }
 
