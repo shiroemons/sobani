@@ -1,8 +1,8 @@
 import Cocoa
 
-// MARK: - CharacterWindow + Background Removal
+// MARK: - ImageWindow + Background Removal
 
-extension CharacterWindow {
+extension ImageWindow {
     @objc func removeBackground() {
         removeBackground(completion: nil)
     }

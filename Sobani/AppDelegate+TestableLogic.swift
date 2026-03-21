@@ -19,13 +19,13 @@ extension AppDelegate {
         }
     }
 
-    /// WindowState から CharacterWindow を生成・設定して返す共通ファクトリメソッド。
+    /// WindowState から ImageWindow を生成・設定して返す共通ファクトリメソッド。
     /// restore(from:) は呼び出さないため、呼び出し側で必要に応じて呼び出すこと。
     /// - Parameters:
     ///   - state: 復元元のウィンドウ状態
     ///   - windowId: 使用するウィンドウID。nil の場合は state.windowId を使用する。
-    /// - Returns: 設定済みの CharacterWindow（restore 前）
-    func createCharacterWindow(from state: WindowState, windowId: Int? = nil) -> CharacterWindow {
+    /// - Returns: 設定済みの ImageWindow（restore 前）
+    func createImageWindow(from state: WindowState, windowId: Int? = nil) -> ImageWindow {
         let registeredImage = ImageManager.shared.loadRegisteredImage(named: state.imageName)
         let resolved = Self.resolveImageName(
             state.imageName,
@@ -38,11 +38,11 @@ extension AppDelegate {
         } else {
             image = registeredImage ?? NSImage()
         }
-        let charWindow = CharacterWindow(image: image)
-        charWindow.delegate = self
-        charWindow.displayName = resolved.resolvedName
-        charWindow.windowId = windowId ?? state.windowId
-        return charWindow
+        let imageWindow = ImageWindow(image: image)
+        imageWindow.delegate = self
+        imageWindow.displayName = resolved.resolvedName
+        imageWindow.windowId = windowId ?? state.windowId
+        return imageWindow
     }
 
     /// レガシーウィンドウID（legacyId）を持つ要素に新しいIDを割り当てる。

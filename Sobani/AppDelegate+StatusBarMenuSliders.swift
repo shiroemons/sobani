@@ -38,15 +38,15 @@ extension AppDelegate {
         }
     }
 
-    func buildPerWindowGhostAlphaSliderItem(for charWindow: CharacterWindow) -> NSMenuItem {
+    func buildPerWindowGhostAlphaSliderItem(for imageWindow: ImageWindow) -> NSMenuItem {
         let item = NSMenuItem()
         let containerWidth = AppConstants.ghostAlphaSliderContainerWidth
         let containerHeight = AppConstants.ghostAlphaSliderContainerHeight
         let container = NSView(
             frame: NSRect(x: 0, y: 0, width: containerWidth, height: containerHeight)
         )
-        let isCustom = charWindow.customGhostAlpha != nil
-        let currentAlpha = charWindow.effectiveGhostAlpha
+        let isCustom = imageWindow.customGhostAlpha != nil
+        let currentAlpha = imageWindow.effectiveGhostAlpha
 
         let checkboxX = AppConstants.ghostAlphaCheckboxX
         let checkboxSize = AppConstants.ghostAlphaCheckboxSize
@@ -63,7 +63,7 @@ extension AppDelegate {
             height: checkboxSize
         )
         checkbox.state = isCustom ? .on : .off
-        checkbox.tag = charWindow.window.windowNumber
+        checkbox.tag = imageWindow.window.windowNumber
         container.addSubview(checkbox)
 
         let sliderX: CGFloat = checkboxX + checkboxTrailingGap
@@ -85,7 +85,7 @@ extension AppDelegate {
             height: sliderHeight
         )
         slider.isContinuous = true
-        slider.tag = charWindow.window.windowNumber
+        slider.tag = imageWindow.window.windowNumber
         slider.isEnabled = isCustom
         slider.trackFillColor = .systemGray
         container.addSubview(slider)
@@ -171,7 +171,7 @@ extension AppDelegate {
         return slider
     }
 
-    func buildPerWindowOpacitySliderItem(for charWindow: CharacterWindow) -> NSMenuItem {
+    func buildPerWindowOpacitySliderItem(for imageWindow: ImageWindow) -> NSMenuItem {
         let item = NSMenuItem()
         let containerHeight = AppConstants.opacitySliderContainerHeight
         let topRowH = AppConstants.opacitySliderTopRowHeight
@@ -190,13 +190,13 @@ extension AppDelegate {
         result.iconView.frame.origin.y = topRowIconY
         result.label.frame.origin.y = topRowIconY + (iconSize - result.label.frame.height) / 2
 
-        let opacity = charWindow.imageView.opacityLevel
+        let opacity = imageWindow.imageView.opacityLevel
         let sliderX: CGFloat = iconX + iconSize + 4
         let slider = makeSlider(
             value: opacity,
             range: AppConstants.opacityMin...AppConstants.opacityMax,
             sliderX: sliderX,
-            tag: charWindow.window.windowNumber,
+            tag: imageWindow.window.windowNumber,
             action: #selector(perWindowOpacitySliderChanged(_:))
         )
         slider.frame.origin.y = (bottomRowH - AppConstants.ghostAlphaSliderHeight) / 2

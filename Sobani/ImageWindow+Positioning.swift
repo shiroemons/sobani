@@ -1,8 +1,8 @@
 import AppKit
 
-// MARK: - CharacterWindow + Positioning
+// MARK: - ImageWindow + Positioning
 
-extension CharacterWindow {
+extension ImageWindow {
     func centerOnScreen() {
         guard let screen = window.screen ?? NSScreen.main else { return }
         let screenFrame = screen.visibleFrame

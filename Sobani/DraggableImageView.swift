@@ -12,7 +12,7 @@ final class DraggableImageView: NSImageView {
     let maxHeight: CGFloat = AppConstants.maxImageHeight
     private var initialMouseInWindow: NSPoint = .zero
     private var dragStartScreenLocation: NSPoint = .zero
-    private var cachedAllWindows: [CharacterWindow]?
+    private var cachedAllWindows: [ImageWindow]?
     private var isDraggingAll = false
     private var isSnapEnabled = false
     private var cachedOtherWindowFrames: [CGRect]?
@@ -61,10 +61,10 @@ final class DraggableImageView: NSImageView {
         registerForDraggedTypes([.fileURL])
     }
 
-    weak var characterWindowDelegate: CharacterWindowDelegate?
+    weak var imageWindowDelegate: ImageWindowDelegate?
 
-    private var allCharacterWindows: [CharacterWindow] {
-        characterWindowDelegate?.allCharacterWindows ?? []
+    private var allImageWindows: [ImageWindow] {
+        imageWindowDelegate?.allImageWindows ?? []
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -80,10 +80,10 @@ final class DraggableImageView: NSImageView {
         if isDraggingAll {
             guard let currentWindow = window else { return }
             dragStartScreenLocation = currentWindow.convertPoint(toScreen: event.locationInWindow)
-            cachedAllWindows = allCharacterWindows
+            cachedAllWindows = allImageWindows
         } else if let currentWindow = window {
             initialMouseInWindow = event.locationInWindow
-            let allWindows = allCharacterWindows
+            let allWindows = allImageWindows
             cachedOtherWindowFrames = allWindows
                 .filter { $0.window !== currentWindow }
                 .map { $0.window.frame }
@@ -99,11 +99,11 @@ final class DraggableImageView: NSImageView {
             let deltaX = screenPoint.x - dragStartScreenLocation.x
             let deltaY = screenPoint.y - dragStartScreenLocation.y
             dragStartScreenLocation = screenPoint
-            for charWindow in cachedAllWindows ?? [] {
-                var origin = charWindow.window.frame.origin
+            for imageWindow in cachedAllWindows ?? [] {
+                var origin = imageWindow.window.frame.origin
                 origin.x += deltaX
                 origin.y += deltaY
-                charWindow.window.setFrameOrigin(origin)
+                imageWindow.window.setFrameOrigin(origin)
             }
         } else if let currentWindow = window {
             let current = event.locationInWindow
@@ -156,10 +156,10 @@ final class DraggableImageView: NSImageView {
         }
         let scaleFactor = Self.scaleFactor(fromScrollDelta: delta)
         if event.modifierFlags.contains(.option) {
-            let allWindows = allCharacterWindows
-            for charWindow in allWindows {
+            let allWindows = allImageWindows
+            for imageWindow in allWindows {
                 resizeWindow(
-                    charWindow.window, imageView: charWindow.imageView, scaleFactor: scaleFactor)
+                    imageWindow.window, imageView: imageWindow.imageView, scaleFactor: scaleFactor)
             }
         } else {
             guard let window = window else { return }

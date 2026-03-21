@@ -1,8 +1,8 @@
 import Cocoa
 
-// MARK: - CharacterWindow + Context Menu
+// MARK: - ImageWindow + Context Menu
 
-extension CharacterWindow {
+extension ImageWindow {
     func setupMenu() {
         let menu = NSMenu()
         menu.delegate = self
@@ -240,9 +240,9 @@ extension CharacterWindow {
     }
 }
 
-// MARK: - CharacterWindow + Menu Title Update
+// MARK: - ImageWindow + Menu Title Update
 
-extension CharacterWindow {
+extension ImageWindow {
     nonisolated(unsafe) private static let menuTitleMap: [MenuItemTag: String] = [
         .changeImageSubmenu: "image.change",
         .flipContext: "adjust.flip",
@@ -276,9 +276,9 @@ extension CharacterWindow {
     }
 }
 
-// MARK: - CharacterWindow + Highlight Border
+// MARK: - ImageWindow + Highlight Border
 
-extension CharacterWindow {
+extension ImageWindow {
     private static let highlightBorderWidth: CGFloat = 3.0
 
     func showHighlightBorder() {

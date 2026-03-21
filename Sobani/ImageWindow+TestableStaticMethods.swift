@@ -2,7 +2,7 @@ import Cocoa
 
 // MARK: - Testable Static Methods
 
-extension CharacterWindow {
+extension ImageWindow {
     /// ウィンドウフレームから画像の原点座標を計算
     nonisolated static func imageOrigin(windowFrame: NSRect, imageViewSize: NSSize) -> CGPoint {
         CGPoint(

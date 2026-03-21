@@ -5,45 +5,45 @@ import AppKit
 extension ManagementPanelViewModel {
 
     func flipWindow(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.toggleFlip()
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.toggleFlip()
         // toggleFlip fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func openCropEditor(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.enterCropMode()
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.enterCropMode()
     }
 
     func openAdjustPanel(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.showAdjustmentPanel()
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.showAdjustmentPanel()
     }
 
     func removeBackground(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.removeBackground { [weak self] in
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.removeBackground { [weak self] in
             self?.triggerRefresh()
         }
     }
 
     func resetDisplay(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.resetDisplay()
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.resetDisplay()
         // resetDisplay fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     // MARK: - Ghost Mode Custom Opacity
 
     func setCustomGhostAlpha(windowId: Int, alpha: CGFloat) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setCustomGhostAlpha(alpha)
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.setCustomGhostAlpha(alpha)
         // setCustomGhostAlpha fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
     func clearCustomGhostAlpha(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setCustomGhostAlpha(nil)
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.setCustomGhostAlpha(nil)
         // setCustomGhostAlpha fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
@@ -57,7 +57,7 @@ extension ManagementPanelViewModel {
                 if let savedName = ImageManager.shared.registerImage(from: url) {
                     if createWindow {
                         appDelegate?.createNewWindow(imageName: savedName)
-                        // createNewWindow fires characterWindowListDidChange
+                        // createNewWindow fires imageWindowListDidChange
                         // → triggerRefresh handled by observer
                     }
                     // registerImage fires registeredImagesDidChange
@@ -105,20 +105,20 @@ extension ManagementPanelViewModel {
     func deleteWindows(windowIds: Set<Int>) {
         guard let appDelegate else { return }
         let windowsToDelete = appDelegate.zOrderedWindows.filter { windowIds.contains($0.windowId) }
-        for charWindow in windowsToDelete {
-            removeCharacterWindow(charWindow)
+        for imageWindow in windowsToDelete {
+            removeImageWindow(imageWindow)
         }
         selectedWindowIds.subtract(windowIds)
     }
 
     func duplicateWindow(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        appDelegate?.createNewWindow(imageName: charWindow.displayName)
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        appDelegate?.createNewWindow(imageName: imageWindow.displayName)
     }
 
     func centerWindow(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.centerOnScreen()
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.centerOnScreen()
         triggerRefresh()
     }
 
@@ -127,8 +127,8 @@ extension ManagementPanelViewModel {
         triggerRefresh()
     }
 
-    fileprivate func removeCharacterWindow(_ charWindow: CharacterWindow) {
-        appDelegate?.closeCharacterWindow(charWindow)
+    fileprivate func removeImageWindow(_ imageWindow: ImageWindow) {
+        appDelegate?.closeImageWindow(imageWindow)
     }
 
     // MARK: - Layout Delegate Methods

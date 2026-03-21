@@ -87,14 +87,14 @@ extension AppDelegate {
         screenChangeDebounceTimer?.invalidate()
 
         screenRestorationManager.clearAll()
-        for charWindow in zOrderedWindows {
-            let state = WindowStateManager.captureState(from: charWindow)
-            wakeContext.states[charWindow.windowId] = state
+        for imageWindow in zOrderedWindows {
+            let state = WindowStateManager.captureState(from: imageWindow)
+            wakeContext.states[imageWindow.windowId] = state
             // ウィンドウフレームの原点を直接保存（captureState のイメージ中心座標変換を回避）
-            wakeContext.windowOrigins[charWindow.windowId] = charWindow.window.frame.origin
-            if let screen = NSScreen.screen(containing: charWindow.window.frame),
+            wakeContext.windowOrigins[imageWindow.windowId] = imageWindow.window.frame.origin
+            if let screen = NSScreen.screen(containing: imageWindow.window.frame),
                let displayID = screen.displayID {
-                wakeContext.displayIDs[charWindow.windowId] = displayID
+                wakeContext.displayIDs[imageWindow.windowId] = displayID
                 wakeContext.screenFrames[displayID] = screen.frame
             }
         }
@@ -166,14 +166,14 @@ extension AppDelegate {
         let availableScreens = currentAvailableScreens
         var restoredAll = true
 
-        for charWindow in zOrderedWindows {
-            guard wakeContext.states[charWindow.windowId] != nil else { continue }
-            guard let savedOrigin = wakeContext.windowOrigins[charWindow.windowId] else { continue }
+        for imageWindow in zOrderedWindows {
+            guard wakeContext.states[imageWindow.windowId] != nil else { continue }
+            guard let savedOrigin = wakeContext.windowOrigins[imageWindow.windowId] else { continue }
 
-            let savedDisplayID = wakeContext.displayIDs[charWindow.windowId]
+            let savedDisplayID = wakeContext.displayIDs[imageWindow.windowId]
             let targetScreen = findTargetScreen(
                 displayID: savedDisplayID,
-                windowId: charWindow.windowId,
+                windowId: imageWindow.windowId,
                 availableScreens: availableScreens
             )
 
@@ -181,12 +181,12 @@ extension AppDelegate {
                 let newOrigin = computeRestoredOrigin(
                     savedOrigin: savedOrigin, savedDisplayID: savedDisplayID, currentScreen: screen
                 )
-                let windowSize = charWindow.window.frame.size
+                let windowSize = imageWindow.window.frame.size
                 let clamped = ScreenRestorationUtils.clampOrigin(
                     newOrigin, windowSize: windowSize, to: screen.frame
                 )
-                charWindow.window.setFrameOrigin(clamped)
-                let wid = charWindow.windowId
+                imageWindow.window.setFrameOrigin(clamped)
+                let wid = imageWindow.windowId
                 let screenFrame = screen.frame
                 let savedDesc = NSStringFromPoint(savedOrigin)
                 let computedDesc = NSStringFromPoint(newOrigin)
@@ -201,7 +201,7 @@ extension AppDelegate {
             } else {
                 restoredAll = false
                 let displayIDValue = savedDisplayID ?? AppConstants.unknownDisplayID
-                let errMsg = "restore #\(charWindow.windowId): screen not found"
+                let errMsg = "restore #\(imageWindow.windowId): screen not found"
                     + " (displayID=\(displayIDValue))"
                 Self.screenRestorationLogger.error("\(errMsg, privacy: .public)")
             }
@@ -239,8 +239,8 @@ extension AppDelegate {
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
             let adjusted = savedState.adjustedToVisibleArea(on: ScreenInfo.current())
 
-            if let charWindow = zOrderedWindows.first(where: { $0.windowId == windowId }) {
-                charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
+            if let imageWindow = zOrderedWindows.first(where: { $0.windowId == windowId }) {
+                imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
             }
             screenRestorationManager.addPending(
                 windowId: windowId, originalState: savedState,
@@ -267,14 +267,14 @@ extension AppDelegate {
         // フェーズ0: スリープなしのモニター切断対応
         // wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
         let screens = ScreenInfo.current()
-        for charWindow in zOrderedWindows {
-            let currentState = WindowStateManager.captureState(from: charWindow)
+        for imageWindow in zOrderedWindows {
+            let currentState = WindowStateManager.captureState(from: imageWindow)
             guard !currentState.isPositionVisible(on: screens) else { continue }
             let adjusted = currentState.adjustedToVisibleArea(on: screens)
-            charWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
+            imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
             // displayID は切断後には取得不可のため 0 を使用（位置ベースで復元判定）
             screenRestorationManager.addPending(
-                windowId: charWindow.windowId,
+                windowId: imageWindow.windowId,
                 originalState: currentState,
                 displayID: AppConstants.unknownDisplayID,
                 adjustedOriginX: adjusted.originX,
@@ -286,7 +286,7 @@ extension AppDelegate {
         let pendingAvailableScreens = currentAvailableScreens
         let restorable = screenRestorationManager.restorableEntries()
         for entry in restorable {
-            guard let charWindow = zOrderedWindows.first(where: { $0.windowId == entry.windowId })
+            guard let imageWindow = zOrderedWindows.first(where: { $0.windowId == entry.windowId })
             else {
                 screenRestorationManager.removePending(windowId: entry.windowId)
                 continue
@@ -296,12 +296,12 @@ extension AppDelegate {
                 entry, availableScreens: pendingAvailableScreens
             )
             if let screen = targetScreen {
-                let windowSize = charWindow.window.frame.size
+                let windowSize = imageWindow.window.frame.size
                 let origin = NSPoint(x: entry.originalState.originX, y: entry.originalState.originY)
                 let clamped = ScreenRestorationUtils.clampOrigin(
                     origin, windowSize: windowSize, to: screen.frame
                 )
-                charWindow.window.setFrameOrigin(clamped)
+                imageWindow.window.setFrameOrigin(clamped)
             }
             screenRestorationManager.removePending(windowId: entry.windowId)
         }

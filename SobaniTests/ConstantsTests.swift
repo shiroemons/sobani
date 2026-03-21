@@ -333,19 +333,19 @@ import os.log
 
     // MARK: - Notification Names
 
-    /// characterWindowStateDidChange通知名が正しいことを検証
-    @Test func notificationName_characterWindowStateDidChange() {
+    /// imageWindowStateDidChange通知名が正しいことを検証
+    @Test func notificationName_imageWindowStateDidChange() {
         #expect(
-            AppConstants.characterWindowStateDidChange.rawValue
-                == "com.shiroemons.Sobani.characterWindowStateDidChange"
+            AppConstants.imageWindowStateDidChange.rawValue
+                == "com.shiroemons.Sobani.imageWindowStateDidChange"
         )
     }
 
-    /// characterWindowListDidChange通知名が正しいことを検証
-    @Test func notificationName_characterWindowListDidChange() {
+    /// imageWindowListDidChange通知名が正しいことを検証
+    @Test func notificationName_imageWindowListDidChange() {
         #expect(
-            AppConstants.characterWindowListDidChange.rawValue
-                == "com.shiroemons.Sobani.characterWindowListDidChange"
+            AppConstants.imageWindowListDidChange.rawValue
+                == "com.shiroemons.Sobani.imageWindowListDidChange"
         )
     }
 }

@@ -1,8 +1,8 @@
 import Cocoa
 
-// MARK: - CharacterWindow + Other Submenu
+// MARK: - ImageWindow + Other Submenu
 
-extension CharacterWindow {
+extension ImageWindow {
     func populateOtherSubmenu(_ otherSubmenu: NSMenu, names: [String]) {
         otherSubmenu.removeAllItems()
 

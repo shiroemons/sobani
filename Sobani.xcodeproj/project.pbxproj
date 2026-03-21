@@ -43,7 +43,7 @@
 		ST000002 /* SparkleManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ST000001 /* SparkleManagerTests.swift */; };
 		DD000001 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000002 /* ImageManager.swift */; };
 		DD000003 /* DraggableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000004 /* DraggableImageView.swift */; };
-		DD000005 /* CharacterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000006 /* CharacterWindow.swift */; };
+		DD000005 /* ImageWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000006 /* ImageWindow.swift */; };
 		DD000007 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000008 /* AppDelegate.swift */; };
 		DD000009 /* WindowStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000010 /* WindowStateManager.swift */; };
 		DD000011 /* WindowStateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000012 /* WindowStateManagerTests.swift */; };
@@ -69,16 +69,16 @@
 		F0CG000002000000000001 /* CropGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CG000001000000000001 /* CropGeometry.swift */; };
 		F0CI000002000000000001 /* CropImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000001000000000001 /* CropImageProcessor.swift */; };
 		F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000003000000000001 /* CropImageProcessorTests.swift */; };
-		F0CBR00002000000000001 /* CharacterWindow+BackgroundRemoval.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CBR00001000000000001 /* CharacterWindow+BackgroundRemoval.swift */; };
-		F0CCM00002000000000001 /* CharacterWindow+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CCM00001000000000001 /* CharacterWindow+ContextMenu.swift */; };
-		F0COS00002000000000001 /* CharacterWindow+OtherSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */; };
-		F0CP000002000000000001 /* CharacterWindow+Positioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CP000001000000000001 /* CharacterWindow+Positioning.swift */; };
+		F0CBR00002000000000001 /* ImageWindow+BackgroundRemoval.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CBR00001000000000001 /* ImageWindow+BackgroundRemoval.swift */; };
+		F0CCM00002000000000001 /* ImageWindow+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CCM00001000000000001 /* ImageWindow+ContextMenu.swift */; };
+		F0COS00002000000000001 /* ImageWindow+OtherSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0COS00001000000000001 /* ImageWindow+OtherSubmenu.swift */; };
+		F0CP000002000000000001 /* ImageWindow+Positioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CP000001000000000001 /* ImageWindow+Positioning.swift */; };
 		F0CSS00002000000000001 /* CropShapeSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CSS00001000000000001 /* CropShapeSelectorView.swift */; };
 		F0CT000002000000000001 /* ConstantsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CT000001000000000001 /* ConstantsTests.swift */; };
 		F0CV000002000000000001 /* CropEditorCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CV000001000000000001 /* CropEditorCanvasView.swift */; };
 		F0CVD00002000000000001 /* CropEditorCanvasView+Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CVD00001000000000001 /* CropEditorCanvasView+Drawing.swift */; };
 		F0CVMH0002000000000001 /* CropEditorCanvasView+MouseHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CVMH0001000000000001 /* CropEditorCanvasView+MouseHandling.swift */; };
-		F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CW000001000000000001 /* CharacterWindowTests.swift */; };
+		F0CW000002000000000001 /* ImageWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CW000001000000000001 /* ImageWindowTests.swift */; };
 		F0DD000002000000000001 /* DragDropUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DD000001000000000001 /* DragDropUtils.swift */; };
 		F0DD000004000000000001 /* DragDropUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DD000003000000000001 /* DragDropUtilsTests.swift */; };
 		F0DI000002000000000001 /* DraggableImageViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DI000001000000000001 /* DraggableImageViewTests.swift */; };
@@ -86,7 +86,7 @@
 		F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0EH000003000000000001 /* CropEditHistoryTests.swift */; };
 		F0GM000002000000000001 /* WindowStateGhostModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0GM000001000000000001 /* WindowStateGhostModeTests.swift */; };
 		F0HK000002000000000001 /* AppDelegate+Hotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HK000001000000000001 /* AppDelegate+Hotkey.swift */; };
-		F0HW000002000000000001 /* CharacterWindow+TestableStaticMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HW000001000000000001 /* CharacterWindow+TestableStaticMethods.swift */; };
+		F0HW000002000000000001 /* ImageWindow+TestableStaticMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0HW000001000000000001 /* ImageWindow+TestableStaticMethods.swift */; };
 		F0IP000002000000000001 /* ImagePreviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0IP000001000000000001 /* ImagePreviewPanel.swift */; };
 		F0JP000002000000000001 /* JSONPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0JP000001000000000001 /* JSONPersistence.swift */; };
 		F0JP000004000000000001 /* JSONPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0JP000003000000000001 /* JSONPersistenceTests.swift */; };
@@ -187,7 +187,7 @@
 		D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContextTests.swift; sourceTree = "<group>"; };
 		DD000002 /* ImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		DD000004 /* DraggableImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraggableImageView.swift; sourceTree = "<group>"; };
-		DD000006 /* CharacterWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterWindow.swift; sourceTree = "<group>"; };
+		DD000006 /* ImageWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageWindow.swift; sourceTree = "<group>"; };
 		DD000008 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DD000010 /* WindowStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateManager.swift; sourceTree = "<group>"; };
 		DD000012 /* WindowStateManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateManagerTests.swift; sourceTree = "<group>"; };
@@ -214,16 +214,16 @@
 		F0CETV0003000000000001 /* CropEditorToolbarViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorToolbarViewTests.swift; sourceTree = "<group>"; };
 		F0CI000001000000000001 /* CropImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessor.swift; sourceTree = "<group>"; };
 		F0CI000003000000000001 /* CropImageProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessorTests.swift; sourceTree = "<group>"; };
-		F0CBR00001000000000001 /* CharacterWindow+BackgroundRemoval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+BackgroundRemoval.swift"; sourceTree = "<group>"; };
-		F0CCM00001000000000001 /* CharacterWindow+ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+ContextMenu.swift"; sourceTree = "<group>"; };
-		F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+OtherSubmenu.swift"; sourceTree = "<group>"; };
-		F0CP000001000000000001 /* CharacterWindow+Positioning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+Positioning.swift"; sourceTree = "<group>"; };
+		F0CBR00001000000000001 /* ImageWindow+BackgroundRemoval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+BackgroundRemoval.swift"; sourceTree = "<group>"; };
+		F0CCM00001000000000001 /* ImageWindow+ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+ContextMenu.swift"; sourceTree = "<group>"; };
+		F0COS00001000000000001 /* ImageWindow+OtherSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+OtherSubmenu.swift"; sourceTree = "<group>"; };
+		F0CP000001000000000001 /* ImageWindow+Positioning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+Positioning.swift"; sourceTree = "<group>"; };
 		F0CSS00001000000000001 /* CropShapeSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropShapeSelectorView.swift; sourceTree = "<group>"; };
 		F0CT000001000000000001 /* ConstantsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConstantsTests.swift; sourceTree = "<group>"; };
 		F0CV000001000000000001 /* CropEditorCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorCanvasView.swift; sourceTree = "<group>"; };
 		F0CVD00001000000000001 /* CropEditorCanvasView+Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CropEditorCanvasView+Drawing.swift"; sourceTree = "<group>"; };
 		F0CVMH0001000000000001 /* CropEditorCanvasView+MouseHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CropEditorCanvasView+MouseHandling.swift"; sourceTree = "<group>"; };
-		F0CW000001000000000001 /* CharacterWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterWindowTests.swift; sourceTree = "<group>"; };
+		F0CW000001000000000001 /* ImageWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageWindowTests.swift; sourceTree = "<group>"; };
 		F0DD000001000000000001 /* DragDropUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragDropUtils.swift; sourceTree = "<group>"; };
 		F0DD000003000000000001 /* DragDropUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragDropUtilsTests.swift; sourceTree = "<group>"; };
 		F0DI000001000000000001 /* DraggableImageViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraggableImageViewTests.swift; sourceTree = "<group>"; };
@@ -231,7 +231,7 @@
 		F0EH000003000000000001 /* CropEditHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditHistoryTests.swift; sourceTree = "<group>"; };
 		F0GM000001000000000001 /* WindowStateGhostModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowStateGhostModeTests.swift; sourceTree = "<group>"; };
 		F0HK000001000000000001 /* AppDelegate+Hotkey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Hotkey.swift"; sourceTree = "<group>"; };
-		F0HW000001000000000001 /* CharacterWindow+TestableStaticMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CharacterWindow+TestableStaticMethods.swift"; sourceTree = "<group>"; };
+		F0HW000001000000000001 /* ImageWindow+TestableStaticMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+TestableStaticMethods.swift"; sourceTree = "<group>"; };
 		F0IP000001000000000001 /* ImagePreviewPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewPanel.swift; sourceTree = "<group>"; };
 		F0JP000001000000000001 /* JSONPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPersistence.swift; sourceTree = "<group>"; };
 		F0JP000003000000000001 /* JSONPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPersistenceTests.swift; sourceTree = "<group>"; };
@@ -349,12 +349,12 @@
 				F0HL000001000000000001 /* AppDelegate+StatusBarMenuHighlight.swift */,
 				F0ALP00001000000000001 /* AppDelegate+LayoutPreset.swift */,
 				F0HK000001000000000001 /* AppDelegate+Hotkey.swift */,
-				DD000006 /* CharacterWindow.swift */,
-				F0CCM00001000000000001 /* CharacterWindow+ContextMenu.swift */,
-				F0CBR00001000000000001 /* CharacterWindow+BackgroundRemoval.swift */,
-				F0COS00001000000000001 /* CharacterWindow+OtherSubmenu.swift */,
-				F0HW000001000000000001 /* CharacterWindow+TestableStaticMethods.swift */,
-				F0CP000001000000000001 /* CharacterWindow+Positioning.swift */,
+				DD000006 /* ImageWindow.swift */,
+				F0CCM00001000000000001 /* ImageWindow+ContextMenu.swift */,
+				F0CBR00001000000000001 /* ImageWindow+BackgroundRemoval.swift */,
+				F0COS00001000000000001 /* ImageWindow+OtherSubmenu.swift */,
+				F0HW000001000000000001 /* ImageWindow+TestableStaticMethods.swift */,
+				F0CP000001000000000001 /* ImageWindow+Positioning.swift */,
 				DD000004 /* DraggableImageView.swift */,
 				DD000002 /* ImageManager.swift */,
 				SM000001 /* SparkleManager.swift */,
@@ -446,7 +446,7 @@
 				F0PT000001000000000001 /* ImagePreviewPanelTests.swift */,
 				F0ZO000003000000000001 /* ZOrderUtilsTests.swift */,
 				F0SN000003000000000001 /* SnapUtilsTests.swift */,
-				F0CW000001000000000001 /* CharacterWindowTests.swift */,
+				F0CW000001000000000001 /* ImageWindowTests.swift */,
 				F0AD000001000000000001 /* AppDelegateTests.swift */,
 				F0AS000001000000000001 /* AppDelegateServicesTests.swift */,
 				F0MS000003000000000001 /* MenuStateUtilsTests.swift */,
@@ -595,8 +595,8 @@
 				DD000007 /* AppDelegate.swift in Sources */,
 				F0ALP00002000000000001 /* AppDelegate+LayoutPreset.swift in Sources */,
 				F0HK000002000000000001 /* AppDelegate+Hotkey.swift in Sources */,
-				DD000005 /* CharacterWindow.swift in Sources */,
-				F0COS00002000000000001 /* CharacterWindow+OtherSubmenu.swift in Sources */,
+				DD000005 /* ImageWindow.swift in Sources */,
+				F0COS00002000000000001 /* ImageWindow+OtherSubmenu.swift in Sources */,
 				DD000003 /* DraggableImageView.swift in Sources */,
 				DD000001 /* ImageManager.swift in Sources */,
 				SM000002 /* SparkleManager.swift in Sources */,
@@ -649,10 +649,10 @@
 				F0JP000002000000000001 /* JSONPersistence.swift in Sources */,
 				F0NP000002000000000001 /* NSPanel+FloatingConfig.swift in Sources */,
 				F0NM000002000000000001 /* NSMenu+RegisteredImages.swift in Sources */,
-				F0CCM00002000000000001 /* CharacterWindow+ContextMenu.swift in Sources */,
-				F0CBR00002000000000001 /* CharacterWindow+BackgroundRemoval.swift in Sources */,
-				F0HW000002000000000001 /* CharacterWindow+TestableStaticMethods.swift in Sources */,
-				F0CP000002000000000001 /* CharacterWindow+Positioning.swift in Sources */,
+				F0CCM00002000000000001 /* ImageWindow+ContextMenu.swift in Sources */,
+				F0CBR00002000000000001 /* ImageWindow+BackgroundRemoval.swift in Sources */,
+				F0HW000002000000000001 /* ImageWindow+TestableStaticMethods.swift in Sources */,
+				F0CP000002000000000001 /* ImageWindow+Positioning.swift in Sources */,
 				F0SL000002000000000001 /* AppDelegate+StatusBarMenuSliders.swift in Sources */,
 				AA000007 /* main.swift in Sources */,
 				A1B2C3D401000002 /* ManagementPanelController.swift in Sources */,
@@ -702,7 +702,7 @@
 				F0PT000002000000000001 /* ImagePreviewPanelTests.swift in Sources */,
 				F0ZO000004000000000001 /* ZOrderUtilsTests.swift in Sources */,
 				F0SN000004000000000001 /* SnapUtilsTests.swift in Sources */,
-				F0CW000002000000000001 /* CharacterWindowTests.swift in Sources */,
+				F0CW000002000000000001 /* ImageWindowTests.swift in Sources */,
 				F0AD000002000000000001 /* AppDelegateTests.swift in Sources */,
 				F0AS000002000000000001 /* AppDelegateServicesTests.swift in Sources */,
 				F0MS000004000000000001 /* MenuStateUtilsTests.swift in Sources */,

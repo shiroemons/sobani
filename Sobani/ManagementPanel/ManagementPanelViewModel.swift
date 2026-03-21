@@ -73,34 +73,34 @@ final class ManagementPanelViewModel {
             windowCountByImageName = [:]
             return
         }
-        let newWindows = appDelegate.zOrderedWindows.map { charWindow in
-            let imageSize = charWindow.imageView.frame.size
-            let screenName = charWindow.window.screen?.localizedName ?? L("image.unknown")
+        let newWindows = appDelegate.zOrderedWindows.map { imageWindow in
+            let imageSize = imageWindow.imageView.frame.size
+            let screenName = imageWindow.window.screen?.localizedName ?? L("image.unknown")
             let dims = FormatUtils.formatDimensions(
                 width: imageSize.width, height: imageSize.height)
             let subtitle = "\(dims) ・ \(screenName)"
-            let thumbnail = charWindow.imageView.image
-            let frame = charWindow.window.frame
+            let thumbnail = imageWindow.imageView.image
+            let frame = imageWindow.window.frame
             return WindowInfo(
-                windowId: charWindow.windowId,
-                displayName: charWindow.localizedDisplayName,
+                windowId: imageWindow.windowId,
+                displayName: imageWindow.localizedDisplayName,
                 subtitle: subtitle,
-                isHidden: charWindow.isHidden,
-                isGhostMode: charWindow.isGhostMode,
-                opacityLevel: charWindow.imageView.opacityLevel,
+                isHidden: imageWindow.isHidden,
+                isGhostMode: imageWindow.isGhostMode,
+                opacityLevel: imageWindow.imageView.opacityLevel,
                 thumbnail: thumbnail,
-                originalImage: charWindow.imageView.originalImage,
-                cropRect: charWindow.imageView.cropRect,
-                customGhostAlpha: charWindow.customGhostAlpha,
-                effectiveGhostAlpha: charWindow.effectiveGhostAlpha,
-                isRemoveBackgroundEnabled: charWindow.isRemoveBackgroundAvailable,
+                originalImage: imageWindow.imageView.originalImage,
+                cropRect: imageWindow.imageView.cropRect,
+                customGhostAlpha: imageWindow.customGhostAlpha,
+                effectiveGhostAlpha: imageWindow.effectiveGhostAlpha,
+                isRemoveBackgroundEnabled: imageWindow.isRemoveBackgroundAvailable,
                 originX: frame.origin.x,
                 originY: frame.origin.y,
                 width: frame.size.width,
                 height: frame.size.height,
-                imageName: charWindow.displayName,
-                isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally,
-                rotationAngle: charWindow.imageView.rotationAngle
+                imageName: imageWindow.displayName,
+                isFlippedHorizontally: imageWindow.imageView.isFlippedHorizontally,
+                rotationAngle: imageWindow.imageView.rotationAngle
             )
         }
         if newWindows != windows {
@@ -132,16 +132,16 @@ final class ManagementPanelViewModel {
     // MARK: - Window Operations
 
     func toggleHidden(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setHidden(!charWindow.isHidden)
-        // notifyStateDidChange fires via CharacterWindow.setHidden
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.setHidden(!imageWindow.isHidden)
+        // notifyStateDidChange fires via ImageWindow.setHidden
         // → triggerRefresh handled by observer
     }
 
     func toggleGhostMode(windowId: Int) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setGhostMode(!charWindow.isGhostMode)
-        // notifyStateDidChange fires via CharacterWindow.setGhostMode
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.setGhostMode(!imageWindow.isGhostMode)
+        // notifyStateDidChange fires via ImageWindow.setGhostMode
         // → triggerRefresh handled by observer
     }
 
@@ -163,7 +163,7 @@ final class ManagementPanelViewModel {
         performBatchUpdate { $0.setGhostMode(false) }
     }
 
-    private func performBatchUpdate(_ action: (CharacterWindow) -> Void) {
+    private func performBatchUpdate(_ action: (ImageWindow) -> Void) {
         guard let appDelegate else { return }
         isBatchUpdating = true
         defer { isBatchUpdating = false }
@@ -174,8 +174,8 @@ final class ManagementPanelViewModel {
     // MARK: - Detail View Operations
 
     func changeOpacity(windowId: Int, opacity: CGFloat) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.applyOpacity(opacity)
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.applyOpacity(opacity)
         // applyOpacity fires notifyStateDidChange → triggerRefresh handled by observer
     }
 
@@ -187,8 +187,8 @@ final class ManagementPanelViewModel {
     }
 
     func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setPositionAndSize(origin: origin, size: size)
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.setPositionAndSize(origin: origin, size: size)
         triggerRefresh()
     }
 
@@ -204,15 +204,15 @@ final class ManagementPanelViewModel {
     }
 
     private func applyWindowPosition(windowId: Int, origin: CGPoint) {
-        guard let charWindow = findCharacterWindow(by: windowId) else { return }
-        charWindow.setPositionAndSize(origin: origin, size: charWindow.window.frame.size)
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.setPositionAndSize(origin: origin, size: imageWindow.window.frame.size)
     }
 
     // MARK: - Private Helpers
 
     private func setupNotificationObservers() {
         stateObserver = NotificationCenter.default.addObserver(
-            forName: AppConstants.characterWindowStateDidChange,
+            forName: AppConstants.imageWindowStateDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -221,7 +221,7 @@ final class ManagementPanelViewModel {
             }
         }
         listObserver = NotificationCenter.default.addObserver(
-            forName: AppConstants.characterWindowListDidChange,
+            forName: AppConstants.imageWindowListDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -256,20 +256,20 @@ final class ManagementPanelViewModel {
     /// image identity does not change during state-only updates
     /// (position, opacity, ghost mode, etc.).
     /// Image caches are rebuilt via `rebuildAll()`,
-    /// which is triggered by `characterWindowListDidChange`.
+    /// which is triggered by `imageWindowListDidChange`.
     func triggerRefresh() {
         guard !isBatchUpdating else { return }
         rebuildWindows()
     }
 
-    func findCharacterWindow(by windowId: Int) -> CharacterWindow? {
+    func findImageWindow(by windowId: Int) -> ImageWindow? {
         appDelegate?.zOrderedWindows.first { $0.windowId == windowId }
     }
 
     /// Returns the target windows for bulk operations.
     /// If windows are selected, returns only the selected ones.
     /// If no windows are selected, returns all windows.
-    private var targetWindows: [CharacterWindow] {
+    private var targetWindows: [ImageWindow] {
         guard let appDelegate else { return [] }
         if selectedWindowIds.isEmpty {
             return appDelegate.zOrderedWindows

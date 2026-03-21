@@ -2,8 +2,8 @@ import Cocoa
 import Testing
 @testable import Sobani
 
-@Suite("CharacterWindow Static Methods Tests")
-struct CharacterWindowTests {
+@Suite("ImageWindow Static Methods Tests")
+struct ImageWindowTests {
 
     // MARK: - imageOrigin Tests
 
@@ -11,7 +11,7 @@ struct CharacterWindowTests {
     func imageOriginBasic() {
         let windowFrame = NSRect(x: 100, y: 100, width: 200, height: 200)
         let imageSize = NSSize(width: 200, height: 200)
-        let result = CharacterWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
+        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
         #expect(abs(result.x - 100) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - 100) < AppConstants.floatingPointTolerance)
     }
@@ -20,7 +20,7 @@ struct CharacterWindowTests {
     func imageOriginSmallerImage() {
         let windowFrame = NSRect(x: 100, y: 100, width: 300, height: 300)
         let imageSize = NSSize(width: 200, height: 200)
-        let result = CharacterWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
+        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
         #expect(abs(result.x - 150) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - 150) < AppConstants.floatingPointTolerance)
     }
@@ -29,7 +29,7 @@ struct CharacterWindowTests {
     func imageOriginNonSquare() {
         let windowFrame = NSRect(x: 0, y: 0, width: 400, height: 200)
         let imageSize = NSSize(width: 300, height: 150)
-        let result = CharacterWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
+        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
         #expect(abs(result.x - 50) < AppConstants.floatingPointTolerance)
         #expect(abs(result.y - 25) < AppConstants.floatingPointTolerance)
     }
@@ -40,7 +40,7 @@ struct CharacterWindowTests {
     func windowOriginNoRotation() {
         let imageOrigin = CGPoint(x: 100, y: 100)
         let imageSize = NSSize(width: 200, height: 200)
-        let result = CharacterWindow.windowOrigin(
+        let result = ImageWindow.windowOrigin(
             forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 0
         )
         #expect(abs(result.x - 100) < 1.0)
@@ -51,10 +51,10 @@ struct CharacterWindowTests {
     func windowOriginWithRotation() {
         let imageOrigin = CGPoint(x: 100, y: 100)
         let imageSize = NSSize(width: 200, height: 100)
-        let resultNoRotation = CharacterWindow.windowOrigin(
+        let resultNoRotation = ImageWindow.windowOrigin(
             forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 0
         )
-        let resultRotated = CharacterWindow.windowOrigin(
+        let resultRotated = ImageWindow.windowOrigin(
             forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 45
         )
         #expect(resultRotated.x < resultNoRotation.x)
@@ -67,10 +67,10 @@ struct CharacterWindowTests {
     func roundTripNoRotation() {
         let originalWindowFrame = NSRect(x: 150, y: 250, width: 200, height: 200)
         let imageSize = NSSize(width: 200, height: 200)
-        let imgOrigin = CharacterWindow.imageOrigin(
+        let imgOrigin = ImageWindow.imageOrigin(
             windowFrame: originalWindowFrame, imageViewSize: imageSize
         )
-        let recoveredWindowOrigin = CharacterWindow.windowOrigin(
+        let recoveredWindowOrigin = ImageWindow.windowOrigin(
             forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: 0
         )
         #expect(abs(recoveredWindowOrigin.x - originalWindowFrame.origin.x) <= 1.0)
@@ -85,10 +85,10 @@ struct CharacterWindowTests {
             width: imageSize.width, height: imageSize.height, angleDegrees: rotationAngle
         )
         let originalWindowFrame = NSRect(x: 150, y: 250, width: bbSize.width, height: bbSize.height)
-        let imgOrigin = CharacterWindow.imageOrigin(
+        let imgOrigin = ImageWindow.imageOrigin(
             windowFrame: originalWindowFrame, imageViewSize: imageSize
         )
-        let recoveredWindowOrigin = CharacterWindow.windowOrigin(
+        let recoveredWindowOrigin = ImageWindow.windowOrigin(
             forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: rotationAngle
         )
         #expect(abs(recoveredWindowOrigin.x - originalWindowFrame.origin.x) <= 1.0)
@@ -101,7 +101,7 @@ struct CharacterWindowTests {
     func calculateWindowSizeBelowMax() {
         let imageSize = NSSize(width: 200, height: 300)
         let maxHeight: CGFloat = 600
-        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        let result = ImageWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
         #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
         // アスペクト比維持: 200/300 * 600 = 400
         #expect(abs(result.width - 400) < AppConstants.floatingPointTolerance)
@@ -111,7 +111,7 @@ struct CharacterWindowTests {
     func calculateWindowSizeAboveMax() {
         let imageSize = NSSize(width: 400, height: 1200)
         let maxHeight: CGFloat = 600
-        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        let result = ImageWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
         #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
         // アスペクト比維持: 400/1200 * 600 = 200
         #expect(abs(result.width - 200) < AppConstants.floatingPointTolerance)
@@ -121,7 +121,7 @@ struct CharacterWindowTests {
     func calculateWindowSizeSquare() {
         let imageSize = NSSize(width: 500, height: 500)
         let maxHeight: CGFloat = 600
-        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        let result = ImageWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
         #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
         #expect(abs(result.width - 600) < AppConstants.floatingPointTolerance)
     }
@@ -130,7 +130,7 @@ struct CharacterWindowTests {
     func calculateWindowSizeLandscape() {
         let imageSize = NSSize(width: 1000, height: 500)
         let maxHeight: CGFloat = 600
-        let result = CharacterWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
+        let result = ImageWindow.calculateWindowSize(imageSize: imageSize, maxHeight: maxHeight)
         #expect(abs(result.height - 600) < AppConstants.floatingPointTolerance)
         // アスペクト比維持: 1000/500 * 600 = 1200
         #expect(abs(result.width - 1200) < AppConstants.floatingPointTolerance)
@@ -140,7 +140,7 @@ struct CharacterWindowTests {
 
     @Test("正方形画像のアスペクト比")
     func calculateImageDimensionsSquare() {
-        let result = CharacterWindow.calculateImageDimensions(
+        let result = ImageWindow.calculateImageDimensions(
             baseHeight: 600, imageSize: NSSize(width: 500, height: 500)
         )
         #expect(abs(result.aspectRatio - 1.0) < AppConstants.floatingPointTolerance)
@@ -149,7 +149,7 @@ struct CharacterWindowTests {
 
     @Test("横長画像の幅計算")
     func calculateImageDimensionsLandscape() {
-        let result = CharacterWindow.calculateImageDimensions(
+        let result = ImageWindow.calculateImageDimensions(
             baseHeight: 300, imageSize: NSSize(width: 800, height: 400)
         )
         // scale = 300/400 = 0.75, width = 800 * 0.75 = 600
@@ -159,7 +159,7 @@ struct CharacterWindowTests {
 
     @Test("縦長画像の幅計算")
     func calculateImageDimensionsPortrait() {
-        let result = CharacterWindow.calculateImageDimensions(
+        let result = ImageWindow.calculateImageDimensions(
             baseHeight: 600, imageSize: NSSize(width: 200, height: 800)
         )
         // scale = 600/800 = 0.75, width = 200 * 0.75 = 150
@@ -171,7 +171,7 @@ struct CharacterWindowTests {
 
     @Test("デフォルト名と一致する場合はローカライズ名を返す")
     func formatLocalizedDisplayNameDefault() {
-        let result = CharacterWindow.formatLocalizedDisplayName(
+        let result = ImageWindow.formatLocalizedDisplayName(
             displayName: "default", defaultName: "default", localizedDefault: "デフォルト"
         )
         #expect(result == "デフォルト")
@@ -179,7 +179,7 @@ struct CharacterWindowTests {
 
     @Test("デフォルト名と不一致の場合はそのまま返す")
     func formatLocalizedDisplayNameCustom() {
-        let result = CharacterWindow.formatLocalizedDisplayName(
+        let result = ImageWindow.formatLocalizedDisplayName(
             displayName: "my_image", defaultName: "default", localizedDefault: "デフォルト"
         )
         #expect(result == "my_image")
@@ -187,7 +187,7 @@ struct CharacterWindowTests {
 
     @Test("空文字列の場合はそのまま返す")
     func formatLocalizedDisplayNameEmpty() {
-        let result = CharacterWindow.formatLocalizedDisplayName(
+        let result = ImageWindow.formatLocalizedDisplayName(
             displayName: "", defaultName: "default", localizedDefault: "デフォルト"
         )
         #expect(result == "")
@@ -197,58 +197,58 @@ struct CharacterWindowTests {
 
     @Test("premultipliedLast は透明")
     func isAlphaInfoTransparentPremultipliedLast() {
-        #expect(CharacterWindow.isAlphaInfoTransparent(.premultipliedLast) == true)
+        #expect(ImageWindow.isAlphaInfoTransparent(.premultipliedLast) == true)
     }
 
     @Test("premultipliedFirst は透明")
     func isAlphaInfoTransparentPremultipliedFirst() {
-        #expect(CharacterWindow.isAlphaInfoTransparent(.premultipliedFirst) == true)
+        #expect(ImageWindow.isAlphaInfoTransparent(.premultipliedFirst) == true)
     }
 
     @Test("first は透明")
     func isAlphaInfoTransparentFirst() {
-        #expect(CharacterWindow.isAlphaInfoTransparent(.first) == true)
+        #expect(ImageWindow.isAlphaInfoTransparent(.first) == true)
     }
 
     @Test("last は透明")
     func isAlphaInfoTransparentLast() {
-        #expect(CharacterWindow.isAlphaInfoTransparent(.last) == true)
+        #expect(ImageWindow.isAlphaInfoTransparent(.last) == true)
     }
 
     @Test("none は不透明")
     func isAlphaInfoTransparentNone() {
-        #expect(CharacterWindow.isAlphaInfoTransparent(.none) == false)
+        #expect(ImageWindow.isAlphaInfoTransparent(.none) == false)
     }
 
     @Test("noneSkipLast は不透明")
     func isAlphaInfoTransparentNoneSkipLast() {
-        #expect(CharacterWindow.isAlphaInfoTransparent(.noneSkipLast) == false)
+        #expect(ImageWindow.isAlphaInfoTransparent(.noneSkipLast) == false)
     }
 
     // MARK: - menuTitleLocalizationKey Tests
 
     @Test("有効なタグで対応するキーを返す")
     func menuTitleLocalizationKeyValid() {
-        let result = CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.quit.rawValue)
+        let result = ImageWindow.menuTitleLocalizationKey(forTag: MenuItemTag.quit.rawValue)
         #expect(result == "menu.quit")
     }
 
     @Test("無効なタグでnilを返す")
     func menuTitleLocalizationKeyInvalid() {
-        let result = CharacterWindow.menuTitleLocalizationKey(forTag: 9999)
+        let result = ImageWindow.menuTitleLocalizationKey(forTag: 9999)
         #expect(result == nil)
     }
 
     @Test("複数のタグで正しいキーが返る")
     func menuTitleLocalizationKeyMultiple() {
         let changeImageTag = MenuItemTag.changeImageSubmenu.rawValue
-        #expect(CharacterWindow.menuTitleLocalizationKey(forTag: changeImageTag) == "image.change")
+        #expect(ImageWindow.menuTitleLocalizationKey(forTag: changeImageTag) == "image.change")
         #expect(
-            CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.flipContext.rawValue)
+            ImageWindow.menuTitleLocalizationKey(forTag: MenuItemTag.flipContext.rawValue)
                 == "adjust.flip"
         )
         #expect(
-            CharacterWindow.menuTitleLocalizationKey(forTag: MenuItemTag.close.rawValue)
+            ImageWindow.menuTitleLocalizationKey(forTag: MenuItemTag.close.rawValue)
                 == "menu.close_image"
         )
     }

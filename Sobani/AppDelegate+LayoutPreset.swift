@@ -8,19 +8,19 @@ private let layoutPresetLogger = Logger(category: "LayoutPreset")
 extension AppDelegate {
     // MARK: - Window Array Management
 
-    func addCharacterWindow(_ window: CharacterWindow) {
+    func addImageWindow(_ window: ImageWindow) {
         zOrderedWindows.insert(window, at: 0)
         notifyWindowListDidChange()
     }
 
-    func removeCharacterWindow(_ window: CharacterWindow) {
+    func removeImageWindow(_ window: ImageWindow) {
         zOrderedWindows.removeAll { $0 === window }
         notifyWindowListDidChange()
     }
 
-    func closeCharacterWindow(_ window: CharacterWindow) {
+    func closeImageWindow(_ window: ImageWindow) {
         window.window.orderOut(nil)
-        removeCharacterWindow(window)
+        removeImageWindow(window)
         quitIfNoWindows()
     }
 
@@ -39,17 +39,17 @@ extension AppDelegate {
         isApplyingLayout = true
         areWindowsHidden = false
 
-        for charWindow in zOrderedWindows {
-            charWindow.window.orderOut(nil)
+        for imageWindow in zOrderedWindows {
+            imageWindow.window.orderOut(nil)
         }
         zOrderedWindows.removeAll()
 
-        var loadedWindows: [CharacterWindow] = []
+        var loadedWindows: [ImageWindow] = []
         for state in preset.states {
-            let charWindow = createCharacterWindow(from: state, windowId: nextWindowId)
+            let imageWindow = createImageWindow(from: state, windowId: nextWindowId)
             nextWindowId += 1
-            charWindow.restore(from: state)
-            loadedWindows.append(charWindow)
+            imageWindow.restore(from: state)
+            loadedWindows.append(imageWindow)
         }
 
         zOrderedWindows = loadedWindows.reversed()

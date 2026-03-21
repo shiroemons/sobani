@@ -16,19 +16,19 @@ Sobani の内部構造を解説します。
 ```mermaid
 classDiagram
     class AppDelegate {
-        +characterWindows: [CharacterWindow]
-        +zOrderedWindows: [CharacterWindow]
+        +imageWindows: [ImageWindow]
+        +zOrderedWindows: [ImageWindow]
         +statusItem: NSStatusItem
         +screenRestorationManager: ScreenRestorationManager
         +wakeContext: WakeRestorationContext
         +setupStatusBar()
         +createNewWindow()
     }
-    class CharacterWindow {
+    class ImageWindow {
         +window: NSWindow
         +imageView: DraggableImageView
         +windowId: Int
-        +delegate: CharacterWindowDelegate
+        +delegate: ImageWindowDelegate
     }
     class DraggableImageView {
         +isFlippedHorizontally: Bool
@@ -143,13 +143,13 @@ classDiagram
     class SettingsView {
     }
 
-    AppDelegate --> CharacterWindow : manages
-    AppDelegate ..|> CharacterWindowDelegate
+    AppDelegate --> ImageWindow : manages
+    AppDelegate ..|> ImageWindowDelegate
     AppDelegate ..|> NSMenuDelegate
-    CharacterWindow --> DraggableImageView : contains
-    CharacterWindow --> AdjustmentPanelController : opens
-    CharacterWindow ..|> AdjustmentPanelDelegate
-    CharacterWindow ..|> NSMenuDelegate
+    ImageWindow --> DraggableImageView : contains
+    ImageWindow --> AdjustmentPanelController : opens
+    ImageWindow ..|> AdjustmentPanelDelegate
+    ImageWindow ..|> NSMenuDelegate
     AppDelegate --> ImageManager : uses
     AppDelegate --> WindowStateManager : uses
     AppDelegate --> SparkleManager : uses
@@ -165,18 +165,18 @@ classDiagram
     ManagementPanelView --> LayoutPresetsView : tab
     ManagementPanelView --> RegisteredImagesView : tab
     ManagementPanelView --> SettingsView : tab
-    CharacterWindow --> UnconstrainedWindow : uses
-    CharacterWindow --> FloatingMenuController : uses
-    CharacterWindow --> CropEditorPanelController : uses
-    CharacterWindow ..|> CropEditorPanelDelegate
-    CharacterWindow ..|> FloatingMenuDelegate
+    ImageWindow --> UnconstrainedWindow : uses
+    ImageWindow --> FloatingMenuController : uses
+    ImageWindow --> CropEditorPanelController : uses
+    ImageWindow ..|> CropEditorPanelDelegate
+    ImageWindow ..|> FloatingMenuDelegate
     CropEditorPanelController --> CropEditorCanvasView : contains
     CropEditorPanelController --> CropEditorToolbarView : contains
     CropEditorPanelController --> CropEditHistory : uses
     CropEditorToolbarView --> AspectRatioSelectorView : contains
 ```
 
-`AppDelegate` がアプリケーション全体を統括し、複数の `CharacterWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・不透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。`ManagementPanelController` は `AppDelegate` が所有するインスタンスで、SwiftUI ベースの管理パネル（`NSPanel`）のライフサイクルを管理します。`ManagementPanelViewModel` は MVVM の ViewModel として `AppDelegate` への weak 参照を持ち、ウィンドウ一覧・登録画像・レイアウト操作を各 SwiftUI View に提供します。
+`AppDelegate` がアプリケーション全体を統括し、複数の `ImageWindow` を管理します。各ウィンドウは `DraggableImageView` を内包し、調整パネルを通じて回転・不透明度の操作を受け付けます。シングルトンとして提供される各マネージャーは `AppDelegate` が利用し、それぞれの責務（画像管理・状態保存・アップデート・言語切り替え）を担います。`ManagementPanelController` は `AppDelegate` が所有するインスタンスで、SwiftUI ベースの管理パネル（`NSPanel`）のライフサイクルを管理します。`ManagementPanelViewModel` は MVVM の ViewModel として `AppDelegate` への weak 参照を持ち、ウィンドウ一覧・登録画像・レイアウト操作を各 SwiftUI View に提供します。
 
 ## ソースファイル一覧
 
@@ -215,8 +215,8 @@ classDiagram
 | `AspectRatioSelectorView.swift` | アスペクト比プリセット選択UI（フリー・オリジナル・1:1・3:2・4:3・16:9等） |
 | `AdjustmentPanelController.swift` | 回転ダイアル・不透明度スライダーのパネル |
 | `BackgroundRemovalManager.swift` | Vision フレームワークによる背景除去（シングルトン） |
-| `CharacterWindow.swift` | ボーダーレス透明ウィンドウ。`RotatableContainer`、コンテキストメニュー |
-| `CharacterWindow+OtherSubmenu.swift` | 「その他」コンテキストサブメニューのCharacterWindow拡張 |
+| `ImageWindow.swift` | ボーダーレス透明ウィンドウ。`RotatableContainer`、コンテキストメニュー |
+| `ImageWindow+OtherSubmenu.swift` | 「その他」コンテキストサブメニューのImageWindow拡張 |
 | `Constants.swift` | `AppConstants`、`GeometryUtils`、`MenuItemTag`、`L()` ヘルパー |
 | `CropEditorPanelController.swift` | iPhone写真アプリ風クロップエディタのメインコントローラ。パネル管理、Undo/Redo、状態同期 |
 | `CropEditorCanvasView.swift` | クロップエディタのキャンバス。画像描画、クロップ枠のハンドル操作、パン・ズーム |
@@ -265,21 +265,21 @@ classDiagram
 
 ## プロトコル
 
-### CharacterWindowDelegate
+### ImageWindowDelegate
 
-`CharacterWindow` と `AppDelegate` 間の通信を担うプロトコルです。`AppDelegate` が準拠します。
+`ImageWindow` と `AppDelegate` 間の通信を担うプロトコルです。`AppDelegate` が準拠します。
 
 | メソッド | 用途 |
 |---|---|
-| `characterWindowRequestedNewWindow(_:imageName:)` | 新しいキャラクターウィンドウの生成を要求 |
-| `characterWindowRequestedNewWindowWithFileURL(_:fileURL:)` | ファイル URL を指定した新しいウィンドウの生成を要求 |
-| `characterWindowDidClose(_:)` | ウィンドウが閉じられたことを通知 |
-| `characterWindowDidDeleteImage(named:)` | 画像が削除されたことを通知 |
-| `characterWindowDidBecomeActive(_:)` | ウィンドウがアクティブになったことを通知（Z-order 管理） |
+| `imageWindowRequestedNewWindow(_:imageName:)` | 新しいイメージウィンドウの生成を要求 |
+| `imageWindowRequestedNewWindowWithFileURL(_:fileURL:)` | ファイル URL を指定した新しいウィンドウの生成を要求 |
+| `imageWindowDidClose(_:)` | ウィンドウが閉じられたことを通知 |
+| `imageWindowDidDeleteImage(named:)` | 画像が削除されたことを通知 |
+| `imageWindowDidBecomeActive(_:)` | ウィンドウがアクティブになったことを通知（Z-order 管理） |
 
 ### AdjustmentPanelDelegate
 
-`AdjustmentPanelController` と `CharacterWindow` 間の通信を担うプロトコルです。`CharacterWindow` が準拠します。
+`AdjustmentPanelController` と `ImageWindow` 間の通信を担うプロトコルです。`ImageWindow` が準拠します。
 
 | メソッド | 用途 |
 |---|---|
@@ -290,7 +290,7 @@ classDiagram
 
 ### FloatingMenuDelegate
 
-`FloatingMenuController` から `CharacterWindow` へのボタンアクション通知を担うプロトコルです。`CharacterWindow` が準拠します。
+`FloatingMenuController` から `ImageWindow` へのボタンアクション通知を担うプロトコルです。`ImageWindow` が準拠します。
 
 | メソッド | 用途 |
 |---|---|
@@ -302,7 +302,7 @@ classDiagram
 
 ### CropEditorPanelDelegate
 
-`CropEditorPanelController` から `CharacterWindow` へクロップ編集結果を通知します。`CharacterWindow` が準拠します。
+`CropEditorPanelController` から `ImageWindow` へクロップ編集結果を通知します。`ImageWindow` が準拠します。
 
 | メソッド | 用途 |
 |---|---|
@@ -351,7 +351,7 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    CW["CharacterWindow<br/>(NSObject)<br/>NSWindow を保持<br/>ボーダーレス・透明・常に最前面"]
+    CW["ImageWindow<br/>(NSObject)<br/>NSWindow を保持<br/>ボーダーレス・透明・常に最前面"]
     RC["RotatableContainer<br/>(NSView)<br/>回転時のバウンディングボックス調整"]
     DIV["DraggableImageView<br/>(NSImageView)<br/>ドラッグ・リサイズ・反転・回転・不透明度"]
     AP["AdjustmentPanelController<br/>(NSObject, NSPanel を保持)<br/>回転ダイアル・不透明度スライダー"]
@@ -372,17 +372,17 @@ flowchart TD
     CEP -.-> |CropEditorPanelDelegate| CW
 ```
 
-`CharacterWindow` は `NSObject` のサブクラスで、`NSWindow` インスタンスをプロパティとして保持します。ウィンドウはボーダーレスかつ透明で、全 Space に表示される常に最前面のウィンドウです。`contentView` として `RotatableContainer` を設定し、その子ビューとして `DraggableImageView` が配置されます。
+`ImageWindow` は `NSObject` のサブクラスで、`NSWindow` インスタンスをプロパティとして保持します。ウィンドウはボーダーレスかつ透明で、全 Space に表示される常に最前面のウィンドウです。`contentView` として `RotatableContainer` を設定し、その子ビューとして `DraggableImageView` が配置されます。
 
-`RotatableContainer` は `CharacterWindow.swift` 内に定義された `private class` であり、外部からは参照できません。`CharacterWindow` のプロパティとしては保持されず、`init` 内でローカル変数として生成され `window.contentView` に設定されます。回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・不透明度の状態を保持します。
+`RotatableContainer` は `ImageWindow.swift` 内に定義された `private class` であり、外部からは参照できません。`ImageWindow` のプロパティとしては保持されず、`init` 内でローカル変数として生成され `window.contentView` に設定されます。回転を適用した際に画像の領域が元の寸法を超えて拡大するため、バウンディングボックスを正しく計算・調整する役割を担います。`DraggableImageView` はマウスドラッグによる移動、スクロールホイールによるリサイズ、そして反転・回転・不透明度の状態を保持します。
 
-`AdjustmentPanelController` は別の `NSPanel` として表示されるフローティングパネルで、`AdjustmentPanelDelegate` を通じて `CharacterWindow` に変更を伝えます。
+`AdjustmentPanelController` は別の `NSPanel` として表示されるフローティングパネルで、`AdjustmentPanelDelegate` を通じて `ImageWindow` に変更を伝えます。
 
 ## ゴーストモード
 
 ゴーストモード（`ignoresMouseEvents = true`）はウィンドウをクリックスルーにする機能です。有効時はウィンドウの`imageView`に不透明度（デフォルト0.3）を適用し、ホバー時の枠線は不透明を維持します。
 
-- **状態管理**: `CharacterWindow` が `isGhostMode` と `customGhostAlpha` をプロパティとして保持
+- **状態管理**: `ImageWindow` が `isGhostMode` と `customGhostAlpha` をプロパティとして保持
 - **永続化**: `WindowState` 構造体の `isGhostMode`/`customGhostAlpha` フィールドで `window_states.json` に保存
 - **グローバル設定**: `UserDefaults` に `ghostAlpha` キーでグローバルデフォルト不透明度を保存
 - **トグル方法**: Option+G グローバルホットキー、右クリックメニュー、フローティングメニュー、ステータスバーメニュー

@@ -20,9 +20,9 @@ extension AppDelegate {
         guard menu !== statusItem?.menu else { return }
         lastHighlightedWindow?.hideHighlightBorder()
         lastHighlightedWindow = nil
-        if let charWindow = item?.representedObject as? CharacterWindow {
-            charWindow.showHighlightBorder()
-            lastHighlightedWindow = charWindow
+        if let imageWindow = item?.representedObject as? ImageWindow {
+            imageWindow.showHighlightBorder()
+            lastHighlightedWindow = imageWindow
         }
     }
 

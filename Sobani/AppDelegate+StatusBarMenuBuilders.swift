@@ -80,7 +80,7 @@ extension AppDelegate {
 
     func buildAdjustmentMenuItems(
         into submenu: NSMenu,
-        for charWindow: CharacterWindow,
+        for imageWindow: ImageWindow,
         windowNumber: Int
     ) {
         let adjustItem = NSMenuItem(
@@ -90,7 +90,7 @@ extension AppDelegate {
         )
         adjustItem.target = self
         adjustItem.tag = windowNumber
-        adjustItem.isEnabled = !areWindowsHidden && !charWindow.isHidden
+        adjustItem.isEnabled = !areWindowsHidden && !imageWindow.isHidden
         adjustItem.image = menuIcon("slider.horizontal.3")
         submenu.addItem(adjustItem)
 
@@ -102,7 +102,7 @@ extension AppDelegate {
         resetRotationItem.target = self
         resetRotationItem.tag = windowNumber
         resetRotationItem.isEnabled = MenuStateUtils.isRotationResetEnabled(
-            angle: charWindow.imageView.rotationAngle
+            angle: imageWindow.imageView.rotationAngle
         )
         resetRotationItem.image = menuIcon("arrow.counterclockwise")
         submenu.addItem(resetRotationItem)
@@ -115,7 +115,7 @@ extension AppDelegate {
         resetOpacityItem.target = self
         resetOpacityItem.tag = windowNumber
         resetOpacityItem.isEnabled = MenuStateUtils.isOpacityResetEnabled(
-            opacity: charWindow.imageView.opacityLevel
+            opacity: imageWindow.imageView.opacityLevel
         )
         resetOpacityItem.image = menuIcon(AppConstants.opacitySymbol)
         submenu.addItem(resetOpacityItem)

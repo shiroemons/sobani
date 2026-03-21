@@ -13,7 +13,7 @@ import ServiceManagement
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let logger = Logger(category: "AppDelegate")
     /// Z順（前面→背面）でウィンドウを管理する単一配列。
-    var zOrderedWindows: [CharacterWindow] = []
+    var zOrderedWindows: [ImageWindow] = []
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     var areWindowsHidden = false
@@ -29,7 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var wakeContext = WakeRestorationContext()
     var onboardingController: OnboardingWindowController?
     var isApplyingLayout = false
-    weak var lastHighlightedWindow: CharacterWindow?
+    weak var lastHighlightedWindow: ImageWindow?
     private var managementPanelController: ManagementPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -54,17 +54,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 logger.error("Failed to load character image")
                 return
             }
-            let charWindow = CharacterWindow(image: image)
-            charWindow.delegate = self
-            charWindow.windowId = nextWindowId
+            let imageWindow = ImageWindow(image: image)
+            imageWindow.delegate = self
+            imageWindow.windowId = nextWindowId
             nextWindowId += 1
-            charWindow.window.center()
-            zOrderedWindows.append(charWindow)
+            imageWindow.window.center()
+            zOrderedWindows.append(imageWindow)
         } else {
-            var loadedWindows: [CharacterWindow] = []
+            var loadedWindows: [ImageWindow] = []
             for state in savedStates {
-                let charWindow = createCharacterWindow(from: state)
-                let wasAdjusted = charWindow.restore(from: state)
+                let imageWindow = createImageWindow(from: state)
+                let wasAdjusted = imageWindow.restore(from: state)
                 if wasAdjusted {
                     let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
                     screenRestorationManager.addPending(
@@ -75,7 +75,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                         adjustedOriginY: adjusted.originY
                     )
                 }
-                loadedWindows.append(charWindow)
+                loadedWindows.append(imageWindow)
             }
 
             // Legacy states (windowId == 0) get new IDs assigned
@@ -120,8 +120,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func bringAllToFront() {
         areWindowsHidden = false
         NSApp.activate(ignoringOtherApps: true)
-        for charWindow in zOrderedWindows where charWindow.isHidden {
-            charWindow.setHidden(false)
+        for imageWindow in zOrderedWindows where imageWindow.isHidden {
+            imageWindow.setHidden(false)
         }
         applyZOrderToWindows()
     }
@@ -129,13 +129,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func toggleAllWindowsVisibility() {
         guard !zOrderedWindows.isEmpty else { return }
         if areWindowsHidden {
-            for charWindow in zOrderedWindows where charWindow.isHidden {
-                charWindow.setHidden(false)
+            for imageWindow in zOrderedWindows where imageWindow.isHidden {
+                imageWindow.setHidden(false)
             }
             applyZOrderToWindows()
         } else {
-            for charWindow in zOrderedWindows {
-                charWindow.setHidden(true)
+            for imageWindow in zOrderedWindows {
+                imageWindow.setHidden(true)
             }
         }
         areWindowsHidden.toggle()
@@ -151,56 +151,56 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// zOrderedWindowsの順序をNSWindowに反映する（最背面から順に重ねる）
     func applyZOrderToWindows() {
         guard !areWindowsHidden else { return }
-        var previousWindow: CharacterWindow?
-        for charWindow in zOrderedWindows.reversed() {
-            guard !charWindow.isHidden else { continue }
+        var previousWindow: ImageWindow?
+        for imageWindow in zOrderedWindows.reversed() {
+            guard !imageWindow.isHidden else { continue }
             if let prev = previousWindow {
-                charWindow.window.order(.above, relativeTo: prev.window.windowNumber)
+                imageWindow.window.order(.above, relativeTo: prev.window.windowNumber)
             } else {
-                charWindow.window.orderFront(nil)
+                imageWindow.window.orderFront(nil)
             }
-            previousWindow = charWindow
+            previousWindow = imageWindow
         }
     }
 
-    /// windowNumber から CharacterWindow を検索
-    func characterWindow(forWindowNumber number: Int) -> CharacterWindow? {
+    /// windowNumber から ImageWindow を検索
+    func imageWindow(forWindowNumber number: Int) -> ImageWindow? {
         return zOrderedWindows.first { $0.window.windowNumber == number }
     }
 
     func notifyWindowListDidChange() {
         NotificationCenter.default.post(
-            name: AppConstants.characterWindowListDidChange, object: nil)
+            name: AppConstants.imageWindowListDidChange, object: nil)
     }
 
-    func moveWindowToFront(_ charWindow: CharacterWindow) {
-        zOrderedWindows = ZOrderUtils.moveToFront(charWindow, in: zOrderedWindows)
+    func moveWindowToFront(_ imageWindow: ImageWindow) {
+        zOrderedWindows = ZOrderUtils.moveToFront(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
         notifyWindowListDidChange()
     }
 
-    func moveWindowForward(_ charWindow: CharacterWindow) {
-        zOrderedWindows = ZOrderUtils.moveForward(charWindow, in: zOrderedWindows)
+    func moveWindowForward(_ imageWindow: ImageWindow) {
+        zOrderedWindows = ZOrderUtils.moveForward(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
         notifyWindowListDidChange()
     }
 
-    func moveWindowBackward(_ charWindow: CharacterWindow) {
-        zOrderedWindows = ZOrderUtils.moveBackward(charWindow, in: zOrderedWindows)
+    func moveWindowBackward(_ imageWindow: ImageWindow) {
+        zOrderedWindows = ZOrderUtils.moveBackward(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
         notifyWindowListDidChange()
     }
 
-    func moveWindowToBack(_ charWindow: CharacterWindow) {
-        zOrderedWindows = ZOrderUtils.moveToBack(charWindow, in: zOrderedWindows)
+    func moveWindowToBack(_ imageWindow: ImageWindow) {
+        zOrderedWindows = ZOrderUtils.moveToBack(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
         notifyWindowListDidChange()
     }
 
     @objc func closeAllWindows() {
         areWindowsHidden = false
-        for charWindow in zOrderedWindows {
-            charWindow.window.orderOut(nil)
+        for imageWindow in zOrderedWindows {
+            imageWindow.window.orderOut(nil)
         }
         zOrderedWindows.removeAll()
         notifyWindowListDidChange()
@@ -249,8 +249,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
             areWindowsHidden = false
-            for charWindow in zOrderedWindows {
-                charWindow.window.orderFront(nil)
+            for imageWindow in zOrderedWindows {
+                imageWindow.window.orderFront(nil)
             }
         }
         let image: NSImage
@@ -260,12 +260,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             image = ImageManager.shared.defaultImage() ?? NSImage()
         }
-        let charWindow = CharacterWindow(image: image)
-        charWindow.delegate = self
-        charWindow.displayName = imageName ?? AppConstants.defaultImageName
-        charWindow.windowId = nextWindowId
+        let imageWindow = ImageWindow(image: image)
+        imageWindow.delegate = self
+        imageWindow.displayName = imageName ?? AppConstants.defaultImageName
+        imageWindow.windowId = nextWindowId
         nextWindowId += 1
-        addCharacterWindow(charWindow)
+        addImageWindow(imageWindow)
     }
 
     @objc func addNewWindowWithNewImageFromMenu() {
@@ -298,44 +298,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
 }
 
-// MARK: - CharacterWindowDelegate
+// MARK: - ImageWindowDelegate
 
-extension AppDelegate: CharacterWindowDelegate {
-    var allCharacterWindows: [CharacterWindow] { zOrderedWindows }
+extension AppDelegate: ImageWindowDelegate {
+    var allImageWindows: [ImageWindow] { zOrderedWindows }
 
-    func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?) {
+    func imageWindowRequestedNewWindow(_ sender: ImageWindow, imageName: String?) {
         createNewWindow(imageName: imageName)
     }
 
-    func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL) {
+    func imageWindowRequestedNewWindowWithFileURL(_ sender: ImageWindow, fileURL: URL) {
         if let savedName = ImageManager.shared.registerImage(from: fileURL) {
             createNewWindow(imageName: savedName)
         }
     }
 
-    func characterWindowDidClose(_ sender: CharacterWindow) {
-        removeCharacterWindow(sender)
+    func imageWindowDidClose(_ sender: ImageWindow) {
+        removeImageWindow(sender)
         if zOrderedWindows.isEmpty {
             areWindowsHidden = false
         }
         quitIfNoWindows()
     }
 
-    func characterWindowDidBecomeActive(_ sender: CharacterWindow) {
+    func imageWindowDidBecomeActive(_ sender: ImageWindow) {
         moveWindowToFront(sender)
     }
 
-    func characterWindowDidChangeHidden(_ sender: CharacterWindow) {
+    func imageWindowDidChangeHidden(_ sender: ImageWindow) {
         // Intentionally empty: status bar menu rebuilds its content
         // each time it opens (in buildStatusBarMenu), so no immediate
         // update is needed here.
     }
 
-    func characterWindowDidDeleteImage(named name: String) {
+    func imageWindowDidDeleteImage(named name: String) {
         guard let defaultImage = ImageManager.shared.defaultImage() else { return }
-        for charWindow in zOrderedWindows where charWindow.displayName == name {
-            charWindow.displayName = AppConstants.defaultImageName
-            charWindow.applyImage(defaultImage)
+        for imageWindow in zOrderedWindows where imageWindow.displayName == name {
+            imageWindow.displayName = AppConstants.defaultImageName
+            imageWindow.applyImage(defaultImage)
         }
     }
 }
@@ -373,14 +373,14 @@ extension AppDelegate {
     @objc func toggleAllGhostMode() {
         guard !zOrderedWindows.isEmpty else { return }
         let anyGhosted = zOrderedWindows.contains { $0.isGhostMode }
-        for charWindow in zOrderedWindows {
-            charWindow.setGhostMode(!anyGhosted)
+        for imageWindow in zOrderedWindows {
+            imageWindow.setGhostMode(!anyGhosted)
         }
     }
 
     @objc func disableAllGhostMode() {
-        for charWindow in zOrderedWindows {
-            charWindow.setGhostMode(false)
+        for imageWindow in zOrderedWindows {
+            imageWindow.setGhostMode(false)
         }
     }
 }

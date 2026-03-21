@@ -162,34 +162,34 @@ final class WindowStateManager {
 
     /// 指定されたウィンドウの現在の状態をキャプチャする。
     ///
-    /// - Parameter charWindow: 状態を取得するキャラクターウィンドウ。
+    /// - Parameter imageWindow: 状態を取得するイメージウィンドウ。
     /// - Returns: 現在のウィンドウ状態を表す `WindowState`。
-    @MainActor static func captureState(from charWindow: CharacterWindow) -> WindowState {
-        let windowCenter = NSPoint(x: charWindow.window.frame.midX, y: charWindow.window.frame.midY)
-        let baseWidth = charWindow.imageView.frame.width
-        let baseHeight = charWindow.imageView.frame.height
+    @MainActor static func captureState(from imageWindow: ImageWindow) -> WindowState {
+        let windowCenter = NSPoint(x: imageWindow.window.frame.midX, y: imageWindow.window.frame.midY)
+        let baseWidth = imageWindow.imageView.frame.width
+        let baseHeight = imageWindow.imageView.frame.height
         return WindowState(
-            imageName: charWindow.displayName,
+            imageName: imageWindow.displayName,
             originX: windowCenter.x - baseWidth / 2,
             originY: windowCenter.y - baseHeight / 2,
             width: baseWidth,
             height: baseHeight,
-            isFlippedHorizontally: charWindow.imageView.isFlippedHorizontally,
-            rotationAngle: charWindow.imageView.rotationAngle,
-            opacityLevel: charWindow.imageView.opacityLevel,
-            windowId: charWindow.windowId,
-            cropRect: charWindow.imageView.cropRect,
-            isGhostMode: charWindow.isGhostMode,
-            customGhostAlpha: charWindow.customGhostAlpha,
-            isHidden: charWindow.isHidden
+            isFlippedHorizontally: imageWindow.imageView.isFlippedHorizontally,
+            rotationAngle: imageWindow.imageView.rotationAngle,
+            opacityLevel: imageWindow.imageView.opacityLevel,
+            windowId: imageWindow.windowId,
+            cropRect: imageWindow.imageView.cropRect,
+            isGhostMode: imageWindow.isGhostMode,
+            customGhostAlpha: imageWindow.customGhostAlpha,
+            isHidden: imageWindow.isHidden
         )
     }
 
 }
 
-// MARK: - CharacterWindow Restore Extension
+// MARK: - ImageWindow Restore Extension
 
-extension CharacterWindow {
+extension ImageWindow {
     @discardableResult
     func restore(from state: WindowState) -> Bool {
         let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())

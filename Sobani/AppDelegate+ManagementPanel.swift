@@ -26,67 +26,67 @@ extension AppDelegate {
 // MARK: - ManagementPanelDelegate
 
 extension AppDelegate: ManagementPanelDelegate {
-    var managedWindows: [CharacterWindow] {
+    var managedWindows: [ImageWindow] {
         zOrderedWindows
     }
 
     func managementPanel(
         _ panel: ManagementPanelController,
-        didToggleVisibility charWindow: CharacterWindow
+        didToggleVisibility imageWindow: ImageWindow
     ) {
-        charWindow.setHidden(!charWindow.isHidden)
-        if !charWindow.isHidden {
+        imageWindow.setHidden(!imageWindow.isHidden)
+        if !imageWindow.isHidden {
             applyZOrderToWindows()
         }
     }
 
     func managementPanel(
         _ panel: ManagementPanelController,
-        didToggleGhostMode charWindow: CharacterWindow
+        didToggleGhostMode imageWindow: ImageWindow
     ) {
-        charWindow.setGhostMode(!charWindow.isGhostMode)
+        imageWindow.setGhostMode(!imageWindow.isGhostMode)
     }
 
     func managementPanel(
         _ panel: ManagementPanelController,
         didChangeOpacity opacity: CGFloat,
-        for charWindow: CharacterWindow
+        for imageWindow: ImageWindow
     ) {
-        charWindow.applyOpacity(opacity)
+        imageWindow.applyOpacity(opacity)
     }
 
     func managementPanel(
         _ panel: ManagementPanelController,
-        didReorderWindow charWindow: CharacterWindow,
+        didReorderWindow imageWindow: ImageWindow,
         to index: Int
     ) {
-        guard let currentIndex = zOrderedWindows.firstIndex(where: { $0 === charWindow })
+        guard let currentIndex = zOrderedWindows.firstIndex(where: { $0 === imageWindow })
         else { return }
         zOrderedWindows.remove(at: currentIndex)
         let safeIndex = max(0, min(index, zOrderedWindows.count))
-        zOrderedWindows.insert(charWindow, at: safeIndex)
+        zOrderedWindows.insert(imageWindow, at: safeIndex)
         applyZOrderToWindows()
     }
 
     func managementPanelDidRequestShowAll(_ panel: ManagementPanelController) {
         areWindowsHidden = false
-        for charWindow in zOrderedWindows where charWindow.isHidden {
-            charWindow.setHidden(false)
+        for imageWindow in zOrderedWindows where imageWindow.isHidden {
+            imageWindow.setHidden(false)
         }
         applyZOrderToWindows()
     }
 
     func managementPanelDidRequestHideAll(_ panel: ManagementPanelController) {
-        for charWindow in zOrderedWindows {
-            charWindow.setHidden(true)
-            charWindow.window.orderOut(nil)
+        for imageWindow in zOrderedWindows {
+            imageWindow.setHidden(true)
+            imageWindow.window.orderOut(nil)
         }
         areWindowsHidden = true
     }
 
     func managementPanelDidRequestGhostAll(_ panel: ManagementPanelController) {
-        for charWindow in zOrderedWindows {
-            charWindow.setGhostMode(true)
+        for imageWindow in zOrderedWindows {
+            imageWindow.setGhostMode(true)
         }
     }
 

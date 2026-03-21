@@ -91,7 +91,7 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 sequenceDiagram
     participant App as AppDelegate
     participant WSM as WindowStateManager
-    participant CW as CharacterWindow
+    participant CW as ImageWindow
     participant FS as window_states.json
     participant SRM as ScreenRestorationManager
 
@@ -156,7 +156,7 @@ flowchart LR
     end
 
     subgraph 出力
-        WIN["CharacterWindow<br/>に表示"]
+        WIN["ImageWindow<br/>に表示"]
         MENU["メニューに<br/>画像名表示"]
     end
 
@@ -263,7 +263,7 @@ sequenceDiagram
     participant CCV as CropEditorCanvasView
     participant CTV as CropEditorToolbarView
     participant CEH as CropEditHistory
-    participant CW as CharacterWindow
+    participant CW as ImageWindow
 
     User->>CEP: クロップエディタを開く
     CEP->>CCV: 画像と初期CropRectを設定
@@ -349,14 +349,14 @@ sequenceDiagram
 
 ### 登録画像の使用状況追跡
 
-`windowCountByImageName` は `windows` から `Dictionary(grouping:by:)` で構築されます。`characterWindowListDidChange` 通知を受け取るたびに `rebuildAll()` が呼ばれ、`rebuildWindows()` と `rebuildImageCaches()` が実行されます。状態変更のみの場合（位置・不透明度・ゴーストモードの変更など）は `triggerRefresh()` が `rebuildWindows()` だけを呼び、画像キャッシュは変更しません。
+`windowCountByImageName` は `windows` から `Dictionary(grouping:by:)` で構築されます。`imageWindowListDidChange` 通知を受け取るたびに `rebuildAll()` が呼ばれ、`rebuildWindows()` と `rebuildImageCaches()` が実行されます。状態変更のみの場合（位置・不透明度・ゴーストモードの変更など）は `triggerRefresh()` が `rebuildWindows()` だけを呼び、画像キャッシュは変更しません。
 
 ### 通知とリフレッシュ
 
 | 通知名 | 発火タイミング | ViewModel の処理 |
 |---|---|---|
-| `characterWindowStateDidChange` | 個別ウィンドウの状態変更時 | `triggerRefresh()`（ウィンドウ一覧のみ再構築） |
-| `characterWindowListDidChange` | ウィンドウの追加・削除時 | `rebuildAll()`（ウィンドウ一覧＋画像キャッシュを再構築） |
+| `imageWindowStateDidChange` | 個別ウィンドウの状態変更時 | `triggerRefresh()`（ウィンドウ一覧のみ再構築） |
+| `imageWindowListDidChange` | ウィンドウの追加・削除時 | `rebuildAll()`（ウィンドウ一覧＋画像キャッシュを再構築） |
 | `registeredImagesDidChange` | 登録画像の変更時 | 登録画像名リストの更新＋`CroppedImageHelper` のキャッシュ無効化 |
 | `languageDidChange` | 言語切り替え時 | `languageRefreshId` を更新してビュー全体を再描画 |
 

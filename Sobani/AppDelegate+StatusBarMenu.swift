@@ -56,7 +56,7 @@ extension AppDelegate {
         )
         let countItem = NSMenuItem(title: countTitle, action: nil, keyEquivalent: "")
         if !zOrderedWindows.isEmpty {
-            countItem.submenu = buildCharacterWindowsSubmenu(imageNames: imageNames)
+            countItem.submenu = buildImageWindowsSubmenu(imageNames: imageNames)
         } else {
             countItem.isEnabled = false
         }
@@ -185,7 +185,7 @@ extension AppDelegate {
         return newWindowItem
     }
 
-    func buildCharacterWindowsSubmenu(imageNames: [String]) -> NSMenu {
+    func buildImageWindowsSubmenu(imageNames: [String]) -> NSMenu {
         let submenu = NSMenu()
         submenu.autoenablesItems = false
         submenu.delegate = self
@@ -194,21 +194,21 @@ extension AppDelegate {
         let font = NSFont.menuFont(ofSize: 0)
 
         typealias WindowInfo = (
-            charWindow: CharacterWindow,
+            imageWindow: ImageWindow,
             info: (leftText: String, rightText: String)
         )
-        let windowInfoList: [WindowInfo] = orderedWindows.enumerated().map { index, charWindow in
-            let rawName = charWindow.window.screen?.localizedName ?? ""
+        let windowInfoList: [WindowInfo] = orderedWindows.enumerated().map { index, imageWindow in
+            let rawName = imageWindow.window.screen?.localizedName ?? ""
             let info = MenuStateUtils.buildWindowInfoText(
-                index: index, displayName: charWindow.localizedDisplayName,
-                windowId: charWindow.windowId,
+                index: index, displayName: imageWindow.localizedDisplayName,
+                windowId: imageWindow.windowId,
                 imageSize: (
-                    Int(charWindow.imageView.frame.width),
-                    Int(charWindow.imageView.frame.height)
+                    Int(imageWindow.imageView.frame.width),
+                    Int(imageWindow.imageView.frame.height)
                 ),
                 screenName: rawName.isEmpty ? L("image.unknown") : rawName
             )
-            return (charWindow, info)
+            return (imageWindow, info)
         }
 
         let maxLeftWidth: CGFloat = windowInfoList.reduce(0) { maxWidth, pair in
@@ -223,7 +223,7 @@ extension AppDelegate {
 
         let ghostIcon = menuIcon(AppConstants.ghostModeSymbol)
         let hiddenIcon = menuIcon(AppConstants.hiddenWindowSymbol)
-        for (charWindow, info) in windowInfoList {
+        for (imageWindow, info) in windowInfoList {
             let fullText = "\(info.leftText)\t\(info.rightText)"
 
             let attributedTitle = NSAttributedString(
@@ -233,14 +233,14 @@ extension AppDelegate {
 
             let item = NSMenuItem(title: info.leftText, action: nil, keyEquivalent: "")
             item.attributedTitle = attributedTitle
-            if charWindow.isHidden {
+            if imageWindow.isHidden {
                 item.image = hiddenIcon
-            } else if charWindow.isGhostMode {
+            } else if imageWindow.isGhostMode {
                 item.image = ghostIcon
             }
-            item.representedObject = charWindow
+            item.representedObject = imageWindow
             item.submenu = buildWindowActionsSubmenu(
-                for: charWindow,
+                for: imageWindow,
                 orderedWindows: orderedWindows,
                 imageNames: imageNames
             )
@@ -356,30 +356,30 @@ extension AppDelegate {
 
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
 
-        if let charWindow = zOrderedWindows.first(where: {
+        if let imageWindow = zOrderedWindows.first(where: {
             $0.window.windowNumber == windowNumber
         }) {
-            charWindow.applyOpacity(value)
+            imageWindow.applyOpacity(value)
         }
     }
 
     @objc func perWindowGhostAlphaSliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-        if let charWindow = zOrderedWindows.first(where: { $0.window.windowNumber == sender.tag }) {
-            charWindow.setCustomGhostAlpha(value)
+        if let imageWindow = zOrderedWindows.first(where: { $0.window.windowNumber == sender.tag }) {
+            imageWindow.setCustomGhostAlpha(value)
         }
     }
 
     @objc func togglePerWindowGhostAlphaCustom(_ sender: NSButton) {
-        guard let charWindow = zOrderedWindows.first(where: {
+        guard let imageWindow = zOrderedWindows.first(where: {
             $0.window.windowNumber == sender.tag
         }) else { return }
-        charWindow.setCustomGhostAlpha(sender.state == .on ? GhostModeSettings.globalAlpha : nil)
+        imageWindow.setCustomGhostAlpha(sender.state == .on ? GhostModeSettings.globalAlpha : nil)
 
         guard let container = sender.superview else { return }
-        let isCustom = charWindow.customGhostAlpha != nil
-        let currentAlpha = charWindow.effectiveGhostAlpha
+        let isCustom = imageWindow.customGhostAlpha != nil
+        let currentAlpha = imageWindow.effectiveGhostAlpha
         if let slider = container.subviews.first(where: { $0 is NSSlider }) as? NSSlider {
             slider.doubleValue = Double(currentAlpha)
             slider.isEnabled = isCustom
@@ -396,9 +396,9 @@ extension AppDelegate {
         let value = CGFloat(sender.doubleValue)
         GhostModeSettings.globalAlpha = value
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-        for charWindow in zOrderedWindows
-        where charWindow.isGhostMode && charWindow.customGhostAlpha == nil {
-            charWindow.window.alphaValue = value
+        for imageWindow in zOrderedWindows
+        where imageWindow.isGhostMode && imageWindow.customGhostAlpha == nil {
+            imageWindow.window.alphaValue = value
         }
     }
 
@@ -448,9 +448,9 @@ extension AppDelegate {
 
     private func refreshDefaultImageWindows() {
         guard let newDefault = ImageManager.shared.defaultImage() else { return }
-        for charWindow in zOrderedWindows
-        where charWindow.displayName == AppConstants.defaultImageName {
-            charWindow.applyImage(newDefault)
+        for imageWindow in zOrderedWindows
+        where imageWindow.displayName == AppConstants.defaultImageName {
+            imageWindow.applyImage(newDefault)
         }
     }
 
@@ -464,25 +464,25 @@ extension AppDelegate {
     }
 
     @objc func resetAllRotations() {
-        for charWindow in zOrderedWindows {
-            charWindow.applyRotation(0)
+        for imageWindow in zOrderedWindows {
+            imageWindow.applyRotation(0)
         }
     }
 
     @objc func resetAllOpacity() {
-        for charWindow in zOrderedWindows {
-            charWindow.applyOpacity(1.0)
+        for imageWindow in zOrderedWindows {
+            imageWindow.applyOpacity(1.0)
         }
     }
 
     @objc func toggleGhostModeByWindowNumber(_ sender: NSMenuItem) {
-        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
-        charWindow.setGhostMode(!charWindow.isGhostMode)
+        guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
+        imageWindow.setGhostMode(!imageWindow.isGhostMode)
     }
 
     @objc func toggleHiddenByWindowNumber(_ sender: NSMenuItem) {
-        guard let charWindow = characterWindow(forWindowNumber: sender.tag) else { return }
-        charWindow.setHidden(!charWindow.isHidden)
+        guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
+        imageWindow.setHidden(!imageWindow.isHidden)
     }
 
 }

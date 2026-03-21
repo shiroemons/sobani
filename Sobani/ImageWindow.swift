@@ -10,7 +10,7 @@ private final class RotatableContainer: NSView {
     }
 }
 
-// MARK: - Character Window
+// MARK: - Image Window
 
 /// デスクトップに表示される透明キャラクターウィンドウ。
 ///
@@ -18,11 +18,11 @@ private final class RotatableContainer: NSView {
 /// コンテキストメニュー、ゴーストモード、クロップ編集、背景除去、不透明度調整を提供する。
 /// Z-order は `AppDelegate.zOrderedWindows` 配列で管理される。
 @MainActor
-final class CharacterWindow: NSObject, NSMenuDelegate {
+final class ImageWindow: NSObject, NSMenuDelegate {
     let window: NSWindow
     let imageView: DraggableImageView
-    weak var delegate: CharacterWindowDelegate? {
-        didSet { imageView.characterWindowDelegate = delegate }
+    weak var delegate: ImageWindowDelegate? {
+        didSet { imageView.imageWindowDelegate = delegate }
     }
     var displayName: String = AppConstants.defaultImageName
     /// ウィンドウの一意識別子。`AppDelegate.nextWindowId` から順次割り当てられる。
@@ -80,7 +80,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 
         imageView.onMouseDown = { [weak self] in
             guard let self else { return }
-            self.delegate?.characterWindowDidBecomeActive(self)
+            self.delegate?.imageWindowDidBecomeActive(self)
         }
         imageView.onDoubleClick = { [weak self] in
             guard let self else { return }
@@ -100,7 +100,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
         imageView.onDropImage = { [weak self] url, isOption in
             guard let self else { return }
             if isOption {
-                self.delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
+                self.delegate?.imageWindowRequestedNewWindowWithFileURL(self, fileURL: url)
             } else {
                 self.loadAndApplyImage(from: url)
             }
@@ -121,7 +121,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     private func notifyStateDidChange() {
-        NotificationCenter.default.post(name: AppConstants.characterWindowStateDidChange, object: nil)
+        NotificationCenter.default.post(name: AppConstants.imageWindowStateDidChange, object: nil)
     }
 
     func applyImage(_ image: NSImage) {
@@ -260,7 +260,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     @objc func deleteRegisteredImage(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
         ImageManager.shared.removeRegisteredImage(named: name)
-        delegate?.characterWindowDidDeleteImage(named: name)
+        delegate?.imageWindowDidDeleteImage(named: name)
     }
 
     @objc func resetToDefault() {
@@ -271,24 +271,24 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
     }
 
     @objc func addNewWindow() {
-        delegate?.characterWindowRequestedNewWindow(self, imageName: nil)
+        delegate?.imageWindowRequestedNewWindow(self, imageName: nil)
     }
 
     @objc func addNewWindowWithImage(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
-        delegate?.characterWindowRequestedNewWindow(self, imageName: name)
+        delegate?.imageWindowRequestedNewWindow(self, imageName: name)
     }
 
     @objc func addNewWindowWithNewImage(_ sender: NSMenuItem) {
         let panel = ImageFileDialog.makeOpenPanel(message: L("dialog.select_add_image_message"))
         if panel.runModal() == .OK, let url = panel.url {
-            delegate?.characterWindowRequestedNewWindowWithFileURL(self, fileURL: url)
+            delegate?.imageWindowRequestedNewWindowWithFileURL(self, fileURL: url)
         }
     }
 
     @objc func closeThisWindow() {
         window.orderOut(nil)
-        delegate?.characterWindowDidClose(self)
+        delegate?.imageWindowDidClose(self)
     }
 
     @objc func quitApp() {
@@ -322,7 +322,7 @@ final class CharacterWindow: NSObject, NSMenuDelegate {
 
 // MARK: - Ghost Mode
 
-extension CharacterWindow {
+extension ImageWindow {
     var effectiveGhostAlpha: CGFloat {
         customGhostAlpha ?? GhostModeSettings.globalAlpha
     }
@@ -363,7 +363,7 @@ extension CharacterWindow {
 
 // MARK: - Hidden Window
 
-extension CharacterWindow {
+extension ImageWindow {
     func setHidden(_ hidden: Bool) {
         guard hidden != isHidden else { return }
         isHidden = hidden
@@ -375,7 +375,7 @@ extension CharacterWindow {
         } else {
             window.orderFront(nil)
         }
-        delegate?.characterWindowDidChangeHidden(self)
+        delegate?.imageWindowDidChangeHidden(self)
         notifyStateDidChange()
     }
 
@@ -386,7 +386,7 @@ extension CharacterWindow {
 
 // MARK: - Floating Menu
 
-extension CharacterWindow: FloatingMenuDelegate {
+extension ImageWindow: FloatingMenuDelegate {
     func showFloatingMenu(at screenPoint: NSPoint) {
         guard cropEditorController?.isVisible != true else { return }
         if floatingMenuController == nil {
@@ -415,7 +415,7 @@ extension CharacterWindow: FloatingMenuDelegate {
 
 // MARK: - Crop Mode
 
-extension CharacterWindow: CropEditorPanelDelegate {
+extension ImageWindow: CropEditorPanelDelegate {
     func enterCropMode() {
         guard cropEditorController?.isVisible != true else { return }
         let controller = CropEditorPanelController(cropRect: imageView.cropRect ?? .full)
@@ -462,7 +462,7 @@ extension CharacterWindow: CropEditorPanelDelegate {
 
 // MARK: - Adjustment Panel Delegate
 
-extension CharacterWindow: AdjustmentPanelDelegate {
+extension ImageWindow: AdjustmentPanelDelegate {
     func rotationPanel(_ panel: AdjustmentPanelController, didChangeAngle angle: CGFloat) {
         applyRotation(angle)
     }
@@ -506,16 +506,16 @@ extension CharacterWindow: AdjustmentPanelDelegate {
     }
 }
 
-// MARK: - Character Window Delegate
+// MARK: - Image Window Delegate
 
 @MainActor
-protocol CharacterWindowDelegate: AnyObject {
-    var allCharacterWindows: [CharacterWindow] { get }
-    func characterWindowRequestedNewWindow(_ sender: CharacterWindow, imageName: String?)
-    func characterWindowRequestedNewWindowWithFileURL(_ sender: CharacterWindow, fileURL: URL)
-    func characterWindowDidClose(_ sender: CharacterWindow)
-    func characterWindowDidDeleteImage(named name: String)
-    func characterWindowDidBecomeActive(_ sender: CharacterWindow)
-    func characterWindowDidChangeHidden(_ sender: CharacterWindow)
+protocol ImageWindowDelegate: AnyObject {
+    var allImageWindows: [ImageWindow] { get }
+    func imageWindowRequestedNewWindow(_ sender: ImageWindow, imageName: String?)
+    func imageWindowRequestedNewWindowWithFileURL(_ sender: ImageWindow, fileURL: URL)
+    func imageWindowDidClose(_ sender: ImageWindow)
+    func imageWindowDidDeleteImage(named name: String)
+    func imageWindowDidBecomeActive(_ sender: ImageWindow)
+    func imageWindowDidChangeHidden(_ sender: ImageWindow)
     func requestQuit()
 }

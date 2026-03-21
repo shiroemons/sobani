@@ -256,11 +256,11 @@ enum AppConstants {
     }
 
     // MARK: - Notifications
-    static let characterWindowStateDidChange = Notification.Name(
-        "\(loggerSubsystem).characterWindowStateDidChange"
+    static let imageWindowStateDidChange = Notification.Name(
+        "\(loggerSubsystem).imageWindowStateDidChange"
     )
-    static let characterWindowListDidChange = Notification.Name(
-        "\(loggerSubsystem).characterWindowListDidChange"
+    static let imageWindowListDidChange = Notification.Name(
+        "\(loggerSubsystem).imageWindowListDidChange"
     )
     static let hotkeySettingsDidChange = Notification.Name(
         "\(loggerSubsystem).hotkeySettingsDidChange"
