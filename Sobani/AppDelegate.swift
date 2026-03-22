@@ -155,20 +155,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    func toggleCurrentScreenWindowsVisibility() {
-        guard !zOrderedWindows.isEmpty else { return }
+    private func windowsOnCurrentScreen() -> [ImageWindow] {
         let mouseLocation = NSEvent.mouseLocation
         guard let currentScreen = NSScreen.screen(
             containingPoint: mouseLocation
-        ) else { return }
+        ) else { return [] }
 
-        let windowsOnScreen = zOrderedWindows.filter { imageWindow in
+        return zOrderedWindows.filter { imageWindow in
             guard let windowScreen = NSScreen.screen(
                 containing: imageWindow.window.frame
             ) else { return false }
             return windowScreen == currentScreen
         }
-        toggleWindows(windowsOnScreen)
+    }
+
+    func toggleCurrentScreenWindowsVisibility() {
+        toggleWindows(windowsOnCurrentScreen())
     }
 
     @objc func addNewWindowFromMenu() { createNewWindow() }
@@ -412,6 +414,15 @@ extension AppDelegate {
         guard !zOrderedWindows.isEmpty else { return }
         let anyGhosted = zOrderedWindows.contains { $0.isGhostMode }
         for imageWindow in zOrderedWindows {
+            imageWindow.setGhostMode(!anyGhosted)
+        }
+    }
+
+    func toggleCurrentScreenGhostMode() {
+        let windowsOnScreen = windowsOnCurrentScreen()
+        guard !windowsOnScreen.isEmpty else { return }
+        let anyGhosted = windowsOnScreen.contains { $0.isGhostMode }
+        for imageWindow in windowsOnScreen {
             imageWindow.setGhostMode(!anyGhosted)
         }
     }

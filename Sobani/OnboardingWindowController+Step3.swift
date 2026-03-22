@@ -28,6 +28,7 @@ extension OnboardingWindowController {
             (L("onboarding.step3.hotkeyH.key"), L("onboarding.step3.hotkeyH.desc")),
             (L("onboarding.step3.hotkeyShiftH.key"), L("onboarding.step3.hotkeyShiftH.desc")),
             (L("onboarding.step3.hotkeyG.key"), L("onboarding.step3.hotkeyG.desc")),
+            (L("onboarding.step3.hotkeyShiftG.key"), L("onboarding.step3.hotkeyShiftG.desc")),
             (L("onboarding.step3.hotkeyM.key"), L("onboarding.step3.hotkeyM.desc"))
         ]
         let hotkeyStartY: CGFloat = Self.step3HotkeyStartY

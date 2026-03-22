@@ -1617,6 +1617,38 @@
         }
       }
     },
+    "onboarding.step3.hotkeyShiftG.desc": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在の画面のゴーストモード切り替え"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle ghost mode for current screen"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyShiftG.key": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥⇧G (Option+Shift+G)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥⇧G (Option+Shift+G)"
+          }
+        }
+      }
+    },
     "onboarding.step3.hotkeyShiftH.desc": {
       "localizations": {
         "ja": {
@@ -3821,6 +3853,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "管理パネル切り替え"
+          }
+        }
+      }
+    },
+    "management.hotkey_toggle_screen_ghost": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle ghost mode (current screen)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在の画面のゴーストモード切り替え"
           }
         }
       }

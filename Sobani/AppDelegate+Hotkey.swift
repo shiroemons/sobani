@@ -7,6 +7,7 @@ extension AppDelegate {
         case toggleVisibility
         case toggleScreenVisibility
         case toggleGhostMode
+        case toggleScreenGhostMode
         case toggleManagement
 
         var label: String {
@@ -14,6 +15,7 @@ extension AppDelegate {
             case .toggleVisibility: return L("management.hotkey_toggle_visibility")
             case .toggleScreenVisibility: return L("management.hotkey_toggle_screen_visibility")
             case .toggleGhostMode: return L("management.hotkey_toggle_ghost")
+            case .toggleScreenGhostMode: return L("management.hotkey_toggle_screen_ghost")
             case .toggleManagement: return L("management.hotkey_toggle_management")
             }
         }
@@ -46,6 +48,7 @@ extension AppDelegate {
         case .toggleVisibility: toggleAllWindowsVisibility()
         case .toggleScreenVisibility: toggleCurrentScreenWindowsVisibility()
         case .toggleGhostMode: toggleAllGhostMode()
+        case .toggleScreenGhostMode: toggleCurrentScreenGhostMode()
         case .toggleManagement: showManagementPanel()
         }
     }

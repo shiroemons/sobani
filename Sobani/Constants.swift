@@ -207,6 +207,8 @@ enum AppConstants {
     static let hotkeyToggleManagementModifiersKey = "hotkeyToggleManagementModifiers"
     static let hotkeyToggleScreenVisKeyCodeKey = "hotkeyToggleScreenVisKeyCode"
     static let hotkeyToggleScreenVisModifiersKey = "hotkeyToggleScreenVisModifiers"
+    static let hotkeyToggleScreenGhostKeyCodeKey = "hotkeyToggleScreenGhostKeyCode"
+    static let hotkeyToggleScreenGhostModifiersKey = "hotkeyToggleScreenGhostModifiers"
 
     // Window Snap
     static let snapThreshold: CGFloat = 8

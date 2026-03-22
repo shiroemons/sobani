@@ -36,6 +36,20 @@ import Testing
         }
     }
 
+    /// 未設定時にtoggleScreenGhostModeのキーコードがoptionGKeyCodeを返すことを検証
+    @Test func defaultToggleScreenGhostModeKeyCode() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleScreenGhostKeyCodeKey) {
+            #expect(HotkeySettings.keyCode(for: .toggleScreenGhostMode) == AppConstants.optionGKeyCode)
+        }
+    }
+
+    /// 未設定時にtoggleScreenGhostModeの修飾キーが[.option, .shift]を返すことを検証
+    @Test func defaultToggleScreenGhostModeModifiers() {
+        withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleScreenGhostModifiersKey) {
+            #expect(HotkeySettings.modifiers(for: .toggleScreenGhostMode) == [.option, .shift])
+        }
+    }
+
     /// 未設定時にtoggleManagementKeyCodeがoptionMKeyCodeを返すことを検証
     @Test func defaultToggleManagementKeyCode() {
         withCleanHotkeyDefaults(key: AppConstants.hotkeyToggleManagementKeyCodeKey) {
@@ -181,6 +195,10 @@ import Testing
             #expect(HotkeySettings.toggleVisibilityModifiers == .option)
             #expect(HotkeySettings.toggleGhostModeKeyCode == 3)
             #expect(HotkeySettings.toggleGhostModeModifiers == [.command, .control])
+            #expect(HotkeySettings.keyCode(for: .toggleScreenVisibility) == 12)
+            #expect(HotkeySettings.modifiers(for: .toggleScreenVisibility) == [.option, .shift])
+            #expect(HotkeySettings.keyCode(for: .toggleScreenGhostMode) == 11)
+            #expect(HotkeySettings.modifiers(for: .toggleScreenGhostMode) == [.command, .shift])
             #expect(HotkeySettings.toggleManagementKeyCode == 9)
             #expect(HotkeySettings.toggleManagementModifiers == [.command, .option])
         }
@@ -197,6 +215,10 @@ import Testing
             #expect(HotkeySettings.toggleVisibilityModifiers == .option)
             #expect(HotkeySettings.toggleGhostModeKeyCode == AppConstants.optionGKeyCode)
             #expect(HotkeySettings.toggleGhostModeModifiers == .option)
+            #expect(HotkeySettings.keyCode(for: .toggleScreenVisibility) == AppConstants.optionHKeyCode)
+            #expect(HotkeySettings.modifiers(for: .toggleScreenVisibility) == [.option, .shift])
+            #expect(HotkeySettings.keyCode(for: .toggleScreenGhostMode) == AppConstants.optionGKeyCode)
+            #expect(HotkeySettings.modifiers(for: .toggleScreenGhostMode) == [.option, .shift])
             #expect(HotkeySettings.toggleManagementKeyCode == AppConstants.optionMKeyCode)
             #expect(HotkeySettings.toggleManagementModifiers == .option)
         }
@@ -251,6 +273,10 @@ private func setAllActionsToCustomValues() {
     HotkeySettings.setModifiers([.command, .shift], for: .toggleVisibility)
     HotkeySettings.setKeyCode(3, for: .toggleGhostMode)
     HotkeySettings.setModifiers([.command, .control], for: .toggleGhostMode)
+    HotkeySettings.setKeyCode(12, for: .toggleScreenVisibility)
+    HotkeySettings.setModifiers([.option, .shift], for: .toggleScreenVisibility)
+    HotkeySettings.setKeyCode(11, for: .toggleScreenGhostMode)
+    HotkeySettings.setModifiers([.command, .shift], for: .toggleScreenGhostMode)
     HotkeySettings.setKeyCode(9, for: .toggleManagement)
     HotkeySettings.setModifiers([.command, .option], for: .toggleManagement)
 }
@@ -262,6 +288,10 @@ private func withCleanAllHotkeyDefaults(body: () throws -> Void) rethrows {
         AppConstants.hotkeyToggleVisibilityModifiersKey,
         AppConstants.hotkeyToggleGhostModeKeyCodeKey,
         AppConstants.hotkeyToggleGhostModeModifiersKey,
+        AppConstants.hotkeyToggleScreenVisKeyCodeKey,
+        AppConstants.hotkeyToggleScreenVisModifiersKey,
+        AppConstants.hotkeyToggleScreenGhostKeyCodeKey,
+        AppConstants.hotkeyToggleScreenGhostModifiersKey,
         AppConstants.hotkeyToggleManagementKeyCodeKey,
         AppConstants.hotkeyToggleManagementModifiersKey
     ]

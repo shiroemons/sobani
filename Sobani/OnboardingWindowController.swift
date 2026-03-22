@@ -296,7 +296,7 @@ extension OnboardingWindowController {
     static let step3HotkeyX: CGFloat = 80
     static let step3HotkeyInset: CGFloat = 160
     static let step3HotkeyKeyWidth: CGFloat = 190
-    static let step3HintY: CGFloat = 210
+    static let step3HintY: CGFloat = 188
 }
 
 // MARK: - Step Builders

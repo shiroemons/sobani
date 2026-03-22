@@ -41,6 +41,13 @@ enum HotkeySettings {
                 defaultKeyCode: AppConstants.optionHKeyCode,
                 defaultModifiers: [.option, .shift]
             )
+        case .toggleScreenGhostMode:
+            return ActionConfig(
+                keyCodeKey: AppConstants.hotkeyToggleScreenGhostKeyCodeKey,
+                modifiersKey: AppConstants.hotkeyToggleScreenGhostModifiersKey,
+                defaultKeyCode: AppConstants.optionGKeyCode,
+                defaultModifiers: [.option, .shift]
+            )
         }
     }
 
