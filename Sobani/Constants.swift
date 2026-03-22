@@ -467,6 +467,7 @@ enum AppTheme: String, CaseIterable, Sendable {
     }
 }
 
+@MainActor
 enum AppThemeSettings {
     static var currentTheme: AppTheme {
         get {

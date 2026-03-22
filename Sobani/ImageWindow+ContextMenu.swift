@@ -256,7 +256,7 @@ extension ImageWindow {
 // MARK: - ImageWindow + Menu Title Update
 
 extension ImageWindow {
-    nonisolated(unsafe) private static let menuTitleMap: [MenuItemTag: String] = [
+    nonisolated static let menuTitleMap: [MenuItemTag: String] = [
         .changeImageSubmenu: "image.change",
         .flipContext: "adjust.flip",
         .adjustPanelContext: "adjust.open",

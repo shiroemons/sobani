@@ -150,7 +150,7 @@ final class WindowStateManager {
     /// - Returns: デコードされたウィンドウ状態の配列。
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
-        guard var states = JSONPersistence.load(
+        guard let states = JSONPersistence.load(
             [WindowState].self,
             from: url,
             logger: logger,

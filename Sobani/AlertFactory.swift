@@ -2,6 +2,7 @@ import AppKit
 
 // MARK: - Alert Factory
 
+@MainActor
 enum AlertFactory {
     /// 情報/警告アラートを生成
     static func make(
