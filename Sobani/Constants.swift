@@ -204,6 +204,8 @@ enum AppConstants {
     static let hotkeyToggleGhostModeModifiersKey = "hotkeyToggleGhostModeModifiers"
     static let hotkeyToggleManagementKeyCodeKey = "hotkeyToggleManagementKeyCode"
     static let hotkeyToggleManagementModifiersKey = "hotkeyToggleManagementModifiers"
+    static let hotkeyToggleScreenVisKeyCodeKey = "hotkeyToggleScreenVisKeyCode"
+    static let hotkeyToggleScreenVisModifiersKey = "hotkeyToggleScreenVisModifiers"
 
     // Accessibility
     static let accessibilitySettingsURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"

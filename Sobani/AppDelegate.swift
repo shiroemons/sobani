@@ -146,6 +146,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         areWindowsHidden.toggle()
     }
 
+    private func toggleWindows(_ windows: [ImageWindow]) {
+        guard !windows.isEmpty else { return }
+        if windows.allSatisfy({ $0.isHidden }) {
+            for imageWindow in windows {
+                imageWindow.setHidden(false)
+            }
+            applyZOrderToWindows()
+            if areWindowsHidden { areWindowsHidden = false }
+        } else {
+            for imageWindow in windows where !imageWindow.isHidden {
+                imageWindow.setHidden(true)
+            }
+        }
+    }
+
+    func toggleCurrentScreenWindowsVisibility() {
+        guard !zOrderedWindows.isEmpty else { return }
+        let mouseLocation = NSEvent.mouseLocation
+        guard let currentScreen = NSScreen.screen(
+            containingPoint: mouseLocation
+        ) else { return }
+
+        let windowsOnScreen = zOrderedWindows.filter { imageWindow in
+            guard let windowScreen = NSScreen.screen(
+                containing: imageWindow.window.frame
+            ) else { return false }
+            return windowScreen == currentScreen
+        }
+        toggleWindows(windowsOnScreen)
+    }
+
     @objc func addNewWindowFromMenu() { createNewWindow() }
 
     @objc func addNewWindowWithImageFromMenu(_ sender: NSMenuItem) {

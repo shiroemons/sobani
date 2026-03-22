@@ -3825,6 +3825,22 @@
         }
       }
     },
+    "management.hotkey_toggle_screen_visibility": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle current screen visibility"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在の画面の表示/非表示"
+          }
+        }
+      }
+    },
     "management.hotkey_press_key": {
       "localizations": {
         "en": {

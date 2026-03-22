@@ -34,6 +34,13 @@ enum HotkeySettings {
                 defaultKeyCode: AppConstants.optionMKeyCode,
                 defaultModifiers: .option
             )
+        case .toggleScreenVisibility:
+            return ActionConfig(
+                keyCodeKey: AppConstants.hotkeyToggleScreenVisKeyCodeKey,
+                modifiersKey: AppConstants.hotkeyToggleScreenVisModifiersKey,
+                defaultKeyCode: AppConstants.optionHKeyCode,
+                defaultModifiers: [.option, .shift]
+            )
         }
     }
 

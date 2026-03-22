@@ -5,12 +5,14 @@ import Cocoa
 extension AppDelegate {
     enum KeyboardAction: Sendable, CaseIterable {
         case toggleVisibility
+        case toggleScreenVisibility
         case toggleGhostMode
         case toggleManagement
 
         var label: String {
             switch self {
             case .toggleVisibility: return L("management.hotkey_toggle_visibility")
+            case .toggleScreenVisibility: return L("management.hotkey_toggle_screen_visibility")
             case .toggleGhostMode: return L("management.hotkey_toggle_ghost")
             case .toggleManagement: return L("management.hotkey_toggle_management")
             }
@@ -55,6 +57,7 @@ extension AppDelegate {
     func performKeyboardAction(_ action: KeyboardAction) {
         switch action {
         case .toggleVisibility: toggleAllWindowsVisibility()
+        case .toggleScreenVisibility: toggleCurrentScreenWindowsVisibility()
         case .toggleGhostMode: toggleAllGhostMode()
         case .toggleManagement: showManagementPanel()
         }

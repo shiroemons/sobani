@@ -509,4 +509,9 @@ extension NSScreen {
             ScreenRestorationUtils.isFrameMatch(screen.frame, savedFrame, tolerance: tolerance)
         }
     }
+
+    /// 指定された点を含むスクリーンを返す
+    static func screen(containingPoint point: NSPoint) -> NSScreen? {
+        screens.first { $0.frame.contains(point) }
+    }
 }
