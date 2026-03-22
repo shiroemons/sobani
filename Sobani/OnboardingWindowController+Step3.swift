@@ -24,23 +24,37 @@ extension OnboardingWindowController {
     // MARK: - Private helpers
 
     private func buildStep3HotkeyList(in container: NSView, width: CGFloat) {
-        let hotkeyKeys = [
-            L("onboarding.step3.hotkeyH"),
-            L("onboarding.step3.hotkeyG"),
-            L("onboarding.step3.hotkeyM")
+        let hotkeys: [(key: String, desc: String)] = [
+            (L("onboarding.step3.hotkeyH.key"), L("onboarding.step3.hotkeyH.desc")),
+            (L("onboarding.step3.hotkeyShiftH.key"), L("onboarding.step3.hotkeyShiftH.desc")),
+            (L("onboarding.step3.hotkeyG.key"), L("onboarding.step3.hotkeyG.desc")),
+            (L("onboarding.step3.hotkeyM.key"), L("onboarding.step3.hotkeyM.desc"))
         ]
         let hotkeyStartY: CGFloat = Self.step3HotkeyStartY
         let hotkeyRowHeight: CGFloat = Self.step3HotkeyRowHeight
-        for (index, text) in hotkeyKeys.enumerated() {
-            let label = NSTextField(labelWithString: text)
-            label.frame = NSRect(
+        let descX: CGFloat = Self.step3HotkeyX + Self.step3HotkeyKeyWidth
+        for (index, hotkey) in hotkeys.enumerated() {
+            let rowY = hotkeyStartY - CGFloat(index) * hotkeyRowHeight
+
+            let keyLabel = NSTextField(labelWithString: hotkey.key)
+            keyLabel.frame = NSRect(
                 x: Self.step3HotkeyX,
-                y: hotkeyStartY - CGFloat(index) * hotkeyRowHeight,
-                width: width - Self.step3HotkeyInset,
+                y: rowY,
+                width: Self.step3HotkeyKeyWidth,
                 height: 20
             )
-            label.font = NSFont.systemFont(ofSize: Self.step2LabelFontSize)
-            container.addSubview(label)
+            keyLabel.font = NSFont.systemFont(ofSize: Self.step2LabelFontSize)
+            container.addSubview(keyLabel)
+
+            let descLabel = NSTextField(labelWithString: hotkey.desc)
+            descLabel.frame = NSRect(
+                x: descX,
+                y: rowY,
+                width: width - descX - Self.contentPadding,
+                height: 20
+            )
+            descLabel.font = NSFont.systemFont(ofSize: Self.step2LabelFontSize)
+            container.addSubview(descLabel)
         }
     }
 

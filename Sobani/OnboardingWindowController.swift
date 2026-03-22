@@ -288,21 +288,15 @@ extension OnboardingWindowController {
     static let step2LabelFontSize: CGFloat = 13
     private static let step2HintFontSize: CGFloat = 11
 
-    // MARK: Step 3: ホットキー＆アクセシビリティ
+    // MARK: Step 3: グローバルホットキー
     static let step3IconY: CGFloat = 380
     static let step3TitleY: CGFloat = 340
     static let step3HotkeyStartY: CGFloat = 305
     static let step3HotkeyRowHeight: CGFloat = 22
     static let step3HotkeyX: CGFloat = 80
     static let step3HotkeyInset: CGFloat = 160
-    static let step3HintY: CGFloat = 232
-    static let step3GrantedStatusY: CGFloat = 207
-    static let step3WarningY: CGFloat = 202
-    static let step3ButtonY: CGFloat = 165
-    static let step3StepInstructionX: CGFloat = 100
-    static let step3StepInstructionInset: CGFloat = 200
-    static let step3Step1Y: CGFloat = 138
-    static let step3Step2Y: CGFloat = 118
+    static let step3HotkeyKeyWidth: CGFloat = 190
+    static let step3HintY: CGFloat = 210
 }
 
 // MARK: - Step Builders

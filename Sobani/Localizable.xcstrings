@@ -1510,61 +1510,141 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ホットキーとアクセシビリティ"
+            "value": "グローバルホットキー"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hotkeys & Accessibility"
+            "value": "Global Hotkeys"
           }
         }
       }
     },
-    "onboarding.step3.hotkeyH": {
+    "onboarding.step3.hotkeyG.desc": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "⌥H (Option+H)  すべての画像を表示/非表示"
+            "value": "ゴーストモードの切り替え"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "⌥H (Option+H)  Show/Hide all images"
+            "value": "Toggle ghost mode"
           }
         }
       }
     },
-    "onboarding.step3.hotkeyG": {
+    "onboarding.step3.hotkeyG.key": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "⌥G (Option+G)  ゴーストモードの切り替え"
+            "value": "⌥G (Option+G)"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "⌥G (Option+G)  Toggle ghost mode"
+            "value": "⌥G (Option+G)"
           }
         }
       }
     },
-    "onboarding.step3.hotkeyM": {
+    "onboarding.step3.hotkeyH.desc": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "⌥M (Option+M)  管理パネルの表示"
+            "value": "すべての画像を表示/非表示"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "⌥M (Option+M)  Show management panel"
+            "value": "Toggle all images"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyH.key": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥H (Option+H)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥H (Option+H)"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyM.desc": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理パネルの表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open management panel"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyM.key": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥M (Option+M)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥M (Option+M)"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyShiftH.desc": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在の画面の画像のみ表示/非表示"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle current screen images"
+          }
+        }
+      }
+    },
+    "onboarding.step3.hotkeyShiftH.key": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥⇧H (Option+Shift+H)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥⇧H (Option+Shift+H)"
           }
         }
       }
