@@ -1,11 +1,12 @@
-import XCTest
+import CoreGraphics
+import Testing
 @testable import Sobani
 
-final class MinimapLayoutTests: XCTestCase {
+@Suite struct MinimapLayoutTests {
 
     // MARK: - Basic Window Positioning
 
-    func testWindowAtOriginMapsCorrectly() throws {
+    @Test func testWindowAtOriginMapsCorrectly() throws {
         let layout = MinimapLayout(
             screens: [],
             scale: 0.5,
@@ -20,13 +21,13 @@ final class MinimapLayoutTests: XCTestCase {
         // scaledY = (1080 - (0 - 0 + 200)) * 0.5 + 10 = 880 * 0.5 + 10 = 450
         // scaledW = 100 * 0.5 = 50
         // scaledH = 200 * 0.5 = 100
-        XCTAssertEqual(rect.origin.x, 10, accuracy: 0.001)
-        XCTAssertEqual(rect.origin.y, 450, accuracy: 0.001)
-        XCTAssertEqual(rect.width, 50, accuracy: 0.001)
-        XCTAssertEqual(rect.height, 100, accuracy: 0.001)
+        #expect(abs(rect.origin.x - 10) < 0.001)
+        #expect(abs(rect.origin.y - 450) < 0.001)
+        #expect(abs(rect.width - 50) < 0.001)
+        #expect(abs(rect.height - 100) < 0.001)
     }
 
-    func testWindowAtTopRightMapsToSwiftUITopRight() throws {
+    @Test func testWindowAtTopRightMapsToSwiftUITopRight() throws {
         let layout = MinimapLayout(
             screens: [],
             scale: 0.5,
@@ -39,11 +40,11 @@ final class MinimapLayoutTests: XCTestCase {
 
         // scaledX = (1820 - 0) * 0.5 + 10 = 920
         // scaledY = (1080 - (980 - 0 + 100)) * 0.5 + 10 = 0 * 0.5 + 10 = 10
-        XCTAssertEqual(rect.origin.x, 920, accuracy: 0.001)
-        XCTAssertEqual(rect.origin.y, 10, accuracy: 0.001)
+        #expect(abs(rect.origin.x - 920) < 0.001)
+        #expect(abs(rect.origin.y - 10) < 0.001)
     }
 
-    func testScaleAppliedToSize() throws {
+    @Test func testScaleAppliedToSize() throws {
         let layout = MinimapLayout(
             screens: [],
             scale: 0.25,
@@ -53,13 +54,13 @@ final class MinimapLayoutTests: XCTestCase {
 
         let rect = layout.windowRect(for: 0, originY: 0, width: 400, height: 300)
 
-        XCTAssertEqual(rect.width, 100, accuracy: 0.001)
-        XCTAssertEqual(rect.height, 75, accuracy: 0.001)
+        #expect(abs(rect.width - 100) < 0.001)
+        #expect(abs(rect.height - 75) < 0.001)
     }
 
     // MARK: - Multi-Screen with Negative Origin
 
-    func testNegativeOriginScreen() throws {
+    @Test func testNegativeOriginScreen() throws {
         // Two screens: main at (0,0) 1920x1080, left at (-1920,0) 1920x1080
         // totalBounds = (-1920, 0, 3840, 1080)
         let layout = MinimapLayout(
@@ -74,13 +75,13 @@ final class MinimapLayoutTests: XCTestCase {
 
         // scaledX = (-1000 - (-1920)) * 0.1 + 20 = 920 * 0.1 + 20 = 112
         // scaledY = (1080 - (500 - 0 + 300)) * 0.1 + 20 = 280 * 0.1 + 20 = 48
-        XCTAssertEqual(rect.origin.x, 112, accuracy: 0.001)
-        XCTAssertEqual(rect.origin.y, 48, accuracy: 0.001)
-        XCTAssertEqual(rect.width, 20, accuracy: 0.001)
-        XCTAssertEqual(rect.height, 30, accuracy: 0.001)
+        #expect(abs(rect.origin.x - 112) < 0.001)
+        #expect(abs(rect.origin.y - 48) < 0.001)
+        #expect(abs(rect.width - 20) < 0.001)
+        #expect(abs(rect.height - 30) < 0.001)
     }
 
-    func testWindowOnMainScreenWithNegativeOriginBounds() throws {
+    @Test func testWindowOnMainScreenWithNegativeOriginBounds() throws {
         // totalBounds = (-1920, 0, 3840, 1080)
         let layout = MinimapLayout(
             screens: [],
@@ -94,13 +95,13 @@ final class MinimapLayoutTests: XCTestCase {
 
         // scaledX = (100 - (-1920)) * 0.1 + 20 = 2020 * 0.1 + 20 = 222
         // scaledY = (1080 - (100 - 0 + 200)) * 0.1 + 20 = 780 * 0.1 + 20 = 98
-        XCTAssertEqual(rect.origin.x, 222, accuracy: 0.001)
-        XCTAssertEqual(rect.origin.y, 98, accuracy: 0.001)
+        #expect(abs(rect.origin.x - 222) < 0.001)
+        #expect(abs(rect.origin.y - 98) < 0.001)
     }
 
     // MARK: - macOSDelta
 
-    func testMacOSDeltaBasicConversion() throws {
+    @Test func testMacOSDeltaBasicConversion() throws {
         let layout = MinimapLayout(
             screens: [],
             scale: 0.5,
@@ -110,11 +111,11 @@ final class MinimapLayoutTests: XCTestCase {
 
         // Positive width → positive X, positive height → negative Y (SwiftUI→macOS Y flip)
         let delta = layout.macOSDelta(from: CGSize(width: 50, height: 30))
-        XCTAssertEqual(delta.x, 100, accuracy: 0.001)
-        XCTAssertEqual(delta.y, -60, accuracy: 0.001)
+        #expect(abs(delta.x - 100) < 0.001)
+        #expect(abs(delta.y - (-60)) < 0.001)
     }
 
-    func testMacOSDeltaScaleFactor() throws {
+    @Test func testMacOSDeltaScaleFactor() throws {
         let layout = MinimapLayout(
             screens: [],
             scale: 0.1,
@@ -123,11 +124,11 @@ final class MinimapLayoutTests: XCTestCase {
         )
 
         let delta = layout.macOSDelta(from: CGSize(width: 10, height: 20))
-        XCTAssertEqual(delta.x, 100, accuracy: 0.001)
-        XCTAssertEqual(delta.y, -200, accuracy: 0.001)
+        #expect(abs(delta.x - 100) < 0.001)
+        #expect(abs(delta.y - (-200)) < 0.001)
     }
 
-    func testMacOSDeltaZero() throws {
+    @Test func testMacOSDeltaZero() throws {
         let layout = MinimapLayout(
             screens: [],
             scale: 0.5,
@@ -136,7 +137,7 @@ final class MinimapLayoutTests: XCTestCase {
         )
 
         let delta = layout.macOSDelta(from: .zero)
-        XCTAssertEqual(delta.x, 0, accuracy: 0.001)
-        XCTAssertEqual(delta.y, 0, accuracy: 0.001)
+        #expect(abs(delta.x - 0) < 0.001)
+        #expect(abs(delta.y - 0) < 0.001)
     }
 }

@@ -1,7 +1,8 @@
-import XCTest
+import AppKit
+import Testing
 @testable import Sobani
 
-final class CroppedImageHelperTests: XCTestCase {
+@Suite struct CroppedImageHelperTests {
 
     // MARK: - Helpers
 
@@ -20,78 +21,77 @@ final class CroppedImageHelperTests: XCTestCase {
         CropRect(x: x, y: y, width: width, height: height)
     }
 
-    override func setUp() {
-        super.setUp()
+    init() {
         CroppedImageHelper.invalidateCache()
     }
 
     // MARK: - Tests
 
-    func testNilCropRectReturnsOriginal() throws {
+    @Test func testNilCropRectReturnsOriginal() throws {
         let original = makeTestImage(width: 200, height: 100)
         let result = CroppedImageHelper.croppedImage(
             from: original, cropRect: nil, imageName: "test"
         )
-        XCTAssertEqual(result.size.width, 200, accuracy: 0.001)
-        XCTAssertEqual(result.size.height, 100, accuracy: 0.001)
+        #expect(abs(result.size.width - 200) < 0.001)
+        #expect(abs(result.size.height - 100) < 0.001)
     }
 
-    func testIdentityCropReturnsOriginal() throws {
+    @Test func testIdentityCropReturnsOriginal() throws {
         let original = makeTestImage(width: 200, height: 100)
         // x:0 y:0 width:1 height:1 with no transforms is identity — should return original directly
         let crop = makeCropRect(x: 0, y: 0, width: 1, height: 1)
         let result = CroppedImageHelper.croppedImage(
             from: original, cropRect: crop, imageName: "test"
         )
-        XCTAssertTrue(result === original)
+        #expect(result === original)
     }
 
-    func testFullCropReturnsSameDimensions() throws {
+    @Test func testFullCropReturnsSameDimensions() throws {
         let original = makeTestImage(width: 200, height: 100)
         let crop = makeCropRect(x: 0, y: 0, width: 1, height: 1)
         let result = CroppedImageHelper.croppedImage(
             from: original, cropRect: crop, imageName: "test"
         )
 
-        let cgImage = try XCTUnwrap(result.cgImage(forProposedRect: nil, context: nil, hints: nil))
-        let originalCG = try XCTUnwrap(
+        let cgImage = try #require(result.cgImage(forProposedRect: nil, context: nil, hints: nil))
+        let originalCG = try #require(
             original.cgImage(forProposedRect: nil, context: nil, hints: nil)
         )
-        XCTAssertEqual(cgImage.width, originalCG.width)
-        XCTAssertEqual(cgImage.height, originalCG.height)
+        #expect(cgImage.width == originalCG.width)
+        #expect(cgImage.height == originalCG.height)
     }
 
-    func testHalfWidthCrop() throws {
+    @Test func testHalfWidthCrop() throws {
         let original = makeTestImage(width: 200, height: 100)
         let crop = makeCropRect(x: 0, y: 0, width: 0.5, height: 1)
         let result = CroppedImageHelper.croppedImage(
             from: original, cropRect: crop, imageName: "test"
         )
 
-        let cgImage = try XCTUnwrap(result.cgImage(forProposedRect: nil, context: nil, hints: nil))
-        let originalCG = try XCTUnwrap(
+        let cgImage = try #require(result.cgImage(forProposedRect: nil, context: nil, hints: nil))
+        let originalCG = try #require(
             original.cgImage(forProposedRect: nil, context: nil, hints: nil)
         )
-        XCTAssertEqual(cgImage.width, originalCG.width / 2)
-        XCTAssertEqual(cgImage.height, originalCG.height)
+        #expect(cgImage.width == originalCG.width / 2)
+        #expect(cgImage.height == originalCG.height)
     }
 
-    func testQuarterCropFromCenter() throws {
+    @Test func testQuarterCropFromCenter() throws {
         let original = makeTestImage(width: 200, height: 200)
         let crop = makeCropRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
         let result = CroppedImageHelper.croppedImage(
             from: original, cropRect: crop, imageName: "test"
         )
 
-        let cgImage = try XCTUnwrap(result.cgImage(forProposedRect: nil, context: nil, hints: nil))
-        let originalCG = try XCTUnwrap(
+        let cgImage = try #require(result.cgImage(forProposedRect: nil, context: nil, hints: nil))
+        let originalCG = try #require(
             original.cgImage(forProposedRect: nil, context: nil, hints: nil)
         )
-        XCTAssertEqual(cgImage.width, originalCG.width / 2)
-        XCTAssertEqual(cgImage.height, originalCG.height / 2)
+        #expect(cgImage.width == originalCG.width / 2)
+        #expect(cgImage.height == originalCG.height / 2)
     }
 
-    func testCachedResultReturnedOnSecondCall() throws {
+    @Test func testCachedResultReturnedOnSecondCall() throws {
         let original = makeTestImage(width: 200, height: 100)
         let crop = makeCropRect(x: 0, y: 0, width: 0.5, height: 1)
 
@@ -103,10 +103,10 @@ final class CroppedImageHelperTests: XCTestCase {
         )
 
         // Both calls should return the same NSImage instance (from cache)
-        XCTAssertTrue(first === second)
+        #expect(first === second)
     }
 
-    func testDifferentImageNamesProduceSeparateCacheEntries() throws {
+    @Test func testDifferentImageNamesProduceSeparateCacheEntries() throws {
         let original = makeTestImage(width: 200, height: 100)
         let crop = makeCropRect(x: 0, y: 0, width: 0.5, height: 1)
 
@@ -118,10 +118,10 @@ final class CroppedImageHelperTests: XCTestCase {
         )
 
         // Separate cache entries — different instances
-        XCTAssertFalse(resultA === resultB)
+        #expect(!(resultA === resultB))
     }
 
-    func testCacheInvalidationClearsCache() throws {
+    @Test func testCacheInvalidationClearsCache() throws {
         let original = makeTestImage(width: 200, height: 100)
         let crop = makeCropRect(x: 0, y: 0, width: 0.5, height: 1)
 
@@ -134,6 +134,6 @@ final class CroppedImageHelperTests: XCTestCase {
         )
 
         // After invalidation, cache is empty — a new image is produced
-        XCTAssertFalse(before === after)
+        #expect(!(before === after))
     }
 }
