@@ -7,8 +7,6 @@ struct SettingsView: View {
     @State private var ghostAlpha = GhostModeSettings.globalAlpha
     @State private var currentTheme = AppThemeSettings.currentTheme
     @State private var currentLanguage = LanguageManager.shared.currentLanguage
-    @State private var isAccessibilityGranted = AXIsProcessTrusted()
-    @State private var accessibilityTimer: Timer?
     @State private var hotkeySettingsVersion = 0
     @State private var hasDuplicateHotkeys = false
     @State private var hasNonDefaultHotkeys = false
@@ -26,16 +24,7 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
-            startAccessibilityPolling()
             updateHotkeyState()
-        }
-        .onDisappear {
-            stopAccessibilityPolling()
-        }
-        .onReceive(
-            NotificationCenter.default.publisher(for: AppConstants.managementPanelWillClose)
-        ) { _ in
-            stopAccessibilityPolling()
         }
     }
 
@@ -121,27 +110,6 @@ struct SettingsView: View {
             Toggle(L("management.hotkey_enabled"), isOn: hotkeyEnabledBinding())
 
             if HotkeySettings.isEnabled {
-                if isAccessibilityGranted {
-                    Label(
-                        L("management.hotkey_accessibility_granted"),
-                        systemImage: "checkmark.circle.fill"
-                    )
-                    .foregroundStyle(.green)
-                } else {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label(
-                            L("management.hotkey_accessibility_warning"),
-                            systemImage: "exclamationmark.triangle.fill"
-                        )
-                        .foregroundStyle(.orange)
-                        Button(L("management.hotkey_open_settings")) {
-                            if let url = URL(string: AppConstants.accessibilitySettingsURL) {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }
-                    }
-                }
-
                 ForEach(AppDelegate.KeyboardAction.allCases, id: \.self) { action in
                     hotkeyRow(
                         action: action,
@@ -223,19 +191,9 @@ struct SettingsView: View {
             get: { HotkeySettings.isEnabled },
             set: { newValue in
                 HotkeySettings.isEnabled = newValue
-                if newValue {
-                    requestAccessibilityIfNeeded()
-                }
                 notifyHotkeySettingsChanged()
             }
         )
-    }
-
-    private func requestAccessibilityIfNeeded() {
-        guard !AXIsProcessTrusted() else { return }
-        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-        AXIsProcessTrustedWithOptions(options)
-        startAccessibilityPolling()
     }
 
     private func keyCodeBinding(for action: AppDelegate.KeyboardAction) -> Binding<UInt16> {
@@ -269,31 +227,6 @@ struct SettingsView: View {
             guard !Task.isCancelled else { return }
             NotificationCenter.default.post(name: AppConstants.hotkeySettingsDidChange, object: nil)
         }
-    }
-
-    // MARK: - Accessibility Polling
-
-    private func startAccessibilityPolling() {
-        accessibilityTimer?.invalidate()
-        guard HotkeySettings.isEnabled else { return }
-        guard !isAccessibilityGranted else { return }
-        accessibilityTimer = Timer.scheduledTimer(
-            withTimeInterval: AppConstants.accessibilityPollingInterval,
-            repeats: true
-        ) { _ in
-            MainActor.assumeIsolated {
-                let granted = AXIsProcessTrusted()
-                isAccessibilityGranted = granted
-                if granted {
-                    stopAccessibilityPolling()
-                }
-            }
-        }
-    }
-
-    private func stopAccessibilityPolling() {
-        accessibilityTimer?.invalidate()
-        accessibilityTimer = nil
     }
 
     // MARK: - Update

@@ -24,7 +24,6 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private static let pageIndicatorY: CGFloat = 75
     private static let navigationButtonY: CGFloat = 35
     private static let finishDelay: TimeInterval = 0.3
-    var accessibilityTimer: Timer?
 
     init(onboardingManager: OnboardingManager = .shared) {
         self.onboardingManager = onboardingManager
@@ -101,7 +100,6 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             NotificationCenter.default.removeObserver(observer)
             languageObserver = nil
         }
-        stopStep3AccessibilityPolling()
         panel = nil
         contentContainer = nil
     }
@@ -121,7 +119,6 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private func buildCurrentStep() {
         guard let container = contentContainer else { return }
         container.subviews.forEach { $0.removeFromSuperview() }
-        stopStep3AccessibilityPolling()
 
         switch currentStep {
         case 0: buildStep1(in: container)
@@ -133,10 +130,6 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
         buildPageIndicator(in: container)
         buildNavigationButtons(in: container)
-
-        if currentStep == 2 {
-            startStep3AccessibilityPolling()
-        }
     }
 
     private func goToStep(_ step: Int) {

@@ -69,6 +69,7 @@ enum AppConstants {
     static let optionHKeyCode: UInt16 = 4
     static let optionMKeyCode: UInt16 = 46    // Option + M (管理パネル切り替え)
     static let escKeyCode: UInt16 = 53
+    static let hotkeySignature: FourCharCode = 0x534F424E  // "SOBN"
 
     // Display ID
     static let unknownDisplayID: CGDirectDisplayID = 0
@@ -206,10 +207,6 @@ enum AppConstants {
     static let hotkeyToggleManagementModifiersKey = "hotkeyToggleManagementModifiers"
     static let hotkeyToggleScreenVisKeyCodeKey = "hotkeyToggleScreenVisKeyCode"
     static let hotkeyToggleScreenVisModifiersKey = "hotkeyToggleScreenVisModifiers"
-
-    // Accessibility
-    static let accessibilitySettingsURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
-    static let accessibilityPollingInterval: TimeInterval = 2.0
 
     // Window Snap
     static let snapThreshold: CGFloat = 8

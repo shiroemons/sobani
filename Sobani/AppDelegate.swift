@@ -18,12 +18,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var shouldTerminate = false
     private var shouldSkipSave = false
     var areWindowsHidden = false
-    // internal (not private) because AppDelegate+Hotkey.swift (a separate file) both reads
-    // and writes these properties in setupHotkeyMonitors() / unregisterHotkeyMonitors().
-    // Same-file extensions could use `private`, but cross-file extensions require at least
-    // internal access.
-    var globalMonitor: Any?
-    var localMonitor: Any?
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
