@@ -74,6 +74,13 @@ classDiagram
         +loadPreset()
         +deletePreset()
     }
+    class PositionLogger {
+        +shared: PositionLogger
+        +isEnabled: Bool
+        +log()
+        +loadEntries()
+        +clearLog()
+    }
     class UnconstrainedWindow {
         +constrainFrameRect()
     }
@@ -134,6 +141,8 @@ classDiagram
     }
     class ManagementPanelView {
     }
+    class PositionLogView {
+    }
     class WindowManagementView {
     }
     class LayoutPresetsView {
@@ -157,6 +166,7 @@ classDiagram
     AppDelegate --> LanguageManager : uses
     AppDelegate --> LaunchAtLoginManager : uses
     AppDelegate --> LayoutPresetManager : uses
+    AppDelegate --> PositionLogger : uses
     AppDelegate --> ManagementPanelController : owns
     ManagementPanelController --> ManagementPanelViewModel : owns
     ManagementPanelController --> ManagementPanelView : hosts
@@ -164,6 +174,7 @@ classDiagram
     ManagementPanelView --> WindowManagementView : tab
     ManagementPanelView --> LayoutPresetsView : tab
     ManagementPanelView --> RegisteredImagesView : tab
+    ManagementPanelView --> PositionLogView : tab
     ManagementPanelView --> SettingsView : tab
     ImageWindow --> UnconstrainedWindow : uses
     ImageWindow --> FloatingMenuController : uses
@@ -203,6 +214,9 @@ classDiagram
 | `ManagementPanel/CropOverlayPreviewView.swift` | CropRect を適用したプレビュー表示 View |
 | `ManagementPanel/CroppedImageHelper.swift` | クロップ済み画像のキャッシュ付き生成ユーティリティ |
 | `ManagementPanel/SharedViews.swift` | 管理パネル内で共有する汎用 View 部品（ThumbnailView, EmptySelectionView など） |
+| `ManagementPanel/PositionLogView.swift` | 診断ログ一覧 View。フィルター・ソート・エクスポート・ログ有効/無効トグル |
+| `ManagementPanel/PositionLogDetailView.swift` | 診断ログ詳細 View。ミニマップ・スクリーン/ウィンドウ情報・コンテキスト表示 |
+| `ManagementPanel/PositionLogInfoView.swift` | 診断ログの説明 View。記録内容と非記録内容のプライバシー情報を表示 |
 | `AlertFactory.swift` | アラートダイアログの生成ユーティリティ |
 | `AppDelegate.swift` | アプリケーション全体の管理。ウィンドウライフサイクル、Z-order、ホットキー |
 | `AppDelegate+LayoutPreset.swift` | レイアウトプリセット操作のAppDelegate拡張 |
@@ -240,6 +254,7 @@ classDiagram
 | `OnboardingManager.swift` | オンボーディング表示状態の管理（シングルトン） |
 | `OnboardingWindowController.swift` | 初回起動時のオンボーディングガイド（3ステップ） |
 | `PathSanitizer.swift` | パストラバーサル防止ユーティリティ（`safeURL(name:in:)`, `safeName(from:)`） |
+| `PositionLogger.swift` | 画面位置の診断ログ記録（シングルトン）。JSONL 形式で `position_log.jsonl` に追記。エクスポート・トリミング機能 |
 | `ScreenRestorationManager.swift` | 復元待ちキューの管理（シングルトンではなく `AppDelegate` が所有）。`PendingRestoration` 構造体も同ファイルに定義 |
 | `ScreenRestorationUtils.swift` | 画面復元関連のユーティリティ関数 |
 | `SnapUtils.swift` | スナップ（吸着）関連のユーティリティ |
@@ -260,6 +275,7 @@ classDiagram
 | `LaunchAtLoginManager.shared` | `SMAppService` を通じたログイン時自動起動の切り替え |
 | `LanguageManager.shared` | 日本語・英語・システム言語のランタイム切り替え |
 | `LayoutPresetManager.shared` | レイアウトプリセットの保存・読み込み・削除（`layouts/` ディレクトリ） |
+| `PositionLogger.shared` | 画面位置の診断ログ記録。スクリーン変更・スリープ/復帰イベントを JSONL 形式で `position_log.jsonl` に保存 |
 
 `ScreenRestorationManager` と `ManagementPanelController` はシングルトンではなく、`AppDelegate` が所有するインスタンスです。
 

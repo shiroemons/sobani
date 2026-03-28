@@ -18,6 +18,7 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 ├── default.png                  # カスタムデフォルト画像（任意）
 ├── window_states.json           # ウィンドウ状態（自動生成）
 ├── pending_restorations.json    # 画面復元待ちキュー（自動生成・一時的）
+├── position_log.jsonl           # 画面位置の診断ログ（有効時のみ生成）
 └── layouts/                     # レイアウトプリセット（プリセットごとに1つのJSONファイル）
 ```
 
@@ -27,6 +28,7 @@ Sobani のデータ永続化とファイル管理の仕組みを解説します�
 | `default.png` | `ImageManager` | カスタムデフォルト画像。存在しない場合は内蔵の `character` アセットを使用 |
 | `window_states.json` | `WindowStateManager` | 終了時にウィンドウの位置・サイズ・状態を保存し、次回起動時に復元する |
 | `pending_restorations.json` | `ScreenRestorationManager` | モニター切断・スリープ後の復元待ちキュー。復元完了後は削除される |
+| `position_log.jsonl` | `PositionLogger` | 画面位置の診断ログ。JSONL形式でイベントごとに1行。有効時のみ生成される |
 | `layouts/` | `LayoutPresetManager` | レイアウトプリセット。プリセットごとに1つのJSONファイルを保持する |
 
 ---
@@ -359,6 +361,66 @@ sequenceDiagram
 | `imageWindowListDidChange` | ウィンドウの追加・削除時 | `rebuildAll()`（ウィンドウ一覧＋画像キャッシュを再構築） |
 | `registeredImagesDidChange` | 登録画像の変更時 | 登録画像名リストの更新＋`CroppedImageHelper` のキャッシュ無効化 |
 | `languageDidChange` | 言語切り替え時 | `languageRefreshId` を更新してビュー全体を再描画 |
+
+---
+
+## 画面位置の診断ログ
+
+`PositionLogger` はシングルトンとして動作し、スクリーン変更・スリープ/復帰・ウィンドウ復元などのイベントを JSONL 形式で記録します。
+
+### LogEntry の構造
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `id` | `UUID` | エントリの一意識別子 |
+| `timestamp` | `Date` | イベント発生時刻（ISO 8601 形式） |
+| `event` | `String` | イベント名（`screen_change`, `wake`, `sleep`, `restore` 等） |
+| `screens` | `[ScreenSnapshot]?` | 記録時のスクリーン状態（オプション） |
+| `windows` | `[WindowSnapshot]?` | 記録時のウィンドウ状態（オプション） |
+| `context` | `[String: String]?` | 追加のコンテキスト情報（オプション） |
+
+### ScreenSnapshot
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `displayID` | `UInt32` | ディスプレイ ID |
+| `originX` / `originY` | `CGFloat` | スクリーン原点座標 |
+| `width` / `height` | `CGFloat` | スクリーンサイズ |
+| `isMain` | `Bool` | メインディスプレイかどうか |
+
+### WindowSnapshot
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `windowId` | `Int` | ウィンドウ ID |
+| `originX` / `originY` | `CGFloat` | ウィンドウ左上座標 |
+| `width` / `height` | `CGFloat` | フレームサイズ |
+| `imageWidth` / `imageHeight` | `CGFloat` | 画像ビューのサイズ |
+| `displayID` | `UInt32?` | 対応するディスプレイ ID（オプション） |
+
+### 記録フロー
+
+```mermaid
+sequenceDiagram
+    participant AD as AppDelegate
+    participant PL as PositionLogger
+    participant FS as position_log.jsonl
+
+    Note over AD,FS: イベント発生時（スリープ・復帰・スクリーン変更等）
+    AD->>PL: log(event:screens:windows:context:)
+    PL->>PL: isEnabled チェック
+    alt 有効
+        PL->>PL: LogEntry を生成
+        PL->>PL: JSON エンコード（1行）
+        PL->>FS: ファイル末尾に追記
+        PL->>PL: entryCount を更新
+        alt entryCount > 1000
+            PL->>FS: 全エントリ読み込み → 最新 900 件に削減 → 書き戻し
+        end
+    end
+```
+
+> **プライバシー**: ログには画像ファイル名・パス・内容は一切記録されません。純粋にウィンドウの配置情報（座標・サイズ）とスクリーン構成のみが記録されます。
 
 ---
 
