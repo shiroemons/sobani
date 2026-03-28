@@ -77,7 +77,7 @@ struct PresetMinimapView: View {
                         }
 
                         // Windows
-                        ForEach(Array(states.enumerated()), id: \.offset) { _, state in
+                        ForEach(Array(states.reversed().enumerated()), id: \.offset) { _, state in
                             let windowRect = layout.windowRect(for: state)
                             let isSelected = state.windowId == selectedWindowId
                             let isDragging = draggingWindowId == state.windowId
