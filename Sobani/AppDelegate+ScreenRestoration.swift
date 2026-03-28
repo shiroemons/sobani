@@ -108,6 +108,13 @@ extension AppDelegate {
             let screenMsg = "  screen displayID=\(did), frame=\(frameDesc)"
             Self.screenRestorationLogger.debug("\(screenMsg, privacy: .public)")
         }
+        if PositionLogger.shared.isEnabled {
+            PositionLogger.shared.log(
+                event: "screen.change",
+                screens: PositionLogger.shared.currentScreenSnapshots(),
+                context: ["isWake": "\(isWake)", "screenCount": "\(count)"]
+            )
+        }
         screenChangeDebounceTimer?.invalidate()
         if wakeContext.isActive {
             // Wake 復元中のスクリーン変更 → 復元リトライをトリガー（1.5秒デバウンス）
@@ -156,6 +163,14 @@ extension AppDelegate {
             let logMsg = "  #\(wid): origin=\(originDesc), displayID=\(did), sf=\(sFrameDesc)"
             Self.screenRestorationLogger.debug("\(logMsg, privacy: .public)")
         }
+        if PositionLogger.shared.isEnabled {
+            PositionLogger.shared.log(
+                event: "sleep.enter",
+                screens: PositionLogger.shared.currentScreenSnapshots(),
+                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
+                context: ["savedCount": "\(wakeContext.states.count)"]
+            )
+        }
     }
 
     @objc func handleDidWake() {
@@ -178,6 +193,14 @@ extension AppDelegate {
             let pos = NSStringFromPoint(imageWindow.window.frame.origin)
             let wakeWinMsg = "  didWake window #\(wid): currentPos=\(pos)"
             Self.screenRestorationLogger.debug("\(wakeWinMsg, privacy: .public)")
+        }
+        if PositionLogger.shared.isEnabled {
+            PositionLogger.shared.log(
+                event: "sleep.wake",
+                screens: PositionLogger.shared.currentScreenSnapshots(),
+                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
+                context: ["restoreCount": "\(restoreCount)"]
+            )
         }
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
@@ -234,6 +257,7 @@ extension AppDelegate {
         // 注意: wakeContext.states から個別に除去しない。macOS はモニタ復帰時に
         // 全ウィンドウを再配置するため、リトライ毎に全ウィンドウを再復元する必要がある。
         let availableScreens = currentAvailableScreens
+        let logScreens = PositionLogger.shared.isEnabled ? PositionLogger.shared.currentScreenSnapshots() : nil
         var restoredAll = true
 
         for imageWindow in zOrderedWindows {
@@ -273,6 +297,20 @@ extension AppDelegate {
                     newOrigin, windowSize: windowSize, to: screen.frame
                 )
                 imageWindow.window.setFrameOrigin(clamped)
+                if PositionLogger.shared.isEnabled {
+                    PositionLogger.shared.log(
+                        event: "wake.restore",
+                        screens: logScreens,
+                        windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
+                        context: [
+                            "savedOrigin": "\(NSStringFromPoint(savedOrigin))",
+                            "computedOrigin": "\(NSStringFromPoint(newOrigin))",
+                            "clampedOrigin": "\(NSStringFromPoint(clamped))",
+                            "windowSize": "\(NSStringFromSize(windowSize))",
+                            "screenFrame": "\(NSStringFromRect(screen.frame))",
+                        ]
+                    )
+                }
                 let wid = imageWindow.windowId
                 let screenFrame = screen.frame
                 let savedDesc = NSStringFromPoint(savedOrigin)
@@ -329,6 +367,23 @@ extension AppDelegate {
             if let imageWindow = zOrderedWindows.first(where: { $0.windowId == windowId }) {
                 imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
             }
+            if PositionLogger.shared.isEnabled {
+                PositionLogger.shared.log(
+                    event: "pending.add",
+                    windows: [PositionLogger.WindowSnapshot(
+                        windowId: windowId,
+                        originX: adjusted.originX, originY: adjusted.originY,
+                        width: adjusted.width, height: adjusted.height,
+                        imageWidth: adjusted.width, imageHeight: adjusted.height,
+                        displayID: savedDisplayID
+                    )],
+                    context: [
+                        "originalOrigin": "\(savedState.originX),\(savedState.originY)",
+                        "adjustedOrigin": "\(adjusted.originX),\(adjusted.originY)",
+                        "displayID": "\(savedDisplayID ?? 0)",
+                    ]
+                )
+            }
             screenRestorationManager.addPending(
                 windowId: windowId, originalState: savedState,
                 displayID: savedDisplayID ?? AppConstants.unknownDisplayID,
@@ -354,11 +409,23 @@ extension AppDelegate {
         // フェーズ0: スリープなしのモニター切断対応
         // wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
         let screens = ScreenInfo.current()
+        let logScreensPhase0 = PositionLogger.shared.isEnabled ? PositionLogger.shared.currentScreenSnapshots() : nil
         for imageWindow in zOrderedWindows {
             let currentState = WindowStateManager.captureState(from: imageWindow)
             guard !currentState.isPositionVisible(on: screens) else { continue }
             let adjusted = currentState.adjustedToVisibleArea(on: screens)
             imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
+            if PositionLogger.shared.isEnabled {
+                PositionLogger.shared.log(
+                    event: "pending.phase0",
+                    screens: logScreensPhase0,
+                    windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
+                    context: [
+                        "currentOrigin": "\(currentState.originX),\(currentState.originY)",
+                        "adjustedOrigin": "\(adjusted.originX),\(adjusted.originY)",
+                    ]
+                )
+            }
             // displayID は切断後には取得不可のため 0 を使用（位置ベースで復元判定）
             screenRestorationManager.addPending(
                 windowId: imageWindow.windowId,
@@ -389,6 +456,18 @@ extension AppDelegate {
                     origin, windowSize: windowSize, to: screen.frame
                 )
                 imageWindow.window.setFrameOrigin(clamped)
+                if PositionLogger.shared.isEnabled {
+                    PositionLogger.shared.log(
+                        event: "pending.phase2",
+                        windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
+                        context: [
+                            "originalOrigin": "\(entry.originalState.originX),\(entry.originalState.originY)",
+                            "clampedOrigin": "\(NSStringFromPoint(clamped))",
+                            "windowSize": "\(NSStringFromSize(windowSize))",
+                            "screenFrame": "\(NSStringFromRect(screen.frame))",
+                        ]
+                    )
+                }
             }
             screenRestorationManager.removePending(windowId: entry.windowId)
         }
@@ -412,6 +491,13 @@ extension AppDelegate {
         // 復元中はスナップショットを更新しない（macOS が一時的に移動した位置を保存しないため）
         guard !wakeContext.isActive else { return }
         screenSnapshot = captureWindowStates()
+        if PositionLogger.shared.isEnabled {
+            PositionLogger.shared.log(
+                event: "snapshot.update",
+                screens: PositionLogger.shared.currentScreenSnapshots(),
+                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) }
+            )
+        }
     }
 
     // MARK: - Private Helpers

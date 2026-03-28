@@ -197,6 +197,24 @@ extension ImageWindow {
         let tolerance = AppConstants.floatingPointTolerance
         let wasAdjusted = abs(adjusted.originX - state.originX) > tolerance
             || abs(adjusted.originY - state.originY) > tolerance
+        if PositionLogger.shared.isEnabled {
+            PositionLogger.shared.log(
+                event: "restore",
+                screens: PositionLogger.shared.currentScreenSnapshots(),
+                windows: [PositionLogger.WindowSnapshot(
+                    windowId: adjusted.windowId,
+                    originX: adjusted.originX, originY: adjusted.originY,
+                    width: adjusted.width, height: adjusted.height,
+                    imageWidth: adjusted.width, imageHeight: adjusted.height,
+                    displayID: nil
+                )],
+                context: [
+                    "wasAdjusted": "\(wasAdjusted)",
+                    "beforeOrigin": "\(state.originX),\(state.originY)",
+                    "afterOrigin": "\(adjusted.originX),\(adjusted.originY)",
+                ]
+            )
+        }
         imageView.aspectRatio = adjusted.width / adjusted.height
         imageView.frame = NSRect(x: 0, y: 0, width: adjusted.width, height: adjusted.height)
 

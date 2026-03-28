@@ -46,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         screenRestorationManager.loadPending()
 
         let savedStates = WindowStateManager.shared.loadStates()
+        logStatesLoad(savedStates)
 
         if savedStates.isEmpty {
             guard let image = ImageManager.shared.defaultImage() else {
@@ -326,9 +327,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return .terminateCancel
     }
 
+    private func logStatesLoad(_ states: [WindowState]) {
+        guard PositionLogger.shared.isEnabled else { return }
+        PositionLogger.shared.log(
+            event: "states.load",
+            screens: PositionLogger.shared.currentScreenSnapshots(),
+            windows: states.map { PositionLogger.shared.windowSnapshot(from: $0) },
+            context: ["count": "\(states.count)"]
+        )
+    }
+
+    private func logStatesSave(_ states: [WindowState]) {
+        guard PositionLogger.shared.isEnabled else { return }
+        PositionLogger.shared.log(
+            event: "states.save",
+            screens: PositionLogger.shared.currentScreenSnapshots(),
+            windows: states.map { PositionLogger.shared.windowSnapshot(from: $0) },
+            context: ["count": "\(states.count)"]
+        )
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         if !shouldSkipSave {
             let states = captureCurrentWindowStates()
+            logStatesSave(states)
             WindowStateManager.shared.saveStates(states)
             screenRestorationManager.savePending()
         }

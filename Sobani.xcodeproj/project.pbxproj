@@ -137,6 +137,11 @@
 		HKS000002000000000001 /* HotkeySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = HKS000001000000000001 /* HotkeySettings.swift */; };
 		CHM000002000000000001 /* CarbonHotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHM000001000000000001 /* CarbonHotkeyManager.swift */; };
 		CHMT00002000000000001 /* CarbonHotkeyManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHMT00001000000000001 /* CarbonHotkeyManagerTests.swift */; };
+		1C78B30E731EB1BEF00091C3 /* PositionLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D7EB87928D9143C7E2BF45 /* PositionLogger.swift */; };
+		3B265A201BD2FFC5880FC440 /* PositionLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B4A033D7BA1DCF86AB29E15 /* PositionLogView.swift */; };
+		38651A53840AA6C681AB21CA /* PositionLogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6000AD5FFBD0E7645F064DD0 /* PositionLogDetailView.swift */; };
+		D8DD34533CB4F14E6524EEDD /* PositionLogInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911D1AF115AA6A8932AF1E2A /* PositionLogInfoView.swift */; };
+		940C7EB2876E2EB323B87C5C /* PositionLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16EE3072EF4A8FAEB600DCE /* PositionLoggerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -285,6 +290,11 @@
 		HKS000001000000000001 /* HotkeySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeySettings.swift; sourceTree = "<group>"; };
 		CHM000001000000000001 /* CarbonHotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarbonHotkeyManager.swift; sourceTree = "<group>"; };
 		CHMT00001000000000001 /* CarbonHotkeyManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarbonHotkeyManagerTests.swift; sourceTree = "<group>"; };
+		56D7EB87928D9143C7E2BF45 /* PositionLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLogger.swift; sourceTree = "<group>"; };
+		2B4A033D7BA1DCF86AB29E15 /* PositionLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLogView.swift; sourceTree = "<group>"; };
+		6000AD5FFBD0E7645F064DD0 /* PositionLogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLogDetailView.swift; sourceTree = "<group>"; };
+		911D1AF115AA6A8932AF1E2A /* PositionLogInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLogInfoView.swift; sourceTree = "<group>"; };
+		A16EE3072EF4A8FAEB600DCE /* PositionLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLoggerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -328,6 +338,9 @@
 				A1B2C3D401000034 /* ManagementPanelViewModel+WindowInfo.swift */,
 				A1B2C3D401000024 /* RegisteredImagesView.swift */,
 				A1B2C3D401000036 /* SharedViews.swift */,
+				2B4A033D7BA1DCF86AB29E15 /* PositionLogView.swift */,
+				6000AD5FFBD0E7645F064DD0 /* PositionLogDetailView.swift */,
+				911D1AF115AA6A8932AF1E2A /* PositionLogInfoView.swift */,
 			);
 			path = ManagementPanel;
 			sourceTree = "<group>";
@@ -368,6 +381,7 @@
 				EE000002 /* LaunchAtLoginManager.swift */,
 				FF000002 /* ScreenRestorationManager.swift */,
 				FF000006 /* AppDelegate+ScreenRestoration.swift */,
+				56D7EB87928D9143C7E2BF45 /* PositionLogger.swift */,
 				GG000002 /* Constants.swift */,
 				HKS000001000000000001 /* HotkeySettings.swift */,
 				CHM000001000000000001 /* CarbonHotkeyManager.swift */,
@@ -474,6 +488,7 @@
 				A1B2C3D401000030 /* KeyCodeMapperTests.swift */,
 				A1B2C3D401000032 /* HotkeySettingsTests.swift */,
 				CHMT00001000000000001 /* CarbonHotkeyManagerTests.swift */,
+				A16EE3072EF4A8FAEB600DCE /* PositionLoggerTests.swift */,
 			);
 			path = SobaniTests;
 			sourceTree = "<group>";
@@ -682,6 +697,10 @@
 				A1B2C3D401000027 /* KeyCodeMapper.swift in Sources */,
 				A1B2C3D401000029 /* HotkeyRecorderView.swift in Sources */,
 				A1B2C3D401000037 /* SharedViews.swift in Sources */,
+				1C78B30E731EB1BEF00091C3 /* PositionLogger.swift in Sources */,
+				3B265A201BD2FFC5880FC440 /* PositionLogView.swift in Sources */,
+				38651A53840AA6C681AB21CA /* PositionLogDetailView.swift in Sources */,
+				D8DD34533CB4F14E6524EEDD /* PositionLogInfoView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -731,6 +750,7 @@
 				A1B2C3D401000031 /* KeyCodeMapperTests.swift in Sources */,
 				A1B2C3D401000033 /* HotkeySettingsTests.swift in Sources */,
 				CHMT00002000000000001 /* CarbonHotkeyManagerTests.swift in Sources */,
+				940C7EB2876E2EB323B87C5C /* PositionLoggerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

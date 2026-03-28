@@ -47,29 +47,36 @@ struct ManagementPanelView: View {
 
             Divider()
 
-            Button {
-                viewModel.selectedTab = .settings
-            } label: {
-                Label {
-                    Text(ManagementPanelViewModel.ManagementTab.settings.label)
-                } icon: {
-                    Image(systemName: ManagementPanelViewModel.ManagementTab.settings.iconName)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .contentShape(Rectangle())
-                .background(
-                    viewModel.selectedTab == .settings
-                        ? Color.accentColor.opacity(0.2)
-                        : Color.clear
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 8)
+            sidebarButton(for: .logs)
+                .padding(.top, 8)
+            sidebarButton(for: .settings)
+                .padding(.bottom, 8)
         }
+    }
+
+    @ViewBuilder
+    private func sidebarButton(for tab: ManagementPanelViewModel.ManagementTab) -> some View {
+        Button {
+            viewModel.selectedTab = tab
+        } label: {
+            Label {
+                Text(tab.label)
+            } icon: {
+                Image(systemName: tab.iconName)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+            .background(
+                viewModel.selectedTab == tab
+                    ? Color.accentColor.opacity(0.2)
+                    : Color.clear
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 8)
     }
 
     @ViewBuilder
@@ -81,6 +88,8 @@ struct ManagementPanelView: View {
             LayoutPresetsView(viewModel: viewModel)
         case .registeredImages:
             RegisteredImagesView(viewModel: viewModel)
+        case .logs:
+            PositionLogView()
         case .settings:
             SettingsView()
         case .none:

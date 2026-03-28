@@ -24,6 +24,7 @@ final class ManagementPanelViewModel {
         case images
         case layouts
         case registeredImages
+        case logs
         case settings
 
         var id: String { rawValue }
@@ -33,6 +34,7 @@ final class ManagementPanelViewModel {
             case .images: return L("management.images")
             case .layouts: return L("management.layout")
             case .registeredImages: return L("management.registered_images")
+            case .logs: return L("management.logs")
             case .settings: return L("management.settings")
             }
         }
@@ -42,6 +44,7 @@ final class ManagementPanelViewModel {
             case .images: return "photo.on.rectangle"
             case .layouts: return "rectangle.3.group"
             case .registeredImages: return "photo.stack"
+            case .logs: return "doc.text.magnifyingglass"
             case .settings: return "gearshape"
             }
         }

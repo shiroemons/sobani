@@ -214,6 +214,9 @@ enum AppConstants {
     static let snapThreshold: CGFloat = 8
     static let snapEnabledKey = "windowSnapEnabled"
 
+    // Position Log
+    static let positionLogEnabledKey = "positionLogEnabled"
+
     // Floating Menu
     static let floatingMenuButtonSize: CGFloat = 36
     static let floatingMenuColumnWidth: CGFloat = 50
@@ -272,6 +275,13 @@ enum AppConstants {
     static let managementPanelWillClose = Notification.Name(
         "\(loggerSubsystem).managementPanelWillClose"
     )
+}
+
+enum PositionLogSettings {
+    static var isEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: AppConstants.positionLogEnabledKey) }
+        set { UserDefaults.standard.set(newValue, forKey: AppConstants.positionLogEnabledKey) }
+    }
 }
 
 enum SnapSettings {
