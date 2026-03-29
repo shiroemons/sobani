@@ -275,6 +275,31 @@ enum AppConstants {
     static let managementPanelWillClose = Notification.Name(
         "\(loggerSubsystem).managementPanelWillClose"
     )
+
+    // MARK: - Notification UserInfo Keys
+    static let notificationTriggerKey = "trigger"
+
+    /// snapshot.update イベントの発火原因を示すトリガー
+    enum SnapshotTrigger: String {
+        // imageWindowStateDidChange 経由
+        case position
+        case image
+        case flip
+        case opacity
+        case rotation
+        case reset
+        case ghost
+        case ghostAlpha
+        case hidden
+        case crop
+        // imageWindowListDidChange 経由
+        case windowAdd = "window.add"
+        case windowRemove = "window.remove"
+        case reorder
+        case layout
+        case zorder
+        case closeAll
+    }
 }
 
 enum PositionLogSettings {

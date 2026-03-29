@@ -93,7 +93,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
             self?.updateImageAlpha()
         }
         imageView.onPositionChanged = { [weak self] in
-            self?.notifyStateDidChange()
+            self?.notifyStateDidChange(.position)
         }
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
         imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
@@ -120,8 +120,12 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         }
     }
 
-    private func notifyStateDidChange() {
-        NotificationCenter.default.post(name: AppConstants.imageWindowStateDidChange, object: nil)
+    private func notifyStateDidChange(_ trigger: AppConstants.SnapshotTrigger) {
+        NotificationCenter.default.post(
+            name: AppConstants.imageWindowStateDidChange,
+            object: nil,
+            userInfo: [AppConstants.notificationTriggerKey: trigger.rawValue]
+        )
     }
 
     func applyImage(_ image: NSImage) {
@@ -133,12 +137,12 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
         cachedHasAlpha = nil
         adjustWindowForRotation()
-        notifyStateDidChange()
+        notifyStateDidChange(.image)
     }
 
     @objc func toggleFlip() {
         imageView.isFlippedHorizontally.toggle()
-        notifyStateDidChange()
+        notifyStateDidChange(.flip)
     }
 
     @objc func showAdjustmentPanel() {
@@ -200,14 +204,14 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         let clamped = min(max(opacity, AppConstants.opacityMin), AppConstants.opacityMax)
         guard !GeometryUtils.isApproximatelyEqual(clamped, imageView.opacityLevel) else { return }
         imageView.opacityLevel = clamped
-        notifyStateDidChange()
+        notifyStateDidChange(.opacity)
     }
 
     func applyRotation(_ angle: CGFloat) {
         imageView.rotationAngle = angle
         adjustWindowForRotation()
         adjustmentPanelController?.updateAngle(angle)
-        notifyStateDidChange()
+        notifyStateDidChange(.rotation)
     }
 
     func adjustWindowForRotation() {
@@ -320,7 +324,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
         imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
         imageView.needsLayout = true
-        notifyStateDidChange()
+        notifyStateDidChange(.reset)
     }
 }
 
@@ -348,7 +352,7 @@ extension ImageWindow {
             imageView.animator().alphaValue = composedImageAlpha
         }
         window.ignoresMouseEvents = enabled
-        notifyStateDidChange()
+        notifyStateDidChange(.ghost)
     }
 
     func setCustomGhostAlpha(_ alpha: CGFloat?) {
@@ -357,7 +361,7 @@ extension ImageWindow {
         if isGhostMode {
             updateImageAlpha()
         }
-        notifyStateDidChange()
+        notifyStateDidChange(.ghostAlpha)
     }
 
     private func updateImageAlpha() {
@@ -380,7 +384,7 @@ extension ImageWindow {
             window.orderFront(nil)
         }
         delegate?.imageWindowDidChangeHidden(self)
-        notifyStateDidChange()
+        notifyStateDidChange(.hidden)
     }
 
     @objc func hideThisWindow() {
@@ -458,7 +462,7 @@ extension ImageWindow: CropEditorPanelDelegate {
         imageView.frame.size = NSSize(width: round(newWidth), height: round(newHeight))
         adjustWindowForRotation()
         cropEditorController = nil
-        notifyStateDidChange()
+        notifyStateDidChange(.crop)
     }
 
     func cropEditorDidCancel(_ editor: CropEditorPanelController) { cropEditorController = nil }

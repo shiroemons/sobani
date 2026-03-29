@@ -22,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
     var snapshotDebounceTimer: Timer?
+    var pendingSnapshotTriggers: Set<String> = []
     var wakeContext = WakeRestorationContext()
     /// ディスプレイ切断時の復元用スナップショット。安定状態で定期的に更新される。
     var screenSnapshot = WakeRestorationContext()
@@ -201,33 +202,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return zOrderedWindows.first { $0.window.windowNumber == number }
     }
 
-    func notifyWindowListDidChange() {
+    func notifyWindowListDidChange(_ trigger: AppConstants.SnapshotTrigger) {
         NotificationCenter.default.post(
-            name: AppConstants.imageWindowListDidChange, object: nil)
+            name: AppConstants.imageWindowListDidChange,
+            object: nil,
+            userInfo: [AppConstants.notificationTriggerKey: trigger.rawValue]
+        )
     }
 
     func moveWindowToFront(_ imageWindow: ImageWindow) {
         zOrderedWindows = ZOrderUtils.moveToFront(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.zorder)
     }
 
     func moveWindowForward(_ imageWindow: ImageWindow) {
         zOrderedWindows = ZOrderUtils.moveForward(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.zorder)
     }
 
     func moveWindowBackward(_ imageWindow: ImageWindow) {
         zOrderedWindows = ZOrderUtils.moveBackward(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.zorder)
     }
 
     func moveWindowToBack(_ imageWindow: ImageWindow) {
         zOrderedWindows = ZOrderUtils.moveToBack(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.zorder)
     }
 
     @objc func closeAllWindows() {
@@ -236,7 +240,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             imageWindow.window.orderOut(nil)
         }
         zOrderedWindows.removeAll()
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.closeAll)
         quitIfNoWindows()
     }
 

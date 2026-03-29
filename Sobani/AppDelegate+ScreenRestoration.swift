@@ -94,6 +94,15 @@ extension AppDelegate {
                     let snapMsg = "screenChange: activated wake mode from snapshot"
                         + " (disconnected: \(disconnectedScreens))"
                     Self.screenRestorationLogger.info("\(snapMsg, privacy: .public)")
+                    if PositionLogger.shared.isEnabled {
+                        PositionLogger.shared.log(
+                            event: "sleep.enter.snapshot",
+                            screens: PositionLogger.shared.currentScreenSnapshots(),
+                            windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
+                            context: ["savedCount": "\(wakeContext.states.count)",
+                                      "disconnectedScreens": "\(disconnectedScreens)"]
+                        )
+                    }
                 }
             }
         }
@@ -473,7 +482,10 @@ extension AppDelegate {
         }
     }
 
-    @objc private func handleWindowStateChange() {
+    @objc private func handleWindowStateChange(_ notification: Notification) {
+        if let trigger = notification.userInfo?[AppConstants.notificationTriggerKey] as? String {
+            pendingSnapshotTriggers.insert(trigger)
+        }
         snapshotDebounceTimer?.invalidate()
         snapshotDebounceTimer = Timer.scheduledTimer(
             withTimeInterval: 0.3,
@@ -489,13 +501,19 @@ extension AppDelegate {
     /// ディスプレイ切断時（willSleep なし）の復元に使用される。
     func updateScreenSnapshot() {
         // 復元中はスナップショットを更新しない（macOS が一時的に移動した位置を保存しないため）
-        guard !wakeContext.isActive else { return }
+        guard !wakeContext.isActive else {
+            pendingSnapshotTriggers.removeAll()
+            return
+        }
+        let triggers = pendingSnapshotTriggers.sorted()
+        pendingSnapshotTriggers.removeAll()
         screenSnapshot = captureWindowStates()
         if PositionLogger.shared.isEnabled {
             PositionLogger.shared.log(
                 event: "snapshot.update",
                 screens: PositionLogger.shared.currentScreenSnapshots(),
-                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) }
+                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
+                context: triggers.isEmpty ? nil : ["triggers": triggers.joined(separator: ",")]
             )
         }
     }

@@ -10,12 +10,12 @@ extension AppDelegate {
 
     func addImageWindow(_ window: ImageWindow) {
         zOrderedWindows.insert(window, at: 0)
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.windowAdd)
     }
 
     func removeImageWindow(_ window: ImageWindow) {
         zOrderedWindows.removeAll { $0 === window }
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.windowRemove)
     }
 
     func closeImageWindow(_ window: ImageWindow) {
@@ -27,7 +27,7 @@ extension AppDelegate {
     func reorderWindows(from sourceIndices: IndexSet, to destination: Int) {
         zOrderedWindows.move(fromOffsets: sourceIndices, toOffset: destination)
         applyZOrderToWindows()
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.reorder)
     }
 
     /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする
@@ -55,7 +55,7 @@ extension AppDelegate {
         zOrderedWindows = loadedWindows.reversed()
 
         isApplyingLayout = false
-        notifyWindowListDidChange()
+        notifyWindowListDidChange(.layout)
         quitIfNoWindows()
     }
 
