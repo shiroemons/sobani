@@ -281,6 +281,7 @@ enum AppConstants {
 
     /// snapshot.update イベントの発火原因を示すトリガー
     enum SnapshotTrigger: String {
+        case launch
         // imageWindowStateDidChange 経由
         case position
         case image

@@ -483,7 +483,8 @@ extension AppDelegate {
     }
 
     @objc private func handleWindowStateChange(_ notification: Notification) {
-        if let trigger = notification.userInfo?[AppConstants.notificationTriggerKey] as? String {
+        if let raw = notification.userInfo?[AppConstants.notificationTriggerKey] as? String,
+           let trigger = AppConstants.SnapshotTrigger(rawValue: raw) {
             pendingSnapshotTriggers.insert(trigger)
         }
         snapshotDebounceTimer?.invalidate()
@@ -505,7 +506,7 @@ extension AppDelegate {
             pendingSnapshotTriggers.removeAll()
             return
         }
-        let triggers = pendingSnapshotTriggers.sorted()
+        let triggers = pendingSnapshotTriggers.map(\.rawValue).sorted()
         pendingSnapshotTriggers.removeAll()
         screenSnapshot = captureWindowStates()
         if PositionLogger.shared.isEnabled {
