@@ -211,6 +211,28 @@ extension AppDelegate {
                 context: ["restoreCount": "\(restoreCount)"]
             )
         }
+        for imageWindow in zOrderedWindows {
+            let wid = imageWindow.windowId
+            guard let preSleepOrigin = wakeContext.windowOrigins[wid] else { continue }
+            let currentOrigin = imageWindow.window.frame.origin
+            let driftX = currentOrigin.x - preSleepOrigin.x
+            let driftY = currentOrigin.y - preSleepOrigin.y
+            guard abs(driftX) > AppConstants.wakeDetectDriftThreshold
+                || abs(driftY) > AppConstants.wakeDetectDriftThreshold else { continue }
+            if PositionLogger.shared.isEnabled {
+                PositionLogger.shared.log(
+                    event: "wake.detect",
+                    screens: PositionLogger.shared.currentScreenSnapshots(),
+                    windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
+                    context: [
+                        "preSleepOrigin": NSStringFromPoint(preSleepOrigin),
+                        "currentOrigin": NSStringFromPoint(currentOrigin),
+                        "driftX": String(format: "%.1f", driftX),
+                        "driftY": String(format: "%.1f", driftY),
+                    ]
+                )
+            }
+        }
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
         wakeContext.isActive = true

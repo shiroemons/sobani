@@ -55,6 +55,7 @@ enum AppConstants {
     static let screenChangeDebounceInterval: TimeInterval = 1.0
     static let wakeDebounceInterval: TimeInterval = 1.5
     static let wakeInitialDelay: TimeInterval = 3.0
+    static let wakeDetectDriftThreshold: CGFloat = 1.0
     static let screenMatchTolerance: CGFloat = 100
     static let screenIntersectionThreshold: CGFloat = 50
 
