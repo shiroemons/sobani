@@ -223,7 +223,7 @@ struct PositionLogView: View {
                 Text(Self.formatTime(entry.timestamp))
                     .font(.system(.body, design: .monospaced))
             }
-            .width(min: 80, ideal: 120, max: 150)
+            .width(min: 100, ideal: 140, max: 180)
 
             TableColumn(L("log.column.event"), value: \.event) { (entry: PositionLogger.LogEntry) in
                 ColorBadge(event: entry.event)
