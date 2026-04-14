@@ -66,6 +66,10 @@ enum AppConstants {
     // Floating-point comparison
     static let floatingPointTolerance: CGFloat = 0.01
 
+    // Hit Test
+    /// 透過ピクセル判定のしきい値。alpha 値がこの値未満ならクリックスルーする。
+    static let hitTestAlphaThreshold: UInt8 = 16
+
     // Hotkey
     static let optionHKeyCode: UInt16 = 4
     static let optionMKeyCode: UInt16 = 46    // Option + M (管理パネル切り替え)

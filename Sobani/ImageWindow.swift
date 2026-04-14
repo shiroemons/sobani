@@ -5,8 +5,8 @@ import UniformTypeIdentifiers
 
 private final class RotatableContainer: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? {
-        if let hit = super.hitTest(point), hit !== self { return hit }
-        return subviews.first
+        // imageView 側で透過ピクセル判定と回転逆変換を行うため、委譲のみ。
+        return (subviews.first as? DraggableImageView)?.hitTest(point)
     }
 }
 
@@ -159,6 +159,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 self?.windowMoveObserver = nil
             }
             self?.imageView.onSizeChanged = nil
+            self?.imageView.isAdjustmentPanelActive = false
             self?.adjustmentPanelController = nil
         }
         controller.show(
@@ -171,6 +172,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
             )
         )
         adjustmentPanelController = controller
+        imageView.isAdjustmentPanelActive = true
         imageView.scrollRotationHandler = { [weak self] delta in
             guard let self = self else { return }
             let angleDelta = delta * AppConstants.dialScrollSensitivity
