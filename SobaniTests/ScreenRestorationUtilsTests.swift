@@ -79,7 +79,7 @@ struct ScreenRestorationUtilsTests {
         #expect(result.y == 0)
     }
 
-    @Test("clampOrigin: ウィンドウがスクリーンより大きい場合はクランプしない")
+    @Test("clampOrigin: ウィンドウがスクリーンより大きい場合は画面を覆うようクランプ")
     func clampOriginOversizedWindow() {
         let origin = NSPoint(x: -100, y: -50)
         let windowSize = NSSize(width: 2000, height: 1200)
@@ -87,11 +87,12 @@ struct ScreenRestorationUtilsTests {
         let result = ScreenRestorationUtils.clampOrigin(
             origin, windowSize: windowSize, to: screenFrame
         )
-        #expect(result.x == -100)
-        #expect(result.y == -50)
+        // X は画面を覆う左端（screen.maxX - windowWidth）にクランプ、Y は範囲内なので変化なし
+        #expect(result.x == screenFrame.maxX - windowSize.width)
+        #expect(result.y == origin.y)
     }
 
-    @Test("clampOrigin: ウィンドウ幅のみスクリーンより大きい")
+    @Test("clampOrigin: ウィンドウ幅のみスクリーンより大きい場合は幅方向を覆うようクランプ")
     func clampOriginOversizedWidth() {
         let origin = NSPoint(x: -100, y: -50)
         let windowSize = NSSize(width: 2000, height: 200)
@@ -99,8 +100,9 @@ struct ScreenRestorationUtilsTests {
         let result = ScreenRestorationUtils.clampOrigin(
             origin, windowSize: windowSize, to: screenFrame
         )
-        #expect(result.x == -100)
-        #expect(result.y == 0)
+        // X: 画面幅より大きいので右端揃え、Y: 通常クランプで下端
+        #expect(result.x == screenFrame.maxX - windowSize.width)
+        #expect(result.y == screenFrame.minY)
     }
 
     @Test("clampOrigin: 非原点スクリーン（セカンダリモニタ）")
@@ -115,7 +117,7 @@ struct ScreenRestorationUtilsTests {
         #expect(result.y == 100)
     }
 
-    @Test("clampOrigin: ウィンドウサイズがスクリーンと同じ")
+    @Test("clampOrigin: ウィンドウサイズがスクリーンと同じ場合は origin=0 に固定")
     func clampOriginExactFit() {
         let origin = NSPoint(x: 0, y: 0)
         let windowSize = NSSize(width: 1920, height: 1080)
@@ -125,6 +127,33 @@ struct ScreenRestorationUtilsTests {
         )
         #expect(result.x == 0)
         #expect(result.y == 0)
+    }
+
+    @Test("clampOrigin: 巨大ウィンドウ + 極端な負origin（#121 リグレッション）")
+    func clampOriginOversizedWithExtremeNegativeOrigin() {
+        // 実例: #121 が origin=(-2971, -2156), size=1716x3432, displayID=4 の縦モニター
+        let origin = NSPoint(x: -2971, y: -2156)
+        let windowSize = NSSize(width: 1716, height: 3432)
+        let screenFrame = NSRect(x: -1440, y: -674, width: 1440, height: 2560)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
+        // 極端な負origin は画面を覆う両端（lower bound）にクランプされる
+        #expect(result.x == screenFrame.maxX - windowSize.width)
+        #expect(result.y == screenFrame.maxY - windowSize.height)
+    }
+
+    @Test("clampOrigin: 巨大ウィンドウが画面右側にズレすぎ → 画面を覆うよう左にクランプ")
+    func clampOriginOversizedShiftedRight() {
+        let origin = NSPoint(x: 500, y: 500)
+        let windowSize = NSSize(width: 2000, height: 1500)
+        let screenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
+        let result = ScreenRestorationUtils.clampOrigin(
+            origin, windowSize: windowSize, to: screenFrame
+        )
+        // 正方向にはみ出した origin は画面 minX/minY（upper bound）にクランプ
+        #expect(result.x == screenFrame.minX)
+        #expect(result.y == screenFrame.minY)
     }
 
     // MARK: - computeRestoredOrigin Tests

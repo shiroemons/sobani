@@ -3,17 +3,23 @@ import Cocoa
 /// スクリーン復元ジオメトリ計算のユーティリティ
 enum ScreenRestorationUtils {
     /// ウィンドウ原点をスクリーン範囲内にクランプ。
-    /// ウィンドウがスクリーンより大きい場合はクランプしない。
+    /// ウィンドウがスクリーンより大きい場合は、ウィンドウがスクリーン全体を覆うようにクランプする。
     static func clampOrigin(
         _ origin: NSPoint, windowSize: NSSize,
         to screenFrame: NSRect
     ) -> NSPoint {
-        let clampedX = windowSize.width >= screenFrame.width
-            ? origin.x
-            : max(screenFrame.minX, min(origin.x, screenFrame.maxX - windowSize.width))
-        let clampedY = windowSize.height >= screenFrame.height
-            ? origin.y
-            : max(screenFrame.minY, min(origin.y, screenFrame.maxY - windowSize.height))
+        let clampedX: CGFloat
+        if windowSize.width >= screenFrame.width {
+            clampedX = max(screenFrame.maxX - windowSize.width, min(origin.x, screenFrame.minX))
+        } else {
+            clampedX = max(screenFrame.minX, min(origin.x, screenFrame.maxX - windowSize.width))
+        }
+        let clampedY: CGFloat
+        if windowSize.height >= screenFrame.height {
+            clampedY = max(screenFrame.maxY - windowSize.height, min(origin.y, screenFrame.minY))
+        } else {
+            clampedY = max(screenFrame.minY, min(origin.y, screenFrame.maxY - windowSize.height))
+        }
         return NSPoint(x: clampedX, y: clampedY)
     }
 
