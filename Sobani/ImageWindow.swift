@@ -95,6 +95,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         imageView.onPositionChanged = { [weak self] in
             self?.notifyStateDidChange(.position)
         }
+        installSizeChangedHandler()
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
         imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
         imageView.onDropImage = { [weak self] url, isOption in
@@ -128,6 +129,12 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         )
     }
 
+    private func installSizeChangedHandler() {
+        imageView.onSizeChanged = { [weak self] in
+            self?.notifyStateDidChange(.size)
+        }
+    }
+
     func applyImage(_ image: NSImage) {
         guard image.size.height > 0 else { return }
         let baseHeight = imageView.frame.height
@@ -158,7 +165,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 NotificationCenter.default.removeObserver(observer)
                 self?.windowMoveObserver = nil
             }
-            self?.imageView.onSizeChanged = nil
+            self?.installSizeChangedHandler()
             self?.imageView.isAdjustmentPanelActive = false
             self?.adjustmentPanelController = nil
         }
@@ -192,6 +199,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         imageView.onSizeChanged = { [weak self] in
             guard let self = self else { return }
             self.adjustmentPanelController?.updateSize(self.imageView.frame.size)
+            self.notifyStateDidChange(.size)
         }
     }
 

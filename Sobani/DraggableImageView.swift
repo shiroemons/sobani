@@ -181,7 +181,7 @@ final class DraggableImageView: NSImageView {
         )
         window.setFrame(frames.windowFrame, display: true)
         imageView.frame = frames.imageViewFrame
-        onSizeChanged?()
+        imageView.onSizeChanged?()
     }
 
     override func layout() {

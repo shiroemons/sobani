@@ -51,6 +51,21 @@ final class ImageManager {
         cachedImageNames?.removeAll { $0 == name }
     }
 
+    private func uniqueDestinationURL(for name: String, in directory: URL) -> URL? {
+        guard let initialURL = PathSanitizer.safeURL(name: name, in: directory) else { return nil }
+        let nameURL = URL(fileURLWithPath: initialURL.lastPathComponent)
+        let baseName = nameURL.deletingPathExtension().lastPathComponent
+        let ext = nameURL.pathExtension
+        var finalURL = initialURL
+        var counter = 1
+        while FileManager.default.fileExists(atPath: finalURL.path) {
+            let candidateName = ext.isEmpty ? "\(baseName)_\(counter)" : "\(baseName)_\(counter).\(ext)"
+            finalURL = directory.appendingPathComponent(candidateName)
+            counter += 1
+        }
+        return finalURL
+    }
+
     /// 登録済み画像名をソート済みリストで返す。結果はキャッシュされる。
     func registeredImageNames() -> [String] {
         if let cached = cachedImageNames {
@@ -115,21 +130,11 @@ final class ImageManager {
         guard let imagesDir = imagesDirectoryURL else { return nil }
         guard Self.isSupportedExtension(url.pathExtension) else { return nil }
         guard let name = PathSanitizer.safeName(from: url.lastPathComponent) else { return nil }
-        let destURL = imagesDir.appendingPathComponent(name)
-        let fm = FileManager.default
-        var finalURL = destURL
-        var finalName = name
-        var counter = 1
-        while fm.fileExists(atPath: finalURL.path) {
-            let nameURL = URL(fileURLWithPath: name)
-            let baseName = nameURL.deletingPathExtension().lastPathComponent
-            let ext = nameURL.pathExtension
-            finalName = "\(baseName)_\(counter).\(ext)"
-            finalURL = imagesDir.appendingPathComponent(finalName)
-            counter += 1
-        }
+        guard NSImage(contentsOf: url) != nil else { return nil }
+        guard let finalURL = uniqueDestinationURL(for: name, in: imagesDir) else { return nil }
         do {
-            try fm.copyItem(at: url, to: finalURL)
+            try FileManager.default.copyItem(at: url, to: finalURL)
+            let finalName = finalURL.lastPathComponent
             insertIntoCache(finalName)
             NotificationCenter.default.post(
                 name: AppConstants.registeredImagesDidChange, object: nil
@@ -148,7 +153,7 @@ final class ImageManager {
         guard let tiffData = image.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData),
               let pngData = bitmap.representation(using: .png, properties: [:]) else { return nil }
-        guard let destURL = PathSanitizer.safeURL(name: name, in: imagesDir) else { return nil }
+        guard let destURL = uniqueDestinationURL(for: name, in: imagesDir) else { return nil }
         do {
             try pngData.write(to: destURL)
             insertIntoCache(destURL.lastPathComponent)
@@ -204,13 +209,18 @@ final class ImageManager {
     func setCustomDefault(from url: URL) {
         guard let destURL = customDefaultURL else { return }
         let fm = FileManager.default
+        let tempURL = destURL.deletingLastPathComponent()
+            .appendingPathComponent(".\(destURL.lastPathComponent).\(UUID().uuidString).tmp")
         do {
+            try fm.copyItem(at: url, to: tempURL)
             if fm.fileExists(atPath: destURL.path) {
-                try fm.removeItem(at: destURL)
+                _ = try fm.replaceItemAt(destURL, withItemAt: tempURL)
+            } else {
+                try fm.moveItem(at: tempURL, to: destURL)
             }
-            try fm.copyItem(at: url, to: destURL)
             cachedDefaultImage = nil
         } catch {
+            try? fm.removeItem(at: tempURL)
             logger.error("Failed to set custom default: \(error.localizedDescription)")
         }
     }

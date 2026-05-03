@@ -290,6 +290,7 @@ enum AppConstants {
         // imageWindowStateDidChange 経由
         case position
         case image
+        case size
         case flip
         case opacity
         case rotation

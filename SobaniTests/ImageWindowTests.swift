@@ -253,3 +253,43 @@ struct ImageWindowTests {
         )
     }
 }
+
+@Suite("ImageWindow Notification Tests")
+@MainActor
+struct ImageWindowNotificationTests {
+    private final class NotificationCapture: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value: String?
+
+        func record(_ trigger: String?) {
+            lock.withLock {
+                value = trigger
+            }
+        }
+
+        var trigger: String? {
+            lock.withLock { value }
+        }
+    }
+
+    @Test("サイズ変更時に状態変更通知が送られる")
+    func sizeChangePostsStateNotification() {
+        let image = NSImage(size: NSSize(width: 10, height: 10))
+        let imageWindow = ImageWindow(image: image)
+        defer { imageWindow.window.orderOut(nil) }
+
+        let capture = NotificationCapture()
+        let observer = NotificationCenter.default.addObserver(
+            forName: AppConstants.imageWindowStateDidChange,
+            object: nil,
+            queue: nil
+        ) { notification in
+            capture.record(notification.userInfo?[AppConstants.notificationTriggerKey] as? String)
+        }
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        imageWindow.imageView.onSizeChanged?()
+
+        #expect(capture.trigger == AppConstants.SnapshotTrigger.size.rawValue)
+    }
+}
