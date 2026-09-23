@@ -95,8 +95,10 @@ import Testing
         #expect(!manager.shouldShowOnboarding)
     }
 
-    /// sharedインスタンスが存在することを検証
-    @Test func sharedInstance_exists() {
-        #expect(OnboardingManager.shared != nil)
+    /// sharedインスタンスがシングルトンであることを検証
+    @Test func sharedInstance_isSingleton() {
+        let firstInstance = OnboardingManager.shared
+        let secondInstance = OnboardingManager.shared
+        #expect(firstInstance === secondInstance)
     }
 }
