@@ -38,6 +38,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: テスト実行
         run: |
+          set -o pipefail
           xcodebuild test \
             -project Sobani.xcodeproj \
             -scheme Sobani \

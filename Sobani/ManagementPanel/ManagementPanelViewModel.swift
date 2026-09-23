@@ -14,10 +14,10 @@ final class ManagementPanelViewModel {
     private(set) var windowImages: [String: NSImage] = [:]
     var visibleWindowCount: Int { windows.lazy.filter { !$0.isHidden }.count }
     private(set) var languageRefreshId = UUID()
-    nonisolated private var stateObserver: Any?
-    nonisolated private var listObserver: Any?
-    nonisolated private var imageListObserver: Any?
-    nonisolated private var languageObserver: Any?
+    @ObservationIgnored private var stateObserver: NSObjectProtocol?
+    @ObservationIgnored private var listObserver: NSObjectProtocol?
+    @ObservationIgnored private var imageListObserver: NSObjectProtocol?
+    @ObservationIgnored private var languageObserver: NSObjectProtocol?
     private var isBatchUpdating = false
 
     enum ManagementTab: String, CaseIterable, Identifiable {
@@ -60,7 +60,7 @@ final class ManagementPanelViewModel {
         setupNotificationObservers()
     }
 
-    deinit {
+    isolated deinit {
         if let stateObserver { NotificationCenter.default.removeObserver(stateObserver) }
         if let listObserver { NotificationCenter.default.removeObserver(listObserver) }
         if let imageListObserver { NotificationCenter.default.removeObserver(imageListObserver) }
