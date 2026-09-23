@@ -14,10 +14,10 @@ final class ManagementPanelViewModel {
     private(set) var windowImages: [String: NSImage] = [:]
     var visibleWindowCount: Int { windows.lazy.filter { !$0.isHidden }.count }
     private(set) var languageRefreshId = UUID()
-    nonisolated(unsafe) private var stateObserver: Any?
-    nonisolated(unsafe) private var listObserver: Any?
-    nonisolated(unsafe) private var imageListObserver: Any?
-    nonisolated(unsafe) private var languageObserver: Any?
+    nonisolated private var stateObserver: Any?
+    nonisolated private var listObserver: Any?
+    nonisolated private var imageListObserver: Any?
+    nonisolated private var languageObserver: Any?
     private var isBatchUpdating = false
 
     enum ManagementTab: String, CaseIterable, Identifiable {

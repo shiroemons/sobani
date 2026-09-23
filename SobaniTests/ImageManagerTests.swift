@@ -33,7 +33,7 @@ import Testing
 
     @discardableResult
     private func createTestImageFile(named name: String, in directory: URL? = nil) throws -> URL {
-        let dir = try #require(directory ?? tempDirectory)
+        let dir = directory ?? tempDirectory
         let url = dir.appendingPathComponent(name)
         let data = try createTestPNGData()
         try data.write(to: url)
