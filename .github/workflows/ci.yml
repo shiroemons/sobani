@@ -13,7 +13,7 @@ jobs:
   swiftlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: cirruslabs/swiftlint-action@v1
         with:
           args: --strict
@@ -21,7 +21,7 @@ jobs:
   test:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: テスト実行
         run: |
           xcodebuild test \

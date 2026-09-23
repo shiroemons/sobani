@@ -12,7 +12,7 @@ jobs:
   release:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: 証明書インポート
         env:
@@ -107,7 +107,7 @@ jobs:
           DMG_NAME: ${{ steps.dmg.outputs.name }}
         run: |
           echo "Sparkle EdDSA 署名を生成中..."
-          curl -sL https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz -o /tmp/Sparkle.tar.xz
+          curl -sL https://github.com/sparkle-project/Sparkle/releases/download/2.10.0/Sparkle-2.10.0.tar.xz -o /tmp/Sparkle.tar.xz
           mkdir -p /tmp/sparkle-tools
           tar xf /tmp/Sparkle.tar.xz -C /tmp/sparkle-tools
           SIGN_OUTPUT=$(echo "$SPARKLE_PRIVATE_KEY" | /tmp/sparkle-tools/bin/sign_update "$DMG_NAME" -f -)
