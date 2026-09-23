@@ -26,12 +26,10 @@ import Testing
         #expect(validStatuses.contains(status))
     }
 
-    /// 未署名環境でtoggle()がエラーをスローすることを検証（テスト環境の制約確認）
-    @Test func toggleThrowsWhenNotSigned() {
-        // In test environment (unsigned), register() is expected to fail
-        // Verify that toggle() propagates errors instead of silently swallowing them
-        let manager = LaunchAtLoginManager.shared
-        guard manager.status != .enabled else { return }
+    /// 登録サービスのエラーがtoggle()で伝播されることを検証
+    @Test func togglePropagatesRegistrationError() {
+        let mock = MockLoginItemService(mockStatus: .notRegistered, shouldThrow: true)
+        let manager = LaunchAtLoginManager(service: mock)
         #expect(throws: (any Error).self) { try manager.toggle() }
     }
 
@@ -87,12 +85,6 @@ import Testing
         #expect(!mock.registerCalled)
     }
 
-    /// モックサービスのエラーがtoggle()で伝播されることを検証
-    @Test func diMockServiceToggleError() {
-        let mock = MockLoginItemService(mockStatus: .notRegistered, shouldThrow: true)
-        let manager = LaunchAtLoginManager(service: mock)
-        #expect(throws: (any Error).self) { try manager.toggle() }
-    }
 }
 
 /// テスト用のモックログインアイテムサービス

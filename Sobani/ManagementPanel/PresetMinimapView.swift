@@ -149,7 +149,7 @@ struct PresetMinimapView: View {
                 if let displayImage {
                     Image(nsImage: displayImage)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .clipped()
                 }
             }

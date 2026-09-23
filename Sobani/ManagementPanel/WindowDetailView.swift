@@ -67,7 +67,7 @@ struct WindowDetailView: View {
             } else if let thumbnail = window.thumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
             } else {
                 Image(systemName: "photo")

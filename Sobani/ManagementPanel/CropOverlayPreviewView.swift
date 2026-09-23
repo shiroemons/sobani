@@ -22,7 +22,7 @@ struct CropOverlayPreviewView: View {
                 // Base: original image
                 Image(nsImage: originalImage)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
 
                 // Dark overlay with crop area cut out
                 Color.black.opacity(0.5)

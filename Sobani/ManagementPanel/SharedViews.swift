@@ -9,7 +9,7 @@ struct ThumbnailView: View {
         if let image {
             Image(nsImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
         } else {
             Rectangle()
                 .fill(.quaternary)
@@ -61,7 +61,7 @@ struct ImagePreviewBox: View {
             if let image {
                 Image(nsImage: image)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
             } else {
                 Image(systemName: "photo")

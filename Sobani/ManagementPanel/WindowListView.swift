@@ -132,7 +132,7 @@ struct WindowListView: View {
                                    let image = viewModel.registeredImagePreview(name: name) {
                                     Image(nsImage: image)
                                         .resizable()
-                                        .aspectRatio(contentMode: .fit)
+                                        .scaledToFit()
                                         .frame(maxWidth: 150, maxHeight: 150)
                                 } else {
                                     Image(systemName: "photo")
