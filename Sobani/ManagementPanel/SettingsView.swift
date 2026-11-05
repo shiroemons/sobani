@@ -178,14 +178,13 @@ struct SettingsView: View {
     }
 
     private func updateHotkeyState() {
-        let pairs = AppDelegate.KeyboardAction.allCases.map { action in
+        let shortcuts = AppDelegate.KeyboardAction.allCases.map { action in
             (
                 keyCode: HotkeySettings.keyCode(for: action),
                 modifiers: HotkeySettings.modifiers(for: action)
             )
         }
-        let unique = Set(pairs.map { UInt64($0.keyCode) << 32 | UInt64($0.modifiers.rawValue) })
-        hasDuplicateHotkeys = unique.count < pairs.count
+        hasDuplicateHotkeys = HotkeyInputValidator.containsDuplicates(shortcuts)
         hasNonDefaultHotkeys = AppDelegate.KeyboardAction.allCases.contains {
             !HotkeySettings.isDefault(for: $0)
         }
