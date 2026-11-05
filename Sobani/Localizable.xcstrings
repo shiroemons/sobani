@@ -4465,6 +4465,22 @@
         }
       }
     },
+    "log.export.failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ログを書き出せませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not export the log"
+          }
+        }
+      }
+    },
     "log.filter": {
       "localizations": {
         "ja": {

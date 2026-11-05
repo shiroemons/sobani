@@ -89,7 +89,7 @@ struct ManagementPanelView: View {
         case .registeredImages:
             RegisteredImagesView(viewModel: viewModel)
         case .logs:
-            PositionLogView()
+            PositionLogView(viewModel: viewModel)
         case .settings:
             SettingsView(viewModel: viewModel)
         case .none:

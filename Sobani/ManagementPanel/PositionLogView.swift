@@ -1,7 +1,10 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PositionLogView: View {
+    let viewModel: ManagementPanelViewModel
     @State private var isEnabled = PositionLogSettings.isEnabled
+    @State private var exportErrorMessage: String?
     @State private var entries: [PositionLogger.LogEntry] = []
     @State private var filterText = ""
     @State private var selectedEntryId: UUID?
@@ -61,6 +64,17 @@ struct PositionLogView: View {
             }
         }
         .onAppear { reloadEntries() }
+        .alert(
+            L("log.export.failed"),
+            isPresented: Binding(
+                get: { exportErrorMessage != nil },
+                set: { if !$0 { exportErrorMessage = nil } }
+            ),
+            presenting: exportErrorMessage
+        ) { _ in
+        } message: { message in
+            Text(message)
+        }
     }
 
     // MARK: - Toolbar
@@ -106,8 +120,9 @@ struct PositionLogView: View {
             }
 
             Menu {
-                Button("JSONL") { exportJSONL() }
-                Button("JSON") { exportJSON() }
+                ForEach(ExportFormat.allCases, id: \.self) { format in
+                    Button(format.menuTitle) { export(format) }
+                }
             } label: {
                 Label(L("log.export"), systemImage: "square.and.arrow.up")
                     .labelStyle(.iconOnly)
@@ -254,23 +269,39 @@ struct PositionLogView: View {
         entries = PositionLogger.shared.loadEntries()
     }
 
-    private func exportJSONL() {
-        let data = PositionLogger.shared.exportAsJSONL()
-        saveToFile(data: data, extension: "jsonl")
+    private enum ExportFormat: String, CaseIterable {
+        case jsonl
+        case json
+
+        var menuTitle: String { rawValue.uppercased() }
+
+        /// 保存ダイアログで選べる種類。拡張子と一致させる（.json のみだと .jsonl の名前と食い違う）
+        var contentType: UTType {
+            UTType(filenameExtension: rawValue) ?? .data
+        }
     }
 
-    private func exportJSON() {
-        let data = PositionLogger.shared.exportAsJSON()
-        saveToFile(data: data, extension: "json")
-    }
+    private static let exportBaseFileName = "position_log"
 
-    private func saveToFile(data: Data, extension ext: String) {
+    private func export(_ format: ExportFormat) {
+        let data: Data
+        switch format {
+        case .jsonl: data = PositionLogger.shared.exportAsJSONL()
+        case .json: data = PositionLogger.shared.exportAsJSON()
+        }
         let panel = NSSavePanel()
-        panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = "position_log.\(ext)"
+        panel.allowedContentTypes = [format.contentType]
+        panel.nameFieldStringValue = "\(Self.exportBaseFileName).\(format.rawValue)"
         panel.canCreateDirectories = true
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        try? data.write(to: url, options: .atomic)
+        Task {
+            // 管理パネルより前面に出すため、パネルのシートとして表示する
+            guard await viewModel.runDialog(panel) == .OK, let url = panel.url else { return }
+            do {
+                try data.write(to: url, options: .atomic)
+            } catch {
+                exportErrorMessage = error.localizedDescription
+            }
+        }
     }
 
     // MARK: - Formatters
