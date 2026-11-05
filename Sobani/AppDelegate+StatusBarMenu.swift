@@ -376,15 +376,16 @@ extension AppDelegate {
 
     @objc func ghostAlphaSliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
-        GhostModeSettings.globalAlpha = value
         if let container = sender.superview {
             SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
         }
-        // ゴーストの alpha は imageView 側で不透明度と合成して適用する（window.alphaValue は使わない）
-        for imageWindow in zOrderedWindows
-        where imageWindow.isGhostMode && imageWindow.customGhostAlpha == nil {
-            imageWindow.refreshImageAlpha()
-        }
+        applyGlobalGhostAlpha(value)
+        // 開いている管理パネルに共通値（「デフォルトを使用（xx%）」の表示）を反映させる
+        NotificationCenter.default.post(
+            name: AppConstants.imageWindowStateDidChange,
+            object: nil,
+            userInfo: [AppConstants.notificationTriggerKey: AppConstants.SnapshotTrigger.ghostAlpha.rawValue]
+        )
     }
 
     @objc func changeLanguage(_ sender: NSMenuItem) {
