@@ -625,6 +625,20 @@ struct DraggableImageViewHitTestTests {
         ))
         #expect(mask.bytes[cornerIdx] < AppConstants.hitTestAlphaThreshold)
     }
+
+    // MARK: - isAlphaInfoTransparent Tests
+
+    @Test("アルファ情報が透過を持つ形式かを判定する", arguments: [
+        (CGImageAlphaInfo.premultipliedLast, true),
+        (CGImageAlphaInfo.premultipliedFirst, true),
+        (CGImageAlphaInfo.first, true),
+        (CGImageAlphaInfo.last, true),
+        (CGImageAlphaInfo.none, false),
+        (CGImageAlphaInfo.noneSkipLast, false),
+    ])
+    func isAlphaInfoTransparent(alphaInfo: CGImageAlphaInfo, expected: Bool) {
+        #expect(DraggableImageView.isAlphaInfoTransparent(alphaInfo) == expected)
+    }
 }
 
 @Suite("DraggableImageView Image Replacement Tests")
@@ -715,6 +729,18 @@ struct DraggableImageViewImageReplacementTests {
         let mask = try #require(view.ensureAlphaMask())
         #expect(mask.bytes.contains { $0 < UInt8.max })
         #expect(!view.sourceImageHasAlpha())
+    }
+
+    @Test("クロップ中に元画像を差し替えると透過の有無を判定し直す")
+    func sourceImageHasAlphaFollowsOriginalReplacementWhileCropped() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        view.image = try Self.makeImage(width: 40, height: 40)
+        view.cropRect = CropRect(x: 0, y: 0, width: 0.5, height: 1)
+        #expect(!view.sourceImageHasAlpha())
+
+        view.setOriginalImage(try Self.makeImage(width: 40, height: 40, transparentRight: true))
+
+        #expect(view.sourceImageHasAlpha())
     }
 
     @Test("切り取りリセットで縦横比が元画像のものに戻る")

@@ -249,38 +249,6 @@ struct ImageWindowTests {
         #expect(result == "")
     }
 
-    // MARK: - isAlphaInfoTransparent Tests
-
-    @Test("premultipliedLast は透明")
-    func isAlphaInfoTransparentPremultipliedLast() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.premultipliedLast) == true)
-    }
-
-    @Test("premultipliedFirst は透明")
-    func isAlphaInfoTransparentPremultipliedFirst() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.premultipliedFirst) == true)
-    }
-
-    @Test("first は透明")
-    func isAlphaInfoTransparentFirst() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.first) == true)
-    }
-
-    @Test("last は透明")
-    func isAlphaInfoTransparentLast() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.last) == true)
-    }
-
-    @Test("none は不透明")
-    func isAlphaInfoTransparentNone() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.none) == false)
-    }
-
-    @Test("noneSkipLast は不透明")
-    func isAlphaInfoTransparentNoneSkipLast() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.noneSkipLast) == false)
-    }
-
     // MARK: - menuTitleLocalizationKey Tests
 
     @Test("有効なタグで対応するキーを返す")

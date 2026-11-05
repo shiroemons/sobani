@@ -98,13 +98,4 @@ extension ImageWindow {
     ) -> String {
         displayName == defaultName ? localizedDefault : displayName
     }
-
-    /// CGImageAlphaInfoが透明情報を持つかどうかを判定
-    nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
-        switch alphaInfo {
-        case .first, .last, .premultipliedFirst, .premultipliedLast: return true
-        default: return false
-        }
-    }
-
 }

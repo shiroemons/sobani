@@ -426,6 +426,14 @@ extension DraggableImageView {
         return pixelY * mask.width + pixelX
     }
 
+    /// CGImageAlphaInfo が透明情報を持つかどうかを判定
+    nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
+        switch alphaInfo {
+        case .first, .last, .premultipliedFirst, .premultipliedLast: return true
+        default: return false
+        }
+    }
+
     /// アルファマスクの長辺の上限（ピクセル）。ヒットテストは比率で参照するため、縮小しても判定位置はずれない。
     nonisolated static let alphaMaskMaxDimension = 2048
 
@@ -479,11 +487,16 @@ extension DraggableImageView {
         }
     }
 
-    /// 表示画像が変わったら（クロップの適用・解除を含む）マスクと透過判定のキャッシュを破棄する。
+    /// 表示画像が変わったら（クロップの適用・解除を含む）ヒットテスト用のマスクを破棄する。
+    ///
+    /// 透過判定は元画像で行うため、クロップ中（`originalImage` あり）は表示画像が変わっても破棄しない
+    /// （元画像の差し替えは `originalImage` の didSet で破棄される）。
     private func invalidateAlphaMask() {
         cachedAlphaMask = nil
         alphaMaskBuildAttempted = false
-        cachedSourceHasAlpha = nil
+        if originalImage == nil {
+            cachedSourceHasAlpha = nil
+        }
     }
 
     func ensureAlphaMask() -> AlphaMask? {
@@ -508,7 +521,7 @@ extension DraggableImageView {
     private func computeSourceImageHasAlpha() -> Bool {
         guard let source = originalImage ?? image,
               let cgImage = Self.extractCGImage(from: source),
-              ImageWindow.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
+              Self.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
         let mask = originalImage == nil ? ensureAlphaMask() : Self.buildAlphaMask(from: cgImage)
         return mask?.bytes.contains { $0 < UInt8.max } ?? false
     }
