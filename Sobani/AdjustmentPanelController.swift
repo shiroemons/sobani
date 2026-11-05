@@ -36,6 +36,15 @@ enum SectionLayout {
     static let labelFontSize: CGFloat = 12
     static let resetButtonWidth: CGFloat = 90
     static let resetButtonHeight: CGFloat = 28
+    static let labelHeight: CGFloat = 20
+    /// 「角度」「位置」「サイズ」などの見出しラベルの幅
+    static let titleLabelWidth: CGFloat = 40
+    /// 「X」「Y」「W」「H」「°」などの 1 文字ラベルの幅
+    static let unitLabelWidth: CGFloat = 15
+    static let inputHeight: CGFloat = 22
+    /// 入力欄を同じ行のラベルより下げる量（高さの差でベースラインを揃える）
+    static let inputYOffset: CGFloat = 2
+    static let separatorHeight: CGFloat = 1
 }
 
 enum RotationLayout {
@@ -54,6 +63,7 @@ enum RotationLayout {
 
 enum PositionSizeLayout {
     static let monitorLabelY: CGFloat = 145
+    static let monitorLabelWidth: CGFloat = 60
     static let monitorPopupX: CGFloat = 70
     static let monitorPopupY: CGFloat = 143
     static let monitorPopupWidth: CGFloat = 140
@@ -140,7 +150,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         // Separator between rotation and position/size
         let separator = NSBox(frame: NSRect(
             x: SectionLayout.labelX, y: Self.rotationSectionOffsetY,
-            width: SectionLayout.contentWidth, height: 1
+            width: SectionLayout.contentWidth, height: SectionLayout.separatorHeight
         ))
         separator.boxType = .separator
         contentView.addSubview(separator)
@@ -169,7 +179,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         let label = NSTextField(labelWithString: L("adjust.angle"))
         label.frame = NSRect(
             x: RotationLayout.angleLabelX, y: RotationLayout.angleLabelRelativeY + offsetY,
-            width: 40, height: 20
+            width: SectionLayout.titleLabelWidth, height: SectionLayout.labelHeight
         )
         label.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(label)
@@ -177,7 +187,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         // Text field
         let field = NSTextField(frame: NSRect(
             x: RotationLayout.angleFieldX, y: RotationLayout.angleFieldRelativeY + offsetY,
-            width: RotationLayout.angleFieldWidth, height: 22
+            width: RotationLayout.angleFieldWidth, height: SectionLayout.inputHeight
         ))
         field.stringValue = Self.formatAngle(angle)
         field.alignment = .right
@@ -192,7 +202,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         let degreeLabel = NSTextField(labelWithString: L("adjust.degree"))
         degreeLabel.frame = NSRect(
             x: RotationLayout.degreeLabelX, y: RotationLayout.angleLabelRelativeY + offsetY,
-            width: 15, height: 20
+            width: SectionLayout.unitLabelWidth, height: SectionLayout.labelHeight
         )
         degreeLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(degreeLabel)

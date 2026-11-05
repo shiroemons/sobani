@@ -137,19 +137,17 @@ extension ImageWindow {
 
         submenu.addRegisteredImageItems(names: names, target: self, action: #selector(selectRegisteredImage(_:)))
 
-        if #available(macOS 14.0, *) {
-            submenu.addItem(NSMenuItem.separator())
-            let removeBackgroundItem = NSMenuItem(
-                title: L("image.remove_background"),
-                action: #selector(removeBackground as () -> Void),
-                keyEquivalent: ""
-            )
-            removeBackgroundItem.target = self
-            removeBackgroundItem.tag = MenuItemTag.removeBackground.rawValue
-            removeBackgroundItem.isEnabled = isRemoveBackgroundAvailable
-            removeBackgroundItem.image = SFSymbolUtils.icon("eraser.fill")
-            submenu.addItem(removeBackgroundItem)
-        }
+        submenu.addItem(NSMenuItem.separator())
+        let removeBackgroundItem = NSMenuItem(
+            title: L("image.remove_background"),
+            action: #selector(removeBackground as () -> Void),
+            keyEquivalent: ""
+        )
+        removeBackgroundItem.target = self
+        removeBackgroundItem.tag = MenuItemTag.removeBackground.rawValue
+        removeBackgroundItem.isEnabled = isRemoveBackgroundAvailable
+        removeBackgroundItem.image = SFSymbolUtils.icon("eraser.fill")
+        submenu.addItem(removeBackgroundItem)
     }
 
     private func populateNewWindowSubmenu(_ menu: NSMenu, names: [String]) {

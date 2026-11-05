@@ -108,19 +108,17 @@ extension AppDelegate {
             submenu.addItem(buildPerWindowGhostAlphaSliderItem(for: imageWindow))
         }
 
-        if #available(macOS 14.0, *) {
-            submenu.addItem(NSMenuItem.separator())
-            let removeBackgroundItem = NSMenuItem(
-                title: L("image.remove_background"),
-                action: #selector(removeBackgroundByWindowNumber(_:)),
-                keyEquivalent: ""
-            )
-            removeBackgroundItem.target = self
-            removeBackgroundItem.tag = windowNumber
-            removeBackgroundItem.isEnabled = !imageWindow.isHidden && imageWindow.isRemoveBackgroundAvailable
-            removeBackgroundItem.image = menuIcon("eraser.fill")
-            submenu.addItem(removeBackgroundItem)
-        }
+        submenu.addItem(NSMenuItem.separator())
+        let removeBackgroundItem = NSMenuItem(
+            title: L("image.remove_background"),
+            action: #selector(removeBackgroundByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
+        removeBackgroundItem.target = self
+        removeBackgroundItem.tag = windowNumber
+        removeBackgroundItem.isEnabled = !imageWindow.isHidden && imageWindow.isRemoveBackgroundAvailable
+        removeBackgroundItem.image = menuIcon("eraser.fill")
+        submenu.addItem(removeBackgroundItem)
     }
 
     func buildChangeImageSubmenuForWindow(

@@ -92,6 +92,18 @@ extension ImageWindow {
         )
     }
 
+    /// 省略可能な値を許容誤差つきで比較する（両方 nil なら等しい、片方だけ nil なら異なる）
+    nonisolated static func isApproximatelyEqual(_ lhs: CGFloat?, _ rhs: CGFloat?) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil):
+            return true
+        case let (lhs?, rhs?):
+            return GeometryUtils.isApproximatelyEqual(lhs, rhs)
+        default:
+            return false
+        }
+    }
+
     /// 表示名のローカライズ処理（デフォルト名と一致する場合はローカライズ名を返す）
     nonisolated static func formatLocalizedDisplayName(
         displayName: String, defaultName: String, localizedDefault: String

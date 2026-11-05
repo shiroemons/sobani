@@ -413,7 +413,7 @@ extension AppDelegate {
             .applicationVersion: String(format: L("about.version"), version, "v\(version)"),
             .version: ""
         ])
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 
     @objc func changeDefaultImageFromMenu() {

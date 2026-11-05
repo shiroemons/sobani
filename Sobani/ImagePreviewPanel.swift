@@ -1,10 +1,8 @@
 import Cocoa
-import os.log
 
 @MainActor
 final class ImagePreviewPanel {
     static let shared = ImagePreviewPanel()
-    private let logger = Logger(category: "ImagePreviewPanel")
     private let panel: NSPanel
     private let imageView: NSImageView
     /// 画像の周囲の余白

@@ -8,15 +8,12 @@ final class DraggableImageView: NSImageView {
     private let logger = Logger(category: "DraggableImageView")
 
     var aspectRatio: CGFloat = 1.0
-    let minHeight: CGFloat = AppConstants.minImageHeight
-    let maxHeight: CGFloat = AppConstants.maxImageHeight
     private var initialMouseInWindow: NSPoint = .zero
     private var dragStartScreenLocation: NSPoint = .zero
     private var cachedAllWindows: [ImageWindow]?
     private var isDraggingAll = false
     private var isSnapEnabled = false
     private var cachedOtherWindowFrames: [CGRect]?
-    private var cachedScreenFrames: [CGRect]?
     /// ドラッグ開始時の各ウィンドウの原点。mouseUp で実際に動いたウィンドウだけ位置変更を通知する。
     private var dragStartOrigins: [(imageView: DraggableImageView, origin: NSPoint)] = []
     var isFlippedHorizontally: Bool = false {
@@ -53,7 +50,6 @@ final class DraggableImageView: NSImageView {
     private(set) var originalImage: NSImage? {
         didSet { cachedSourceHasAlpha = nil }
     }
-    var isCropModeActive: Bool = false
     var isAdjustmentPanelActive: Bool = false
     private var cachedAlphaMask: AlphaMask?
     private var alphaMaskBuildAttempted: Bool = false
@@ -81,7 +77,6 @@ final class DraggableImageView: NSImageView {
             onDoubleClick?()
             return
         }
-        if isCropModeActive { return }
         onMouseDown?()
         isDraggingAll = event.modifierFlags.contains(.option)
         isSnapEnabled = SnapSettings.isEnabled
@@ -97,14 +92,11 @@ final class DraggableImageView: NSImageView {
             cachedOtherWindowFrames = visibleImageWindows
                 .filter { $0.window !== currentWindow }
                 .map { $0.window.frame }
-            cachedScreenFrames = NSScreen.screens.map { $0.visibleFrame }
             dragStartOrigins = [(self, currentWindow.frame.origin)]
         }
     }
 
     override func mouseDragged(with event: NSEvent) {
-        if isCropModeActive { return }
-
         if isDraggingAll, let currentWindow = window {
             let screenPoint = currentWindow.convertPoint(toScreen: event.locationInWindow)
             let deltaX = screenPoint.x - dragStartScreenLocation.x
@@ -128,7 +120,6 @@ final class DraggableImageView: NSImageView {
                 let proposedFrame = NSRect(origin: origin, size: currentWindow.frame.size)
                 let otherFrames = cachedOtherWindowFrames ?? []
                 let screenFrame = currentWindow.screen?.visibleFrame
-                    ?? cachedScreenFrames?.first
                     ?? NSScreen.main?.visibleFrame
                     ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
                 let snap = SnapUtils.calculateSnap(
@@ -152,7 +143,6 @@ final class DraggableImageView: NSImageView {
         isDraggingAll = false
         cachedAllWindows = nil
         cachedOtherWindowFrames = nil
-        cachedScreenFrames = nil
         // クリックだけで動いていないウィンドウには位置変更を通知しない
         let movedViews = dragStartOrigins.filter { target in
             guard let currentOrigin = target.imageView.window?.frame.origin else { return false }
@@ -165,7 +155,6 @@ final class DraggableImageView: NSImageView {
     }
 
     override func scrollWheel(with event: NSEvent) {
-        if isCropModeActive { return }
         let delta = event.scrollingDeltaY
         if GeometryUtils.isApproximatelyZero(delta) { return }
         if let handler = scrollRotationHandler {
@@ -533,7 +522,7 @@ extension DraggableImageView {
 
 extension DraggableImageView {
     override func hitTest(_ point: NSPoint) -> NSView? {
-        if isCropModeActive || isAdjustmentPanelActive { return super.hitTest(point) }
+        if isAdjustmentPanelActive { return super.hitTest(point) }
         guard let img = image, let superview = superview else { return super.hitTest(point) }
         let imageSize = img.size
         let localPoint = convert(point, from: superview)

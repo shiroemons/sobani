@@ -36,7 +36,8 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     var isRemoveBackgroundAvailable: Bool {
         !isRemovingBackground && !imageView.sourceImageHasAlpha()
     }
-    /// ゴーストモードの状態。有効時は `ignoresMouseEvents = true` かつ画像の alpha が 0.3 になる。
+    /// ゴーストモードの状態。有効時は `ignoresMouseEvents = true` になり、imageView の alpha は
+    /// `opacityLevel × effectiveGhostAlpha`（ウィンドウ個別の値、なければ共通設定）になる。
     /// 無効化時は alpha がウィンドウ固有の `opacityLevel` に戻る（1.0 ではない）。
     private(set) var isGhostMode: Bool = false
     private(set) var isHidden: Bool = false
@@ -376,7 +377,7 @@ extension ImageWindow {
     }
 
     func setCustomGhostAlpha(_ alpha: CGFloat?) {
-        guard alpha != customGhostAlpha else { return }
+        guard !Self.isApproximatelyEqual(alpha, customGhostAlpha) else { return }
         customGhostAlpha = alpha
         if isGhostMode {
             refreshImageAlpha()

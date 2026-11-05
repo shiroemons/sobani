@@ -273,6 +273,17 @@ struct ImageWindowTests {
         #expect(result == nil)
     }
 
+    // MARK: - isApproximatelyEqual (Optional) Tests
+
+    @Test("省略可能な値の比較: 両方 nil・誤差内は等しく、片方 nil・誤差超えは異なる")
+    func optionalApproximatelyEqual() {
+        #expect(ImageWindow.isApproximatelyEqual(nil, nil))
+        #expect(ImageWindow.isApproximatelyEqual(0.3, 0.3 + AppConstants.floatingPointTolerance / 2))
+        #expect(!ImageWindow.isApproximatelyEqual(0.3, nil))
+        #expect(!ImageWindow.isApproximatelyEqual(nil, 0.3))
+        #expect(!ImageWindow.isApproximatelyEqual(0.3, 0.5))
+    }
+
     // MARK: - formatLocalizedDisplayName Tests
 
     @Test("デフォルト名と一致する場合はローカライズ名を返す")

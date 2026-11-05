@@ -12,7 +12,6 @@ extension ImageWindow {
 
     func removeBackground(completion: (@MainActor @Sendable () -> Void)?) {
         guard !isRemovingBackground else { return }
-        guard #available(macOS 14.0, *) else { return }
         // クロップ済みの表示画像ではなく元画像を処理する（クロップは結果に再適用する）
         guard let sourceImage = imageView.originalImage ?? imageView.image else { return }
         isRemovingBackground = true
