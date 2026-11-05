@@ -55,6 +55,8 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
     }
 
     private func setupPanel() {
+        // 一覧は表示に切り替わったときに構築されるため、ビューを作る前に済ませる（初回描画を空の一覧にしない）
+        viewModel.setPanelVisible(true)
         let contentView = ManagementPanelView(viewModel: viewModel)
         let hosting = NSHostingController(rootView: contentView)
 
@@ -78,7 +80,6 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
         panel.isMovableByWindowBackground = true
         panel.center()
         viewModel.presentingWindow = panel
-        viewModel.setPanelVisible(true)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate()
         self.panel = panel
