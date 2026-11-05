@@ -1,15 +1,22 @@
 import Foundation
-import os.log
+import os
 
 extension Notification.Name {
-    static let languageDidChange = Notification.Name("languageDidChange")
+    static let languageDidChange = Notification.Name("\(AppConstants.loggerSubsystem).languageDidChange")
 }
+
+/// `L()` が使うローカライズ用バンドルの保管場所。
+///
+/// `L()` は任意のスレッドから呼ばれる。Swift ではクラス参照の読み書きに retain/release が伴い
+/// アトミックではないため、ロックで保護する。
+private let localizationBundleLock = OSAllocatedUnfairLock<Bundle?>(initialState: nil)
 
 /// スレッドセーフなバンドル参照。任意のスレッドから読み取り可能。
 /// 書き込みは @MainActor (LanguageManager.updateBundle()) からのみ行われる。
-/// Bundle は不変オブジェクトであり、
-/// 参照の代入は64bitでアトミックなため安全。
-nonisolated(unsafe) var sharedLocalizationBundle: Bundle?
+var sharedLocalizationBundle: Bundle? {
+    get { localizationBundleLock.withLock { $0 } }
+    set { localizationBundleLock.withLock { $0 = newValue } }
+}
 
 enum Language: String, CaseIterable, Sendable {
     case system = "system"
@@ -27,7 +34,6 @@ enum Language: String, CaseIterable, Sendable {
 
 @MainActor
 final class LanguageManager {
-    private let logger = Logger(category: "LanguageManager")
     static let shared = LanguageManager()
 
     private let defaults: UserDefaults

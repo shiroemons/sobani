@@ -116,4 +116,24 @@ import Testing
             NotificationCenter.default.removeObserver(observer)
         }
     }
+
+    /// 通知名がアプリのサブシステムで名前空間化されていることを検証
+    @Test func languageDidChangeNameIsNamespaced() {
+        #expect(Notification.Name.languageDidChange.rawValue == "\(AppConstants.loggerSubsystem).languageDidChange")
+    }
+
+    // MARK: - Shared Bundle
+
+    /// 言語変更でL()が参照する共有バンドルが更新され、別スレッドからも同時に読み取れることを検証
+    @Test func sharedBundleIsUpdatedAndReadableConcurrently() throws {
+        manager.currentLanguage = .english
+        let bundle = try #require(manager.currentBundle)
+        #expect(sharedLocalizationBundle === bundle)
+
+        DispatchQueue.concurrentPerform(iterations: 64) { _ in
+            _ = L("menu.quit")
+        }
+        #expect(sharedLocalizationBundle === bundle)
+        manager.currentLanguage = .system
+    }
 }
