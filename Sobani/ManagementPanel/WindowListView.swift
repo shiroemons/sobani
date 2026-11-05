@@ -68,48 +68,36 @@ struct WindowListView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
 
-                Button {
+                ToolbarIconButton(
+                    systemImage: AppConstants.visibleWindowSymbol, help: L("management.show_all")
+                ) {
                     viewModel.showAllWindows()
-                } label: {
-                    Image(systemName: AppConstants.visibleWindowSymbol)
-                        .frame(width: 16, height: 16)
                 }
-                .help(L("management.show_all"))
 
-                Button {
+                ToolbarIconButton(
+                    systemImage: AppConstants.hiddenWindowSymbol, help: L("management.hide_all")
+                ) {
                     viewModel.hideAllWindows()
-                } label: {
-                    Image(systemName: AppConstants.hiddenWindowSymbol)
-                        .frame(width: 16, height: 16)
                 }
-                .help(L("management.hide_all"))
 
-                Button {
+                ToolbarIconButton(
+                    systemImage: AppConstants.ghostModeSymbol, help: L("management.ghost_all")
+                ) {
                     viewModel.ghostAllWindows()
-                } label: {
-                    Image(systemName: AppConstants.ghostModeSymbol)
-                        .frame(width: 16, height: 16)
                 }
-                .help(L("management.ghost_all"))
 
-                Button {
+                ToolbarIconButton(
+                    systemImage: AppConstants.normalModeSymbol, help: L("management.unghost_all")
+                ) {
                     viewModel.unghostAllWindows()
-                } label: {
-                    Image(systemName: AppConstants.normalModeSymbol)
-                        .frame(width: 16, height: 16)
                 }
-                .help(L("management.unghost_all"))
             }
 
             Spacer()
 
-            Button {
+            ToolbarIconButton(systemImage: "plus", help: L("management.add_image")) {
                 showingImagePicker.toggle()
-            } label: {
-                Image(systemName: "plus")
-                    .frame(width: 16, height: 16)
             }
-            .help(L("management.add_image"))
             .popover(isPresented: $showingImagePicker, arrowEdge: .bottom) {
                 VStack(alignment: .leading, spacing: 0) {
                     Button {
@@ -280,9 +268,7 @@ struct WindowListRow: View {
                 .font(.caption)
 
             // Thumbnail
-            ThumbnailView(image: windowInfo.thumbnail)
-                .frame(width: 40, height: 40)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+            RoundedThumbnail(image: windowInfo.thumbnail)
 
             // Info
             VStack(alignment: .leading, spacing: 2) {

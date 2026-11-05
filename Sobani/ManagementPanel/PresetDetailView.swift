@@ -43,28 +43,11 @@ struct PresetDetailView: View {
 
     @ViewBuilder
     private func infoSection(state: WindowState, index: Int) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label {
-                Text(state.imageName)
-                    .font(.headline)
-            } icon: {
-                Image(systemName: "photo")
-            }
-
-            Label {
-                Text("#\(index + 1)")
-                    .font(.caption.monospaced())
-            } icon: {
-                Image(systemName: "number")
-            }
-
-            Label {
-                Text(FormatUtils.formatDimensions(width: state.width, height: state.height))
-                    .font(.caption)
-            } icon: {
-                Image(systemName: "ruler")
-            }
-        }
+        DetailInfoLabels(
+            name: state.imageName,
+            number: "#\(index + 1)",
+            detail: FormatUtils.formatDimensions(width: state.width, height: state.height)
+        )
     }
 
     // MARK: - Position & Size

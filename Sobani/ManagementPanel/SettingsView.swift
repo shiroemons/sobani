@@ -65,18 +65,16 @@ struct SettingsView: View {
         Section(L("management.ghost_mode_section")) {
             HStack {
                 Text(L("management.ghost_alpha"))
-                Slider(
+                OpacitySliderRow(
                     value: $ghostAlpha,
-                    in: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax
+                    range: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax,
+                    valueFont: .body.monospaced()
                 )
                 .onChange(of: ghostAlpha) {
                     GhostModeSettings.globalAlpha = ghostAlpha
                     // 個別の不透明度を持たないゴースト中のウィンドウは共通値で表示されているため再適用する
                     viewModel.applyGlobalGhostAlpha()
                 }
-                Text(FormatUtils.formatOpacity(ghostAlpha))
-                    .font(.body.monospaced())
-                    .frame(width: 40, alignment: .trailing)
             }
         }
     }

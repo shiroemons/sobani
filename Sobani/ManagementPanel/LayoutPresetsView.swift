@@ -139,21 +139,13 @@ struct LayoutPresetsView: View {
         VStack(spacing: 0) {
             // Toolbar
             HStack(spacing: 8) {
-                Button {
+                ToolbarIconButton(systemImage: "square.and.arrow.down", help: L("layout.save_current")) {
                     activeNameSheet = .save
-                } label: {
-                    Image(systemName: "square.and.arrow.down")
-                        .frame(width: 16, height: 16)
                 }
-                .help(L("layout.save_current"))
 
-                Button {
+                ToolbarIconButton(systemImage: "plus.square", help: L("layout.create_new")) {
                     activeNameSheet = .create
-                } label: {
-                    Image(systemName: "plus.square")
-                        .frame(width: 16, height: 16)
                 }
-                .help(L("layout.create_new"))
 
                 Spacer()
             }
@@ -203,9 +195,7 @@ struct LayoutPresetsView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 4) {
                     ForEach(Array(thumbnails(for: preset).enumerated()), id: \.offset) { _, image in
-                        ThumbnailView(image: image, iconFont: .caption2)
-                            .frame(width: 36, height: 36)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        RoundedThumbnail(image: image, size: RoundedThumbnail.compactSize, iconFont: .caption2)
                     }
                 }
             }
@@ -324,9 +314,7 @@ extension LayoutPresetsView {
         List(selection: $selectedPresetWindowIndex) {
             ForEach(Array(preset.states.enumerated()), id: \.offset) { index, state in
                 HStack(spacing: 8) {
-                    ThumbnailView(image: thumbnail(for: preset, at: index), iconFont: .caption2)
-                        .frame(width: 40, height: 40)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    RoundedThumbnail(image: thumbnail(for: preset, at: index), iconFont: .caption2)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(state.imageName)
