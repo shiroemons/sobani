@@ -4,11 +4,14 @@ struct WindowListView: View {
     @Bindable var viewModel: ManagementPanelViewModel
     @State private var showingImagePicker = false
     @State private var hoveredImageName: String?
+    /// 確認待ちの削除対象。すべてのウィンドウを削除する（＝アプリが終了する）場合だけ確認する
+    @State private var pendingDeletion: Set<Int>?
 
     var body: some View {
         VStack(spacing: 0) {
             toolbar
 
+            // 最後のウィンドウを閉じるとアプリが終了するため通常は表示されない（復元中など一時的に空になった場合の表示）
             if viewModel.windows.isEmpty {
                 emptyState
             } else {
@@ -17,6 +20,42 @@ struct WindowListView: View {
 
             statusBar
         }
+        .confirmationDialog(
+            deletionConfirmTitle,
+            isPresented: Binding(
+                get: { pendingDeletion != nil },
+                set: { if !$0 { pendingDeletion = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDeletion
+        ) { windowIds in
+            Button(L("management.context.close"), role: .destructive) {
+                viewModel.deleteWindows(windowIds: windowIds)
+            }
+            Button(L("management.cancel"), role: .cancel) {}
+        } message: { _ in
+            Text(L("quit.confirm_message"))
+        }
+    }
+
+    // MARK: - Deletion
+
+    private func requestDelete(_ windowIds: Set<Int>) {
+        guard !windowIds.isEmpty else { return }
+        if viewModel.deletionRemovesAllWindows(windowIds) {
+            pendingDeletion = windowIds
+        } else {
+            viewModel.deleteWindows(windowIds: windowIds)
+        }
+    }
+
+    private var deletionConfirmTitle: String {
+        guard let windowIds = pendingDeletion else { return "" }
+        if windowIds.count == 1,
+           let window = viewModel.windows.first(where: { windowIds.contains($0.windowId) }) {
+            return String(format: L("management.delete_confirm_single"), window.displayName)
+        }
+        return String(format: L("management.delete_confirm_multi"), windowIds.count)
     }
 
     // MARK: - Toolbar
@@ -162,18 +201,20 @@ struct WindowListView: View {
     private var windowList: some View {
         List(selection: $viewModel.selectedWindowIds) {
             ForEach(viewModel.windows, id: \.windowId) { windowInfo in
-                WindowListRow(windowInfo: windowInfo, viewModel: viewModel)
-                    .opacity(windowInfo.isHidden ? 0.5 : 1.0)
-                    .tag(windowInfo.windowId)
+                WindowListRow(
+                    windowInfo: windowInfo,
+                    viewModel: viewModel,
+                    onRequestDelete: { requestDelete([windowInfo.windowId]) }
+                )
+                .opacity(windowInfo.isHidden ? 0.5 : 1.0)
+                .tag(windowInfo.windowId)
             }
             .onMove { source, destination in
                 viewModel.moveWindows(from: source, to: destination)
             }
         }
         .onDeleteCommand {
-            if !viewModel.selectedWindowIds.isEmpty {
-                viewModel.deleteWindows(windowIds: viewModel.selectedWindowIds)
-            }
+            requestDelete(viewModel.selectedWindowIds)
         }
     }
 
@@ -211,6 +252,7 @@ struct WindowListView: View {
 struct WindowListRow: View {
     let windowInfo: ManagementPanelViewModel.WindowInfo
     let viewModel: ManagementPanelViewModel
+    let onRequestDelete: () -> Void
 
     var body: some View {
         // 現在の状態を示すアイコン（インラインボタン用）
@@ -314,7 +356,7 @@ struct WindowListRow: View {
             Divider()
 
             Button {
-                viewModel.deleteWindows(windowIds: [windowInfo.windowId])
+                onRequestDelete()
             } label: {
                 Label(
                     L("management.context.close"),

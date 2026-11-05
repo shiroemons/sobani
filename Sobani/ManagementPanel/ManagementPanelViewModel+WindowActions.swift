@@ -100,6 +100,17 @@ extension ManagementPanelViewModel {
 
     // MARK: - Window Management
 
+    /// 指定ウィンドウを削除すると、すべてのウィンドウがなくなる（＝アプリが終了する）か。
+    func deletionRemovesAllWindows(_ windowIds: Set<Int>) -> Bool {
+        Self.deletionRemovesAllWindows(
+            deleting: windowIds, existingIds: appDelegate?.zOrderedWindows.map(\.windowId) ?? []
+        )
+    }
+
+    nonisolated static func deletionRemovesAllWindows(deleting windowIds: Set<Int>, existingIds: [Int]) -> Bool {
+        !existingIds.isEmpty && existingIds.allSatisfy(windowIds.contains)
+    }
+
     func deleteWindows(windowIds: Set<Int>) {
         guard let appDelegate else { return }
         let windowsToDelete = appDelegate.zOrderedWindows.filter { windowIds.contains($0.windowId) }
