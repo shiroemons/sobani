@@ -558,7 +558,7 @@ extension AppDelegate {
 
     /// 位置ログ（有効時のみ）に、現在のスクリーン構成と全ウィンドウの位置を記録する。
     /// `context` はログが有効なときだけ評価される。
-    func logPositionEvent(_ event: String, context: @autoclosure () -> [String: String]? = nil) {
+    private func logPositionEvent(_ event: String, context: @autoclosure () -> [String: String]? = nil) {
         guard PositionLogger.shared.isEnabled else { return }
         PositionLogger.shared.log(
             event: event,
