@@ -521,3 +521,43 @@ struct DraggableImageViewHitTestTests {
         #expect(mask.bytes[cornerIdx] < AppConstants.hitTestAlphaThreshold)
     }
 }
+
+@Suite("DraggableImageView Image Replacement Tests")
+@MainActor
+struct DraggableImageViewImageReplacementTests {
+    static func makeImage(width: Int, height: Int) throws -> NSImage {
+        let rep = try #require(NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ))
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        NSColor.red.setFill()
+        NSRect(x: 0, y: 0, width: width, height: height).fill()
+        NSGraphicsContext.restoreGraphicsState()
+        let image = NSImage(size: NSSize(width: width, height: height))
+        image.addRepresentation(rep)
+        return image
+    }
+
+    @Test("画像差し替えで旧画像のクロップと元画像が破棄される")
+    func replaceImageClearsCrop() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        let oldImage = try Self.makeImage(width: 40, height: 20)
+        let newImage = try Self.makeImage(width: 30, height: 30)
+        view.image = oldImage
+        view.cropRect = CropRect(x: 0, y: 0, width: 0.5, height: 1)
+        #expect(view.originalImage === oldImage)
+
+        view.replaceImage(newImage)
+
+        #expect(view.cropRect == nil)
+        #expect(view.originalImage == nil)
+        #expect(view.image === newImage)
+
+        // 切り取りリセットしても旧画像には戻らない
+        view.resetCrop()
+        #expect(view.image === newImage)
+    }
+}

@@ -135,11 +135,15 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         }
     }
 
+    /// 表示画像を別の画像に差し替える。旧画像のクロップは破棄し、高さを保ったまま新しい縦横比にする。
     func applyImage(_ image: NSImage) {
         guard image.size.height > 0 else { return }
+        // 開いているクロップエディタは旧画像を編集しているため閉じる
+        cropEditorController?.close()
+        cropEditorController = nil
         let baseHeight = imageView.frame.height
         let dims = Self.calculateImageDimensions(baseHeight: baseHeight, imageSize: image.size)
-        imageView.image = image
+        imageView.replaceImage(image)
         imageView.aspectRatio = dims.aspectRatio
         imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
         cachedHasAlpha = nil

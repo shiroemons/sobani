@@ -230,6 +230,16 @@ final class DraggableImageView: NSImageView {
         onSizeChanged?()
     }
 
+    /// 表示する画像そのものを差し替える（画像変更・ドロップ・デフォルトに戻す等）。
+    ///
+    /// 旧画像に対するクロップ範囲と元画像は新しい画像とは無関係なので破棄する。
+    /// `originalImage` を先に消すことで、`cropRect = nil` で旧画像が復元されないようにする。
+    func replaceImage(_ newImage: NSImage) {
+        originalImage = nil
+        cropRect = nil
+        image = newImage
+    }
+
     func setOriginalImage(_ newImage: NSImage) {
         originalImage = newImage
         if cropRect != nil {
