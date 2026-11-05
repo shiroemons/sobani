@@ -180,6 +180,25 @@ import UniformTypeIdentifiers
         #expect(CGImageSourceGetType(source) as String? == UTType.png.identifier)
     }
 
+    /// エンコード済みPNGデータの登録でも拡張子が.pngに揃い、重複名はリネームされることを検証
+    @Test func registerPNGData_ForcesPNGExtensionAndUniqueName() throws {
+        let cgImage = try #require(createTestImage().cgImage(forProposedRect: nil, context: nil, hints: nil))
+        let pngData = try #require(ImageManager.pngData(from: cgImage))
+
+        let first = imageManager.registerPNGData(pngData, name: "photo_nobg.jpg")
+        let second = imageManager.registerPNGData(pngData, name: "photo_nobg.jpg")
+
+        #expect(first == "photo_nobg.png")
+        #expect(second == "photo_nobg_1.png")
+        #expect(imageManager.registeredImageNames().contains("photo_nobg_1.png"))
+        let savedURL = tempDirectory.appendingPathComponent("images").appendingPathComponent("photo_nobg.png")
+        let source = try #require(CGImageSourceCreateWithURL(savedURL as CFURL, nil))
+        #expect(CGImageSourceGetType(source) as String? == UTType.png.identifier)
+        let saved = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
+        #expect(saved.width == cgImage.width)
+        #expect(saved.height == cgImage.height)
+    }
+
     /// pngFileNameが最終要素の拡張子を.pngに置き換えることを検証
     @Test(arguments: [
         ("photo.jpg", "photo.png"), ("a_nobg.png", "a_nobg.png"), ("noext", "noext.png"),

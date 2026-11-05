@@ -58,7 +58,7 @@ import Testing
         guard #available(macOS 14.0, *) else { return }
         let emptyImage = NSImage()
 
-        let result: Result<NSImage, BackgroundRemovalError> =
+        let result: Result<BackgroundRemovalResult, BackgroundRemovalError> =
             await withCheckedContinuation { continuation in
                 BackgroundRemovalManager.shared.removeBackground(from: emptyImage) { result in
                     continuation.resume(returning: result)
@@ -77,7 +77,7 @@ import Testing
         guard #available(macOS 14.0, *) else { return }
         let image = try createTestImage()
 
-        let _: Result<NSImage, BackgroundRemovalError> =
+        let _: Result<BackgroundRemovalResult, BackgroundRemovalError> =
             await withCheckedContinuation { continuation in
                 BackgroundRemovalManager.shared.removeBackground(from: image) { result in
                     continuation.resume(returning: result)
@@ -110,7 +110,7 @@ import Testing
         ) else { return }
         tiny.addRepresentation(rep)
 
-        let result: Result<NSImage, BackgroundRemovalError> =
+        let result: Result<BackgroundRemovalResult, BackgroundRemovalError> =
             await withCheckedContinuation { continuation in
                 BackgroundRemovalManager.shared.removeBackground(from: tiny) { result in
                     continuation.resume(returning: result)
@@ -143,7 +143,7 @@ import Testing
         guard #available(macOS 14.0, *) else { return }
         let emptyImage = NSImage()
         for _ in 0..<3 {
-            let _: Result<NSImage, BackgroundRemovalError> =
+            let _: Result<BackgroundRemovalResult, BackgroundRemovalError> =
                 await withCheckedContinuation { continuation in
                     BackgroundRemovalManager.shared.removeBackground(from: emptyImage) { result in
                         continuation.resume(returning: result)
