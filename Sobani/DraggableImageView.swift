@@ -10,11 +10,11 @@ final class DraggableImageView: NSImageView {
     var aspectRatio: CGFloat = 1.0
     private var initialMouseInWindow: NSPoint = .zero
     private var dragStartScreenLocation: NSPoint = .zero
-    private var cachedAllWindows: [ImageWindow]?
     private var isDraggingAll = false
     private var isSnapEnabled = false
     private var cachedOtherWindowFrames: [CGRect]?
-    /// ドラッグ開始時の各ウィンドウの原点。mouseUp で実際に動いたウィンドウだけ位置変更を通知する。
+    /// ドラッグ対象（一括ドラッグでは表示中の全ウィンドウ）と開始時の原点。
+    /// mouseUp で実際に動いたウィンドウだけ位置変更を通知する。
     private var dragStartOrigins: [(imageView: DraggableImageView, origin: NSPoint)] = []
     var isFlippedHorizontally: Bool = false {
         didSet { needsLayout = true }
@@ -84,9 +84,7 @@ final class DraggableImageView: NSImageView {
         if isDraggingAll {
             guard let currentWindow = window else { return }
             dragStartScreenLocation = currentWindow.convertPoint(toScreen: event.locationInWindow)
-            let targets = visibleImageWindows
-            cachedAllWindows = targets
-            dragStartOrigins = targets.map { ($0.imageView, $0.window.frame.origin) }
+            dragStartOrigins = visibleImageWindows.map { ($0.imageView, $0.window.frame.origin) }
         } else if let currentWindow = window {
             initialMouseInWindow = event.locationInWindow
             cachedOtherWindowFrames = visibleImageWindows
@@ -102,11 +100,12 @@ final class DraggableImageView: NSImageView {
             let deltaX = screenPoint.x - dragStartScreenLocation.x
             let deltaY = screenPoint.y - dragStartScreenLocation.y
             dragStartScreenLocation = screenPoint
-            for imageWindow in cachedAllWindows ?? [] {
-                var origin = imageWindow.window.frame.origin
+            for target in dragStartOrigins {
+                guard let targetWindow = target.imageView.window else { continue }
+                var origin = targetWindow.frame.origin
                 origin.x += deltaX
                 origin.y += deltaY
-                imageWindow.window.setFrameOrigin(origin)
+                targetWindow.setFrameOrigin(origin)
             }
         } else if let currentWindow = window {
             let current = event.locationInWindow
@@ -141,7 +140,6 @@ final class DraggableImageView: NSImageView {
 
     override func mouseUp(with event: NSEvent) {
         isDraggingAll = false
-        cachedAllWindows = nil
         cachedOtherWindowFrames = nil
         // クリックだけで動いていないウィンドウには位置変更を通知しない
         let movedViews = dragStartOrigins.filter { target in
