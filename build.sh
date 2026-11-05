@@ -4,6 +4,7 @@
 # 環境変数:
 #   SOBANI_ARCHS      - ビルドアーキテクチャ (例: "arm64 x86_64")
 #   SKIP_CODESIGN=1   - コード署名をスキップ
+#   SIGN_IDENTITY     - 署名 ID（既定: "Developer ID Application"。"-" でアドホック署名）
 #   NOTARIZE=1        - Apple 公証を有効化
 #   NOTARIZE_PROFILE   - notarytool キーチェーンプロファイル名
 #   CREATE_DMG=1       - DMG ファイルを作成
@@ -110,18 +111,37 @@ fi
 # コード署名
 if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
     echo "🔏 コード署名中..."
-    xattr -cr "$PROJECT_DIR/$APP_NAME.app"
-    codesign --deep --force --verify --verbose \
-        --sign "Developer ID Application" \
+    SIGN_IDENTITY="${SIGN_IDENTITY:-Developer ID Application}"
+    APP_PATH_SIGN="$PROJECT_DIR/$APP_NAME.app"
+    SPARKLE_FW="$APP_PATH_SIGN/Contents/Frameworks/Sparkle.framework"
+    xattr -cr "$APP_PATH_SIGN"
+    # --deep は Apple・Sparkle とも非推奨（入れ子の各コンポーネントに同じ設定を一律適用してしまう）。
+    # Sparkle のドキュメントに従い、内側から順に署名する。Downloader.xpc はエンタイトルメントを保持する。
+    if [ -d "$SPARKLE_FW" ]; then
+        codesign --force --sign "$SIGN_IDENTITY" --options runtime \
+            "$SPARKLE_FW/Versions/B/XPCServices/Installer.xpc"
+        codesign --force --sign "$SIGN_IDENTITY" --options runtime --preserve-metadata=entitlements \
+            "$SPARKLE_FW/Versions/B/XPCServices/Downloader.xpc"
+        codesign --force --sign "$SIGN_IDENTITY" --options runtime \
+            "$SPARKLE_FW/Versions/B/Autoupdate"
+        codesign --force --sign "$SIGN_IDENTITY" --options runtime \
+            "$SPARKLE_FW/Versions/B/Updater.app"
+        codesign --force --sign "$SIGN_IDENTITY" --options runtime \
+            "$SPARKLE_FW"
+    fi
+    codesign --force --verbose \
+        --sign "$SIGN_IDENTITY" \
         --options runtime \
         --entitlements "$PROJECT_DIR/$APP_NAME/Sobani.entitlements" \
-        "$PROJECT_DIR/$APP_NAME.app"
+        "$APP_PATH_SIGN"
+    codesign --verify --deep --strict --verbose=2 "$APP_PATH_SIGN"
     echo "✅ コード署名完了"
 
     # 公証 (Notarization)
     if [ "${NOTARIZE:-0}" = "1" ]; then
         echo "📤 公証のため Apple に送信中..."
-        ZIP_FOR_NOTARIZE="/tmp/${APP_NAME}-notarize.zip"
+        NOTARIZE_TMP_DIR=$(mktemp -d)
+        ZIP_FOR_NOTARIZE="$NOTARIZE_TMP_DIR/${APP_NAME}-notarize.zip"
         ditto -c -k --keepParent "$PROJECT_DIR/$APP_NAME.app" "$ZIP_FOR_NOTARIZE"
 
         if [ -n "${NOTARIZE_PROFILE:-}" ]; then
@@ -138,11 +158,11 @@ if [ "${SKIP_CODESIGN:-0}" != "1" ]; then
             echo "❌ 公証の認証情報が未設定です"
             echo "  NOTARIZE_PROFILE（キーチェーンプロファイル名）または"
             echo "  APPLE_ID, APPLE_ID_PASSWORD, APPLE_TEAM_ID を設定してください"
-            rm -f "$ZIP_FOR_NOTARIZE"
+            rm -rf "$NOTARIZE_TMP_DIR"
             exit 1
         fi
 
-        rm -f "$ZIP_FOR_NOTARIZE"
+        rm -rf "$NOTARIZE_TMP_DIR"
 
         echo "📎 公証チケットをステープル中..."
         xcrun stapler staple "$PROJECT_DIR/$APP_NAME.app"
