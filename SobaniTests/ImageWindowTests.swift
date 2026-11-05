@@ -5,35 +5,6 @@ import Testing
 @Suite("ImageWindow Static Methods Tests")
 struct ImageWindowTests {
 
-    // MARK: - imageOrigin Tests
-
-    @Test("画像原点の基本計算")
-    func imageOriginBasic() {
-        let windowFrame = NSRect(x: 100, y: 100, width: 200, height: 200)
-        let imageSize = NSSize(width: 200, height: 200)
-        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
-        #expect(abs(result.x - 100) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 100) < AppConstants.floatingPointTolerance)
-    }
-
-    @Test("画像がウィンドウより小さい場合の中心計算")
-    func imageOriginSmallerImage() {
-        let windowFrame = NSRect(x: 100, y: 100, width: 300, height: 300)
-        let imageSize = NSSize(width: 200, height: 200)
-        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
-        #expect(abs(result.x - 150) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 150) < AppConstants.floatingPointTolerance)
-    }
-
-    @Test("非正方形ウィンドウでの計算")
-    func imageOriginNonSquare() {
-        let windowFrame = NSRect(x: 0, y: 0, width: 400, height: 200)
-        let imageSize = NSSize(width: 300, height: 150)
-        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
-        #expect(abs(result.x - 50) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 25) < AppConstants.floatingPointTolerance)
-    }
-
     // MARK: - calculateWindowSize Tests
 
     @Test("画像がmaxHeight以下の場合はスケールアップされる")

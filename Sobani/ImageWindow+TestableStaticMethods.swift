@@ -3,14 +3,6 @@ import Cocoa
 // MARK: - Testable Static Methods
 
 extension ImageWindow {
-    /// ウィンドウフレームから画像の原点座標を計算
-    nonisolated static func imageOrigin(windowFrame: NSRect, imageViewSize: NSSize) -> CGPoint {
-        CGPoint(
-            x: windowFrame.midX - imageViewSize.width / 2,
-            y: windowFrame.midY - imageViewSize.height / 2
-        )
-    }
-
     /// 画像の中心（スクリーン座標）を固定して、回転後の外接矩形を覆うウィンドウと、その中の imageView のフレームを計算する。
     ///
     /// ウィンドウのフレームは整数に丸めるが、imageView は丸めずに中心がアンカーと一致する位置に置く。
