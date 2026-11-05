@@ -47,11 +47,20 @@ import Testing
         #expect(HotkeyInputValidator.evaluate(keyCode: escape, modifierFlags: .option) == .cancel)
     }
 
-    /// 重複判定は Carbon が扱わない修飾キーの違いを無視することを検証
-    @Test func duplicatesCompareNormalizedModifiers() {
+    /// 受け付けた修飾キーは HotkeySettings が扱う修飾キーと一致することを検証（判定と保存で同じ集合を使う）
+    @Test func acceptedModifiersAreWithinHotkeySettingsSupportedModifiers() throws {
+        let allFlags = NSEvent.ModifierFlags.deviceIndependentFlagsMask
+        let result = HotkeyInputValidator.evaluate(keyCode: keyH, modifierFlags: allFlags)
+        #expect(result == .accept(keyCode: keyH, modifiers: HotkeySettings.supportedModifiers))
+    }
+
+    /// HotkeySettings から読んだ修飾キーで重複を判定することを検証
+    /// （保存値に Carbon が扱わない修飾キーが混ざっていても読み出し時に除かれ、同じホットキーとして扱われる）
+    @Test func duplicatesCompareModifiersReadFromSettings() {
+        let pollutedOption = NSEvent.ModifierFlags([.option, .capsLock]).rawValue
         let duplicated: [(keyCode: UInt16, modifiers: NSEvent.ModifierFlags)] = [
             (keyCode: keyH, modifiers: .option),
-            (keyCode: keyH, modifiers: [.option, .capsLock]),
+            (keyCode: keyH, modifiers: HotkeySettings.modifiers(fromStored: Int(pollutedOption), default: [])),
         ]
         let distinct: [(keyCode: UInt16, modifiers: NSEvent.ModifierFlags)] = [
             (keyCode: keyH, modifiers: .option),
