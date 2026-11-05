@@ -97,7 +97,10 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         imageView.onPositionChanged = { [weak self] in
             self?.notifyStateDidChange(.position)
         }
-        installSizeChangedHandler()
+        imageView.onSizeChanged = { [weak self] in
+            self?.syncAdjustmentPanelSize()
+            self?.notifyStateDidChange(.size)
+        }
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
         imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
         imageView.onDropImage = { [weak self] url, isOption in
@@ -129,12 +132,6 @@ final class ImageWindow: NSObject, NSMenuDelegate {
             object: self,
             userInfo: [AppConstants.notificationTriggerKey: trigger.rawValue]
         )
-    }
-
-    private func installSizeChangedHandler() {
-        imageView.onSizeChanged = { [weak self] in
-            self?.notifyStateDidChange(.size)
-        }
     }
 
     /// 表示画像を別の画像に差し替える。旧画像のクロップは破棄し、高さを保ったまま新しい縦横比にする。
@@ -171,7 +168,6 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 NotificationCenter.default.removeObserver(observer)
                 self?.windowMoveObserver = nil
             }
-            self?.installSizeChangedHandler()
             self?.imageView.isAdjustmentPanelActive = false
             self?.adjustmentPanelController = nil
         }
@@ -202,15 +198,15 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 self.adjustmentPanelController?.updateMonitor(self.window)
             }
         }
-        imageView.onSizeChanged = { [weak self] in
-            guard let self = self else { return }
-            self.adjustmentPanelController?.updateSize(self.imageView.frame.size)
-            self.notifyStateDidChange(.size)
-        }
     }
 
     private func closeAdjustmentPanel() {
         adjustmentPanelController?.close()
+    }
+
+    /// 開いている調整パネルに現在のサイズと縦横比を反映する（クロップ・画像変更後に古い値が残らないように）。
+    private func syncAdjustmentPanelSize() {
+        adjustmentPanelController?.updateSize(imageView.frame.size, aspectRatio: imageView.aspectRatio)
     }
 
     @objc func resetRotation() { applyRotation(0) }
@@ -256,6 +252,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
             height: baseHeight
         )
         imageView.needsLayout = true
+        syncAdjustmentPanelSize()
     }
 
     @objc func changeImage() {
@@ -347,17 +344,18 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         imageView.rotationAngle = 0
         adjustmentPanelController?.updateAngle(0)
         applyOpacity(1.0)
-
-        let defaultSize = NSSize(
-            width: AppConstants.defaultWindowHeight * imageView.aspectRatio,
-            height: AppConstants.defaultWindowHeight
-        )
-        let origin = GeometryUtils.centeredOrigin(size: defaultSize, in: NSScreen.mainFrameOrFallback)
-
-        window.setFrame(NSRect(origin: origin, size: defaultSize), display: true)
-        imageView.frame = NSRect(origin: .zero, size: defaultSize)
-        imageView.needsLayout = true
+        resetPositionAndSize()
         notifyStateDidChange(.reset)
+    }
+
+    /// 位置とサイズだけを初期状態（メイン画面中央・既定の高さ・現在の縦横比）に戻す。
+    ///
+    /// 回転・反転・クロップ・不透明度・ゴーストは変更しない。通知は呼び出し側で行う。
+    func resetPositionAndSize() {
+        let size = Self.clampedImageSize(height: AppConstants.defaultWindowHeight, aspectRatio: imageView.aspectRatio)
+        imageView.frame.size = size
+        adjustWindowForRotation()
+        setImageOrigin(GeometryUtils.centeredOrigin(size: size, in: NSScreen.mainFrameOrFallback))
     }
 }
 
@@ -564,10 +562,12 @@ extension ImageWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanelDidResetPositionAndSize(_ panel: AdjustmentPanelController) {
-        resetDisplay()
+        // パネルの「リセット」は位置・サイズのみ。クロップ・反転・回転などは保つ
+        resetPositionAndSize()
         panel.updatePosition(currentImageOrigin())
-        panel.updateSize(imageView.frame.size)
         panel.updateMonitor(window)
+        notifyStateDidChange(.position)
+        notifyStateDidChange(.size)
     }
 
     // MARK: Helpers

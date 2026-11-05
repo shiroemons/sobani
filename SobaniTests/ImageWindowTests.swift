@@ -404,6 +404,29 @@ struct ImageWindowNotificationTests {
         #expect(capture.triggers == [AppConstants.SnapshotTrigger.position.rawValue])
     }
 
+    @Test("位置・サイズのリセットは回転・反転・不透明度を保ち、既定の高さで画面中央に置く")
+    func resetPositionAndSizeKeepsOtherAdjustments() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.applyRotation(30)
+        imageWindow.toggleFlip()
+        imageWindow.applyOpacity(0.5)
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 5, y: 5), size: NSSize(width: 300, height: 150))
+
+        imageWindow.resetPositionAndSize()
+
+        let imageSize = imageWindow.imageView.frame.size
+        #expect(abs(imageSize.height - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageSize.width - AppConstants.defaultWindowHeight * 2) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageWindow.imageView.rotationAngle - 30) < AppConstants.floatingPointTolerance)
+        #expect(imageWindow.imageView.isFlippedHorizontally)
+        #expect(abs(imageWindow.imageView.opacityLevel - 0.5) < AppConstants.floatingPointTolerance)
+        let expectedOrigin = GeometryUtils.centeredOrigin(size: imageSize, in: NSScreen.mainFrameOrFallback)
+        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
+        #expect(abs(imageOrigin.x - expectedOrigin.x) <= 1.0)
+        #expect(abs(imageOrigin.y - expectedOrigin.y) <= 1.0)
+    }
+
     @Test("setPositionAndSize は非有限値を無視する")
     func setPositionAndSizeIgnoresNonFinite() {
         let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))

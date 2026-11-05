@@ -262,15 +262,24 @@ extension AdjustmentPanelController {
         updatePositionFields()
     }
 
-    func updateSize(_ size: CGSize) {
+    /// サイズと縦横比を更新する。クロップや画像変更で縦横比が変わるため、W/H 入力の換算にも反映する。
+    func updateSize(_ size: CGSize, aspectRatio: CGFloat) {
         currentSize = size
+        currentAspectRatio = aspectRatio
         updateSizeFields()
     }
 
+    /// ウィンドウのあるディスプレイに合わせてモニター選択と位置欄を更新する。
+    ///
+    /// ドラッグ中は移動のたびに呼ばれるため、ポップアップの作り直しは
+    /// ディスプレイが変わったとき（または接続数が変わったとき）だけ行う。
     func updateMonitor(_ window: NSWindow) {
-        currentScreen = NSScreen.screen(containing: window.frame)
-        populateMonitorPopup()
-        updateResolutionLabel()
+        let screen = NSScreen.screen(containing: window.frame)
+        if screen != currentScreen || monitorPopup?.numberOfItems != NSScreen.screens.count {
+            currentScreen = screen
+            populateMonitorPopup()
+            updateResolutionLabel()
+        }
         updatePositionFields()
     }
 

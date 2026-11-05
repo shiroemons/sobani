@@ -1,5 +1,4 @@
 import Cocoa
-import os.log
 
 // MARK: - Adjustment Panel Delegate
 
@@ -78,7 +77,6 @@ enum PositionSizeLayout {
 
 @MainActor
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
-    private let logger = Logger(category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220
     private static let panelHeight: CGFloat = 340
     private static let rotationSectionOffsetY: CGFloat = 180
@@ -101,6 +99,10 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     var currentScreen: NSScreen?
     var currentAspectRatio: CGFloat = 1.0
 
+    /// パネルを生成して `window` の横に表示する。
+    ///
+    /// コントローラーは表示ごとに作り直す前提（`ImageWindow.showAdjustmentPanel` 参照）。
+    /// 表示中の値の更新は `updateAngle` / `updatePosition` / `updateSize` / `updateMonitor` で行う。
     func show(near window: NSWindow, state: AdjustmentPanelState) {
         currentAngle = state.angle
         currentPosition = state.position
@@ -108,61 +110,45 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         currentAspectRatio = state.aspectRatio
         currentScreen = NSScreen.screen(containing: window.frame)
 
-        // Lazy-initialize the panel on first show
-        if panel == nil {
-            let panelWidth: CGFloat = Self.panelWidth
-            let panelHeight: CGFloat = Self.panelHeight
-            let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
+        let newPanel = makePanel(angle: state.angle)
+        panel = newPanel
+        newPanel.setFrameOrigin(NSPanel.auxiliaryPanelOrigin(
+            near: window, panelSize: newPanel.frame.size, gap: Self.panelGap
+        ))
+        newPanel.makeKeyAndOrderFront(nil)
+    }
 
-            let newPanel = NSPanel(
-                contentRect: panelRect,
-                styleMask: [.titled, .closable, .nonactivatingPanel, .utilityWindow],
-                backing: .buffered,
-                defer: false
-            )
-            newPanel.title = L("adjust.panel_title")
-            newPanel.level = .modalPanel
-            newPanel.isFloatingPanel = true
-            newPanel.delegate = self
-            newPanel.becomesKeyOnlyIfNeeded = true
-            newPanel.configureForFloating()
-
-            let contentView = NSView(frame: panelRect)
-
-            setupRotationSection(
-                in: contentView, angle: state.angle, offsetY: Self.rotationSectionOffsetY)
-
-            // Separator between rotation and position/size
-            let sep1 = NSBox(frame: NSRect(
-                x: SectionLayout.labelX, y: Self.rotationSectionOffsetY,
-                width: SectionLayout.contentWidth, height: 1
-            ))
-            sep1.boxType = .separator
-            contentView.addSubview(sep1)
-
-            setupPositionSizeSection(in: contentView)
-
-            newPanel.contentView = contentView
-            panel = newPanel
-        } else {
-            // Update all control values for the new state
-            dialView?.angle = state.angle
-            textField?.stringValue = Self.formatAngle(state.angle)
-            populateMonitorPopup()
-            updateResolutionLabel()
-            updatePositionFields()
-            updateSizeFields()
-        }
-
-        // Reposition near the target window
-        let windowFrame = window.frame
-        let panelHeight: CGFloat = Self.panelHeight
-        let panelOrigin = NSPoint(
-            x: windowFrame.maxX + Self.panelGap,
-            y: windowFrame.midY - panelHeight / 2
+    private func makePanel(angle: CGFloat) -> NSPanel {
+        let panelRect = NSRect(x: 0, y: 0, width: Self.panelWidth, height: Self.panelHeight)
+        let newPanel = NSPanel(
+            contentRect: panelRect,
+            styleMask: [.titled, .closable, .nonactivatingPanel, .utilityWindow],
+            backing: .buffered,
+            defer: false
         )
-        panel?.setFrameOrigin(panelOrigin)
-        panel?.makeKeyAndOrderFront(nil)
+        newPanel.title = L("adjust.panel_title")
+        newPanel.level = .modalPanel
+        newPanel.isFloatingPanel = true
+        newPanel.delegate = self
+        newPanel.becomesKeyOnlyIfNeeded = true
+        newPanel.configureForFloating()
+
+        let contentView = NSView(frame: panelRect)
+
+        setupRotationSection(in: contentView, angle: angle, offsetY: Self.rotationSectionOffsetY)
+
+        // Separator between rotation and position/size
+        let separator = NSBox(frame: NSRect(
+            x: SectionLayout.labelX, y: Self.rotationSectionOffsetY,
+            width: SectionLayout.contentWidth, height: 1
+        ))
+        separator.boxType = .separator
+        contentView.addSubview(separator)
+
+        setupPositionSizeSection(in: contentView)
+
+        newPanel.contentView = contentView
+        return newPanel
     }
 
     private func setupRotationSection(in contentView: NSView, angle: CGFloat, offsetY: CGFloat) {
