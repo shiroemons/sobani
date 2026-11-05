@@ -49,7 +49,6 @@ extension ImageWindow {
         }
         displayName = savedName
         imageView.setOriginalImage(newImage)
-        cachedHasAlpha = nil
         notifyStateDidChange(.image)
     }
 
@@ -83,29 +82,5 @@ extension ImageWindow {
         spinnerOverlay?.stopAnimation(nil)
         spinnerOverlay?.removeFromSuperview()
         spinnerOverlay = nil
-    }
-
-    func imageHasAlpha() -> Bool {
-        if let cached = cachedHasAlpha { return cached }
-        let result = computeImageHasAlpha()
-        cachedHasAlpha = result
-        return result
-    }
-
-    private func computeImageHasAlpha() -> Bool {
-        guard let image = imageView.image,
-              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-              Self.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
-        let (w, h) = (cgImage.width, cgImage.height)
-        guard let context = CGContext(
-            data: nil, width: w, height: h,
-            bitsPerComponent: 8, bytesPerRow: w * 4,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return false }
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: w, height: h))
-        guard let data = context.data else { return false }
-        let ptr = data.bindMemory(to: UInt8.self, capacity: w * h * 4)
-        return stride(from: 3, to: w * h * 4, by: 4).contains { ptr[$0] < 255 }
     }
 }

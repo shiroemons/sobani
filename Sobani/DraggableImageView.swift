@@ -50,11 +50,14 @@ final class DraggableImageView: NSImageView {
     var cropRect: CropRect? {
         didSet { applyCrop() }
     }
-    private(set) var originalImage: NSImage?
+    private(set) var originalImage: NSImage? {
+        didSet { cachedSourceHasAlpha = nil }
+    }
     var isCropModeActive: Bool = false
     var isAdjustmentPanelActive: Bool = false
     private var cachedAlphaMask: AlphaMask?
     private var alphaMaskBuildAttempted: Bool = false
+    private var cachedSourceHasAlpha: Bool?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -439,10 +442,26 @@ extension DraggableImageView {
         return pixelY * mask.width + pixelX
     }
 
-    nonisolated static func buildAlphaMask(from cgImage: CGImage) -> AlphaMask? {
-        let width = cgImage.width
-        let height = cgImage.height
-        guard width > 0, height > 0 else { return nil }
+    /// アルファマスクの長辺の上限（ピクセル）。ヒットテストは比率で参照するため、縮小しても判定位置はずれない。
+    nonisolated static let alphaMaskMaxDimension = 2048
+
+    /// 長辺を `maxDimension` 以下に縮小したマスクのサイズ（縦横比を保ち、各辺 1 以上）
+    nonisolated static func alphaMaskSize(width: Int, height: Int, maxDimension: Int) -> (width: Int, height: Int) {
+        let longSide = max(width, height)
+        guard longSide > maxDimension, maxDimension > 0 else { return (width, height) }
+        let scale = Double(maxDimension) / Double(longSide)
+        return (
+            max(1, Int((Double(width) * scale).rounded())),
+            max(1, Int((Double(height) * scale).rounded()))
+        )
+    }
+
+    /// 画像のアルファ値だけを取り出したマスクを作る。大きな画像は長辺 `maxDimension` に縮小する。
+    nonisolated static func buildAlphaMask(
+        from cgImage: CGImage, maxDimension: Int = alphaMaskMaxDimension
+    ) -> AlphaMask? {
+        guard cgImage.width > 0, cgImage.height > 0 else { return nil }
+        let (width, height) = alphaMaskSize(width: cgImage.width, height: cgImage.height, maxDimension: maxDimension)
         var bytes = [UInt8](repeating: 0, count: width * height)
         let success = bytes.withUnsafeMutableBytes { ptr -> Bool in
             guard let base = ptr.baseAddress,
@@ -475,9 +494,11 @@ extension DraggableImageView {
         }
     }
 
+    /// 表示画像が変わったら（クロップの適用・解除を含む）マスクと透過判定のキャッシュを破棄する。
     private func invalidateAlphaMask() {
         cachedAlphaMask = nil
         alphaMaskBuildAttempted = false
+        cachedSourceHasAlpha = nil
     }
 
     func ensureAlphaMask() -> AlphaMask? {
@@ -486,6 +507,25 @@ extension DraggableImageView {
         guard let img = image, let cgImage = Self.extractCGImage(from: img) else { return nil }
         cachedAlphaMask = Self.buildAlphaMask(from: cgImage)
         return cachedAlphaMask
+    }
+
+    /// 元画像（クロップ前）が透過ピクセルを含むか。背景除去の可否判定に使う。
+    ///
+    /// 円形などのクロップは表示画像に透過を作るため、表示画像ではなく元画像で判定する。
+    /// クロップしていなければヒットテスト用のマスクを流用する。
+    func sourceImageHasAlpha() -> Bool {
+        if let cached = cachedSourceHasAlpha { return cached }
+        let result = computeSourceImageHasAlpha()
+        cachedSourceHasAlpha = result
+        return result
+    }
+
+    private func computeSourceImageHasAlpha() -> Bool {
+        guard let source = originalImage ?? image,
+              let cgImage = Self.extractCGImage(from: source),
+              ImageWindow.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
+        let mask = originalImage == nil ? ensureAlphaMask() : Self.buildAlphaMask(from: cgImage)
+        return mask?.bytes.contains { $0 < UInt8.max } ?? false
     }
 }
 

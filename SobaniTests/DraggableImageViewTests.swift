@@ -537,6 +537,38 @@ struct DraggableImageViewHitTestTests {
         #expect(mask.bytes.allSatisfy { $0 > 0 && $0 < 255 })
     }
 
+    @Test("長辺が上限以下ならマスクは元のサイズ")
+    func alphaMaskSizeWithinLimit() {
+        let size = DraggableImageView.alphaMaskSize(width: 800, height: 600, maxDimension: 2048)
+        #expect(size.width == 800)
+        #expect(size.height == 600)
+    }
+
+    @Test("長辺が上限を超えると縦横比を保って縮小される", arguments: [
+        (4096, 100, 2048, 50),
+        (100, 8000, 26, 2048),
+        (10_000, 1, 2048, 1)
+    ])
+    func alphaMaskSizeDownsamples(width: Int, height: Int, expectedWidth: Int, expectedHeight: Int) {
+        let size = DraggableImageView.alphaMaskSize(width: width, height: height, maxDimension: 2048)
+        #expect(size.width == expectedWidth)
+        #expect(size.height == expectedHeight)
+    }
+
+    @Test("大きな画像のマスクは縮小され、ヒット判定は比率で同じ位置を参照する")
+    func buildAlphaMaskDownsampled() throws {
+        let cgImage = try #require(makeCGImage(width: 64, height: 16, fill: CGColor(red: 1, green: 0, blue: 0, alpha: 1)))
+        let mask = try #require(DraggableImageView.buildAlphaMask(from: cgImage, maxDimension: 8))
+        #expect(mask.width == 8)
+        #expect(mask.height == 2)
+        #expect(mask.bytes.allSatisfy { $0 == 255 })
+        // 画像座標の右下端は縮小後のマスクでも最後のピクセルを指す
+        let index = try #require(DraggableImageView.alphaMaskPixelIndex(
+            imagePoint: CGPoint(x: 63.5, y: 15.5), imageSize: CGSize(width: 64, height: 16), mask: mask
+        ))
+        #expect(index == 8 * 2 - 1)
+    }
+
     @Test("width/height が正しく記録される")
     func buildAlphaMaskDimensions() throws {
         let cgImage = try #require(makeCGImage(width: 8, height: 6, fill: CGColor(red: 1, green: 0, blue: 0, alpha: 1)))
@@ -598,7 +630,8 @@ struct DraggableImageViewHitTestTests {
 @Suite("DraggableImageView Image Replacement Tests")
 @MainActor
 struct DraggableImageViewImageReplacementTests {
-    static func makeImage(width: Int, height: Int) throws -> NSImage {
+    /// 赤で塗った画像を作る。`transparentRight` が true なら右半分を透明にする。
+    static func makeImage(width: Int, height: Int, transparentRight: Bool = false) throws -> NSImage {
         let rep = try #require(NSBitmapImageRep(
             bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -607,7 +640,8 @@ struct DraggableImageViewImageReplacementTests {
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
         NSColor.red.setFill()
-        NSRect(x: 0, y: 0, width: width, height: height).fill()
+        let fillWidth = transparentRight ? width / 2 : width
+        NSRect(x: 0, y: 0, width: fillWidth, height: height).fill()
         NSGraphicsContext.restoreGraphicsState()
         let image = NSImage(size: NSSize(width: width, height: height))
         image.addRepresentation(rep)
@@ -657,6 +691,30 @@ struct DraggableImageViewImageReplacementTests {
         // 切り取りリセットで背景除去後の元画像に戻る
         view.resetCrop()
         #expect(view.image === processed)
+    }
+
+    @Test("透過の有無は元画像で判定し、画像の差し替えで再判定される")
+    func sourceImageHasAlphaFollowsImageChanges() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        view.image = try Self.makeImage(width: 40, height: 40)
+        #expect(!view.sourceImageHasAlpha())
+
+        view.replaceImage(try Self.makeImage(width: 40, height: 40, transparentRight: true))
+        #expect(view.sourceImageHasAlpha())
+    }
+
+    @Test("円形クロップで表示画像に透過ができても元画像が不透明なら透過なしと判定する")
+    func sourceImageHasAlphaIgnoresCropShape() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        view.image = try Self.makeImage(width: 40, height: 40)
+        #expect(!view.sourceImageHasAlpha())
+
+        view.cropRect = CropRect(x: 0, y: 0, width: 1, height: 1, shape: .circle)
+
+        // 表示画像（円形）には透過がある
+        let mask = try #require(view.ensureAlphaMask())
+        #expect(mask.bytes.contains { $0 < UInt8.max })
+        #expect(!view.sourceImageHasAlpha())
     }
 
     @Test("切り取りリセットで縦横比が元画像のものに戻る")

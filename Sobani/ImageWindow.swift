@@ -32,10 +32,10 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     private(set) var adjustmentPanelController: AdjustmentPanelController?
     var spinnerOverlay: NSProgressIndicator?
     var isRemovingBackground = false
+    /// 背景除去を実行できるか（処理中でなく、元画像がまだ透過を含まない）
     var isRemoveBackgroundAvailable: Bool {
-        !isRemovingBackground && !imageHasAlpha()
+        !isRemovingBackground && !imageView.sourceImageHasAlpha()
     }
-    var cachedHasAlpha: Bool?
     /// ゴーストモードの状態。有効時は `ignoresMouseEvents = true` かつ画像の alpha が 0.3 になる。
     /// 無効化時は alpha がウィンドウ固有の `opacityLevel` に戻る（1.0 ではない）。
     private(set) var isGhostMode: Bool = false
@@ -144,7 +144,6 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         let dims = Self.calculateImageDimensions(baseHeight: baseHeight, imageSize: image.size)
         imageView.replaceImage(image)
         imageView.aspectRatio = dims.aspectRatio
-        cachedHasAlpha = nil
         adjustWindowForRotation(imageSize: NSSize(width: dims.width, height: baseHeight))
         notifyStateDidChange(.image)
     }
