@@ -417,22 +417,6 @@
         }
       }
     },
-    "image.removing_background": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "背景を除去中..."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Removing background..."
-          }
-        }
-      }
-    },
     "background_removal.error.title": {
       "localizations": {
         "ja": {
@@ -541,22 +525,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed to save the background-removed image"
-          }
-        }
-      }
-    },
-    "adjust.title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "表示の調整"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adjust Display"
           }
         }
       }
@@ -2529,54 +2497,6 @@
         }
       }
     },
-    "crop.confirm": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "適用"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apply"
-          }
-        }
-      }
-    },
-    "crop.reset": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "リセット"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset"
-          }
-        }
-      }
-    },
-    "crop.cancel": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャンセル"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
-          }
-        }
-      }
-    },
     "menu.crop": {
       "localizations": {
         "ja": {
@@ -2621,38 +2541,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Crop Editor"
-          }
-        }
-      }
-    },
-    "crop_editor.cancel": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャンセル"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
-          }
-        }
-      }
-    },
-    "crop_editor.done": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "完了"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Done"
           }
         }
       }
@@ -2733,22 +2621,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Horiz. Persp."
-          }
-        }
-      }
-    },
-    "crop_editor.aspect_ratio": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アスペクト比"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aspect Ratio"
           }
         }
       }
@@ -3569,22 +3441,6 @@
         }
       }
     },
-    "management.delete_confirm_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "削除の確認"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirm Deletion"
-          }
-        }
-      }
-    },
     "management.delete_confirm_single": {
       "localizations": {
         "ja": {
@@ -3613,22 +3469,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete %d windows?"
-          }
-        }
-      }
-    },
-    "management.drop_images_here": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画像をドロップして追加"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Drop images here to add"
           }
         }
       }
@@ -4525,22 +4365,6 @@
         }
       }
     },
-    "log.footer.detail": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "詳細..."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Details..."
-          }
-        }
-      }
-    },
     "log.column.time": {
       "localizations": {
         "ja": {
@@ -4681,22 +4505,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Turn On Log Recording"
-          }
-        }
-      }
-    },
-    "log.info.button": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ログについて"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "About Logs"
           }
         }
       }
@@ -5001,22 +4809,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Main"
-          }
-        }
-      }
-    },
-    "log.style.toggle": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "表示スタイル切替"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle Display Style"
           }
         }
       }
