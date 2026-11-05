@@ -256,10 +256,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func closeAllWindows() {
-        for imageWindow in zOrderedWindows {
-            imageWindow.dismissAuxiliaryPanels()
-            imageWindow.window.orderOut(nil)
-        }
+        zOrderedWindows.forEach { $0.dismiss() }
         zOrderedWindows.removeAll()
         notifyWindowListDidChange(.closeAll)
         quitIfNoWindows()

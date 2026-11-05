@@ -399,22 +399,22 @@ extension ImageWindow {
 // MARK: - Hidden Window
 
 extension ImageWindow {
-    /// このウィンドウに付属するパネル（フローティングメニュー・調整パネル・クロップエディタ）をすべて閉じる。
+    /// 付属パネル（フローティングメニュー・調整パネル・クロップエディタ）をすべて閉じ、ウィンドウを画面から消す。
     ///
     /// 非表示化・クローズ・レイアウト適用など、ウィンドウが画面から消えるすべての経路で呼ぶこと。
-    /// 閉じずに解放するとクロップエディタのキー監視などが残る。
-    func dismissAuxiliaryPanels() {
+    /// 付属パネルを閉じずに解放するとクロップエディタのキー監視などが残る。
+    func dismiss() {
         floatingMenuController?.dismiss()
         adjustmentPanelController?.close()
         cropEditorController?.close()
+        window.orderOut(nil)
     }
 
     func setHidden(_ hidden: Bool) {
         guard hidden != isHidden else { return }
         isHidden = hidden
         if hidden {
-            dismissAuxiliaryPanels()
-            window.orderOut(nil)
+            dismiss()
         } else {
             window.orderFront(nil)
         }
