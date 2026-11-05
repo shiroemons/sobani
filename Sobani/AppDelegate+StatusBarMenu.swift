@@ -396,9 +396,10 @@ extension AppDelegate {
         let value = CGFloat(sender.doubleValue)
         GhostModeSettings.globalAlpha = value
         if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
+        // ゴーストの alpha は imageView 側で不透明度と合成して適用する（window.alphaValue は使わない）
         for imageWindow in zOrderedWindows
         where imageWindow.isGhostMode && imageWindow.customGhostAlpha == nil {
-            imageWindow.window.alphaValue = value
+            imageWindow.refreshImageAlpha()
         }
     }
 
