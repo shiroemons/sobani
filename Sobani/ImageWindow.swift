@@ -255,14 +255,16 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     /// 外部の画像ファイルを登録してから表示する。
     ///
     /// 登録できなかった画像を表示すると、`displayName` が保存先に存在しない名前になり
-    /// 再起動後にデフォルト画像へ戻ってしまうため、登録に失敗したら何もしない。
+    /// 再起動後にデフォルト画像へ戻ってしまうため、登録・読み込みに失敗したら画像は変えずにアラートで知らせる。
     func loadAndApplyImage(from url: URL) {
         guard let savedName = ImageManager.shared.registerImage(from: url) else {
             Self.logger.error("Failed to register image: \(url.lastPathComponent, privacy: .public)")
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
             return
         }
         if !selectRegisteredImage(named: savedName) {
             Self.logger.error("Failed to load registered image: \(savedName, privacy: .public)")
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
         }
     }
 

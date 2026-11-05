@@ -382,7 +382,9 @@ extension AppDelegate: ImageWindowDelegate {
     }
 
     func imageWindowRequestedNewWindowWithFileURL(_ sender: ImageWindow, fileURL: URL) {
-        createNewWindow(registeringImageAt: fileURL)
+        if !createNewWindow(registeringImageAt: fileURL) {
+            ImageFileDialog.showLoadFailedAlert(fileNames: [fileURL.lastPathComponent])
+        }
     }
 
     func imageWindowDidClose(_ sender: ImageWindow) {
