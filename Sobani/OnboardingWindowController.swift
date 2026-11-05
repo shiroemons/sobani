@@ -31,14 +31,29 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     deinit {
-        assert(
-            languageObserver == nil,
-            "teardown() must be called before OnboardingWindowController is deallocated"
-        )
+        // 表示中のまま呼び出し側に置き換えられた場合など、teardown を経ずに解放されることがある
+        if let languageObserver {
+            NotificationCenter.default.removeObserver(languageObserver)
+        }
+    }
+
+    /// ガイドを表示中か。表示中に開き直すときは新しいコントローラーを作らず `bringToFront()` を使う。
+    var isVisible: Bool {
+        panel?.isVisible ?? false
+    }
+
+    /// 表示中のガイドを最前面に出す。
+    func bringToFront() {
+        guard let panel else { return }
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate()
     }
 
     func show(onComplete: (() -> Void)? = nil) {
-        if panel != nil { return }
+        if panel != nil {
+            bringToFront()
+            return
+        }
         self.onComplete = onComplete
 
         let width = AppConstants.Onboarding.width
@@ -66,7 +81,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         buildCurrentStep()
 
         newPanel.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         panel = newPanel
 
         languageObserver = NotificationCenter.default.addObserver(
@@ -80,11 +95,6 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
 
         logger.info("Onboarding window shown")
-    }
-
-    func close() {
-        panel?.orderOut(nil)
-        teardown()
     }
 
     // MARK: - NSWindowDelegate
@@ -167,10 +177,15 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let buttonY: CGFloat = Self.navigationButtonY
         let config = Self.navigationButtonConfig(currentStep: currentStep, totalSteps: totalSteps)
 
+        let buttonWidth = Self.navigationButtonWidth
+        let buttonHeight = Self.navigationButtonHeight
+        let margin = Self.navigationSideMargin
+        let trailingX = width - margin - buttonWidth
+
         if config.showBack {
             let backButton = NSButton(
                 title: L("onboarding.button.prev"), target: self, action: #selector(prevStep))
-            backButton.frame = NSRect(x: 20, y: buttonY, width: 80, height: 32)
+            backButton.frame = NSRect(x: margin, y: buttonY, width: buttonWidth, height: buttonHeight)
             backButton.bezelStyle = .rounded
             container.addSubview(backButton)
         }
@@ -178,15 +193,18 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         if config.showSkip {
             let skipButton = NSButton(
                 title: L("onboarding.button.skip"), target: self, action: #selector(skipOnboarding))
-            skipButton.frame = NSRect(x: (width - 80) / 2, y: buttonY, width: 80, height: 32)
+            skipButton.frame = NSRect(
+                x: (width - buttonWidth) / 2, y: buttonY, width: buttonWidth, height: buttonHeight)
             skipButton.bezelStyle = .rounded
             skipButton.isBordered = false
-            skipButton.font = NSFont.systemFont(ofSize: 12)
+            skipButton.font = NSFont.systemFont(ofSize: Self.smallFontSize)
             container.addSubview(skipButton)
 
             let skipHint = NSTextField(wrappingLabelWithString: L("onboarding.skipHint"))
-            skipHint.frame = NSRect(x: 20, y: buttonY - 20, width: width - 40, height: 16)
-            skipHint.font = NSFont.systemFont(ofSize: 10)
+            skipHint.frame = NSRect(
+                x: margin, y: buttonY - Self.skipHintOffsetY,
+                width: width - margin * 2, height: Self.skipHintHeight)
+            skipHint.font = NSFont.systemFont(ofSize: Self.skipHintFontSize)
             skipHint.textColor = .tertiaryLabelColor
             skipHint.alignment = .center
             skipHint.isEditable = false
@@ -199,7 +217,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         if config.showNext {
             let nextButton = NSButton(
                 title: L("onboarding.button.next"), target: self, action: #selector(nextStep))
-            nextButton.frame = NSRect(x: width - 100, y: buttonY, width: 80, height: 32)
+            nextButton.frame = NSRect(x: trailingX, y: buttonY, width: buttonWidth, height: buttonHeight)
             nextButton.bezelStyle = .rounded
             nextButton.keyEquivalent = "\r"
             container.addSubview(nextButton)
@@ -209,7 +227,9 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             let startButton = NSButton(
                 title: L("onboarding.button.start"), target: self,
                 action: #selector(finishOnboarding))
-            startButton.frame = NSRect(x: (width - 110) / 2, y: buttonY, width: 110, height: 32)
+            let startWidth = Self.startButtonWidth
+            startButton.frame = NSRect(
+                x: (width - startWidth) / 2, y: buttonY, width: startWidth, height: buttonHeight)
             startButton.bezelStyle = .rounded
             startButton.keyEquivalent = "\r"
             container.addSubview(startButton)
@@ -219,7 +239,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             let closeButton = NSButton(
                 title: L("onboarding.button.close"), target: self,
                 action: #selector(skipOnboarding))
-            closeButton.frame = NSRect(x: width - 100, y: buttonY, width: 80, height: 32)
+            closeButton.frame = NSRect(x: trailingX, y: buttonY, width: buttonWidth, height: buttonHeight)
             closeButton.bezelStyle = .rounded
             container.addSubview(closeButton)
         }
@@ -262,6 +282,18 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 extension OnboardingWindowController {
     // MARK: Step 共通
     static let smallFontSize: CGFloat = 12
+    static let titleHeight: CGFloat = 30
+    static let titleFontSize: CGFloat = 20
+    static let descriptionFontSize: CGFloat = 14
+
+    // MARK: ナビゲーションボタン
+    private static let navigationButtonWidth: CGFloat = 80
+    private static let navigationButtonHeight: CGFloat = 32
+    private static let navigationSideMargin: CGFloat = 20
+    private static let startButtonWidth: CGFloat = 110
+    private static let skipHintOffsetY: CGFloat = 20
+    private static let skipHintHeight: CGFloat = 16
+    private static let skipHintFontSize: CGFloat = 10
 
     // MARK: Step 1: メニューバーアイコンイラスト
     private static let step1IconBackgroundWidth: CGFloat = 36
@@ -295,8 +327,16 @@ extension OnboardingWindowController {
     static let step3HotkeyRowHeight: CGFloat = 22
     static let step3HotkeyX: CGFloat = 80
     static let step3HotkeyInset: CGFloat = 160
-    static let step3HotkeyKeyWidth: CGFloat = 190
+    static let step3HotkeyKeyWidth: CGFloat = 120
+    static let step3HotkeyLabelHeight: CGFloat = 20
     static let step3HintY: CGFloat = 188
+
+    // MARK: Step 4: はじめよう
+    private static let step4DescriptionY: CGFloat = 250
+    private static let step4DescriptionHeight: CGFloat = 60
+    private static let step4CTAY: CGFloat = 200
+    private static let step4CTAWidth: CGFloat = 200
+    private static let step4CTAHeight: CGFloat = 36
 }
 
 // MARK: - Step Builders
@@ -314,7 +354,7 @@ extension OnboardingWindowController {
         let titleLabel = makeTitleLabel(L("onboarding.step1.title"))
         titleLabel.frame = NSRect(
             x: Self.contentPadding, y: Self.titleY,
-            width: width - Self.contentPadding * 2, height: 30)
+            width: width - Self.contentPadding * 2, height: Self.titleHeight)
         container.addSubview(titleLabel)
 
         let desc1 = makeDescriptionLabel(L("onboarding.step1.description1"))
@@ -359,7 +399,7 @@ extension OnboardingWindowController {
         let titleLabel = makeTitleLabel(L("onboarding.step2.title"))
         titleLabel.frame = NSRect(
             x: Self.contentPadding, y: Self.step2TitleY,
-            width: width - Self.contentPadding * 2, height: 30)
+            width: width - Self.contentPadding * 2, height: Self.titleHeight)
         container.addSubview(titleLabel)
 
         let symbols = [
@@ -411,20 +451,23 @@ extension OnboardingWindowController {
         let titleLabel = makeTitleLabel(L("onboarding.step4.title"))
         titleLabel.frame = NSRect(
             x: Self.contentPadding, y: Self.titleY,
-            width: width - Self.contentPadding * 2, height: 30)
+            width: width - Self.contentPadding * 2, height: Self.titleHeight)
         container.addSubview(titleLabel)
 
         let descLabel = makeDescriptionLabel(L("onboarding.step4.description"))
         descLabel.frame = NSRect(
-            x: Self.contentPadding, y: 250, width: width - Self.contentPadding * 2, height: 60)
+            x: Self.contentPadding, y: Self.step4DescriptionY,
+            width: width - Self.contentPadding * 2, height: Self.step4DescriptionHeight)
         container.addSubview(descLabel)
 
         let ctaButton = NSButton(
             title: L("onboarding.step4.cta"), target: self,
             action: #selector(addImageFromOnboarding))
-        ctaButton.frame = NSRect(x: (width - 200) / 2, y: 200, width: 200, height: 36)
+        let ctaWidth = Self.step4CTAWidth
+        ctaButton.frame = NSRect(
+            x: (width - ctaWidth) / 2, y: Self.step4CTAY, width: ctaWidth, height: Self.step4CTAHeight)
         ctaButton.bezelStyle = .rounded
-        ctaButton.font = NSFont.systemFont(ofSize: 14)
+        ctaButton.font = NSFont.systemFont(ofSize: Self.descriptionFontSize)
         container.addSubview(ctaButton)
     }
 }
@@ -505,14 +548,14 @@ extension OnboardingWindowController {
 
     func makeTitleLabel(_ text: String) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = NSFont.boldSystemFont(ofSize: 20)
+        label.font = NSFont.boldSystemFont(ofSize: Self.titleFontSize)
         label.alignment = .center
         return label
     }
 
     func makeDescriptionLabel(_ text: String) -> NSTextField {
         let label = NSTextField(wrappingLabelWithString: text)
-        label.font = NSFont.systemFont(ofSize: 14)
+        label.font = NSFont.systemFont(ofSize: Self.descriptionFontSize)
         label.alignment = .center
         label.isEditable = false
         label.isSelectable = false
