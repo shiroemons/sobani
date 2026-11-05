@@ -14,9 +14,6 @@ struct SettingsView: View {
     @State private var hotkeyDebounceTask: Task<Void, Never>?
     @State private var canCheckForUpdates = false
 
-    /// 更新確認が可能かを読み直す間隔（Sparkle の状態は確認中・ダウンロード中に変わるが通知されないため）
-    private static let updateAvailabilityRefreshInterval: Duration = .seconds(1)
-
     var body: some View {
         Form {
             generalSection
@@ -250,16 +247,10 @@ struct SettingsView: View {
 
             Button(L("management.check_update")) {
                 SparkleManager.shared.checkForUpdates(nil)
-                canCheckForUpdates = SparkleManager.shared.canCheckForUpdates
             }
             .disabled(!canCheckForUpdates)
-            .task {
-                // 表示中だけ定期的に読み直す（非表示になるとタスクはキャンセルされる）
-                while !Task.isCancelled {
-                    canCheckForUpdates = SparkleManager.shared.canCheckForUpdates
-                    try? await Task.sleep(for: Self.updateAvailabilityRefreshInterval)
-                }
-            }
+            // 確認中・ダウンロード中は押せない。状態の変化は KVO で受け取る
+            .onReceive(SparkleManager.shared.canCheckForUpdatesPublisher) { canCheckForUpdates = $0 }
         }
     }
 }

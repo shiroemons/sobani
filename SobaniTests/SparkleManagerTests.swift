@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import Sparkle
 import Testing
@@ -32,6 +33,17 @@ import Testing
     @Test func canCheckForUpdatesReturnsBool() {
         // canCheckForUpdates はUpdater起動前なので具体値は環境依存だが、呼び出し可能であることを確認
         _ = SparkleManager.shared.canCheckForUpdates
+    }
+
+    /// canCheckForUpdatesPublisher が購読時に現在値を流すことを検証
+    /// （設定画面はポーリングせずにこのパブリッシャーで初期値と変化を受け取る）
+    @Test func canCheckForUpdatesPublisherEmitsCurrentValueOnSubscribe() {
+        let manager = SparkleManager()
+        var received: [Bool] = []
+        let cancellable = manager.canCheckForUpdatesPublisher.sink { received.append($0) }
+        cancellable.cancel()
+
+        #expect(received == [manager.canCheckForUpdates])
     }
 
     /// startUpdaterがクラッシュしないことを検証
