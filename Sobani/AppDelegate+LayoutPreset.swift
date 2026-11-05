@@ -51,8 +51,7 @@ extension AppDelegate {
 
         var loadedWindows: [ImageWindow] = []
         for state in preset.states {
-            let imageWindow = createImageWindow(from: state, windowId: nextWindowId)
-            nextWindowId += 1
+            let imageWindow = createImageWindow(from: state, windowId: issueWindowId())
             imageWindow.restore(from: state)
             loadedWindows.append(imageWindow)
         }

@@ -81,16 +81,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         logStates(event: "states.load", savedStates)
 
         if savedStates.isEmpty {
-            guard let image = ImageManager.shared.defaultImage() else {
+            // デフォルト画像が読めなくても、監視の登録やオンボーディングは続ける（早期 return しない）
+            if let image = ImageManager.shared.defaultImage() {
+                let imageWindow = makeImageWindow(
+                    image: image, displayName: AppConstants.defaultImageName, windowId: issueWindowId()
+                )
+                imageWindow.window.center()
+                zOrderedWindows.append(imageWindow)
+            } else {
                 logger.error("Failed to load default image")
-                return
             }
-            let imageWindow = ImageWindow(image: image)
-            imageWindow.delegate = self
-            imageWindow.windowId = nextWindowId
-            nextWindowId += 1
-            imageWindow.window.center()
-            zOrderedWindows.append(imageWindow)
         } else {
             var loadedWindows: [ImageWindow] = []
             var resolutions: [WindowState.RestoreResolution?] = []
@@ -314,11 +314,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             image = ImageManager.shared.defaultImage() ?? NSImage()
         }
-        let imageWindow = ImageWindow(image: image)
-        imageWindow.delegate = self
-        imageWindow.displayName = imageName ?? AppConstants.defaultImageName
-        imageWindow.windowId = nextWindowId
-        nextWindowId += 1
+        let imageWindow = makeImageWindow(
+            image: image, displayName: imageName ?? AppConstants.defaultImageName, windowId: issueWindowId()
+        )
         addImageWindow(imageWindow)
     }
 
