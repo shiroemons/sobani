@@ -33,7 +33,10 @@ final class FloatingMenuController {
     var currentOpacity: CGFloat = 1.0
     private var opacitySlider: NSSlider?
     private var opacityLabel: NSTextField?
+    /// 背景除去ボタンを有効にするか。`show(at:in:)` のたびにボタンへ反映する。
     var isRemoveBackgroundEnabled: Bool = true
+    private var removeBackgroundButton: NSButton?
+    private var removeBackgroundLabel: NSTextField?
 
     private var panel: NSPanel?
     nonisolated(unsafe) private var globalMonitor: Any?
@@ -109,6 +112,8 @@ final class FloatingMenuController {
 
         opacitySlider?.doubleValue = Double(currentOpacity)
         opacityLabel?.stringValue = FormatUtils.formatOpacity(currentOpacity)
+        removeBackgroundButton?.isEnabled = isRemoveBackgroundEnabled
+        removeBackgroundLabel?.textColor = isRemoveBackgroundEnabled ? .secondaryLabelColor : .tertiaryLabelColor
 
         removeEventMonitors()
         installEventMonitors()
@@ -233,9 +238,10 @@ final class FloatingMenuController {
         label.textColor = .secondaryLabelColor
         label.lineBreakMode = .byTruncatingTail
 
-        if index == removeBackgroundIndex && !isRemoveBackgroundEnabled {
-            button.isEnabled = false
-            label.textColor = .tertiaryLabelColor
+        // 有効状態は画像や処理状況で変わるため、show のたびに更新できるよう参照を保持する
+        if index == removeBackgroundIndex {
+            removeBackgroundButton = button
+            removeBackgroundLabel = label
         }
 
         container.addSubview(label)
