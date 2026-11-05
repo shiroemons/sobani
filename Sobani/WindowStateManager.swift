@@ -224,14 +224,10 @@ struct WindowState: Codable, Equatable, Sendable {
         if let anchor = displayAnchor,
            let screen = screens.first(where: { $0.displayUUID == anchor.displayUUID }) {
             let newAnchor = DisplayAnchor(displayUUID: anchor.displayUUID, screenFrame: screen.frame)
-            let mappedOrigin = ScreenRestorationUtils.mapOrigin(
-                of: frame, from: anchor.screenFrame, to: screen.frame
-            )
-            let mapped = withPosition(originX: mappedOrigin.x, originY: mappedOrigin.y, displayAnchor: newAnchor)
             // 写像先が見えない（解像度が極端に変わった等）場合だけスクリーン内にクランプする
-            let origin = mapped.isPositionVisible(on: screens)
-                ? mappedOrigin
-                : ScreenRestorationUtils.clampOrigin(mappedOrigin, windowSize: frame.size, to: screen.frame)
+            let origin = ScreenRestorationUtils.restoredOrigin(
+                of: frame, from: anchor.screenFrame, to: screen.frame, visibleIn: screens.map(\.frame)
+            )
             return RestoreResolution(
                 state: withPosition(originX: origin.x, originY: origin.y, displayAnchor: newAnchor),
                 wasAdjusted: false,
