@@ -352,53 +352,39 @@ extension AppDelegate {
 
     @objc func perWindowOpacitySliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
-        let windowNumber = sender.tag
-
-        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-
-        if let imageWindow = zOrderedWindows.first(where: {
-            $0.window.windowNumber == windowNumber
-        }) {
-            imageWindow.applyOpacity(value)
+        if let container = sender.superview {
+            SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
         }
+        imageWindow(forWindowNumber: sender.tag)?.applyOpacity(value)
     }
 
     @objc func perWindowGhostAlphaSliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
-        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-        if let imageWindow = zOrderedWindows.first(where: { $0.window.windowNumber == sender.tag }) {
-            imageWindow.setCustomGhostAlpha(value)
+        if let container = sender.superview {
+            SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
         }
+        imageWindow(forWindowNumber: sender.tag)?.setCustomGhostAlpha(value)
     }
 
     @objc func togglePerWindowGhostAlphaCustom(_ sender: NSButton) {
-        guard let imageWindow = zOrderedWindows.first(where: {
-            $0.window.windowNumber == sender.tag
-        }) else { return }
+        guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
         imageWindow.setCustomGhostAlpha(sender.state == .on ? GhostModeSettings.globalAlpha : nil)
 
         guard let container = sender.superview else { return }
-        let isCustom = imageWindow.customGhostAlpha != nil
-        let currentAlpha = imageWindow.effectiveGhostAlpha
-        if let slider = container.subviews.first(where: { $0 is NSSlider }) as? NSSlider {
-            slider.doubleValue = Double(currentAlpha)
-            slider.isEnabled = isCustom
-        }
-        if let percentLabel = container.subviews.last(where: {
-            $0 is NSTextField
-        }) as? NSTextField {
-            percentLabel.stringValue = FormatUtils.formatOpacity(currentAlpha)
-            percentLabel.alphaValue = isCustom ? 1.0 : 0.5
-        }
+        SliderMenuItemFactory.update(container, value: imageWindow.effectiveGhostAlpha)
+        SliderMenuItemFactory.setSliderEnabled(imageWindow.customGhostAlpha != nil, in: container)
     }
 
     @objc func ghostAlphaSliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
         GhostModeSettings.globalAlpha = value
-        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
+        if let container = sender.superview {
+            SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
+        }
+        // ゴーストの alpha は imageView 側で不透明度と合成して適用する（window.alphaValue は使わない）
         for imageWindow in zOrderedWindows
         where imageWindow.isGhostMode && imageWindow.customGhostAlpha == nil {
-            imageWindow.window.alphaValue = value
+            imageWindow.refreshImageAlpha()
         }
     }
 
@@ -427,7 +413,7 @@ extension AppDelegate {
             .applicationVersion: String(format: L("about.version"), version, "v\(version)"),
             .version: ""
         ])
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 
     @objc func changeDefaultImageFromMenu() {

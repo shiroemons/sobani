@@ -529,6 +529,22 @@
         }
       }
     },
+    "background_removal.error.save_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景を除去した画像を保存できませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to save the background-removed image"
+          }
+        }
+      }
+    },
     "adjust.title": {
       "localizations": {
         "ja": {

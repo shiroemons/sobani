@@ -1,3 +1,4 @@
+import Cocoa
 import Testing
 @testable import Sobani
 
@@ -93,5 +94,58 @@ struct AppDelegateTests {
         #expect(result.assignments[0].oldIndex == 1)
         #expect(result.assignments[0].newId == 11)
         #expect(result.nextId == 12)
+    }
+}
+
+@Suite("SliderMenuItemFactory Tests")
+@MainActor
+struct SliderMenuItemFactoryTests {
+    private final class Target: NSObject {
+        @objc func changed(_ sender: NSSlider) {}
+    }
+
+    @Test("2 行のスライダー項目でスライダーと % 表示を取得・更新できる（スライダーの tag はウィンドウ番号のまま）")
+    func twoRowItemLookupAndUpdate() throws {
+        let target = Target()
+        // % 表示ラベルの識別タグと同じ値をスライダーの tag（ウィンドウ番号）に入れても取り違えない
+        let item = SliderMenuItemFactory.makeTwoRowItem(
+            iconSymbol: AppConstants.opacitySymbol,
+            text: "label",
+            slider: SliderMenuItemFactory.SliderSpec(
+                value: 0.5, range: 0...1, target: target, action: #selector(Target.changed(_:)), tag: 1
+            )
+        )
+        let container = try #require(item.view)
+        let slider = try #require(SliderMenuItemFactory.slider(in: container))
+        let percentLabel = try #require(SliderMenuItemFactory.percentLabel(in: container))
+        #expect(slider.tag == 1)
+        #expect(percentLabel.stringValue == FormatUtils.formatOpacity(0.5))
+
+        SliderMenuItemFactory.update(container, value: 0.8)
+        #expect(abs(slider.doubleValue - 0.8) < AppConstants.floatingPointTolerance)
+        #expect(percentLabel.stringValue == FormatUtils.formatOpacity(0.8))
+    }
+
+    @Test("スライダーを無効にすると % 表示が薄くなり、有効に戻すと元に戻る")
+    func setSliderEnabledDimsPercentLabel() throws {
+        let target = Target()
+        let item = SliderMenuItemFactory.makeSingleRowItem(
+            iconSymbol: AppConstants.ghostModeSymbol,
+            text: "label",
+            slider: SliderMenuItemFactory.SliderSpec(
+                value: 0.3, range: 0...1, target: target, action: #selector(Target.changed(_:))
+            )
+        )
+        let container = try #require(item.view)
+        let slider = try #require(SliderMenuItemFactory.slider(in: container))
+        let percentLabel = try #require(SliderMenuItemFactory.percentLabel(in: container))
+
+        SliderMenuItemFactory.setSliderEnabled(false, in: container)
+        #expect(!slider.isEnabled)
+        #expect(percentLabel.alphaValue < 1.0)
+
+        SliderMenuItemFactory.setSliderEnabled(true, in: container)
+        #expect(slider.isEnabled)
+        #expect(abs(percentLabel.alphaValue - 1.0) < AppConstants.floatingPointTolerance)
     }
 }

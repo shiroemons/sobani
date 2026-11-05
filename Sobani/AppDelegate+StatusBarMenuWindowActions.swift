@@ -33,7 +33,7 @@ extension AppDelegate {
             imageWindow: imageWindow,
             imageNames: imageNames
         )
-        changeImageItem.isEnabled = !areWindowsHidden && !imageWindow.isHidden
+        changeImageItem.isEnabled = !imageWindow.isHidden
         changeImageItem.image = menuIcon(AppConstants.changeImageSymbol)
         submenu.addItem(changeImageItem)
 
@@ -47,7 +47,7 @@ extension AppDelegate {
         flipItem.target = self
         flipItem.state = imageWindow.imageView.isFlippedHorizontally ? .on : .off
         flipItem.tag = windowNumber
-        flipItem.isEnabled = !areWindowsHidden && !imageWindow.isHidden
+        flipItem.isEnabled = !imageWindow.isHidden
         flipItem.image = menuIcon("arrow.left.and.right.righttriangle.left.righttriangle.right")
         submenu.addItem(flipItem)
         submenu.addItem(buildPerWindowOpacitySliderItem(for: imageWindow))
@@ -108,19 +108,17 @@ extension AppDelegate {
             submenu.addItem(buildPerWindowGhostAlphaSliderItem(for: imageWindow))
         }
 
-        if #available(macOS 14.0, *) {
-            submenu.addItem(NSMenuItem.separator())
-            let removeBackgroundItem = NSMenuItem(
-                title: L("image.remove_background"),
-                action: #selector(removeBackgroundByWindowNumber(_:)),
-                keyEquivalent: ""
-            )
-            removeBackgroundItem.target = self
-            removeBackgroundItem.tag = windowNumber
-            removeBackgroundItem.isEnabled = !areWindowsHidden && !imageWindow.imageHasAlpha()
-            removeBackgroundItem.image = menuIcon("eraser.fill")
-            submenu.addItem(removeBackgroundItem)
-        }
+        submenu.addItem(NSMenuItem.separator())
+        let removeBackgroundItem = NSMenuItem(
+            title: L("image.remove_background"),
+            action: #selector(removeBackgroundByWindowNumber(_:)),
+            keyEquivalent: ""
+        )
+        removeBackgroundItem.target = self
+        removeBackgroundItem.tag = windowNumber
+        removeBackgroundItem.isEnabled = !imageWindow.isHidden && imageWindow.isRemoveBackgroundAvailable
+        removeBackgroundItem.image = menuIcon("eraser.fill")
+        submenu.addItem(removeBackgroundItem)
     }
 
     func buildChangeImageSubmenuForWindow(
@@ -227,7 +225,7 @@ extension AppDelegate {
 
     @objc func toggleFlipByWindowNumber(_ sender: NSMenuItem) {
         guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
-        imageWindow.imageView.isFlippedHorizontally.toggle()
+        imageWindow.toggleFlip()
     }
 
     @objc func showAdjustmentPanelByWindowNumber(_ sender: NSMenuItem) {
@@ -237,12 +235,12 @@ extension AppDelegate {
 
     @objc func resetRotationByWindowNumber(_ sender: NSMenuItem) {
         guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
-        imageWindow.applyRotation(0)
+        imageWindow.resetRotation()
     }
 
     @objc func resetOpacityByWindowNumber(_ sender: NSMenuItem) {
         guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
-        imageWindow.applyOpacity(1.0)
+        imageWindow.resetOpacity()
     }
 
     @objc func resetDisplayByWindowNumber(_ sender: NSMenuItem) {
@@ -286,24 +284,17 @@ extension AppDelegate {
 
     @objc func changeImageByWindowNumber(_ sender: NSMenuItem) {
         guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
-        let panel = ImageFileDialog.makeOpenPanel()
-        if panel.runModal() == .OK, let url = panel.url {
-            imageWindow.loadAndApplyImage(from: url)
-        }
+        imageWindow.changeImage()
     }
 
     @objc func selectRegisteredImageByWindowNumber(_ sender: NSMenuItem) {
         guard let imageWindow = imageWindow(forWindowNumber: sender.tag),
-              let name = sender.representedObject as? String,
-              let image = ImageManager.shared.loadRegisteredImage(named: name) else { return }
-        imageWindow.displayName = name
-        imageWindow.applyImage(image)
+              let name = sender.representedObject as? String else { return }
+        imageWindow.selectRegisteredImage(named: name)
     }
 
     @objc func resetToDefaultByWindowNumber(_ sender: NSMenuItem) {
-        guard let imageWindow = imageWindow(forWindowNumber: sender.tag),
-              let defaultImage = ImageManager.shared.defaultImage() else { return }
-        imageWindow.displayName = AppConstants.defaultImageName
-        imageWindow.applyImage(defaultImage)
+        guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
+        imageWindow.resetToDefault()
     }
 }

@@ -167,6 +167,123 @@ struct ImageWindowTests {
         #expect(abs(result.aspectRatio - 0.25) < AppConstants.floatingPointTolerance)
     }
 
+    // MARK: - anchoredFrames Tests
+
+    @Test("ウィンドウは整数に丸められ、回転後の画像を覆い、画像の中心はアンカーと一致する", arguments: [0.0, 17.0, 45.0, 90.0, 233.0])
+    func anchoredFramesKeepsCenterAndCoversImage(rotation: Double) {
+        let center = CGPoint(x: 640.3, y: 401.7)
+        let imageSize = NSSize(width: 301.5, height: 200.25)
+        let frames = ImageWindow.anchoredFrames(
+            imageCenter: center, imageSize: imageSize, rotationAngle: CGFloat(rotation)
+        )
+        let window = frames.windowFrame
+        #expect(abs(window.minX - window.minX.rounded()) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.minY - window.minY.rounded()) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.width - window.width.rounded()) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.minX + frames.imageViewFrame.midX - center.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.minY + frames.imageViewFrame.midY - center.y) < AppConstants.floatingPointTolerance)
+        // 丸めによる誤差（1px 未満）を除き、回転後の外接矩形を覆う
+        let boundingBox = GeometryUtils.rotatedBoundingBox(
+            width: imageSize.width, height: imageSize.height, angleDegrees: CGFloat(rotation)
+        )
+        #expect(window.minX <= center.x - boundingBox.width / 2 + 1)
+        #expect(window.maxX >= center.x + boundingBox.width / 2 - 1)
+        #expect(window.minY <= center.y - boundingBox.height / 2 + 1)
+        #expect(window.maxY >= center.y + boundingBox.height / 2 - 1)
+    }
+
+    @Test("回転を繰り返しても画像の中心がずれない")
+    func anchoredFramesRepeatedRotationDoesNotDrift() {
+        let start = CGPoint(x: 700.5, y: 350.25)
+        var center = start
+        let imageSize = NSSize(width: 321, height: 457)
+        for step in 0..<500 {
+            let angle = CGFloat(step) * 0.73
+            let frames = ImageWindow.anchoredFrames(imageCenter: center, imageSize: imageSize, rotationAngle: angle)
+            center = CGPoint(
+                x: frames.windowFrame.minX + frames.imageViewFrame.midX,
+                y: frames.windowFrame.minY + frames.imageViewFrame.midY
+            )
+        }
+        #expect(abs(center.x - start.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(center.y - start.y) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - spawnOrigin Tests
+
+    @Test("新規ウィンドウはメイン画面の原点を考慮して中央に配置される")
+    func spawnOriginUsesScreenOrigin() {
+        // プライマリではない位置（原点が (1920, -200)）にあるメイン画面
+        let screenFrame = NSRect(x: 1920, y: -200, width: 1600, height: 1000)
+        let result = ImageWindow.spawnOrigin(
+            windowSize: NSSize(width: 400, height: 600), screenFrame: screenFrame,
+            offset: CGVector(dx: 10, dy: -20)
+        )
+        // 中央: x = 1920 + (1600 - 400) / 2 = 2520, y = -200 + (1000 - 600) / 2 = 0
+        #expect(abs(result.x - 2530) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - (-20)) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - clampedImageSize Tests
+
+    @Test("範囲内の高さはそのまま縦横比を保つ")
+    func clampedImageSizeWithinRange() {
+        let result = ImageWindow.clampedImageSize(height: 300, aspectRatio: 2.0)
+        #expect(abs(result.height - 300) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - 600) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("高さは最小・最大にクランプされ幅は縦横比に従う", arguments: [
+        (CGFloat(10), AppConstants.minImageHeight),
+        (CGFloat(100_000), AppConstants.maxImageHeight)
+    ])
+    func clampedImageSizeClamps(height: CGFloat, expectedHeight: CGFloat) {
+        let result = ImageWindow.clampedImageSize(height: height, aspectRatio: 0.5)
+        #expect(abs(result.height - expectedHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - expectedHeight * 0.5) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - areaPreservingImageSize Tests
+
+    @Test("面積を保ったまま新しい縦横比に合わせる")
+    func areaPreservingImageSizeKeepsArea() throws {
+        let current = NSSize(width: 400, height: 400)
+        let result = try #require(
+            ImageWindow.areaPreservingImageSize(currentSize: current, aspectRatio: 4.0)
+        )
+        #expect(abs(result.width * result.height - 160_000) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width / result.height - 4.0) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("極端な横長（50:1）でも高さは最小値を下回らない")
+    func areaPreservingImageSizeClampsToMinHeight() throws {
+        let current = NSSize(width: 400, height: 600)
+        let result = try #require(
+            ImageWindow.areaPreservingImageSize(currentSize: current, aspectRatio: 50)
+        )
+        #expect(abs(result.height - AppConstants.minImageHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - AppConstants.minImageHeight * 50) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("不正な縦横比では nil", arguments: [CGFloat(0), CGFloat(-1), CGFloat.infinity, CGFloat.nan])
+    func areaPreservingImageSizeInvalidAspect(aspectRatio: CGFloat) {
+        let result = ImageWindow.areaPreservingImageSize(
+            currentSize: NSSize(width: 100, height: 100), aspectRatio: aspectRatio
+        )
+        #expect(result == nil)
+    }
+
+    // MARK: - isApproximatelyEqual (Optional) Tests
+
+    @Test("省略可能な値の比較: 両方 nil・誤差内は等しく、片方 nil・誤差超えは異なる")
+    func optionalApproximatelyEqual() {
+        #expect(ImageWindow.isApproximatelyEqual(nil, nil))
+        #expect(ImageWindow.isApproximatelyEqual(0.3, 0.3 + AppConstants.floatingPointTolerance / 2))
+        #expect(!ImageWindow.isApproximatelyEqual(0.3, nil))
+        #expect(!ImageWindow.isApproximatelyEqual(nil, 0.3))
+        #expect(!ImageWindow.isApproximatelyEqual(0.3, 0.5))
+    }
+
     // MARK: - formatLocalizedDisplayName Tests
 
     @Test("デフォルト名と一致する場合はローカライズ名を返す")
@@ -259,16 +376,31 @@ struct ImageWindowTests {
 struct ImageWindowNotificationTests {
     private final class NotificationCapture: @unchecked Sendable {
         private let lock = NSLock()
-        private var value: String?
+        private var values: [String] = []
 
         func record(_ trigger: String?) {
             lock.withLock {
-                value = trigger
+                values.append(trigger ?? "")
             }
         }
 
         var trigger: String? {
-            lock.withLock { value }
+            lock.withLock { values.last }
+        }
+
+        var triggers: [String] {
+            lock.withLock { values }
+        }
+    }
+
+    /// `imageWindow` が発行する状態変更通知を記録する。戻り値のオブザーバーはテスト終了時に解除すること。
+    private func observeStateChanges(of imageWindow: ImageWindow, into capture: NotificationCapture) -> NSObjectProtocol {
+        NotificationCenter.default.addObserver(
+            forName: AppConstants.imageWindowStateDidChange,
+            object: imageWindow,
+            queue: nil
+        ) { notification in
+            capture.record(notification.userInfo?[AppConstants.notificationTriggerKey] as? String)
         }
     }
 
@@ -279,17 +411,105 @@ struct ImageWindowNotificationTests {
         defer { imageWindow.window.orderOut(nil) }
 
         let capture = NotificationCapture()
-        let observer = NotificationCenter.default.addObserver(
-            forName: AppConstants.imageWindowStateDidChange,
-            object: nil,
-            queue: nil
-        ) { notification in
-            capture.record(notification.userInfo?[AppConstants.notificationTriggerKey] as? String)
-        }
+        let observer = observeStateChanges(of: imageWindow, into: capture)
         defer { NotificationCenter.default.removeObserver(observer) }
 
         imageWindow.imageView.onSizeChanged?()
 
         #expect(capture.trigger == AppConstants.SnapshotTrigger.size.rawValue)
+    }
+
+    @Test("setPositionAndSize は画像基準の原点・サイズで配置し位置とサイズの変更を通知する", arguments: [0.0, 30.0])
+    func setPositionAndSizeUsesImageSpace(rotation: Double) {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.applyRotation(CGFloat(rotation))
+
+        let capture = NotificationCapture()
+        let observer = observeStateChanges(of: imageWindow, into: capture)
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 300, y: 400), size: NSSize(width: 400, height: 200))
+
+        let imageSize = imageWindow.imageView.frame.size
+        #expect(abs(imageSize.width - 400) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageSize.height - 200) < AppConstants.floatingPointTolerance)
+        // captureState と同じ式で画像原点を求め、指定した原点と一致することを確認（ウィンドウ原点は丸められる）
+        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
+        #expect(abs(imageOrigin.x - 300) <= 1.0)
+        #expect(abs(imageOrigin.y - 400) <= 1.0)
+        #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.position.rawValue))
+        #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.size.rawValue))
+    }
+
+    @Test("setPositionAndSize はサイズが変わらなければ .size を通知しない")
+    func setPositionAndSizeWithoutResize() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        let currentSize = imageWindow.imageView.frame.size
+
+        let capture = NotificationCapture()
+        let observer = observeStateChanges(of: imageWindow, into: capture)
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 10, y: 20), size: currentSize)
+
+        #expect(capture.triggers == [AppConstants.SnapshotTrigger.position.rawValue])
+    }
+
+    @Test("位置・サイズのリセットは回転・反転・不透明度を保ち、既定の高さで画面中央に置く")
+    func resetPositionAndSizeKeepsOtherAdjustments() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.applyRotation(30)
+        imageWindow.toggleFlip()
+        imageWindow.applyOpacity(0.5)
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 5, y: 5), size: NSSize(width: 300, height: 150))
+
+        imageWindow.resetPositionAndSize()
+
+        let imageSize = imageWindow.imageView.frame.size
+        #expect(abs(imageSize.height - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageSize.width - AppConstants.defaultWindowHeight * 2) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageWindow.imageView.rotationAngle - 30) < AppConstants.floatingPointTolerance)
+        #expect(imageWindow.imageView.isFlippedHorizontally)
+        #expect(abs(imageWindow.imageView.opacityLevel - 0.5) < AppConstants.floatingPointTolerance)
+        let expectedOrigin = GeometryUtils.centeredOrigin(size: imageSize, in: NSScreen.mainFrameOrFallback)
+        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
+        #expect(abs(imageOrigin.x - expectedOrigin.x) <= 1.0)
+        #expect(abs(imageOrigin.y - expectedOrigin.y) <= 1.0)
+    }
+
+    @Test("回転を何度変えても画像の位置がずれない")
+    func repeatedRotationKeepsImagePosition() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 333, height: 501)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 200.5, y: 300.5), size: NSSize(width: 333, height: 501))
+        let before = imageWindow.imageFrameInScreen
+
+        for step in 1...300 {
+            imageWindow.applyRotation(CGFloat(step) * 1.37)
+        }
+        imageWindow.applyRotation(0)
+
+        let after = imageWindow.imageFrameInScreen
+        #expect(abs(after.midX - before.midX) < AppConstants.floatingPointTolerance)
+        #expect(abs(after.midY - before.midY) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("setPositionAndSize は非有限値を無視する")
+    func setPositionAndSizeIgnoresNonFinite() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        let frameBefore = imageWindow.window.frame
+
+        imageWindow.setPositionAndSize(origin: NSPoint(x: CGFloat.nan, y: 0), size: NSSize(width: 100, height: 50))
+        imageWindow.setPositionAndSize(origin: .zero, size: NSSize(width: 100, height: CGFloat.infinity))
+
+        let frameAfter = imageWindow.window.frame
+        #expect(abs(frameAfter.minX - frameBefore.minX) < AppConstants.floatingPointTolerance)
+        #expect(abs(frameAfter.minY - frameBefore.minY) < AppConstants.floatingPointTolerance)
+        #expect(abs(frameAfter.width - frameBefore.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(frameAfter.height - frameBefore.height) < AppConstants.floatingPointTolerance)
     }
 }

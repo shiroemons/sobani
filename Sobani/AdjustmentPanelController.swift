@@ -1,5 +1,4 @@
 import Cocoa
-import os.log
 
 // MARK: - Adjustment Panel Delegate
 
@@ -37,6 +36,15 @@ enum SectionLayout {
     static let labelFontSize: CGFloat = 12
     static let resetButtonWidth: CGFloat = 90
     static let resetButtonHeight: CGFloat = 28
+    static let labelHeight: CGFloat = 20
+    /// 「角度」「位置」「サイズ」などの見出しラベルの幅
+    static let titleLabelWidth: CGFloat = 40
+    /// 「X」「Y」「W」「H」「°」などの 1 文字ラベルの幅
+    static let unitLabelWidth: CGFloat = 15
+    static let inputHeight: CGFloat = 22
+    /// 入力欄を同じ行のラベルより下げる量（高さの差でベースラインを揃える）
+    static let inputYOffset: CGFloat = 2
+    static let separatorHeight: CGFloat = 1
 }
 
 enum RotationLayout {
@@ -55,6 +63,7 @@ enum RotationLayout {
 
 enum PositionSizeLayout {
     static let monitorLabelY: CGFloat = 145
+    static let monitorLabelWidth: CGFloat = 60
     static let monitorPopupX: CGFloat = 70
     static let monitorPopupY: CGFloat = 143
     static let monitorPopupWidth: CGFloat = 140
@@ -78,7 +87,6 @@ enum PositionSizeLayout {
 
 @MainActor
 final class AdjustmentPanelController: NSObject, NSWindowDelegate {
-    private let logger = Logger(category: "AdjustmentPanelController")
     private static let panelWidth: CGFloat = 220
     private static let panelHeight: CGFloat = 340
     private static let rotationSectionOffsetY: CGFloat = 180
@@ -101,6 +109,10 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     var currentScreen: NSScreen?
     var currentAspectRatio: CGFloat = 1.0
 
+    /// パネルを生成して `window` の横に表示する。
+    ///
+    /// コントローラーは表示ごとに作り直す前提（`ImageWindow.showAdjustmentPanel` 参照）。
+    /// 表示中の値の更新は `updateAngle` / `updatePosition` / `updateSize` / `updateMonitor` で行う。
     func show(near window: NSWindow, state: AdjustmentPanelState) {
         currentAngle = state.angle
         currentPosition = state.position
@@ -108,61 +120,45 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         currentAspectRatio = state.aspectRatio
         currentScreen = NSScreen.screen(containing: window.frame)
 
-        // Lazy-initialize the panel on first show
-        if panel == nil {
-            let panelWidth: CGFloat = Self.panelWidth
-            let panelHeight: CGFloat = Self.panelHeight
-            let panelRect = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
+        let newPanel = makePanel(angle: state.angle)
+        panel = newPanel
+        newPanel.setFrameOrigin(NSPanel.auxiliaryPanelOrigin(
+            near: window, panelSize: newPanel.frame.size, gap: Self.panelGap
+        ))
+        newPanel.makeKeyAndOrderFront(nil)
+    }
 
-            let newPanel = NSPanel(
-                contentRect: panelRect,
-                styleMask: [.titled, .closable, .nonactivatingPanel, .utilityWindow],
-                backing: .buffered,
-                defer: false
-            )
-            newPanel.title = L("adjust.panel_title")
-            newPanel.level = .modalPanel
-            newPanel.isFloatingPanel = true
-            newPanel.delegate = self
-            newPanel.becomesKeyOnlyIfNeeded = true
-            newPanel.configureForFloating()
-
-            let contentView = NSView(frame: panelRect)
-
-            setupRotationSection(
-                in: contentView, angle: state.angle, offsetY: Self.rotationSectionOffsetY)
-
-            // Separator between rotation and position/size
-            let sep1 = NSBox(frame: NSRect(
-                x: SectionLayout.labelX, y: Self.rotationSectionOffsetY,
-                width: SectionLayout.contentWidth, height: 1
-            ))
-            sep1.boxType = .separator
-            contentView.addSubview(sep1)
-
-            setupPositionSizeSection(in: contentView)
-
-            newPanel.contentView = contentView
-            panel = newPanel
-        } else {
-            // Update all control values for the new state
-            dialView?.angle = state.angle
-            textField?.stringValue = Self.formatAngle(state.angle)
-            populateMonitorPopup()
-            updateResolutionLabel()
-            updatePositionFields()
-            updateSizeFields()
-        }
-
-        // Reposition near the target window
-        let windowFrame = window.frame
-        let panelHeight: CGFloat = Self.panelHeight
-        let panelOrigin = NSPoint(
-            x: windowFrame.maxX + Self.panelGap,
-            y: windowFrame.midY - panelHeight / 2
+    private func makePanel(angle: CGFloat) -> NSPanel {
+        let panelRect = NSRect(x: 0, y: 0, width: Self.panelWidth, height: Self.panelHeight)
+        let newPanel = NSPanel(
+            contentRect: panelRect,
+            styleMask: [.titled, .closable, .nonactivatingPanel, .utilityWindow],
+            backing: .buffered,
+            defer: false
         )
-        panel?.setFrameOrigin(panelOrigin)
-        panel?.makeKeyAndOrderFront(nil)
+        newPanel.title = L("adjust.panel_title")
+        newPanel.level = .modalPanel
+        newPanel.isFloatingPanel = true
+        newPanel.delegate = self
+        newPanel.becomesKeyOnlyIfNeeded = true
+        newPanel.configureForFloating()
+
+        let contentView = NSView(frame: panelRect)
+
+        setupRotationSection(in: contentView, angle: angle, offsetY: Self.rotationSectionOffsetY)
+
+        // Separator between rotation and position/size
+        let separator = NSBox(frame: NSRect(
+            x: SectionLayout.labelX, y: Self.rotationSectionOffsetY,
+            width: SectionLayout.contentWidth, height: SectionLayout.separatorHeight
+        ))
+        separator.boxType = .separator
+        contentView.addSubview(separator)
+
+        setupPositionSizeSection(in: contentView)
+
+        newPanel.contentView = contentView
+        return newPanel
     }
 
     private func setupRotationSection(in contentView: NSView, angle: CGFloat, offsetY: CGFloat) {
@@ -183,7 +179,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         let label = NSTextField(labelWithString: L("adjust.angle"))
         label.frame = NSRect(
             x: RotationLayout.angleLabelX, y: RotationLayout.angleLabelRelativeY + offsetY,
-            width: 40, height: 20
+            width: SectionLayout.titleLabelWidth, height: SectionLayout.labelHeight
         )
         label.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(label)
@@ -191,7 +187,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         // Text field
         let field = NSTextField(frame: NSRect(
             x: RotationLayout.angleFieldX, y: RotationLayout.angleFieldRelativeY + offsetY,
-            width: RotationLayout.angleFieldWidth, height: 22
+            width: RotationLayout.angleFieldWidth, height: SectionLayout.inputHeight
         ))
         field.stringValue = Self.formatAngle(angle)
         field.alignment = .right
@@ -206,7 +202,7 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
         let degreeLabel = NSTextField(labelWithString: L("adjust.degree"))
         degreeLabel.frame = NSRect(
             x: RotationLayout.degreeLabelX, y: RotationLayout.angleLabelRelativeY + offsetY,
-            width: 15, height: 20
+            width: SectionLayout.unitLabelWidth, height: SectionLayout.labelHeight
         )
         degreeLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(degreeLabel)
@@ -263,13 +259,11 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     }
 
     @objc private func textFieldChanged(_ sender: NSTextField) {
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard var degrees = Double(text) else {
+        guard let degrees = Self.parseFiniteNumber(sender.stringValue) else {
             sender.stringValue = Self.formatAngle(currentAngle)
             return
         }
-        degrees = GeometryUtils.normalizeAngle(degrees)
-        let angle = CGFloat(degrees)
+        let angle = GeometryUtils.normalizeAngle(degrees)
         currentAngle = angle
         dialView?.angle = angle
         sender.stringValue = Self.formatAngle(angle)
@@ -294,20 +288,23 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     }
 
     static func clampedSize(newValue: CGFloat, aspectRatio: CGFloat, isWidth: Bool) -> CGSize? {
-        guard newValue > 0 else { return nil }
-        guard aspectRatio > 0 else { return nil }
-        let height: CGFloat
-        if isWidth {
-            height = newValue / aspectRatio
-        } else {
-            height = newValue
-        }
-        let clampedH = max(AppConstants.minImageHeight, min(AppConstants.maxImageHeight, height))
-        let clampedW = clampedH * aspectRatio
-        return CGSize(width: clampedW, height: clampedH)
+        guard newValue > 0, aspectRatio > 0 else { return nil }
+        let height = isWidth ? newValue / aspectRatio : newValue
+        return ImageWindow.clampedImageSize(height: height, aspectRatio: aspectRatio)
     }
 
     // MARK: - Testable Static Methods
+
+    /// テキストフィールドの入力を有限の数値として解釈する。
+    ///
+    /// `Double("nan")` / `Double("inf")` / `Double("1e309")` は数値として解釈できてしまい、
+    /// NaN や無限大がウィンドウのフレームや保存データに混入するため、有限値以外は nil を返す。
+    nonisolated static func parseFiniteNumber(_ text: String) -> CGFloat? {
+        guard let value = Double(text.trimmingCharacters(in: .whitespaces)), value.isFinite else {
+            return nil
+        }
+        return CGFloat(value)
+    }
 
     nonisolated static func generateMonitorPopupTitles(
         screenSizes: [(width: Int, height: Int)]) -> [String] {

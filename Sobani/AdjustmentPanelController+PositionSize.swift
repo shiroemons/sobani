@@ -29,7 +29,8 @@ extension AdjustmentPanelController {
     private func setupMonitorControls(in contentView: NSView) {
         let monitorLabel = NSTextField(labelWithString: L("adjust.monitor"))
         monitorLabel.frame = NSRect(
-            x: SectionLayout.labelX, y: PositionSizeLayout.monitorLabelY, width: 60, height: 20
+            x: SectionLayout.labelX, y: PositionSizeLayout.monitorLabelY,
+            width: PositionSizeLayout.monitorLabelWidth, height: SectionLayout.labelHeight
         )
         monitorLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
         contentView.addSubview(monitorLabel)
@@ -59,102 +60,46 @@ extension AdjustmentPanelController {
         updateResolutionLabel()
     }
 
+    private static let firstColumn = (labelX: PositionSizeLayout.firstAxisLabelX, inputX: PositionSizeLayout.firstInputX)
+    private static let secondColumn = (labelX: PositionSizeLayout.secondAxisLabelX, inputX: PositionSizeLayout.secondInputX)
+
     private func setupPositionRow(in contentView: NSView) {
-        let posLabel = NSTextField(labelWithString: L("adjust.position"))
-        posLabel.frame = NSRect(
-            x: SectionLayout.labelX, y: PositionSizeLayout.positionRowY, width: 40, height: 20
-        )
-        posLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(posLabel)
-
-        let xLabel = NSTextField(labelWithString: "X")
-        xLabel.frame = NSRect(
-            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.positionRowY,
-            width: 15, height: 20
-        )
-        xLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(xLabel)
-
-        let xInput = NSTextField(frame: NSRect(
-            x: PositionSizeLayout.firstInputX, y: PositionSizeLayout.positionRowY - 2,
-            width: PositionSizeLayout.inputWidth, height: 22
-        ))
-        xInput.alignment = .right
-        xInput.font = NSFont.monospacedDigitSystemFont(
-            ofSize: SectionLayout.labelFontSize, weight: .regular)
-        xInput.target = self
-        xInput.action = #selector(xFieldChanged(_:))
-        contentView.addSubview(xInput)
-        xField = xInput
-
-        let yLabel = NSTextField(labelWithString: "Y")
-        yLabel.frame = NSRect(
-            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.positionRowY,
-            width: 15, height: 20
-        )
-        yLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(yLabel)
-
-        let yInput = NSTextField(frame: NSRect(
-            x: PositionSizeLayout.secondInputX, y: PositionSizeLayout.positionRowY - 2,
-            width: PositionSizeLayout.inputWidth, height: 22
-        ))
-        yInput.alignment = .right
-        yInput.font = NSFont.monospacedDigitSystemFont(
-            ofSize: SectionLayout.labelFontSize, weight: .regular)
-        yInput.target = self
-        yInput.action = #selector(yFieldChanged(_:))
-        contentView.addSubview(yInput)
-        yField = yInput
+        let y = PositionSizeLayout.positionRowY
+        addLabel(L("adjust.position"), x: SectionLayout.labelX, y: y, width: SectionLayout.titleLabelWidth, to: contentView)
+        xField = addAxisInput("X", column: Self.firstColumn, y: y, action: #selector(xFieldChanged(_:)), to: contentView)
+        yField = addAxisInput("Y", column: Self.secondColumn, y: y, action: #selector(yFieldChanged(_:)), to: contentView)
     }
 
     private func setupSizeRow(in contentView: NSView) {
-        let sizeLabel = NSTextField(labelWithString: L("adjust.size"))
-        sizeLabel.frame = NSRect(
-            x: SectionLayout.labelX, y: PositionSizeLayout.sizeRowY, width: 40, height: 20
-        )
-        sizeLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(sizeLabel)
+        let y = PositionSizeLayout.sizeRowY
+        addLabel(L("adjust.size"), x: SectionLayout.labelX, y: y, width: SectionLayout.titleLabelWidth, to: contentView)
+        wField = addAxisInput("W", column: Self.firstColumn, y: y, action: #selector(wFieldChanged(_:)), to: contentView)
+        hField = addAxisInput("H", column: Self.secondColumn, y: y, action: #selector(hFieldChanged(_:)), to: contentView)
+    }
 
-        let wLabel = NSTextField(labelWithString: "W")
-        wLabel.frame = NSRect(
-            x: PositionSizeLayout.firstAxisLabelX, y: PositionSizeLayout.sizeRowY,
-            width: 15, height: 20
-        )
-        wLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(wLabel)
+    private func addLabel(_ text: String, x: CGFloat, y: CGFloat, width: CGFloat, to contentView: NSView) {
+        let label = NSTextField(labelWithString: text)
+        label.frame = NSRect(x: x, y: y, width: width, height: SectionLayout.labelHeight)
+        label.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
+        contentView.addSubview(label)
+    }
 
-        let wInput = NSTextField(frame: NSRect(
-            x: PositionSizeLayout.firstInputX, y: PositionSizeLayout.sizeRowY - 2,
-            width: PositionSizeLayout.inputWidth, height: 22
+    /// 軸ラベル（X/Y/W/H）と数値入力欄を置き、入力欄を返す
+    private func addAxisInput(
+        _ axis: String, column: (labelX: CGFloat, inputX: CGFloat), y: CGFloat,
+        action: Selector, to contentView: NSView
+    ) -> NSTextField {
+        addLabel(axis, x: column.labelX, y: y, width: SectionLayout.unitLabelWidth, to: contentView)
+        let input = NSTextField(frame: NSRect(
+            x: column.inputX, y: y - SectionLayout.inputYOffset,
+            width: PositionSizeLayout.inputWidth, height: SectionLayout.inputHeight
         ))
-        wInput.alignment = .right
-        wInput.font = NSFont.monospacedDigitSystemFont(
-            ofSize: SectionLayout.labelFontSize, weight: .regular)
-        wInput.target = self
-        wInput.action = #selector(wFieldChanged(_:))
-        contentView.addSubview(wInput)
-        wField = wInput
-
-        let hLabel = NSTextField(labelWithString: "H")
-        hLabel.frame = NSRect(
-            x: PositionSizeLayout.secondAxisLabelX, y: PositionSizeLayout.sizeRowY,
-            width: 15, height: 20
-        )
-        hLabel.font = NSFont.systemFont(ofSize: SectionLayout.labelFontSize)
-        contentView.addSubview(hLabel)
-
-        let hInput = NSTextField(frame: NSRect(
-            x: PositionSizeLayout.secondInputX, y: PositionSizeLayout.sizeRowY - 2,
-            width: PositionSizeLayout.inputWidth, height: 22
-        ))
-        hInput.alignment = .right
-        hInput.font = NSFont.monospacedDigitSystemFont(
-            ofSize: SectionLayout.labelFontSize, weight: .regular)
-        hInput.target = self
-        hInput.action = #selector(hFieldChanged(_:))
-        contentView.addSubview(hInput)
-        hField = hInput
+        input.alignment = .right
+        input.font = NSFont.monospacedDigitSystemFont(ofSize: SectionLayout.labelFontSize, weight: .regular)
+        input.target = self
+        input.action = action
+        contentView.addSubview(input)
+        return input
     }
 
     // MARK: Coordinate Conversion
@@ -206,15 +151,14 @@ extension AdjustmentPanelController {
 
     private func handlePositionFieldChanged(_ sender: NSTextField, isXField: Bool) {
         guard let screen = currentScreen else { return }
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text) else {
+        guard let value = Self.parseFiniteNumber(sender.stringValue) else {
             updatePositionFields()
             return
         }
         let currentRelative = Self.globalToMonitorRelative(
             currentPosition, screenOrigin: screen.frame.origin)
         let relative = Self.updatedRelativePosition(
-            newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: isXField
+            newAxisValue: value, currentRelative: currentRelative, isXField: isXField
         )
         let global = Self.monitorRelativeToGlobal(relative, screenOrigin: screen.frame.origin)
         currentPosition = global
@@ -230,13 +174,12 @@ extension AdjustmentPanelController {
     }
 
     private func handleSizeFieldChanged(_ sender: NSTextField, isWidth: Bool) {
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text) else {
+        guard let value = Self.parseFiniteNumber(sender.stringValue) else {
             updateSizeFields()
             return
         }
         guard let newSize = Self.clampedSize(
-            newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: isWidth) else {
+            newValue: value, aspectRatio: currentAspectRatio, isWidth: isWidth) else {
             updateSizeFields()
             return
         }
@@ -264,15 +207,24 @@ extension AdjustmentPanelController {
         updatePositionFields()
     }
 
-    func updateSize(_ size: CGSize) {
+    /// サイズと縦横比を更新する。クロップや画像変更で縦横比が変わるため、W/H 入力の換算にも反映する。
+    func updateSize(_ size: CGSize, aspectRatio: CGFloat) {
         currentSize = size
+        currentAspectRatio = aspectRatio
         updateSizeFields()
     }
 
+    /// ウィンドウのあるディスプレイに合わせてモニター選択と位置欄を更新する。
+    ///
+    /// ドラッグ中は移動のたびに呼ばれるため、ポップアップの作り直しは
+    /// ディスプレイが変わったとき（または接続数が変わったとき）だけ行う。
     func updateMonitor(_ window: NSWindow) {
-        currentScreen = NSScreen.screen(containing: window.frame)
-        populateMonitorPopup()
-        updateResolutionLabel()
+        let screen = NSScreen.screen(containing: window.frame)
+        if screen != currentScreen || monitorPopup?.numberOfItems != NSScreen.screens.count {
+            currentScreen = screen
+            populateMonitorPopup()
+            updateResolutionLabel()
+        }
         updatePositionFields()
     }
 

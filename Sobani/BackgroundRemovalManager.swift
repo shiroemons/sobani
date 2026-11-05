@@ -5,7 +5,6 @@ import Vision
 
 // MARK: - Background Removal Error
 
-@available(macOS 14.0, *)
 enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
     case cgImageConversionFailed
     case noForegroundDetected
@@ -35,7 +34,6 @@ enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
 
 // MARK: - Background Removal Manager
 
-@available(macOS 14.0, *)
 final class BackgroundRemovalManager: @unchecked Sendable {
     static let shared = BackgroundRemovalManager()
 

@@ -6,6 +6,18 @@ import Testing
 @Suite("DraggableImageView Static Methods Tests")
 struct DraggableImageViewTests {
 
+    // MARK: - hasMoved Tests
+
+    @Test("原点が変わらなければ移動なし（クリックのみ）")
+    func hasMovedSameOrigin() {
+        #expect(!DraggableImageView.hasMoved(from: NSPoint(x: 10, y: 20), to: NSPoint(x: 10, y: 20)))
+    }
+
+    @Test("x または y が変われば移動あり", arguments: [NSPoint(x: 11, y: 20), NSPoint(x: 10, y: 19)])
+    func hasMovedDifferentOrigin(end: NSPoint) {
+        #expect(DraggableImageView.hasMoved(from: NSPoint(x: 10, y: 20), to: end))
+    }
+
     // MARK: - scaleFactor Tests
 
     @Test("正のデルタでスケールファクター > 1")
@@ -27,13 +39,37 @@ struct DraggableImageViewTests {
         #expect(abs(result - 1.0) < AppConstants.floatingPointTolerance)
     }
 
+    @Test("同じ量を拡大→縮小すると元の大きさに戻る", arguments: [1.0, 10.0, 37.5, 150.0])
+    func scaleFactorRoundTripIsIdentity(delta: Double) {
+        let enlarge = DraggableImageView.scaleFactor(fromScrollDelta: CGFloat(delta))
+        let shrink = DraggableImageView.scaleFactor(fromScrollDelta: CGFloat(-delta))
+        #expect(abs(enlarge * shrink - 1.0) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("大きな負のデルタでも倍率は正（画像が潰れない）", arguments: [-100.0, -250.0, -10_000.0])
+    func scaleFactorLargeNegativeDeltaStaysPositive(delta: Double) {
+        let result = DraggableImageView.scaleFactor(fromScrollDelta: CGFloat(delta))
+        #expect(result > 0)
+        #expect(result < 1.0)
+    }
+
+    @Test("非精密スクロール（ホイール）のデルタは行単位として点に換算される")
+    func scaleFactorNonPreciseUsesLineHeight() {
+        let wheel = DraggableImageView.scaleFactor(fromScrollDelta: 1, isPrecise: false)
+        let trackpad = DraggableImageView.scaleFactor(fromScrollDelta: 1, isPrecise: true)
+        #expect(wheel > trackpad)
+        // 1 行 = 10pt
+        let tenPoints = DraggableImageView.scaleFactor(fromScrollDelta: 10, isPrecise: true)
+        #expect(abs(wheel - tenPoints) < AppConstants.floatingPointTolerance)
+    }
+
     // MARK: - calculateResizedFrames Tests
 
     @Test("スケールアップ時に高さが増加")
     func calculateResizedFramesScaleUp() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.5, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         #expect(frames.imageViewFrame.height > 200)
     }
@@ -42,7 +78,7 @@ struct DraggableImageViewTests {
     func calculateResizedFramesScaleDown() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 0.5, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         #expect(frames.imageViewFrame.height < 200)
     }
@@ -51,7 +87,7 @@ struct DraggableImageViewTests {
     func calculateResizedFramesMinClamp() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 0.01, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let minDiff = abs(frames.imageViewFrame.height - AppConstants.minImageHeight)
         #expect(minDiff < AppConstants.floatingPointTolerance)
@@ -61,7 +97,7 @@ struct DraggableImageViewTests {
     func calculateResizedFramesMaxClamp() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 5000, scaleFactor: 2.0, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let maxDiff = abs(frames.imageViewFrame.height - AppConstants.maxImageHeight)
         #expect(maxDiff < AppConstants.floatingPointTolerance)
@@ -72,7 +108,7 @@ struct DraggableImageViewTests {
         let center = CGPoint(x: 500, y: 300)
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.5, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: center
+            rotationAngle: 0, imageCenter: center
         )
         let resultCenterX = frames.windowFrame.midX
         let resultCenterY = frames.windowFrame.midY
@@ -85,7 +121,7 @@ struct DraggableImageViewTests {
         let aspectRatio: CGFloat = 16.0 / 9.0
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.5, aspectRatio: aspectRatio,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let resultAspectRatio = frames.imageViewFrame.width / frames.imageViewFrame.height
         #expect(abs(resultAspectRatio - aspectRatio) < AppConstants.floatingPointTolerance)
@@ -95,11 +131,11 @@ struct DraggableImageViewTests {
     func calculateResizedFramesWithRotation() {
         let framesNoRotation = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.0, aspectRatio: 2.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let framesRotated = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.0, aspectRatio: 2.0,
-            rotationAngle: 45, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 45, imageCenter: CGPoint(x: 500, y: 500)
         )
         #expect(framesRotated.windowFrame.width > framesNoRotation.windowFrame.width)
         #expect(framesRotated.windowFrame.height > framesNoRotation.windowFrame.height)
@@ -109,13 +145,50 @@ struct DraggableImageViewTests {
     func calculateResizedFramesImageViewCentered() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.0, aspectRatio: 1.5,
-            rotationAngle: 30, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 30, imageCenter: CGPoint(x: 500, y: 500)
         )
         let expectedX = (frames.windowFrame.width - frames.imageViewFrame.width) / 2
         let expectedY = (frames.windowFrame.height - frames.imageViewFrame.height) / 2
         // windowFrame は round() で丸められるため、1.0 の許容誤差を使用
         #expect(abs(frames.imageViewFrame.origin.x - expectedX) <= 1.0)
         #expect(abs(frames.imageViewFrame.origin.y - expectedY) <= 1.0)
+    }
+
+    @Test("画像の中心は丸めの影響を受けずアンカーと一致する")
+    func calculateResizedFramesKeepsExactImageCenter() {
+        let center = CGPoint(x: 500.3, y: 299.8)
+        let frames = DraggableImageView.calculateResizedFrames(
+            currentHeight: 201, scaleFactor: 1.37, aspectRatio: 0.7,
+            rotationAngle: 23, imageCenter: center
+        )
+        let imageCenterX = frames.windowFrame.minX + frames.imageViewFrame.midX
+        let imageCenterY = frames.windowFrame.minY + frames.imageViewFrame.midY
+        #expect(abs(imageCenterX - center.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageCenterY - center.y) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("スクロールで拡大縮小を繰り返しても画像の位置がずれない")
+    func calculateResizedFramesRepeatedScrollDoesNotDrift() {
+        let start = CGPoint(x: 812.5, y: 433.25)
+        var center = start
+        var height: CGFloat = 333
+        // 拡大・縮小を交互に繰り返す（回転ありで外接矩形の幅の偶奇が頻繁に変わる）
+        for step in 0..<200 {
+            let delta: CGFloat = step.isMultiple(of: 2) ? 7 : -7
+            let frames = DraggableImageView.calculateResizedFrames(
+                currentHeight: height,
+                scaleFactor: DraggableImageView.scaleFactor(fromScrollDelta: delta),
+                aspectRatio: 0.75, rotationAngle: 17, imageCenter: center
+            )
+            height = frames.imageViewFrame.height
+            center = CGPoint(
+                x: frames.windowFrame.minX + frames.imageViewFrame.midX,
+                y: frames.windowFrame.minY + frames.imageViewFrame.midY
+            )
+        }
+        #expect(abs(center.x - start.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(center.y - start.y) < AppConstants.floatingPointTolerance)
+        #expect(abs(height - 333) < AppConstants.floatingPointTolerance)
     }
 
     // MARK: - imageTransform Tests
@@ -160,6 +233,47 @@ struct DraggableImageViewTests {
             boundsWidth: 100, boundsHeight: 100
         )
         #expect(!transform.isIdentity)
+    }
+
+    /// 反転の有無にかかわらず、画像の「上方向」は時計回りに rotationDegrees 度傾く（反転→回転の順）
+    @Test("反転時も見た目の傾きはダイアルの角度と一致", arguments: [30.0, 45.0, 90.0, 135.0, 300.0])
+    func imageTransformFlipKeepsVisibleTilt(degrees: Double) {
+        let width: CGFloat = 200
+        let height: CGFloat = 100
+        let center = CGPoint(x: width / 2, y: height / 2)
+        let upPoint = CGPoint(x: center.x, y: center.y + 10)
+        let radians = CGFloat(degrees) * .pi / 180
+        // 時計回りに θ 回転した上方向ベクトル（y-up 座標系）
+        let expected = CGPoint(x: center.x + 10 * sin(radians), y: center.y + 10 * cos(radians))
+
+        for isFlipped in [false, true] {
+            let transform = DraggableImageView.imageTransform(
+                rotationDegrees: CGFloat(degrees), isFlipped: isFlipped,
+                boundsWidth: width, boundsHeight: height
+            )
+            let mappedCenter = center.applying(transform)
+            let mappedUp = upPoint.applying(transform)
+            #expect(abs(mappedCenter.x - center.x) < AppConstants.floatingPointTolerance)
+            #expect(abs(mappedCenter.y - center.y) < AppConstants.floatingPointTolerance)
+            #expect(abs(mappedUp.x - expected.x) < AppConstants.floatingPointTolerance)
+            #expect(abs(mappedUp.y - expected.y) < AppConstants.floatingPointTolerance)
+        }
+    }
+
+    /// 反転時は画像の右方向が回転後の左方向になる（鏡像を回転させる）
+    @Test("反転+回転で右方向ベクトルは回転後に左右反転する")
+    func imageTransformFlipMirrorsBeforeRotation() {
+        let size: CGFloat = 100
+        let center = CGPoint(x: size / 2, y: size / 2)
+        let rightPoint = CGPoint(x: center.x + 10, y: center.y)
+        let transform = DraggableImageView.imageTransform(
+            rotationDegrees: 90, isFlipped: true,
+            boundsWidth: size, boundsHeight: size
+        )
+        // 鏡像化で右→左 (-10, 0)、時計回り 90° で (0, +10)（上方向）
+        let mapped = rightPoint.applying(transform)
+        #expect(abs(mapped.x - center.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(mapped.y - (center.y + 10)) < AppConstants.floatingPointTolerance)
     }
 
     @Test("360度回転はidentityに近い")
@@ -423,6 +537,38 @@ struct DraggableImageViewHitTestTests {
         #expect(mask.bytes.allSatisfy { $0 > 0 && $0 < 255 })
     }
 
+    @Test("長辺が上限以下ならマスクは元のサイズ")
+    func alphaMaskSizeWithinLimit() {
+        let size = DraggableImageView.alphaMaskSize(width: 800, height: 600, maxDimension: 2048)
+        #expect(size.width == 800)
+        #expect(size.height == 600)
+    }
+
+    @Test("長辺が上限を超えると縦横比を保って縮小される", arguments: [
+        (4096, 100, 2048, 50),
+        (100, 8000, 26, 2048),
+        (10_000, 1, 2048, 1)
+    ])
+    func alphaMaskSizeDownsamples(width: Int, height: Int, expectedWidth: Int, expectedHeight: Int) {
+        let size = DraggableImageView.alphaMaskSize(width: width, height: height, maxDimension: 2048)
+        #expect(size.width == expectedWidth)
+        #expect(size.height == expectedHeight)
+    }
+
+    @Test("大きな画像のマスクは縮小され、ヒット判定は比率で同じ位置を参照する")
+    func buildAlphaMaskDownsampled() throws {
+        let cgImage = try #require(makeCGImage(width: 64, height: 16, fill: CGColor(red: 1, green: 0, blue: 0, alpha: 1)))
+        let mask = try #require(DraggableImageView.buildAlphaMask(from: cgImage, maxDimension: 8))
+        #expect(mask.width == 8)
+        #expect(mask.height == 2)
+        #expect(mask.bytes.allSatisfy { $0 == 255 })
+        // 画像座標の右下端は縮小後のマスクでも最後のピクセルを指す
+        let index = try #require(DraggableImageView.alphaMaskPixelIndex(
+            imagePoint: CGPoint(x: 63.5, y: 15.5), imageSize: CGSize(width: 64, height: 16), mask: mask
+        ))
+        #expect(index == 8 * 2 - 1)
+    }
+
     @Test("width/height が正しく記録される")
     func buildAlphaMaskDimensions() throws {
         let cgImage = try #require(makeCGImage(width: 8, height: 6, fill: CGColor(red: 1, green: 0, blue: 0, alpha: 1)))
@@ -478,5 +624,110 @@ struct DraggableImageViewHitTestTests {
             mask: mask
         ))
         #expect(mask.bytes[cornerIdx] < AppConstants.hitTestAlphaThreshold)
+    }
+}
+
+@Suite("DraggableImageView Image Replacement Tests")
+@MainActor
+struct DraggableImageViewImageReplacementTests {
+    /// 赤で塗った画像を作る。`transparentRight` が true なら右半分を透明にする。
+    static func makeImage(width: Int, height: Int, transparentRight: Bool = false) throws -> NSImage {
+        let rep = try #require(NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ))
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        NSColor.red.setFill()
+        let fillWidth = transparentRight ? width / 2 : width
+        NSRect(x: 0, y: 0, width: fillWidth, height: height).fill()
+        NSGraphicsContext.restoreGraphicsState()
+        let image = NSImage(size: NSSize(width: width, height: height))
+        image.addRepresentation(rep)
+        return image
+    }
+
+    @Test("画像差し替えで旧画像のクロップと元画像が破棄される")
+    func replaceImageClearsCrop() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        let oldImage = try Self.makeImage(width: 40, height: 20)
+        let newImage = try Self.makeImage(width: 30, height: 30)
+        view.image = oldImage
+        view.cropRect = CropRect(x: 0, y: 0, width: 0.5, height: 1)
+        #expect(view.originalImage === oldImage)
+
+        view.replaceImage(newImage)
+
+        #expect(view.cropRect == nil)
+        #expect(view.originalImage == nil)
+        #expect(view.image === newImage)
+
+        // 切り取りリセットしても旧画像には戻らない
+        view.resetCrop()
+        #expect(view.image === newImage)
+    }
+
+    @Test("元画像の差し替え（背景除去）ではクロップが維持され新しい元画像に再適用される")
+    func setOriginalImageKeepsCrop() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        let source = try Self.makeImage(width: 40, height: 20)
+        let processed = try Self.makeImage(width: 40, height: 20)
+        let crop = CropRect(x: 0, y: 0, width: 0.5, height: 1)
+        view.image = source
+        view.cropRect = crop
+
+        view.setOriginalImage(processed)
+
+        let currentCrop = try #require(view.cropRect)
+        #expect(abs(currentCrop.width - crop.width) < AppConstants.floatingPointTolerance)
+        #expect(view.originalImage === processed)
+        let displayed = try #require(view.image)
+        #expect(displayed !== processed)
+        // 40x20 の左半分 → 20x20
+        #expect(abs(displayed.size.width - 20) < AppConstants.floatingPointTolerance)
+        #expect(abs(displayed.size.height - 20) < AppConstants.floatingPointTolerance)
+
+        // 切り取りリセットで背景除去後の元画像に戻る
+        view.resetCrop()
+        #expect(view.image === processed)
+    }
+
+    @Test("透過の有無は元画像で判定し、画像の差し替えで再判定される")
+    func sourceImageHasAlphaFollowsImageChanges() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        view.image = try Self.makeImage(width: 40, height: 40)
+        #expect(!view.sourceImageHasAlpha())
+
+        view.replaceImage(try Self.makeImage(width: 40, height: 40, transparentRight: true))
+        #expect(view.sourceImageHasAlpha())
+    }
+
+    @Test("円形クロップで表示画像に透過ができても元画像が不透明なら透過なしと判定する")
+    func sourceImageHasAlphaIgnoresCropShape() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        view.image = try Self.makeImage(width: 40, height: 40)
+        #expect(!view.sourceImageHasAlpha())
+
+        view.cropRect = CropRect(x: 0, y: 0, width: 1, height: 1, shape: .circle)
+
+        // 表示画像（円形）には透過がある
+        let mask = try #require(view.ensureAlphaMask())
+        #expect(mask.bytes.contains { $0 < UInt8.max })
+        #expect(!view.sourceImageHasAlpha())
+    }
+
+    @Test("切り取りリセットで縦横比が元画像のものに戻る")
+    func resetCropRestoresAspectRatio() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        view.image = try Self.makeImage(width: 40, height: 20)
+        view.aspectRatio = 2.0
+        view.cropRect = CropRect(x: 0, y: 0, width: 0.25, height: 1)
+        // 40x20 の左 1/4 → 10x20
+        #expect(abs(view.aspectRatio - 0.5) < AppConstants.floatingPointTolerance)
+
+        view.resetCrop()
+
+        #expect(abs(view.aspectRatio - 2.0) < AppConstants.floatingPointTolerance)
     }
 }
