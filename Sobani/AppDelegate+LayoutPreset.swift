@@ -32,10 +32,14 @@ extension AppDelegate {
 
     /// Z-order（背面→前面）順でウィンドウ状態をキャプチャする
     func captureCurrentWindowStates() -> [WindowState] {
-        Array(zOrderedWindows.reversed()).map { WindowStateManager.captureState(from: $0) }
+        let screens = ScreenInfo.current()
+        return Array(zOrderedWindows.reversed()).map {
+            WindowStateManager.captureState(from: $0, screens: screens)
+        }
     }
 
     func applyLayout(_ preset: LayoutPreset) {
+        cancelLaunchRestoration()
         isApplyingLayout = true
         areWindowsHidden = false
 

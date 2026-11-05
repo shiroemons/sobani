@@ -106,6 +106,10 @@ final class ScreenRestorationManager {
         pendingRestorations.append(entry)
     }
 
+    func isPending(windowId: Int) -> Bool {
+        pendingRestorations.contains { $0.windowId == windowId }
+    }
+
     func removePending(windowId: Int) {
         pendingRestorations.removeAll { $0.windowId == windowId }
     }
@@ -119,6 +123,10 @@ final class ScreenRestorationManager {
         purgeExpired()
         let screens = screenProvider()
         return pendingRestorations.filter { entry in
+            // アンカー（再起動をまたいで不変な UUID）があれば最優先で判定する
+            if let uuid = entry.originalState.displayAnchor?.displayUUID {
+                return screens.contains { $0.displayUUID == uuid }
+            }
             if entry.displayID != AppConstants.unknownDisplayID {
                 let matchByID = screens.contains { $0.displayID == entry.displayID }
                 if matchByID { return true }

@@ -51,6 +51,7 @@
 		DD000013 /* AppDelegate+StatusBarMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000014 /* AppDelegate+StatusBarMenu.swift */; };
 		DD000015 /* AdjustmentPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD000016 /* AdjustmentPanelController.swift */; };
 		E1F2A3B4C5D6E7F8A9B0C1D2 /* WakeRestorationContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */; };
+		F0DA000002000000000001 /* DisplayAnchorRestorationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0DA000001000000000001 /* DisplayAnchorRestorationTests.swift */; };
 		E8A1B2C3D4E5F6A8 /* AdjustmentPanelControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2C3D4E5F6A7 /* AdjustmentPanelControllerTests.swift */; };
 		EE000001 /* LaunchAtLoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE000002 /* LaunchAtLoginManager.swift */; };
 		EE000003 /* LaunchAtLoginManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE000004 /* LaunchAtLoginManagerTests.swift */; };
@@ -116,6 +117,7 @@
 		F0SR000004000000000001 /* ScreenRestorationUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */; };
 		F0SS000002000000000001 /* StraightenSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SS000001000000000001 /* StraightenSliderView.swift */; };
 		F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SV000001000000000001 /* AppDelegate+Services.swift */; };
+		F0SP000002000000000001 /* AppDelegate+StatePersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0SP000001000000000001 /* AppDelegate+StatePersistence.swift */; };
 		F0TB000002000000000001 /* CropEditorToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TB000001000000000001 /* CropEditorToolbarView.swift */; };
 		F0CETV0004000000000001 /* CropEditorToolbarViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CETV0003000000000001 /* CropEditorToolbarViewTests.swift */; };
 		F0TH000002000000000001 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0TH000001000000000001 /* AppThemeTests.swift */; };
@@ -194,6 +196,7 @@
 		C0F10001AAAA000000000007 /* CropRectExtendedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropRectExtendedTests.swift; sourceTree = "<group>"; };
 		ST000001 /* SparkleManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleManagerTests.swift; sourceTree = "<group>"; };
 		D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeRestorationContextTests.swift; sourceTree = "<group>"; };
+		F0DA000001000000000001 /* DisplayAnchorRestorationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayAnchorRestorationTests.swift; sourceTree = "<group>"; };
 		DD000002 /* ImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		DD000004 /* DraggableImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraggableImageView.swift; sourceTree = "<group>"; };
 		DD000006 /* ImageWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageWindow.swift; sourceTree = "<group>"; };
@@ -270,6 +273,7 @@
 		F0SR000003000000000001 /* ScreenRestorationUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRestorationUtilsTests.swift; sourceTree = "<group>"; };
 		F0SS000001000000000001 /* StraightenSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StraightenSliderView.swift; sourceTree = "<group>"; };
 		F0SV000001000000000001 /* AppDelegate+Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Services.swift"; sourceTree = "<group>"; };
+		F0SP000001000000000001 /* AppDelegate+StatePersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+StatePersistence.swift"; sourceTree = "<group>"; };
 		F0TB000001000000000001 /* CropEditorToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorToolbarView.swift; sourceTree = "<group>"; };
 		F0TH000001000000000001 /* AppThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
 		F0UW000001000000000001 /* UnconstrainedWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnconstrainedWindow.swift; sourceTree = "<group>"; };
@@ -403,6 +407,7 @@
 				F0SR000001000000000001 /* ScreenRestorationUtils.swift */,
 				F0AT000001000000000001 /* AppDelegate+TestableLogic.swift */,
 				F0SV000001000000000001 /* AppDelegate+Services.swift */,
+				F0SP000001000000000001 /* AppDelegate+StatePersistence.swift */,
 				C0F10001AAAA000000000001 /* FloatingMenuController.swift */,
 				C0F10001AAAA000000000006 /* CropRect.swift */,
 				F0AR000001000000000001 /* AspectRatioPreset.swift */,
@@ -460,6 +465,7 @@
 				F0LP000003000000000001 /* LayoutPresetManagerTests.swift */,
 				F0PS000003000000000001 /* PathSanitizerTests.swift */,
 				D2C1B0A9F8E7D6C5B4A3F2E1 /* WakeRestorationContextTests.swift */,
+				F0DA000001000000000001 /* DisplayAnchorRestorationTests.swift */,
 				F0CT000001000000000001 /* ConstantsTests.swift */,
 				F0LR000001000000000001 /* LayoutPresetRenameTests.swift */,
 				F0LE000001000000000001 /* LayoutPresetManagerExtendedTests.swift */,
@@ -654,6 +660,7 @@
 				F0SR000002000000000001 /* ScreenRestorationUtils.swift in Sources */,
 				F0AT000002000000000001 /* AppDelegate+TestableLogic.swift in Sources */,
 				F0SV000002000000000001 /* AppDelegate+Services.swift in Sources */,
+				F0SP000002000000000001 /* AppDelegate+StatePersistence.swift in Sources */,
 				C0F10002AAAA000000000001 /* FloatingMenuController.swift in Sources */,
 				C0F10002AAAA000000000006 /* CropRect.swift in Sources */,
 				F0AR000002000000000001 /* AspectRatioPreset.swift in Sources */,
@@ -724,6 +731,7 @@
 				F0LP000004000000000001 /* LayoutPresetManagerTests.swift in Sources */,
 				F0PS000004000000000001 /* PathSanitizerTests.swift in Sources */,
 				E1F2A3B4C5D6E7F8A9B0C1D2 /* WakeRestorationContextTests.swift in Sources */,
+				F0DA000002000000000001 /* DisplayAnchorRestorationTests.swift in Sources */,
 				F0CT000002000000000001 /* ConstantsTests.swift in Sources */,
 				F0LR000002000000000001 /* LayoutPresetRenameTests.swift in Sources */,
 				F0LE000002000000000001 /* LayoutPresetManagerExtendedTests.swift in Sources */,

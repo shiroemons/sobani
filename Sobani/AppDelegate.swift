@@ -26,6 +26,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var wakeContext = WakeRestorationContext()
     /// ディスプレイ切断時の復元用スナップショット。安定状態で定期的に更新される。
     var screenSnapshot = WakeRestorationContext()
+    /// 起動直後のディスプレイ構成変化に追従するためのアンカー復元状態
+    var launchContext = LaunchRestorationContext()
+    var launchRestoreTimer: Timer?
+    var persistDebounceTimer: Timer?
+    /// 最後に書き込んだ状態（変化がなければ書き込みを省く）
+    var lastPersistedStates: [WindowState] = []
+    /// 起動時に読み込んだ状態（「保存せずに終了」で書き戻す。随時保存で上書き済みのため）
+    private var statesAtLaunch: [WindowState] = []
+    /// 直近の画面構成変更時刻（直後の保存を見送る判定に使う）
+    var lastScreenChangeAt: Date?
+    var windowGeometryObservers: [NSObjectProtocol] = []
     var onboardingController: OnboardingWindowController?
     var isApplyingLayout = false
     weak var lastHighlightedWindow: ImageWindow?
@@ -47,7 +58,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         screenRestorationManager.loadPending()
 
         let savedStates = WindowStateManager.shared.loadStates()
-        logStatesLoad(savedStates)
+        statesAtLaunch = savedStates
+        lastPersistedStates = savedStates
+        logStates(event: "states.load", savedStates)
 
         if savedStates.isEmpty {
             guard let image = ImageManager.shared.defaultImage() else {
@@ -62,19 +75,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             zOrderedWindows.append(imageWindow)
         } else {
             var loadedWindows: [ImageWindow] = []
+            var resolutions: [WindowState.RestoreResolution?] = []
+            let screens = ScreenInfo.current()
             for state in savedStates {
                 let imageWindow = createImageWindow(from: state)
-                let wasAdjusted = imageWindow.restore(from: state)
-                if wasAdjusted {
-                    let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
-                    screenRestorationManager.addPending(
-                        windowId: state.windowId,
-                        originalState: state,
-                        displayID: AppConstants.unknownDisplayID,
-                        adjustedOriginX: adjusted.originX,
-                        adjustedOriginY: adjusted.originY
-                    )
-                }
+                resolutions.append(imageWindow.restore(from: state, screens: screens))
                 loadedWindows.append(imageWindow)
             }
 
@@ -87,6 +92,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 loadedWindows[assignment.oldIndex].windowId = assignment.newId
             }
             nextWindowId = migrationResult.nextId
+
+            beginLaunchRestoration(
+                windows: loadedWindows, savedStates: savedStates, resolutions: resolutions, screens: screens
+            )
 
             zOrderedWindows = loadedWindows.reversed()
         }
@@ -110,6 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         setupScreenRestorationObservers()
+        setupStatePersistenceObservers()
         pendingSnapshotTriggers.insert(.launch)
         updateScreenSnapshot()
 
@@ -326,41 +336,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        if shouldTerminate || SparkleManager.shared.isInstallingUpdate {
-            return .terminateNow
+        let quitReason = NSAppleEventManager.shared().currentAppleEvent?
+            .attributeDescriptor(forKeyword: kAEQuitReason)?.enumCodeValue
+        let reply = Self.terminateReply(
+            shouldTerminate: shouldTerminate,
+            isInstallingUpdate: SparkleManager.shared.isInstallingUpdate,
+            quitReason: quitReason
+        )
+        if reply == .terminateNow && !shouldTerminate {
+            logger.notice("Terminating for system quit (reason=\(quitReason ?? 0, privacy: .public))")
         }
-        return .terminateCancel
-    }
-
-    private func logStatesLoad(_ states: [WindowState]) {
-        guard PositionLogger.shared.isEnabled else { return }
-        PositionLogger.shared.log(
-            event: "states.load",
-            screens: PositionLogger.shared.currentScreenSnapshots(),
-            windows: states.map { PositionLogger.shared.windowSnapshot(from: $0) },
-            context: ["count": "\(states.count)"]
-        )
-    }
-
-    private func logStatesSave(_ states: [WindowState]) {
-        guard PositionLogger.shared.isEnabled else { return }
-        PositionLogger.shared.log(
-            event: "states.save",
-            screens: PositionLogger.shared.currentScreenSnapshots(),
-            windows: states.map { PositionLogger.shared.windowSnapshot(from: $0) },
-            context: ["count": "\(states.count)"]
-        )
+        return reply
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        if !shouldSkipSave {
-            let states = captureCurrentWindowStates()
-            logStatesSave(states)
-            WindowStateManager.shared.saveStates(states)
-            screenRestorationManager.savePending()
+        if shouldSkipSave {
+            // 随時保存でセッション中の変更が書き込まれているため、起動時の状態に戻す
+            persistDebounceTimer?.invalidate()
+            WindowStateManager.shared.saveStates(statesAtLaunch)
+        } else {
+            let count = persistNow(includingPending: true)
+            logger.notice("Saved \(count, privacy: .public) window states on terminate")
         }
         unregisterHotkeyMonitors()
         teardownScreenRestorationObservers()
+        teardownStatePersistenceObservers()
     }
 
 }

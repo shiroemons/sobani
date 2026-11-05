@@ -74,9 +74,12 @@ extension AppDelegate {
     }
 
     @objc func handleScreenChange() {
+        lastScreenChangeAt = Date()
+        let isLaunch = launchContext.isActive
         // handleWillSleep が位置を保存済みだが handleDidWake がまだ発火していない場合、
-        // スリープ復帰中のスクリーン変更として扱う（通知センター間のレース条件対策）
-        if !wakeContext.isActive {
+        // スリープ復帰中のスクリーン変更として扱う（通知センター間のレース条件対策）。
+        // 起動直後はアンカー復元で追従するため wake モードにはしない
+        if !wakeContext.isActive && !isLaunch {
             if !wakeContext.states.isEmpty {
                 wakeContext.isActive = true
                 wakeContext.retryCount = 0
@@ -108,8 +111,8 @@ extension AppDelegate {
         }
         let isWake = wakeContext.isActive
         let count = NSScreen.screens.count
-        Self.screenRestorationLogger.debug(
-            "screenChange: isWake=\(isWake, privacy: .public), screens=\(count, privacy: .public)"
+        Self.screenRestorationLogger.notice(
+            "screenChange: isWake=\(isWake, privacy: .public), isLaunch=\(isLaunch, privacy: .public), screens=\(count, privacy: .public)"
         )
         for screen in NSScreen.screens {
             let did = screen.displayID ?? AppConstants.unknownDisplayID
@@ -121,7 +124,7 @@ extension AppDelegate {
             PositionLogger.shared.log(
                 event: "screen.change",
                 screens: PositionLogger.shared.currentScreenSnapshots(),
-                context: ["isWake": "\(isWake)", "screenCount": "\(count)"]
+                context: ["isWake": "\(isWake)", "isLaunch": "\(isLaunch)", "screenCount": "\(count)"]
             )
         }
         screenChangeDebounceTimer?.invalidate()
@@ -136,13 +139,15 @@ extension AppDelegate {
                 }
             }
         } else {
-            // 通常時 → ペンディング復元を試行（1秒デバウンス）
+            // 通常時 → ペンディング復元を試行（1秒デバウンス）。
+            // 起動直後はディスプレイ認識遅延・プライマリ入れ替わりに追従してアンカー位置を再適用する
             let interval = AppConstants.screenChangeDebounceInterval
             screenChangeDebounceTimer = Timer.scheduledTimer(
                 withTimeInterval: interval,
                 repeats: false
             ) { @Sendable [weak self] _ in
                 MainActor.assumeIsolated {
+                    self?.attemptLaunchRestoration()
                     self?.attemptPendingRestorations()
                 }
             }
@@ -437,13 +442,29 @@ extension AppDelegate {
     }
 
     func attemptPendingRestorations() {
-        // フェーズ0: スリープなしのモニター切断対応
-        // wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
         let screens = ScreenInfo.current()
+        moveInvisibleWindowsToPending(screens: screens)
+
+        // フェーズ2: モニター再接続後の復元（ペンディングキュー）
+        restorePendingWindows(screens: screens)
+    }
+
+    /// フェーズ0: スリープなしのモニター切断対応
+    /// wakeContext.states が空（スリープ復帰でない）かつ画面外ウィンドウがある場合に対応
+    private func moveInvisibleWindowsToPending(screens: [ScreenInfo]) {
         let logScreensPhase0 = PositionLogger.shared.isEnabled ? PositionLogger.shared.currentScreenSnapshots() : nil
         for imageWindow in zOrderedWindows {
-            let currentState = WindowStateManager.captureState(from: imageWindow)
+            // 既にペンディング中のウィンドウは、意図した位置（originalState）を退避先で上書きしない
+            guard !screenRestorationManager.isPending(windowId: imageWindow.windowId) else { continue }
+            var currentState = WindowStateManager.captureState(from: imageWindow, screens: screens)
             guard !currentState.isPositionVisible(on: screens) else { continue }
+            // 意図した位置は直近の安定時スナップショット（切断前のディスプレイのアンカー付き）を優先する。
+            // ない場合、今の位置は現在のスクリーン構成に属さないため、アンカーなしで位置ベースに復元する
+            if let snapshotState = screenSnapshot.states[imageWindow.windowId] {
+                currentState = currentState.preservingPosition(of: snapshotState)
+            } else {
+                currentState.displayAnchor = nil
+            }
             let adjusted = currentState.adjustedToVisibleArea(on: screens)
             imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
             if PositionLogger.shared.isEnabled {
@@ -466,13 +487,29 @@ extension AppDelegate {
                 adjustedOriginY: adjusted.originY
             )
         }
+    }
 
-        // フェーズ2: モニター再接続後の復元（ペンディングキュー）
+    private func restorePendingWindows(screens: [ScreenInfo]) {
         let pendingAvailableScreens = currentAvailableScreens
         let restorable = screenRestorationManager.restorableEntries()
         for entry in restorable {
             guard let imageWindow = zOrderedWindows.first(where: { $0.windowId == entry.windowId })
             else {
+                screenRestorationManager.removePending(windowId: entry.windowId)
+                continue
+            }
+            // アンカー（ディスプレイ UUID）があればディスプレイ基準の相対位置で復元する
+            if imageWindow.reapplyAnchoredPosition(of: entry.originalState, screens: screens) {
+                if PositionLogger.shared.isEnabled {
+                    PositionLogger.shared.log(
+                        event: "pending.phase2.anchor",
+                        windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
+                        context: [
+                            "originalOrigin": "\(entry.originalState.originX),\(entry.originalState.originY)",
+                            "displayUUID": entry.originalState.displayAnchor?.displayUUID ?? "",
+                        ]
+                    )
+                }
                 screenRestorationManager.removePending(windowId: entry.windowId)
                 continue
             }
@@ -508,7 +545,11 @@ extension AppDelegate {
         if let raw = notification.userInfo?[AppConstants.notificationTriggerKey] as? String,
            let trigger = AppConstants.SnapshotTrigger(rawValue: raw) {
             pendingSnapshotTriggers.insert(trigger)
+            if trigger == .position, let imageWindow = notification.object as? ImageWindow {
+                releaseLaunchRestoration(windowId: imageWindow.windowId)
+            }
         }
+        schedulePersist()
         snapshotDebounceTimer?.invalidate()
         snapshotDebounceTimer = Timer.scheduledTimer(
             withTimeInterval: 0.3,
@@ -524,7 +565,7 @@ extension AppDelegate {
     /// ディスプレイ切断時（willSleep なし）の復元に使用される。
     func updateScreenSnapshot() {
         // 復元中はスナップショットを更新しない（macOS が一時的に移動した位置を保存しないため）
-        guard !wakeContext.isActive else {
+        guard !wakeContext.isActive, !launchContext.isActive else {
             pendingSnapshotTriggers.removeAll()
             return
         }
@@ -546,8 +587,9 @@ extension AppDelegate {
     /// zOrderedWindows の現在位置を WakeRestorationContext に収集して返す。
     private func captureWindowStates() -> WakeRestorationContext {
         var ctx = WakeRestorationContext()
+        let screens = ScreenInfo.current()
         for imageWindow in zOrderedWindows {
-            let state = WindowStateManager.captureState(from: imageWindow)
+            let state = WindowStateManager.captureState(from: imageWindow, screens: screens)
             ctx.states[imageWindow.windowId] = state
             ctx.windowOrigins[imageWindow.windowId] = imageWindow.window.frame.origin
             if let screen = NSScreen.screen(containing: imageWindow.window.frame),
@@ -614,6 +656,14 @@ extension NSScreen {
     /// スクリーンの CGDirectDisplayID を取得
     var displayID: CGDirectDisplayID? {
         deviceDescription[AppConstants.screenNumberKey] as? CGDirectDisplayID
+    }
+
+    /// 再起動をまたいでも変わらないディスプレイ UUID（ベンダー・モデル・シリアル由来）
+    var displayUUID: String? {
+        guard let displayID,
+              let uuid = CGDisplayCreateUUIDFromDisplayID(displayID)?.takeRetainedValue()
+        else { return nil }
+        return CFUUIDCreateString(nil, uuid) as String?
     }
 
     /// 指定された displayID に一致するスクリーンを検索
