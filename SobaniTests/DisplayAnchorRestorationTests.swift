@@ -276,6 +276,27 @@ import Testing
         #expect(reply == .terminateNow)
     }
 
+    @Test("terminateReply: willPowerOff の直後は終了理由が取れない終了要求も許可する")
+    func terminateReplyAllowsQuitRightAfterPowerOff() {
+        let requestedAt = Date()
+        let reply = AppDelegate.terminateReply(
+            shouldTerminate: false, isInstallingUpdate: false, quitReason: nil,
+            powerOffRequestedAt: requestedAt, now: requestedAt.addingTimeInterval(1)
+        )
+        #expect(reply == .terminateNow)
+    }
+
+    @Test("terminateReply: ログアウトがキャンセルされた後は終了ガードが元に戻る")
+    func terminateReplyCancelsLongAfterCancelledPowerOff() {
+        let requestedAt = Date()
+        let oneHour: TimeInterval = 3600
+        let reply = AppDelegate.terminateReply(
+            shouldTerminate: false, isInstallingUpdate: false, quitReason: OSType(kAEQuitApplication),
+            powerOffRequestedAt: requestedAt, now: requestedAt.addingTimeInterval(oneHour)
+        )
+        #expect(reply == .terminateCancel)
+    }
+
     @Test("terminateReply: 明示的な終了・アップデート中は従来どおり終了する")
     func terminateReplyAllowsExplicitQuit() {
         #expect(AppDelegate.terminateReply(shouldTerminate: true, isInstallingUpdate: false, quitReason: nil) == .terminateNow)

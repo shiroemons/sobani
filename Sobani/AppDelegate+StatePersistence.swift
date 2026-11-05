@@ -50,11 +50,13 @@ extension AppDelegate {
         )
     }
 
-    /// ログアウト・再起動・システム終了の直前。終了要求を許可し、念のため即時保存する。
+    /// ログアウト・再起動・システム終了の直前。念のため即時保存し、受けた時刻を記録する。
     ///
-    /// 終了理由（`kAEQuitReason`）が取得できない経路の保険として `shouldTerminate` も立てる。
+    /// 終了理由（`kAEQuitReason`）が取得できない経路の保険として、この時刻から一定時間は
+    /// 終了要求を許可する（`terminateReply`）。以前は `shouldTerminate` を立てていたため、
+    /// ログアウトがキャンセルされると以後ずっと終了ガードが外れたままになっていた。
     @objc func handleWillPowerOff() {
-        prepareShouldTerminate()
+        powerOffRequestedAt = Date()
         let count = persistNow(includingPending: true)
         Self.persistenceLogger.notice("willPowerOff: saved \(count, privacy: .public) window states")
     }
@@ -68,20 +70,33 @@ extension AppDelegate {
         OSType(kAEShowShutdownDialog), OSType(kAEShutDown),
     ]
 
+    /// willPowerOff を受けてから、終了理由のない終了要求も許可する期間。
+    /// ログアウトがキャンセルされた後まで終了ガードが外れたままにならないよう期限を設ける。
+    private nonisolated static let powerOffQuitGracePeriod: TimeInterval = 60
+
     /// 終了要求への応答を決める。
     ///
     /// 通常の終了要求（Cmd+Q 等）は誤操作防止のためキャンセルするが、ログアウト・再起動・
     /// システム終了ではキャンセルせず終了する。キャンセルすると再起動を妨げるうえ、
     /// `applicationWillTerminate` が呼ばれずウィンドウ状態が保存されない。
+    /// - Parameters:
+    ///   - powerOffRequestedAt: 直近に willPowerOff を受けた時刻。受けてから一定時間内なら、
+    ///     終了理由が取れない終了要求も許可する
+    ///   - now: 現在時刻（テスト用）
     nonisolated static func terminateReply(
         shouldTerminate: Bool,
         isInstallingUpdate: Bool,
-        quitReason: OSType?
+        quitReason: OSType?,
+        powerOffRequestedAt: Date? = nil,
+        now: Date = Date()
     ) -> NSApplication.TerminateReply {
         if shouldTerminate || isInstallingUpdate {
             return .terminateNow
         }
         if let quitReason, systemQuitReasons.contains(quitReason) {
+            return .terminateNow
+        }
+        if let powerOffRequestedAt, now.timeIntervalSince(powerOffRequestedAt) < powerOffQuitGracePeriod {
             return .terminateNow
         }
         return .terminateCancel

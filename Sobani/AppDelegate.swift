@@ -16,6 +16,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     private var shouldSkipSave = false
+    /// 直近に willPowerOff（ログアウト・再起動・システム終了）を受けた時刻
+    var powerOffRequestedAt: Date?
     /// すべてのウィンドウが非表示か。各ウィンドウの `isHidden` から導出する（二重管理による不整合を防ぐ）。
     var areWindowsHidden: Bool {
         !zOrderedWindows.isEmpty && zOrderedWindows.allSatisfy(\.isHidden)
@@ -298,10 +300,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func requestQuitWithoutSaving() { quitWithoutSavingFromMenu() }
 
-    func prepareShouldTerminate() {
-        shouldTerminate = true
-    }
-
     /// 新しいキャラクターウィンドウを作成して表示する。
     ///
     /// - Parameter imageName: 表示する画像名。`nil` の場合はデフォルト画像を使用する。
@@ -352,7 +350,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let reply = Self.terminateReply(
             shouldTerminate: shouldTerminate,
             isInstallingUpdate: SparkleManager.shared.isInstallingUpdate,
-            quitReason: quitReason
+            quitReason: quitReason,
+            powerOffRequestedAt: powerOffRequestedAt
         )
         if reply == .terminateNow && !shouldTerminate {
             logger.notice("Terminating for system quit (reason=\(quitReason ?? 0, privacy: .public))")
