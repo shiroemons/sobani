@@ -106,4 +106,29 @@ import Testing
         #expect(!GeometryUtils.isApproximatelyEqual(1.0, 1.1))
         #expect(!GeometryUtils.isApproximatelyEqual(1.0, 2.0))
     }
+
+    // MARK: - centeredOrigin / downscaleFactor
+
+    /// 中央配置がコンテナの原点オフセット（負の座標のサブディスプレイ）を考慮することを検証
+    @Test func centeredOriginRespectsContainerOrigin() {
+        let origin = GeometryUtils.centeredOrigin(
+            size: CGSize(width: 200, height: 100),
+            in: CGRect(x: -2560, y: 0, width: 2560, height: 1440)
+        )
+        #expect(abs(origin.x - (-1380)) < AppConstants.floatingPointTolerance)
+        #expect(abs(origin.y - 670) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 長辺が上限を超えるときだけ縮小率を返し、拡大はしないことを検証
+    @Test(arguments: [
+        (CGSize(width: 4096, height: 1024), 2048.0, 0.5),
+        (CGSize(width: 1000, height: 3000), 1500.0, 0.5),
+        (CGSize(width: 1024, height: 512), 2048.0, 1.0),
+        (CGSize(width: 2048, height: 2048), 2048.0, 1.0),
+        (CGSize.zero, 2048.0, 1.0),
+    ])
+    func downscaleFactor(size: CGSize, maxDimension: CGFloat, expected: CGFloat) {
+        let factor = GeometryUtils.downscaleFactor(for: size, maxDimension: maxDimension)
+        #expect(abs(factor - expected) < AppConstants.floatingPointTolerance)
+    }
 }

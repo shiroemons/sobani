@@ -148,4 +148,19 @@ import Testing
         let presetFileName = name + ".json"
         #expect(presetFileName.utf8.count <= Int(NAME_MAX))
     }
+
+    /// 本体と拡張子の分割を検証（先頭のドットは拡張子の区切りとみなさない）
+    @Test(arguments: [
+        ("image.png", "image", ".png"),
+        ("archive.tar.gz", "archive.tar", ".gz"),
+        ("noext", "noext", ""),
+        (".hidden", ".hidden", ""),
+        (".hidden.png", ".hidden", ".png"),
+        ("", "", ""),
+    ])
+    func splitExtension(name: String, base: String, ext: String) {
+        let result = PathSanitizer.splitExtension(name)
+        #expect(result.base == base)
+        #expect(result.ext == ext)
+    }
 }

@@ -39,7 +39,8 @@ extension ImageWindow {
 
     /// 背景除去済みの画像を登録し、クロップを保ったまま元画像として差し替える。
     private func applyBackgroundRemovedImage(_ newImage: NSImage) {
-        let baseName = URL(fileURLWithPath: displayName).deletingPathExtension().lastPathComponent
+        // URL(fileURLWithPath:) は相対名をカレントディレクトリ基準で解決するため、文字列だけで分割する
+        let baseName = PathSanitizer.splitExtension(PathSanitizer.lastPathComponent(of: displayName)).base
         // 同名ファイルがあると自動リネームされるため、戻り値の名前を使う
         guard let savedName = ImageManager.shared.registerImage(newImage, name: "\(baseName)_nobg.png") else {
             Self.backgroundRemovalLogger.error("Failed to register background-removed image")

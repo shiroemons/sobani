@@ -454,4 +454,15 @@ extension AppDelegate {
             imageWindow.setGhostMode(false)
         }
     }
+
+    /// ゴーストモードの共通 alpha を変更し、全ウィンドウの見た目に反映する。
+    ///
+    /// 個別 alpha を持つウィンドウやゴーストでないウィンドウは `refreshImageAlpha()` の結果が変わらないため、
+    /// 絞り込まずに全ウィンドウへ適用してよい。
+    func applyGlobalGhostAlpha(_ alpha: CGFloat) {
+        GhostModeSettings.globalAlpha = alpha
+        for imageWindow in zOrderedWindows {
+            imageWindow.refreshImageAlpha()
+        }
+    }
 }

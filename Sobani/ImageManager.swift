@@ -103,11 +103,7 @@ final class ImageManager {
 
     /// `registerImage(_:name:)` の保存名。PNG データを別の拡張子で保存しないよう拡張子を `.png` に揃える。
     nonisolated static func pngFileName(for name: String) -> String? {
-        let component = PathSanitizer.lastPathComponent(of: name)
-        // 先頭のドット（隠しファイル）は拡張子の区切りとみなさない
-        let baseName = component.lastIndex(of: ".").map { dot in
-            dot == component.startIndex ? component : String(component[..<dot])
-        } ?? component
+        let baseName = PathSanitizer.splitExtension(PathSanitizer.lastPathComponent(of: name)).base
         guard let safeBaseName = PathSanitizer.safeName(from: baseName) else { return nil }
         return safeBaseName + ".png"
     }

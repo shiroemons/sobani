@@ -59,6 +59,10 @@ enum AppConstants {
     static let windowSpawnRandomOffset: CGFloat = 100
     static let scrollScaleSensitivity: CGFloat = 0.01
     static let dialScrollSensitivity: CGFloat = 0.5
+    /// 精密スクロールでないホイール 1 行をポイントに換算する量（トラックパッドの精密スクロールと単位を揃える）
+    static let scrollPointsPerLine: CGFloat = 10
+    /// 数値入力欄で受け付ける絶対値の上限（これを超える値は入力ミスとして扱う）
+    static let maxNumericInputMagnitude: CGFloat = 100_000
 
     // Screen Restoration
     static let screenChangeDebounceInterval: TimeInterval = 1.0
@@ -414,6 +418,13 @@ enum GeometryUtils {
             y: container.midY - size.height / 2
         )
     }
+
+    /// 長辺を `maxDimension` 以下に収めるための縮小率（すでに収まっていれば 1、拡大はしない）
+    static func downscaleFactor(for size: CGSize, maxDimension: CGFloat) -> CGFloat {
+        let longestSide = max(size.width, size.height)
+        guard longestSide > maxDimension, maxDimension > 0 else { return 1 }
+        return maxDimension / longestSide
+    }
 }
 
 enum AppSupportDirectory {
@@ -497,16 +508,21 @@ enum PathSanitizer {
         return String(last)
     }
 
+    /// ファイル名を本体と拡張子（先頭の `.` を含む。なければ空文字）に分ける。
+    /// 先頭のドット（隠しファイル）は拡張子の区切りとみなさない。
+    static func splitExtension(_ name: String) -> (base: String, ext: String) {
+        guard let dotIndex = name.lastIndex(of: "."), dotIndex != name.startIndex else {
+            return (name, "")
+        }
+        return (String(name[..<dotIndex]), String(name[dotIndex...]))
+    }
+
     /// UTF-8 のバイト数が上限を超える場合、文字境界で切り詰める。短い拡張子は残す。
     private static func truncatedToByteLimit(_ name: String) -> String {
         guard name.utf8.count > maxNameByteCount else { return name }
-        // 先頭のドット（隠しファイル）は拡張子の区切りとみなさない
-        if let dotIndex = name.lastIndex(of: "."), dotIndex != name.startIndex {
-            let suffix = String(name[dotIndex...])
-            if suffix.utf8.count > 1, suffix.utf8.count <= maxPreservedExtensionByteCount {
-                let base = String(name[..<dotIndex])
-                return prefix(of: base, maxByteCount: maxNameByteCount - suffix.utf8.count) + suffix
-            }
+        let (base, suffix) = splitExtension(name)
+        if suffix.utf8.count > 1, suffix.utf8.count <= maxPreservedExtensionByteCount {
+            return prefix(of: base, maxByteCount: maxNameByteCount - suffix.utf8.count) + suffix
         }
         return prefix(of: name, maxByteCount: maxNameByteCount)
     }
@@ -627,7 +643,77 @@ enum FormatUtils {
 
     /// 幅と高さを "W×H px" 形式の文字列に変換（例: 400×300 px）
     static func formatDimensions(width: CGFloat, height: CGFloat) -> String {
-        "\(Int(width))×\(Int(height)) px"
+        "\(integerString(width, rule: .towardZero))×\(integerString(height, rule: .towardZero)) px"
+    }
+
+    /// 数値を整数の文字列にする。非有限値や `Int` の範囲外は空文字を返す（`Int(_:)` のトラップを避ける）。
+    static func integerString(
+        _ value: CGFloat,
+        rule: FloatingPointRoundingRule = .toNearestOrAwayFromZero
+    ) -> String {
+        Int(exactly: value.rounded(rule)).map(String.init) ?? ""
+    }
+
+    /// テキスト入力を有限の数値に変換する（前後の空白は無視）。
+    /// 数値でない・非有限・絶対値が `maxMagnitude` を超える場合は nil。
+    static func parseFiniteNumber(
+        _ text: String,
+        maxMagnitude: CGFloat = AppConstants.maxNumericInputMagnitude
+    ) -> CGFloat? {
+        guard let value = Double(text.trimmingCharacters(in: .whitespaces)),
+              value.isFinite, abs(value) <= maxMagnitude else { return nil }
+        return CGFloat(value)
+    }
+}
+
+// MARK: - Debouncer
+
+/// 呼ぶたびに待ち時間を延長し、最後の呼び出しから `delay` 秒後に 1 回だけ処理を実行する。
+///
+/// Timer を 1 本だけ使い回し、`fireDate` を後ろへずらす（イベントごとに Timer や Task を作らない）。
+@MainActor
+final class Debouncer {
+    private let delay: TimeInterval
+    private var timer: Timer?
+    private var action: (() -> Void)?
+
+    init(delay: TimeInterval) {
+        self.delay = delay
+    }
+
+    /// 実行待ちの処理があるか
+    var isPending: Bool { action != nil }
+
+    /// `action` を予約する（すでに予約があれば置き換えて待ち時間を延長する）。
+    /// - Parameter delay: 今回だけ待ち時間を変える場合に指定する。
+    func schedule(after delay: TimeInterval? = nil, _ action: @escaping () -> Void) {
+        self.action = action
+        let interval = delay ?? self.delay
+        if let timer, timer.isValid {
+            timer.fireDate = Date().addingTimeInterval(interval)
+            return
+        }
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { @Sendable [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.flush()
+            }
+        }
+    }
+
+    /// 実行待ちの処理があれば今すぐ実行する
+    func flush() {
+        timer?.invalidate()
+        timer = nil
+        let pending = action
+        action = nil
+        pending?()
+    }
+
+    /// 実行待ちの処理を実行せずに破棄する
+    func cancel() {
+        timer?.invalidate()
+        timer = nil
+        action = nil
     }
 }
 
