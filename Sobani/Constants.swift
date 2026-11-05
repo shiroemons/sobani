@@ -306,9 +306,6 @@ enum AppConstants {
     static let registeredImagesDidChange = Notification.Name(
         "\(loggerSubsystem).registeredImagesDidChange"
     )
-    static let managementPanelWillClose = Notification.Name(
-        "\(loggerSubsystem).managementPanelWillClose"
-    )
     /// レイアウトプリセットの保存・削除・リネームで発火する
     static let layoutPresetsDidChange = Notification.Name(
         "\(loggerSubsystem).layoutPresetsDidChange"
