@@ -15,10 +15,10 @@ struct PositionLogView: View {
         KeyPathComparator(\.timestamp, order: .forward)
     ]
 
-    private var uniqueEventNames: [String] {
-        Array(Set(entries.map(\.event))).sorted()
-    }
+    /// フィルタのイベント名一覧。描画のたびではなく読み込み時に作る
+    @State private var uniqueEventNames: [String] = []
 
+    /// 絞り込み結果（最大 1000 件を文字列比較する）。body で1回だけ計算して各部に渡すこと
     private var filteredEntries: [PositionLogger.LogEntry] {
         var result = entries
         if let eventFilter = selectedEventFilter {
@@ -38,23 +38,20 @@ struct PositionLogView: View {
         }
     }
 
-    private var sortedEntries: [PositionLogger.LogEntry] {
-        filteredEntries.sorted(using: sortOrder)
-    }
-
     private var selectedEntry: PositionLogger.LogEntry? {
         guard let id = selectedEntryId else { return nil }
         return entries.first { $0.id == id }
     }
 
     var body: some View {
+        let visibleEntries = filteredEntries.sorted(using: sortOrder)
         VStack(spacing: 0) {
             toolbar
             Divider()
             filterBar
             Divider()
-            logContent
-            if !filteredEntries.isEmpty {
+            logContent(visibleEntries)
+            if !visibleEntries.isEmpty {
                 Divider()
                 logFooter
             }
@@ -177,13 +174,13 @@ struct PositionLogView: View {
     // MARK: - Log Content
 
     @ViewBuilder
-    private var logContent: some View {
+    private func logContent(_ visibleEntries: [PositionLogger.LogEntry]) -> some View {
         if entries.isEmpty {
             PositionLogEmptyStateView(isEnabled: isEnabled) {
+                // 設定への保存はトグルの onChange で行われる
                 isEnabled = true
-                PositionLogSettings.isEnabled = true
             }
-        } else if filteredEntries.isEmpty {
+        } else if visibleEntries.isEmpty {
             ContentUnavailableView {
                 Label(L("log.empty"), systemImage: "doc.text")
             } description: {
@@ -191,7 +188,7 @@ struct PositionLogView: View {
             }
             .frame(maxHeight: .infinity)
         } else {
-            logTable
+            logTable(visibleEntries)
         }
     }
 
@@ -232,8 +229,8 @@ struct PositionLogView: View {
     // MARK: - Table
 
     @ViewBuilder
-    private var logTable: some View {
-        Table(sortedEntries, selection: $selectedEntryId, sortOrder: $sortOrder) {
+    private func logTable(_ visibleEntries: [PositionLogger.LogEntry]) -> some View {
+        Table(visibleEntries, selection: $selectedEntryId, sortOrder: $sortOrder) {
             TableColumn(L("log.column.time"), value: \.timestamp) { entry in
                 Text(Self.formatTime(entry.timestamp))
                     .font(.system(.body, design: .monospaced))
@@ -267,6 +264,10 @@ struct PositionLogView: View {
 
     private func reloadEntries() {
         entries = PositionLogger.shared.loadEntries()
+        uniqueEventNames = Array(Set(entries.map(\.event))).sorted()
+        if let eventFilter = selectedEventFilter, !uniqueEventNames.contains(eventFilter) {
+            selectedEventFilter = nil
+        }
     }
 
     private enum ExportFormat: String, CaseIterable {
