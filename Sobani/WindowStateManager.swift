@@ -259,6 +259,7 @@ extension WindowState {
     ///
     /// `JSONEncoder` は非有限値（NaN / ±inf）を含むとエンコード自体に失敗するため、1 ウィンドウの
     /// 不正値でセッション中の保存がすべて失敗してしまう。保存直前にこの関数を通す。
+    /// クロップ情報は読み込み時と同じ `CropRect.sanitized()` で補正する。
     func sanitizedForPersistence() -> Self {
         Self(
             imageName: imageName,
@@ -270,7 +271,7 @@ extension WindowState {
             rotationAngle: rotationAngle.isFinite ? rotationAngle : 0,
             opacityLevel: Self.sanitizedOpacity(opacityLevel),
             windowId: windowId,
-            cropRect: cropRect.flatMap { Self.isEncodable($0) ? $0 : nil },
+            cropRect: cropRect?.sanitized(),
             isGhostMode: isGhostMode,
             customGhostAlpha: customGhostAlpha.flatMap { $0.isFinite ? $0 : nil },
             isHidden: isHidden,
@@ -296,11 +297,6 @@ extension WindowState {
     private static func sanitizedOpacity(_ value: CGFloat) -> CGFloat {
         guard value.isFinite else { return AppConstants.opacityMax }
         return min(max(value, AppConstants.opacityMin), AppConstants.opacityMax)
-    }
-
-    /// クロップ情報は項目が多く今後も増えうるため、個別に検査せず実際にエンコードできるかで判定する
-    private static func isEncodable(_ cropRect: CropRect) -> Bool {
-        (try? JSONEncoder().encode(cropRect)) != nil
     }
 }
 

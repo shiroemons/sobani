@@ -544,7 +544,10 @@ import Testing
         #expect(abs(sanitized.height - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
         #expect(abs(sanitized.rotationAngle) < AppConstants.floatingPointTolerance)
         #expect(abs(sanitized.opacityLevel - AppConstants.opacityMax) < AppConstants.floatingPointTolerance)
-        #expect(sanitized.cropRect == nil)
+        // クロップは捨てずに読み込み時と同じ規則で補正する
+        let crop = try #require(sanitized.cropRect)
+        #expect(abs(crop.x) < AppConstants.normalizedTolerance)
+        #expect(crop == makeNonFiniteState().cropRect?.sanitized())
         #expect(sanitized.customGhostAlpha == nil)
         #expect(sanitized.displayAnchor == nil)
         // 数値以外の属性は保持される

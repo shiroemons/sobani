@@ -213,6 +213,42 @@ import Testing
         #expect(crop.quarterTurns == 2)
     }
 
+    /// sanitized() は非有限値を既定値に、範囲外の値を許容範囲へ補正し、それ以外の属性を保つ
+    @Test func sanitized_replacesNonFiniteAndClampsOutOfRange() throws {
+        let crop = CropRect(
+            x: .nan, y: -.infinity, width: .infinity, height: 0,
+            straightenAngle: .nan, quarterTurns: 5, isFlippedInCrop: true, aspectRatioPreset: "1:1",
+            verticalPerspective: 90, horizontalPerspective: -.infinity,
+            shape: .roundedRectangle, cornerRadii: CornerRadii(topLeft: .nan, topRight: 2, bottomLeft: 0.4, bottomRight: -1),
+            cornersLinked: false
+        ).sanitized()
+
+        #expect(abs(crop.x) < AppConstants.normalizedTolerance)
+        #expect(abs(crop.y) < AppConstants.normalizedTolerance)
+        #expect(abs(crop.width - 1) < AppConstants.normalizedTolerance)
+        #expect(crop.height > 0)
+        #expect(abs(crop.straightenAngle) < AppConstants.floatingPointTolerance)
+        #expect(crop.quarterTurns == 1)
+        #expect(abs(crop.verticalPerspective - AppConstants.straightenMaxAngle) < AppConstants.floatingPointTolerance)
+        #expect(abs(crop.horizontalPerspective) < AppConstants.floatingPointTolerance)
+        #expect(crop.cornerRadii.isEffectivelyEqual(to: CornerRadii(topLeft: 0, topRight: 1, bottomLeft: 0.4, bottomRight: 0)))
+        #expect(crop.isFlippedInCrop)
+        #expect(crop.aspectRatioPreset == "1:1")
+        #expect(crop.shape == .roundedRectangle)
+        #expect(!crop.cornersLinked)
+        _ = try JSONEncoder().encode(crop)
+    }
+
+    /// 範囲内の値は sanitized() で変化しない
+    @Test func sanitized_keepsValidValues() {
+        let crop = CropRect(
+            x: -0.2, y: 0.3, width: 1.4, height: 0.5, straightenAngle: -12.5, quarterTurns: 2,
+            verticalPerspective: 10, horizontalPerspective: -5,
+            shape: .roundedRectangle, cornerRadii: .uniform(0.25), cornersLinked: true
+        )
+        #expect(crop.sanitized() == crop)
+    }
+
     /// 壊れた値を読み込んでも画像処理がクラッシュしない
     @Test func decode_hugeValues_canBeProcessedSafely() throws {
         let crop = try decode("""
