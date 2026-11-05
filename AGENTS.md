@@ -18,7 +18,7 @@ Follow SwiftLint rules in `.swiftlint.yml`; line length warns at 160 and errors 
 
 ## Testing Guidelines
 
-Use XCTest in `SobaniTests/`. Name files and types after the unit under test, for example `WindowStateManagerTests.swift`. Focus tests on deterministic logic and persistence behavior; UI-layer classes such as `NSWindow` and `NSImageView` are generally excluded from unit coverage. Add or update tests for bug fixes, edge cases, and error paths. Run the direct `xcodebuild test` command before opening a PR; use `./test-coverage.sh` when changing shared logic.
+Use Swift Testing (`@Suite`, `@Test`, `#expect`, `#require`) in `SobaniTests/`; do not use XCTest. Name files and types after the unit under test, for example `WindowStateManagerTests.swift`. Focus tests on deterministic logic and persistence behavior; UI-layer classes such as `NSWindow` and `NSImageView` are generally excluded from unit coverage. Add or update tests for bug fixes, edge cases, and error paths. Run the direct `xcodebuild test` command before opening a PR; use `./test-coverage.sh` when changing shared logic.
 
 ## Commit & Pull Request Guidelines
 
@@ -26,4 +26,4 @@ Git history uses Conventional Commits in Japanese, for example `feat: ...`, `fix
 
 ## Security & Release Notes
 
-Do not hardcode Apple credentials, Sparkle keys, or notarization secrets; use environment variables and GitHub Secrets. Changes to `Sobani/Assets.xcassets/character.imageset/` require owner approval via `.github/CODEOWNERS`. Release tags use `vYYYYMM.N`, and release automation builds a notarized universal app.
+Do not hardcode Apple credentials, Sparkle keys, or notarization secrets; use environment variables and GitHub Secrets. Changes to `Sobani/Assets.xcassets/default_image.imageset/` require owner approval via `.github/CODEOWNERS`. Release tags use `vYYYYMM.N`, and release automation builds a notarized universal app.
