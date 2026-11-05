@@ -7,7 +7,8 @@ struct LayoutPresetsView: View {
     @State private var selectedPresetWindowIndex: Int?
     /// 表示中の名前入力シート。リネーム対象はここに保持する（一覧・詳細のどちらからでも同じシートを開く）
     @State private var activeNameSheet: NameSheet?
-    @State private var hoveredPresetId: UUID?
+    /// プリセットごとのサムネイル（ウィンドウ順）。描画のたびにクロップ画像を作らないよう事前に計算する
+    @State private var presetThumbnails: [UUID: [NSImage?]] = [:]
     @State private var presetToDelete: LayoutPreset?
     @State private var isShowingDeleteConfirmation = false
     @State private var activeToast: ToastType?
@@ -111,6 +112,13 @@ struct LayoutPresetsView: View {
         .onDisappear {
             toastTimerTask?.cancel()
         }
+        // メニューなど管理パネル以外からの保存・削除・リネームも反映する
+        .onReceive(NotificationCenter.default.publisher(for: AppConstants.layoutPresetsDidChange)) { _ in
+            refreshPresets()
+        }
+        .onChange(of: viewModel.registeredImageNames) {
+            rebuildThumbnails()
+        }
         .onChange(of: selectedPreset) { _, newPreset in
             guard let preset = newPreset else {
                 presetImages = [:]
@@ -194,8 +202,8 @@ struct LayoutPresetsView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 4) {
-                    ForEach(Array(preset.states.enumerated()), id: \.offset) { _, state in
-                        thumbnailForState(state)
+                    ForEach(Array(thumbnails(for: preset).enumerated()), id: \.offset) { _, image in
+                        ThumbnailView(image: image, iconFont: .caption2)
                             .frame(width: 36, height: 36)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                     }
@@ -214,14 +222,7 @@ struct LayoutPresetsView: View {
             selectedPreset = preset
             selectedPresetWindowIndex = nil
         }
-        .onHover { isHovered in
-            hoveredPresetId = isHovered ? preset.id : nil
-        }
-        .listRowBackground(
-            hoveredPresetId == preset.id
-                ? Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
-                : nil
-        )
+        .hoverRowHighlight()
         .contextMenu {
             Button { applyPreset(preset) } label: {
                 Label(L("layout.apply"), systemImage: "play")
@@ -243,9 +244,13 @@ struct LayoutPresetsView: View {
 
     // MARK: - Shared Components
 
-    @ViewBuilder
-    private func thumbnailForState(_ state: WindowState) -> some View {
-        ThumbnailView(image: viewModel.croppedPreviewImage(for: state), iconFont: .caption2)
+    private func thumbnails(for preset: LayoutPreset) -> [NSImage?] {
+        presetThumbnails[preset.id] ?? []
+    }
+
+    private func thumbnail(for preset: LayoutPreset, at index: Int) -> NSImage? {
+        let images = thumbnails(for: preset)
+        return images.indices.contains(index) ? images[index] : nil
     }
 
     @ViewBuilder
@@ -320,7 +325,7 @@ extension LayoutPresetsView {
         List(selection: $selectedPresetWindowIndex) {
             ForEach(Array(preset.states.enumerated()), id: \.offset) { index, state in
                 HStack(spacing: 8) {
-                    thumbnailForState(state)
+                    ThumbnailView(image: thumbnail(for: preset, at: index), iconFont: .caption2)
                         .frame(width: 40, height: 40)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
 
@@ -364,9 +369,27 @@ extension LayoutPresetsView {
 
     private func refreshPresets() {
         let newPresets = viewModel.loadPresets()
-        if newPresets != presets {
+        if newPresets != presets || presetThumbnails.isEmpty {
             presets = newPresets
+            rebuildThumbnails()
         }
+        // 詳細表示中のプリセットを最新の内容に差し替える（他の経路で削除された場合は一覧へ戻る）
+        if let selected = selectedPreset {
+            let latest = newPresets.first { $0.id == selected.id }
+            if latest != selected {
+                selectedPreset = latest
+            }
+        }
+    }
+
+    private func rebuildThumbnails() {
+        // 古いファイルの削除に失敗したリネームなどで同じ ID のプリセットが並ぶことがあるため、重複キーは先勝ちにする
+        presetThumbnails = Dictionary(
+            presets.map { preset in
+                (preset.id, preset.states.map { viewModel.croppedPreviewImage(for: $0) })
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
     }
 
     private func savePreset(name: String) {
@@ -384,9 +407,6 @@ extension LayoutPresetsView {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
         viewModel.updatePreset(preset, states: states)
         refreshPresets()
-        if selectedPreset?.id == preset.id {
-            selectedPreset = presets.first { $0.id == preset.id }
-        }
         showToast(.success(String(format: L("layout.updated_message"), preset.name)))
     }
 
@@ -394,9 +414,6 @@ extension LayoutPresetsView {
         guard newName != preset.name else { return }
         guard viewModel.renamePreset(from: preset.name, to: newName) else { return }
         refreshPresets()
-        if selectedPreset?.id == preset.id {
-            selectedPreset = presets.first { $0.id == preset.id }
-        }
     }
 
     private func confirmDeletePreset(_ preset: LayoutPreset) {
@@ -406,12 +423,7 @@ extension LayoutPresetsView {
 
     private func performDeletePreset(_ preset: LayoutPreset) {
         viewModel.deletePreset(named: preset.name)
-        if selectedPreset?.id == preset.id {
-            selectedPreset = nil
-        }
-        if hoveredPresetId == preset.id {
-            hoveredPresetId = nil
-        }
+        // 詳細表示中なら refreshPresets で一覧へ戻る
         refreshPresets()
         showToast(.deleted(preset))
     }

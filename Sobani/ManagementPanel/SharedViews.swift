@@ -73,6 +73,29 @@ struct ImagePreviewBox: View {
     }
 }
 
+// MARK: - Hover Row Highlight
+
+/// リストの行にマウスが乗っている間、行の背景を強調する。
+///
+/// ホバー状態を行ごとに持つため、ホバーの移動で他の行が再描画されない。
+private struct HoverRowHighlight: ViewModifier {
+    @State private var isHovered = false
+
+    func body(content: Content) -> some View {
+        content
+            .onHover { isHovered = $0 }
+            .listRowBackground(
+                isHovered ? Color(nsColor: .unemphasizedSelectedContentBackgroundColor) : nil
+            )
+    }
+}
+
+extension View {
+    func hoverRowHighlight() -> some View {
+        modifier(HoverRowHighlight())
+    }
+}
+
 // MARK: - HSplitView Panel Modifier
 
 extension View {
