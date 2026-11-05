@@ -461,6 +461,15 @@ extension CropImageProcessorTests {
         #expect(CropImageProcessor.applyFullCrop(to: image, cropRect: crop) == nil)
     }
 
+    /// 1 辺は上限内でも総ピクセル数が上限を超える出力は、ビットマップを確保せずに nil を返す
+    @Test func cropRect_exceedingPixelCount_returnsNil() throws {
+        let image = try #require(makeTestImage(width: 100, height: 100))
+        // 30000 × 30000 px（1 辺の上限 32768 以下だが、総ピクセル数は maxImagePixelCount を超える）
+        let crop = CropRect(x: 0, y: 0, width: 300, height: 300, straightenAngle: 5)
+        #expect(30_000 * 30_000 > AppConstants.maxImagePixelCount)
+        #expect(CropImageProcessor.applyFullCrop(to: image, cropRect: crop) == nil)
+    }
+
     /// maxOutputPixelSize を指定すると長辺がその値になるよう縮小して描画する（サムネイル用）
     @Test func maxOutputPixelSize_downscalesOutput() throws {
         let image = try #require(makeTestImage(width: 400, height: 200))

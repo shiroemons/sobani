@@ -49,6 +49,12 @@ enum CropImageProcessor {
             return cropped
         }
 
+        // 1 辺の上限だけでは 32768² RGBA（約 4GiB）まで確保しうるため、登録画像と同じ総ピクセル数の上限も課す
+        guard outputWidth * outputHeight <= AppConstants.maxImagePixelCount else {
+            logger.error("Crop output exceeds the pixel count limit: \(outputWidth)x\(outputHeight)")
+            return nil
+        }
+
         guard let context = makeBitmapContext(
             width: outputWidth, height: outputHeight, preferredColorSpace: image.colorSpace
         ) else {
