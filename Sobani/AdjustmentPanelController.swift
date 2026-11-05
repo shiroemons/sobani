@@ -292,17 +292,9 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     }
 
     static func clampedSize(newValue: CGFloat, aspectRatio: CGFloat, isWidth: Bool) -> CGSize? {
-        guard newValue > 0 else { return nil }
-        guard aspectRatio > 0 else { return nil }
-        let height: CGFloat
-        if isWidth {
-            height = newValue / aspectRatio
-        } else {
-            height = newValue
-        }
-        let clampedH = max(AppConstants.minImageHeight, min(AppConstants.maxImageHeight, height))
-        let clampedW = clampedH * aspectRatio
-        return CGSize(width: clampedW, height: clampedH)
+        guard newValue > 0, aspectRatio > 0 else { return nil }
+        let height = isWidth ? newValue / aspectRatio : newValue
+        return ImageWindow.clampedImageSize(height: height, aspectRatio: aspectRatio)
     }
 
     // MARK: - Testable Static Methods

@@ -199,10 +199,13 @@ final class DraggableImageView: NSImageView {
 
     private func applyCrop() {
         guard let crop = cropRect, let original = originalImage ?? image else {
-            // If cropRect is nil, restore original image
+            // cropRect が nil なら元画像と元の縦横比に戻す
             if let original = originalImage {
                 image = original
                 originalImage = nil
+                if original.size.height > 0 {
+                    aspectRatio = original.size.width / original.size.height
+                }
                 onSizeChanged?()
             }
             return

@@ -167,6 +167,55 @@ struct ImageWindowTests {
         #expect(abs(result.aspectRatio - 0.25) < AppConstants.floatingPointTolerance)
     }
 
+    // MARK: - clampedImageSize Tests
+
+    @Test("範囲内の高さはそのまま縦横比を保つ")
+    func clampedImageSizeWithinRange() {
+        let result = ImageWindow.clampedImageSize(height: 300, aspectRatio: 2.0)
+        #expect(abs(result.height - 300) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - 600) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("高さは最小・最大にクランプされ幅は縦横比に従う", arguments: [
+        (CGFloat(10), AppConstants.minImageHeight),
+        (CGFloat(100_000), AppConstants.maxImageHeight)
+    ])
+    func clampedImageSizeClamps(height: CGFloat, expectedHeight: CGFloat) {
+        let result = ImageWindow.clampedImageSize(height: height, aspectRatio: 0.5)
+        #expect(abs(result.height - expectedHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - expectedHeight * 0.5) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - areaPreservingImageSize Tests
+
+    @Test("面積を保ったまま新しい縦横比に合わせる")
+    func areaPreservingImageSizeKeepsArea() throws {
+        let current = NSSize(width: 400, height: 400)
+        let result = try #require(
+            ImageWindow.areaPreservingImageSize(currentSize: current, aspectRatio: 4.0)
+        )
+        #expect(abs(result.width * result.height - 160_000) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width / result.height - 4.0) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("極端な横長（50:1）でも高さは最小値を下回らない")
+    func areaPreservingImageSizeClampsToMinHeight() throws {
+        let current = NSSize(width: 400, height: 600)
+        let result = try #require(
+            ImageWindow.areaPreservingImageSize(currentSize: current, aspectRatio: 50)
+        )
+        #expect(abs(result.height - AppConstants.minImageHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.width - AppConstants.minImageHeight * 50) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("不正な縦横比では nil", arguments: [CGFloat(0), CGFloat(-1), CGFloat.infinity, CGFloat.nan])
+    func areaPreservingImageSizeInvalidAspect(aspectRatio: CGFloat) {
+        let result = ImageWindow.areaPreservingImageSize(
+            currentSize: NSSize(width: 100, height: 100), aspectRatio: aspectRatio
+        )
+        #expect(result == nil)
+    }
+
     // MARK: - formatLocalizedDisplayName Tests
 
     @Test("デフォルト名と一致する場合はローカライズ名を返す")

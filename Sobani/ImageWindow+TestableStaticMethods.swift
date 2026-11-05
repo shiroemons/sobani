@@ -37,6 +37,32 @@ extension ImageWindow {
         return (width: baseWidth, aspectRatio: baseWidth / baseHeight)
     }
 
+    /// 高さを min/max にクランプし、縦横比を保った画像サイズを返す。
+    nonisolated static func clampedImageSize(
+        height: CGFloat, aspectRatio: CGFloat,
+        minHeight: CGFloat = AppConstants.minImageHeight,
+        maxHeight: CGFloat = AppConstants.maxImageHeight
+    ) -> NSSize {
+        let clampedHeight = max(minHeight, min(maxHeight, height))
+        return NSSize(width: clampedHeight * aspectRatio, height: clampedHeight)
+    }
+
+    /// 表示面積を保ったまま新しい縦横比に合わせた画像サイズを返す（高さは min/max にクランプ）。
+    ///
+    /// クロップの確定・リセットで縦横比が変わったときに使う。縦横比が不正なら nil。
+    nonisolated static func areaPreservingImageSize(
+        currentSize: NSSize, aspectRatio: CGFloat,
+        minHeight: CGFloat = AppConstants.minImageHeight,
+        maxHeight: CGFloat = AppConstants.maxImageHeight
+    ) -> NSSize? {
+        guard aspectRatio > 0, aspectRatio.isFinite else { return nil }
+        let area = currentSize.width * currentSize.height
+        return clampedImageSize(
+            height: sqrt(area / aspectRatio), aspectRatio: aspectRatio,
+            minHeight: minHeight, maxHeight: maxHeight
+        )
+    }
+
     /// 表示名のローカライズ処理（デフォルト名と一致する場合はローカライズ名を返す）
     nonisolated static func formatLocalizedDisplayName(
         displayName: String, defaultName: String, localizedDefault: String

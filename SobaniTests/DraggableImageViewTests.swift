@@ -585,4 +585,18 @@ struct DraggableImageViewImageReplacementTests {
         view.resetCrop()
         #expect(view.image === processed)
     }
+
+    @Test("切り取りリセットで縦横比が元画像のものに戻る")
+    func resetCropRestoresAspectRatio() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        view.image = try Self.makeImage(width: 40, height: 20)
+        view.aspectRatio = 2.0
+        view.cropRect = CropRect(x: 0, y: 0, width: 0.25, height: 1)
+        // 40x20 の左 1/4 → 10x20
+        #expect(abs(view.aspectRatio - 0.5) < AppConstants.floatingPointTolerance)
+
+        view.resetCrop()
+
+        #expect(abs(view.aspectRatio - 2.0) < AppConstants.floatingPointTolerance)
+    }
 }

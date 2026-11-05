@@ -493,22 +493,28 @@ extension ImageWindow: CropEditorPanelDelegate {
     }
 
     @objc func resetCrop() {
+        guard imageView.cropRect != nil else { return }
+        let oldSize = imageView.frame.size
         imageView.resetCrop()
+        fitImageViewToAspectRatio(preservingAreaOf: oldSize)
+        notifyStateDidChange(.crop)
     }
 
     func cropEditorDidConfirm(_ editor: CropEditorPanelController, cropRect: CropRect) {
-        let oldWidth = imageView.frame.size.width
-        let oldHeight = imageView.frame.size.height
+        let oldSize = imageView.frame.size
         imageView.cropRect = cropRect
-        let newAspect = imageView.aspectRatio
-        // フレーム面積を維持しながら、新しいアスペクト比に合わせてリサイズ
-        let oldArea = oldWidth * oldHeight
-        let newHeight = sqrt(oldArea / newAspect)
-        let newWidth = newHeight * newAspect
-        imageView.frame.size = NSSize(width: round(newWidth), height: round(newHeight))
-        adjustWindowForRotation()
+        fitImageViewToAspectRatio(preservingAreaOf: oldSize)
         cropEditorController = nil
         notifyStateDidChange(.crop)
+    }
+
+    /// クロップで縦横比が変わったとき、表示面積を保ったまま imageView とウィンドウを新しい縦横比に合わせる。
+    private func fitImageViewToAspectRatio(preservingAreaOf oldSize: NSSize) {
+        guard let newSize = Self.areaPreservingImageSize(
+            currentSize: oldSize, aspectRatio: imageView.aspectRatio
+        ) else { return }
+        imageView.frame.size = NSSize(width: round(newSize.width), height: round(newSize.height))
+        adjustWindowForRotation()
     }
 
     func cropEditorDidCancel(_ editor: CropEditorPanelController) { cropEditorController = nil }
