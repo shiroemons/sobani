@@ -65,12 +65,45 @@ final class CropEditHistory {
         logger.debug("Redo to index \(self.currentIndex)")
         return states[currentIndex]
     }
+}
 
-    /// 初期状態のみを残し、インデックスをリセットする
-    func reset() {
-        let initial = states[0]
-        states = [initial]
-        currentIndex = 0
-        logger.debug("Reset history to initial state")
+// MARK: - ScrollEndDebouncer
+
+/// スクロール操作の終わりを待ってから 1 回だけ処理を実行するデバウンサ
+///
+/// ホイールやトラックパッドのスクロールはイベントが連続して届くため、
+/// 1 回のスクロール操作を 1 つの編集履歴としてまとめて記録するのに使う。
+@MainActor
+final class ScrollEndDebouncer {
+    private static let settleDelay: Duration = .milliseconds(300)
+
+    private var pendingTask: Task<Void, Never>?
+    private var pendingAction: (() -> Void)?
+
+    /// 呼ぶたびに待ち時間をリセットし、最後の呼び出しから一定時間後に `action` を 1 回だけ実行する
+    func schedule(_ action: @escaping () -> Void) {
+        pendingAction = action
+        pendingTask?.cancel()
+        pendingTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.settleDelay)
+            guard !Task.isCancelled else { return }
+            self?.flush()
+        }
+    }
+
+    /// 待機中の処理があれば今すぐ実行する（次の操作の前に履歴の順序を保つため）
+    func flush() {
+        pendingTask?.cancel()
+        pendingTask = nil
+        let action = pendingAction
+        pendingAction = nil
+        action?()
+    }
+
+    /// 待機中の処理を実行せずに破棄する
+    func cancel() {
+        pendingTask?.cancel()
+        pendingTask = nil
+        pendingAction = nil
     }
 }

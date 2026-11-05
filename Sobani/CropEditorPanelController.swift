@@ -245,19 +245,20 @@ final class CropEditorPanelController: NSObject {
     }
 
     @objc func resetTapped() {
-        currentCropRect = .full
-        canvasView?.cropRect = .full
-        canvasView?.resetZoomAndOffset()
+        // スライダーのリセットは保留中のスクロール操作を先に履歴へ確定させるため、状態を戻す前に呼ぶ
         toolbarView?.resetStraightenAngle()
-        toolbarView?.hideAspectRatioSelector()
+        currentCropRect = .full
+        canvasView?.initializeFromCropRect(currentCropRect)
+        switchToolbarMode(to: .correction)
         syncToolbarState(to: currentCropRect)
         recordCurrentState()
         updateRevertButtonVisibility()
     }
 
     @objc func flipTapped() {
-        currentCropRect = currentCropRect.with(isFlippedInCrop: !currentCropRect.isFlippedInCrop)
-        canvasView?.cropRect = currentCropRect
+        currentCropRect = CropGeometry.cropRectAfterFlip(currentCropRect)
+        canvasView?.initializeFromCropRect(currentCropRect)
+        syncToolbarState(to: currentCropRect)
         recordCurrentState()
         updateRevertButtonVisibility()
     }
@@ -350,9 +351,10 @@ extension CropEditorPanelController {
             verticalPerspective: cropRect.verticalPerspective,
             horizontalPerspective: cropRect.horizontalPerspective
         )
-        if let preset = AspectRatioPreset.from(presetName: cropRect.aspectRatioPreset) {
-            toolbarView?.updateAspectRatioSelection(preset)
-        }
+        // プリセットなし（nil）はフリー。選択表示を残すとリサイズの挙動と食い違う
+        toolbarView?.updateAspectRatioSelection(
+            AspectRatioPreset.from(presetName: cropRect.aspectRatioPreset) ?? .free
+        )
         toolbarView?.updateShapeSelection(cropRect.shape)
         toolbarView?.setCornersLinked(cropRect.cornersLinked)
         toolbarView?.updateShapeAspectOrientation(currentAspectOrientation(cropRect))
@@ -360,7 +362,7 @@ extension CropEditorPanelController {
 
     /// 現在のクロップ領域のアスペクト比の向きを判定
     func currentAspectOrientation(_ cropRect: CropRect) -> CropGeometry.AspectOrientation {
-        let imageSize = effectiveImageSize()
+        let imageSize = effectiveImageSize(for: cropRect)
         let pixelWidth = cropRect.width * imageSize.width
         let pixelHeight = cropRect.height * imageSize.height
         if GeometryUtils.isApproximatelyEqual(pixelWidth, pixelHeight) {
