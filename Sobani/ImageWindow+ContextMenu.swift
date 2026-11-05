@@ -73,80 +73,25 @@ extension ImageWindow {
     }
 
     private func buildOpacitySliderMenuItem() -> NSMenuItem {
-        let item = NSMenuItem()
+        let item = SliderMenuItemFactory.makeTwoRowItem(
+            iconSymbol: AppConstants.opacitySymbol,
+            text: L("adjust.opacity"),
+            slider: SliderMenuItemFactory.SliderSpec(
+                value: imageView.opacityLevel,
+                range: AppConstants.opacityMin...AppConstants.opacityMax,
+                target: self,
+                action: #selector(contextMenuOpacitySliderChanged(_:))
+            )
+        )
         item.tag = MenuItemTag.opacitySliderContext.rawValue
-
-        let containerW = AppConstants.ghostAlphaSliderContainerWidth
-        let containerH = AppConstants.opacitySliderContainerHeight
-        let topRowH = AppConstants.opacitySliderTopRowHeight
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: containerW, height: containerH))
-
-        // Top row: icon + label
-        let iconSize: CGFloat = 16
-        let iconX: CGFloat = 16
-        let iconY = containerH - topRowH + (topRowH - iconSize) / 2
-        let iconView = NSImageView(frame: NSRect(x: iconX, y: iconY, width: iconSize, height: iconSize))
-        iconView.image = SFSymbolUtils.icon(AppConstants.opacitySymbol, pointSize: 12)
-        iconView.imageScaling = .scaleProportionallyDown
-        container.addSubview(iconView)
-
-        let label = NSTextField(labelWithString: L("adjust.opacity"))
-        label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
-        label.sizeToFit()
-        label.frame.origin = NSPoint(
-            x: iconX + iconSize + 4,
-            y: iconY + (iconSize - label.frame.height) / 2
-        )
-        container.addSubview(label)
-
-        // Bottom row: slider + percent
-        let bottomRowH = containerH - topRowH
-        let trailing = AppConstants.ghostAlphaSliderTrailingMargin
-        let pctWidth = AppConstants.ghostAlphaSliderPercentWidth
-        let sliderX: CGFloat = iconX + iconSize + 4
-        let sliderH = AppConstants.ghostAlphaSliderHeight
-        let slider = NSSlider(
-            value: Double(imageView.opacityLevel),
-            minValue: Double(AppConstants.opacityMin),
-            maxValue: Double(AppConstants.opacityMax),
-            target: self,
-            action: #selector(contextMenuOpacitySliderChanged(_:))
-        )
-        slider.frame = NSRect(
-            x: sliderX,
-            y: (bottomRowH - sliderH) / 2,
-            width: containerW - sliderX - pctWidth - trailing,
-            height: sliderH
-        )
-        slider.isContinuous = true
-        slider.trackFillColor = .systemGray
-        container.addSubview(slider)
-
-        let percentLabel = NSTextField(
-            labelWithString: FormatUtils.formatOpacity(imageView.opacityLevel)
-        )
-        percentLabel.font = NSFont.monospacedDigitSystemFont(
-            ofSize: NSFont.systemFontSize, weight: .regular
-        )
-        percentLabel.alignment = .right
-        percentLabel.frame = NSRect(
-            x: containerW - pctWidth - trailing,
-            y: (bottomRowH - percentLabel.frame.height) / 2,
-            width: pctWidth,
-            height: percentLabel.frame.height
-        )
-        container.addSubview(percentLabel)
-
-        item.view = container
         return item
     }
 
     @objc private func contextMenuOpacitySliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
         applyOpacity(value)
-        if let container = sender.superview,
-           let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
-            percentLabel.stringValue = FormatUtils.formatOpacity(value)
+        if let container = sender.superview {
+            SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
         }
     }
 
@@ -164,14 +109,8 @@ extension ImageWindow {
             flipItem.state = imageView.isFlippedHorizontally ? .on : .off
         }
 
-        if let opacityItem = menu.item(withMenuTag: .opacitySliderContext),
-           let container = opacityItem.view {
-            if let slider = container.subviews.compactMap({ $0 as? NSSlider }).first {
-                slider.doubleValue = Double(imageView.opacityLevel)
-            }
-            if let percentLabel = container.subviews.compactMap({ $0 as? NSTextField }).last {
-                percentLabel.stringValue = FormatUtils.formatOpacity(imageView.opacityLevel)
-            }
+        if let container = menu.item(withMenuTag: .opacitySliderContext)?.view {
+            SliderMenuItemFactory.update(container, value: imageView.opacityLevel)
         }
 
         if let otherItem = menu.item(withMenuTag: .otherSubmenu),
@@ -235,7 +174,6 @@ extension ImageWindow {
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
         ImagePreviewPanel.shared.showPreviewIfApplicable(
             for: item,
-            in: menu,
             registeredImageActions: [
                 #selector(selectRegisteredImage(_:)),
                 #selector(addNewWindowWithImage(_:)),

@@ -63,8 +63,7 @@ final class FloatingMenuController {
         // Determine position: prefer above, fall back to below if off-screen
         var origin = NSPoint(x: screenPoint.x - panelWidth / 2, y: screenPoint.y + Self.aboveOffset)
 
-        let targetScreen = NSScreen.screens.first(where: { $0.frame.contains(screenPoint) })
-            ?? NSScreen.main
+        let targetScreen = NSScreen.screen(containingPoint: screenPoint) ?? NSScreen.main
         if let screen = targetScreen {
             // If panel would go above visible area, show below instead
             if origin.y + panelHeight > screen.visibleFrame.maxY {

@@ -6,7 +6,6 @@ extension AppDelegate {
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
         ImagePreviewPanel.shared.showPreviewIfApplicable(
             for: item,
-            in: menu,
             registeredImageActions: [
                 #selector(addNewWindowWithImageFromMenu(_:)),
                 #selector(selectRegisteredImageByWindowNumber(_:))

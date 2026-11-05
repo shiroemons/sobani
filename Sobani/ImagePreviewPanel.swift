@@ -7,7 +7,8 @@ final class ImagePreviewPanel {
     private let logger = Logger(category: "ImagePreviewPanel")
     private let panel: NSPanel
     private let imageView: NSImageView
-    private static let padding: CGFloat = 8
+    /// 画像の周囲の余白
+    nonisolated static let padding: CGFloat = 8
     private static let cornerRadius: CGFloat = 8
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
@@ -50,17 +51,14 @@ final class ImagePreviewPanel {
         }
     }
 
-    func show(image: NSImage, relativeTo menuItem: NSMenuItem, ofMenu menu: NSMenu) {
+    /// 表示中のメニューの横（入らなければ反対側）に画像のプレビューを出す。
+    func show(image: NSImage) {
         let (panelSize, imageFrame) = Self.calculatePanelFrames(imageSize: image.size)
 
         imageView.image = image
         imageView.frame = imageFrame
 
-        let panelOrigin = calculatePosition(
-            menuItem: menuItem,
-            menu: menu,
-            panelSize: panelSize
-        )
+        let panelOrigin = calculatePosition(panelSize: panelSize)
 
         panel.setFrame(
             NSRect(origin: panelOrigin, size: panelSize),
@@ -140,7 +138,7 @@ final class ImagePreviewPanel {
     nonisolated static func calculatePanelFrames(
         imageSize: NSSize,
         maxDimension: CGFloat = AppConstants.previewMaxDimension,
-        padding: CGFloat = 8
+        padding: CGFloat = padding
     ) -> (panelSize: NSSize, imageFrame: NSRect) {
         let previewSize = scaledSize(for: imageSize, maxDimension: maxDimension)
         let panelSize = NSSize(
@@ -180,37 +178,26 @@ final class ImagePreviewPanel {
 
     // MARK: - Private
 
-    private func calculatePosition(
-        menuItem: NSMenuItem, menu: NSMenu, panelSize: NSSize) -> NSPoint {
-        let menuWindows = Self.findMenuWindows(excluding: panel)
-        let windowFrames = menuWindows.map { $0.frame }
+    private func calculatePosition(panelSize: NSSize) -> NSPoint {
+        let visibleWindows = NSApp.windows.filter { $0 !== panel && $0.isVisible }
+        let menuFrames = Self.filterMenuWindowFrames(
+            frames: visibleWindows.map { (frame: $0.frame, level: $0.level.rawValue) },
+            menuLevel: Int(CGWindowLevelForKey(.popUpMenuWindow))
+        )
 
-        guard let bounds = Self.menuWindowBounds(frames: windowFrames) else {
-            let mouseLocation = NSEvent.mouseLocation
+        let mouseLocation = NSEvent.mouseLocation
+        guard let bounds = Self.menuWindowBounds(frames: menuFrames) else {
             return Self.fallbackPosition(mouseLocation: mouseLocation, panelSize: panelSize)
         }
 
-        let mouseY = NSEvent.mouseLocation.y
-
-        let screen = NSScreen.screens.first(where: {
-            $0.frame.contains(NSPoint(x: bounds.rightmostX, y: mouseY))
-        }) ?? NSScreen.main
+        let screen = NSScreen.screen(containingPoint: NSPoint(x: bounds.rightmostX, y: mouseLocation.y))
+            ?? NSScreen.main
 
         return Self.calculatePanelPosition(
             rightmostX: bounds.rightmostX, leftmostX: bounds.leftmostX,
-            mouseY: mouseY, panelSize: panelSize,
+            mouseY: mouseLocation.y, panelSize: panelSize,
             screenFrame: screen?.frame, visibleFrame: screen?.visibleFrame
         )
-    }
-
-    private static func findMenuWindows(excluding excludedPanel: NSPanel) -> [NSWindow] {
-        let menuLevel = Int(CGWindowLevelForKey(.popUpMenuWindow))
-        return NSApp.windows.filter { window in
-            window !== excludedPanel
-                && window.isVisible
-                && window.level.rawValue >= menuLevel
-                && window.frame.width > AppConstants.menuWindowMinWidth
-        }
     }
 }
 
@@ -222,12 +209,10 @@ extension ImagePreviewPanel {
     ///
     /// - Parameters:
     ///   - item: ハイライトされたメニュー項目（nilの場合は非表示）
-    ///   - menu: 対象の NSMenu
     ///   - registeredImageActions: 登録済み画像名をプレビューするセレクター群
     ///   - defaultImageActions: デフォルト画像をプレビューするセレクター群
     func showPreviewIfApplicable(
         for item: NSMenuItem?,
-        in menu: NSMenu,
         registeredImageActions: Set<Selector>,
         defaultImageActions: Set<Selector>
     ) {
@@ -236,13 +221,13 @@ extension ImagePreviewPanel {
            let action = item.action,
            registeredImageActions.contains(action) {
             if let image = ImageManager.shared.loadRegisteredImageCached(named: name) {
-                show(image: image, relativeTo: item, ofMenu: menu)
+                show(image: image)
             }
         } else if let item = item,
                   let action = item.action,
                   defaultImageActions.contains(action) {
             if let image = ImageManager.shared.defaultImage() {
-                show(image: image, relativeTo: item, ofMenu: menu)
+                show(image: image)
             }
         } else {
             hide()
