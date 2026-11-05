@@ -263,13 +263,11 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     }
 
     @objc private func textFieldChanged(_ sender: NSTextField) {
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard var degrees = Double(text) else {
+        guard let degrees = Self.parseFiniteNumber(sender.stringValue) else {
             sender.stringValue = Self.formatAngle(currentAngle)
             return
         }
-        degrees = GeometryUtils.normalizeAngle(degrees)
-        let angle = CGFloat(degrees)
+        let angle = GeometryUtils.normalizeAngle(degrees)
         currentAngle = angle
         dialView?.angle = angle
         sender.stringValue = Self.formatAngle(angle)
@@ -308,6 +306,17 @@ final class AdjustmentPanelController: NSObject, NSWindowDelegate {
     }
 
     // MARK: - Testable Static Methods
+
+    /// テキストフィールドの入力を有限の数値として解釈する。
+    ///
+    /// `Double("nan")` / `Double("inf")` / `Double("1e309")` は数値として解釈できてしまい、
+    /// NaN や無限大がウィンドウのフレームや保存データに混入するため、有限値以外は nil を返す。
+    nonisolated static func parseFiniteNumber(_ text: String) -> CGFloat? {
+        guard let value = Double(text.trimmingCharacters(in: .whitespaces)), value.isFinite else {
+            return nil
+        }
+        return CGFloat(value)
+    }
 
     nonisolated static func generateMonitorPopupTitles(
         screenSizes: [(width: Int, height: Int)]) -> [String] {

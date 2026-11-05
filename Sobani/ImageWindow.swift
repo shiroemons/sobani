@@ -224,6 +224,8 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     }
 
     func applyRotation(_ angle: CGFloat) {
+        // NaN/無限大はフレームや CALayer を壊し、JSON 保存も失敗させるため無視する
+        guard angle.isFinite else { return }
         imageView.rotationAngle = angle
         adjustWindowForRotation()
         adjustmentPanelController?.updateAngle(angle)

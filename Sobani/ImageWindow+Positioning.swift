@@ -23,6 +23,9 @@ extension ImageWindow {
     }
 
     func setPositionAndSize(origin: NSPoint, size: NSSize) {
+        // NaN/無限大はフレームを壊し、JSON 保存も失敗させるため無視する
+        guard origin.x.isFinite, origin.y.isFinite,
+              size.width.isFinite, size.height.isFinite else { return }
         window.setFrame(NSRect(origin: origin, size: size), display: true)
     }
 }

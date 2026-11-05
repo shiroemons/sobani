@@ -206,15 +206,14 @@ extension AdjustmentPanelController {
 
     private func handlePositionFieldChanged(_ sender: NSTextField, isXField: Bool) {
         guard let screen = currentScreen else { return }
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text) else {
+        guard let value = Self.parseFiniteNumber(sender.stringValue) else {
             updatePositionFields()
             return
         }
         let currentRelative = Self.globalToMonitorRelative(
             currentPosition, screenOrigin: screen.frame.origin)
         let relative = Self.updatedRelativePosition(
-            newAxisValue: CGFloat(value), currentRelative: currentRelative, isXField: isXField
+            newAxisValue: value, currentRelative: currentRelative, isXField: isXField
         )
         let global = Self.monitorRelativeToGlobal(relative, screenOrigin: screen.frame.origin)
         currentPosition = global
@@ -230,13 +229,12 @@ extension AdjustmentPanelController {
     }
 
     private func handleSizeFieldChanged(_ sender: NSTextField, isWidth: Bool) {
-        let text = sender.stringValue.trimmingCharacters(in: .whitespaces)
-        guard let value = Double(text) else {
+        guard let value = Self.parseFiniteNumber(sender.stringValue) else {
             updateSizeFields()
             return
         }
         guard let newSize = Self.clampedSize(
-            newValue: CGFloat(value), aspectRatio: currentAspectRatio, isWidth: isWidth) else {
+            newValue: value, aspectRatio: currentAspectRatio, isWidth: isWidth) else {
             updateSizeFields()
             return
         }
