@@ -18,20 +18,26 @@ extension CropEditorPanelController {
         }
         updated = applyCurrentAspectRatioConstraint(to: updated)
         currentCropRect = updated
-        canvasView?.cropRect = currentCropRect
+        // アスペクト比制約で位置・サイズが変わることがあるため、ズーム/オフセットも作り直す
+        canvasView?.initializeFromCropRect(currentCropRect)
         updateRevertButtonVisibility()
     }
 
+    /// 表示上で時計回り（右）に 90° 回転する
     func handleRotate90() {
         var updated = CropGeometry.cropRectAfterQuarterTurn(cropRect: currentCropRect, turns: 1)
         updated = applyCurrentAspectRatioConstraint(to: updated)
         currentCropRect = updated
-        canvasView?.cropRect = currentCropRect
+        // 位置・サイズが変わるため cropRect だけでなくズーム/オフセットも作り直す
+        // （古いオフセットのまま確定すると半分透明な画像が出力される）
+        canvasView?.initializeFromCropRect(currentCropRect)
+        // 回転でパース補正の縦横が入れ替わるため、ツールバーの表示も同期する
+        syncToolbarState(to: currentCropRect)
     }
 
     func handleAspectRatioSelected(_ preset: AspectRatioPreset) {
-        let imageSize = effectiveImageSize()
-        if let ratio = resolveAspectRatio(for: preset, imageSize: imageSize) {
+        let imageSize = effectiveImageSize(for: currentCropRect)
+        if let ratio = preset.ratio(forImageSize: imageSize) {
             let base = CropGeometry.cropRectForAspectRatio(
                 ratio: ratio, within: imageSize
             )
@@ -56,31 +62,19 @@ extension CropEditorPanelController {
 
 extension CropEditorPanelController {
 
-    /// 現在の画像サイズを取得（フォールバック: 1:1）
-    func effectiveImageSize() -> CGSize {
+    /// CropRect の 90° 回転を反映した表示上の画像サイズ（画像がない場合は 1:1）
+    func effectiveImageSize(for cropRect: CropRect) -> CGSize {
         guard let size = originalImage?.size, size.width > 0, size.height > 0 else {
             return CGSize(width: 1, height: 1)
         }
-        return size
-    }
-
-    /// プリセットに対応するアスペクト比を解決する（free は nil を返す）
-    func resolveAspectRatio(for preset: AspectRatioPreset, imageSize: CGSize) -> CGFloat? {
-        switch preset {
-        case .original:
-            return imageSize.width / imageSize.height
-        default:
-            return preset.ratio
-        }
+        return CropGeometry.effectiveSize(size, quarterTurns: cropRect.quarterTurns)
     }
 
     /// 現在設定されているアスペクト比制約を再適用する
     func applyCurrentAspectRatioConstraint(to rect: CropRect) -> CropRect {
-        guard let preset = AspectRatioPreset.from(presetName: rect.aspectRatioPreset) else {
-            return rect
-        }
-        let imageSize = effectiveImageSize()
-        guard let ratio = resolveAspectRatio(for: preset, imageSize: imageSize) else {
+        let imageSize = effectiveImageSize(for: rect)
+        guard let preset = AspectRatioPreset.from(presetName: rect.aspectRatioPreset),
+              let ratio = preset.ratio(forImageSize: imageSize) else {
             return rect
         }
         let constrained = CropGeometry.constrainCropRect(

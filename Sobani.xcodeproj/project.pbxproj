@@ -71,6 +71,8 @@
 		F0CG000002000000000001 /* CropGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CG000001000000000001 /* CropGeometry.swift */; };
 		F0CI000002000000000001 /* CropImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000001000000000001 /* CropImageProcessor.swift */; };
 		F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CI000003000000000001 /* CropImageProcessorTests.swift */; };
+		F0CG000004000000000001 /* CropGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CG000003000000000001 /* CropGeometryTests.swift */; };
+		F0CS000004000000000001 /* CropShapeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CS000003000000000001 /* CropShapeTests.swift */; };
 		F0CBR00002000000000001 /* ImageWindow+BackgroundRemoval.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CBR00001000000000001 /* ImageWindow+BackgroundRemoval.swift */; };
 		F0CCM00002000000000001 /* ImageWindow+ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CCM00001000000000001 /* ImageWindow+ContextMenu.swift */; };
 		F0COS00002000000000001 /* ImageWindow+OtherSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0COS00001000000000001 /* ImageWindow+OtherSubmenu.swift */; };
@@ -226,6 +228,7 @@
 		F0CETV0003000000000001 /* CropEditorToolbarViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditorToolbarViewTests.swift; sourceTree = "<group>"; };
 		F0CI000001000000000001 /* CropImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessor.swift; sourceTree = "<group>"; };
 		F0CI000003000000000001 /* CropImageProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropImageProcessorTests.swift; sourceTree = "<group>"; };
+		F0CS000003000000000001 /* CropShapeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropShapeTests.swift; sourceTree = "<group>"; };
 		F0CBR00001000000000001 /* ImageWindow+BackgroundRemoval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+BackgroundRemoval.swift"; sourceTree = "<group>"; };
 		F0CCM00001000000000001 /* ImageWindow+ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+ContextMenu.swift"; sourceTree = "<group>"; };
 		F0COS00001000000000001 /* ImageWindow+OtherSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageWindow+OtherSubmenu.swift"; sourceTree = "<group>"; };
@@ -487,6 +490,7 @@
 				F0CG000003000000000001 /* CropGeometryTests.swift */,
 				F0CETV0003000000000001 /* CropEditorToolbarViewTests.swift */,
 				F0CI000003000000000001 /* CropImageProcessorTests.swift */,
+				F0CS000003000000000001 /* CropShapeTests.swift */,
 				F0EH000003000000000001 /* CropEditHistoryTests.swift */,
 				F0JP000003000000000001 /* JSONPersistenceTests.swift */,
 				F0GM000001000000000001 /* WindowStateGhostModeTests.swift */,
@@ -752,6 +756,8 @@
 				F0AR000004000000000001 /* AspectRatioPresetTests.swift in Sources */,
 				F0CETV0004000000000001 /* CropEditorToolbarViewTests.swift in Sources */,
 				F0CI000004000000000001 /* CropImageProcessorTests.swift in Sources */,
+				F0CG000004000000000001 /* CropGeometryTests.swift in Sources */,
+				F0CS000004000000000001 /* CropShapeTests.swift in Sources */,
 				F0EH000004000000000001 /* CropEditHistoryTests.swift in Sources */,
 				F0JP000004000000000001 /* JSONPersistenceTests.swift in Sources */,
 				F0GM000002000000000001 /* WindowStateGhostModeTests.swift in Sources */,

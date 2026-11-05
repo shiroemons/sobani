@@ -57,10 +57,30 @@ struct CornerRadii: Codable, Equatable, Sendable {
         }
     }
 
-    var isAllEqual: Bool {
-        abs(topLeft - topRight) < AppConstants.floatingPointTolerance
-            && abs(topLeft - bottomLeft) < AppConstants.floatingPointTolerance
-            && abs(topLeft - bottomRight) < AppConstants.floatingPointTolerance
+    /// 4隅すべての半径がほぼ 0 か
+    var isEffectivelyZero: Bool {
+        isEffectivelyEqual(to: .zero)
+    }
+
+    /// 正規化座標の許容誤差で比較する
+    func isEffectivelyEqual(to other: Self) -> Bool {
+        let tol = AppConstants.normalizedTolerance
+        return abs(topLeft - other.topLeft) < tol
+            && abs(topRight - other.topRight) < tol
+            && abs(bottomLeft - other.bottomLeft) < tol
+            && abs(bottomRight - other.bottomRight) < tol
+    }
+
+    /// 非有限値を 0 に、範囲外の値を 0〜1 に収めたコピーを返す（保存データの読み込み用）
+    func sanitized() -> Self {
+        func clamp(_ value: CGFloat) -> CGFloat {
+            guard value.isFinite else { return AppConstants.cornerRadiusMin }
+            return min(max(value, AppConstants.cornerRadiusMin), AppConstants.cornerRadiusMax)
+        }
+        return Self(
+            topLeft: clamp(topLeft), topRight: clamp(topRight),
+            bottomLeft: clamp(bottomLeft), bottomRight: clamp(bottomRight)
+        )
     }
 }
 
@@ -83,6 +103,21 @@ struct CropRect: Codable, Equatable, Sendable {
     let cornersLinked: Bool       // default true
 
     static let full = Self(x: 0, y: 0, width: 1, height: 1)
+
+    /// 保存データから読み込む x / y / width / height の上限（画像サイズの倍数）。
+    /// 画像外への自由配置は許容しつつ、壊れた値で巨大な画像を確保しようとするのを防ぐ
+    static let maxExtent: CGFloat = 10
+    /// 保存データから読み込む width / height の下限（0 以下の退化した矩形を防ぐ）
+    private static let minExtent: CGFloat = 1e-4
+
+    /// 90° 回転・反転・傾き補正・パース補正のいずれかを含むか（切り出し位置だけなら false）
+    var hasImageTransform: Bool {
+        CropGeometry.normalizeQuarterTurns(quarterTurns) != 0
+            || isFlippedInCrop
+            || !GeometryUtils.isApproximatelyZero(straightenAngle)
+            || !GeometryUtils.isApproximatelyZero(verticalPerspective)
+            || !GeometryUtils.isApproximatelyZero(horizontalPerspective)
+    }
 
     init(
         x: CGFloat,
@@ -155,24 +190,44 @@ struct CropRect: Codable, Equatable, Sendable {
         case shapeType, cornerRadii, cornersLinked
     }
 
+    /// 保存データは手編集や旧バージョンで壊れている可能性があるため、読み込み時に安全な範囲へ補正する
+    /// （非有限値や巨大な値のまま画像処理に渡すと、起動時の復元でクラッシュする）
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        x = try container.decode(CGFloat.self, forKey: .x)
-        y = try container.decode(CGFloat.self, forKey: .y)
-        width = try container.decode(CGFloat.self, forKey: .width)
-        height = try container.decode(CGFloat.self, forKey: .height)
-        straightenAngle = try container.decodeIfPresent(CGFloat.self, forKey: .straightenAngle) ?? 0
-        quarterTurns = try container.decodeIfPresent(Int.self, forKey: .quarterTurns) ?? 0
+        x = Self.sanitizedOrigin(try container.decode(CGFloat.self, forKey: .x))
+        y = Self.sanitizedOrigin(try container.decode(CGFloat.self, forKey: .y))
+        width = Self.sanitizedExtent(try container.decode(CGFloat.self, forKey: .width))
+        height = Self.sanitizedExtent(try container.decode(CGFloat.self, forKey: .height))
+        straightenAngle = Self.sanitizedAngle(
+            try container.decodeIfPresent(CGFloat.self, forKey: .straightenAngle) ?? 0)
+        quarterTurns = CropGeometry.normalizeQuarterTurns(
+            try container.decodeIfPresent(Int.self, forKey: .quarterTurns) ?? 0)
         isFlippedInCrop = try container.decodeIfPresent(
             Bool.self, forKey: .isFlippedInCrop) ?? false
         aspectRatioPreset = try container.decodeIfPresent(String.self, forKey: .aspectRatioPreset)
-        verticalPerspective = try container.decodeIfPresent(
-            CGFloat.self, forKey: .verticalPerspective) ?? 0
-        horizontalPerspective = try container.decodeIfPresent(
-            CGFloat.self, forKey: .horizontalPerspective) ?? 0
+        verticalPerspective = Self.sanitizedAngle(
+            try container.decodeIfPresent(CGFloat.self, forKey: .verticalPerspective) ?? 0)
+        horizontalPerspective = Self.sanitizedAngle(
+            try container.decodeIfPresent(CGFloat.self, forKey: .horizontalPerspective) ?? 0)
         shape = (try? container.decodeIfPresent(CropShape.self, forKey: .shapeType)) ?? .rectangle
-        cornerRadii = try container.decodeIfPresent(CornerRadii.self, forKey: .cornerRadii) ?? .zero
+        cornerRadii = (try container.decodeIfPresent(CornerRadii.self, forKey: .cornerRadii) ?? .zero)
+            .sanitized()
         cornersLinked = try container.decodeIfPresent(Bool.self, forKey: .cornersLinked) ?? true
+    }
+
+    private static func sanitizedOrigin(_ value: CGFloat) -> CGFloat {
+        guard value.isFinite else { return 0 }
+        return min(max(value, -maxExtent), maxExtent)
+    }
+
+    private static func sanitizedExtent(_ value: CGFloat) -> CGFloat {
+        guard value.isFinite else { return 1 }
+        return min(max(value, minExtent), maxExtent)
+    }
+
+    private static func sanitizedAngle(_ value: CGFloat) -> CGFloat {
+        guard value.isFinite else { return 0 }
+        return CropGeometry.clampStraightenAngle(value)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -195,20 +250,23 @@ struct CropRect: Codable, Equatable, Sendable {
     // MARK: - Approximate Equality
 
     /// 浮動小数点トレランス付きの等価比較
+    /// 正規化座標（位置・サイズ・角丸）は `normalizedTolerance`、角度（度）は `floatingPointTolerance` で比較する
     func isEffectivelyEqual(to other: Self) -> Bool {
-        let tol = AppConstants.floatingPointTolerance
-        return abs(x - other.x) < tol
-            && abs(y - other.y) < tol
-            && abs(width - other.width) < tol
-            && abs(height - other.height) < tol
-            && abs(straightenAngle - other.straightenAngle) < tol
-            && quarterTurns == other.quarterTurns
+        let normalizedTol = AppConstants.normalizedTolerance
+        let angleTol = AppConstants.floatingPointTolerance
+        return abs(x - other.x) < normalizedTol
+            && abs(y - other.y) < normalizedTol
+            && abs(width - other.width) < normalizedTol
+            && abs(height - other.height) < normalizedTol
+            && abs(straightenAngle - other.straightenAngle) < angleTol
+            && CropGeometry.normalizeQuarterTurns(quarterTurns)
+                == CropGeometry.normalizeQuarterTurns(other.quarterTurns)
             && isFlippedInCrop == other.isFlippedInCrop
             && aspectRatioPreset == other.aspectRatioPreset
-            && abs(verticalPerspective - other.verticalPerspective) < tol
-            && abs(horizontalPerspective - other.horizontalPerspective) < tol
+            && abs(verticalPerspective - other.verticalPerspective) < angleTol
+            && abs(horizontalPerspective - other.horizontalPerspective) < angleTol
             && shape == other.shape
-            && cornerRadii == other.cornerRadii
+            && cornerRadii.isEffectivelyEqual(to: other.cornerRadii)
             && cornersLinked == other.cornersLinked
     }
 }

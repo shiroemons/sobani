@@ -2662,13 +2662,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "90°回転"
+            "value": "右に90°回転"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rotate 90°"
+            "value": "Rotate 90° Right"
           }
         }
       }

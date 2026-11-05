@@ -4,103 +4,26 @@ import Cocoa
 
 extension CropEditorCanvasView {
 
-    /// すべての変換（quarterTurns、isFlippedInCrop、straightenAngle、perspective）を統合して描画
+    /// すべての変換（quarterTurns、isFlippedInCrop、パース補正、straightenAngle）を適用して描画する
+    /// 変換は `CropImageProcessor` と共通の `CropGeometry.imageTransform` を使うため、確定後の出力と一致する
     func drawTransformedImage(context: CGContext, imageDrawRect: NSRect) {
         guard let image = displayImage else { return }
-        let normalizedTurns = CropGeometry.normalizeQuarterTurns(cropRect.quarterTurns)
-        let angle = cropRect.straightenAngle
-        let hasQuarterTurns = normalizedTurns != 0
-        let hasStraighten = !GeometryUtils.isApproximatelyZero(angle)
-        let hasFlip = cropRect.isFlippedInCrop
-        let hasVertPerspective = !GeometryUtils.isApproximatelyZero(cropRect.verticalPerspective)
-        let hasHorizPerspective = !GeometryUtils.isApproximatelyZero(cropRect.horizontalPerspective)
-
-        guard hasQuarterTurns || hasStraighten || hasFlip
-                || hasVertPerspective || hasHorizPerspective else {
-            image.draw(in: imageDrawRect)
-            return
-        }
-
         context.saveGState()
-        let centerX = imageDrawRect.midX
-        let centerY = imageDrawRect.midY
-        context.translateBy(x: centerX, y: centerY)
-
-        // 1. quarterTurns（90°単位の回転）
-        if hasQuarterTurns {
-            let quarterRadians = CGFloat(normalizedTurns) * .pi / 2
-            context.rotate(by: quarterRadians)
-        }
-
-        // 2. isFlippedInCrop（水平反転）
-        if hasFlip {
-            context.scaleBy(x: -1, y: 1)
-        }
-
-        // 3. straightenAngle（微調整回転のみ、自動ズームなし）
-        if hasStraighten {
-            context.rotate(by: -angle * .pi / 180)
-        }
-
-        // 4. verticalPerspective（垂直方向パース補正）
-        if hasVertPerspective {
-            let perspAngle = cropRect.verticalPerspective * .pi / 180
-            var transform = CATransform3DIdentity
-            transform.m34 = Self.perspectiveDepth
-            transform = CATransform3DRotate(transform, perspAngle, 1, 0, 0)  // rotate around X axis
-            let affine = perspectiveToAffine(transform)
-            context.concatenate(affine)
-        }
-
-        // 5. horizontalPerspective（水平方向パース補正）
-        if hasHorizPerspective {
-            let perspAngle = cropRect.horizontalPerspective * .pi / 180
-            var transform = CATransform3DIdentity
-            transform.m34 = Self.perspectiveDepth
-            transform = CATransform3DRotate(transform, perspAngle, 0, 1, 0)  // rotate around Y axis
-            let affine = perspectiveToAffine(transform)
-            context.concatenate(affine)
-        }
-
-        // 描画矩形を決定
-        // 90°/270° 回転時は元の画像を回転後の座標系で描くため、幅と高さを入れ替える
-        let isSwapped = (normalizedTurns == 1 || normalizedTurns == 3)
-        let drawRect: NSRect
-        if isSwapped {
-            drawRect = NSRect(
-                x: -imageDrawRect.height / 2,
-                y: -imageDrawRect.width / 2,
-                width: imageDrawRect.height,
-                height: imageDrawRect.width
-            )
-        } else {
-            drawRect = NSRect(
-                x: -imageDrawRect.width / 2,
-                y: -imageDrawRect.height / 2,
-                width: imageDrawRect.width,
-                height: imageDrawRect.height
-            )
-        }
-
-        image.draw(in: drawRect)
+        context.interpolationQuality = .high
+        context.concatenate(CropGeometry.imageTransform(
+            for: cropRect, sourceSize: image.size, imageRect: imageDrawRect
+        ))
+        image.draw(in: NSRect(origin: .zero, size: image.size))
         context.restoreGState()
-    }
-
-    /// CATransform3Dの2Dアフィン近似変換を計算する
-    func perspectiveToAffine(_ transform: CATransform3D) -> CGAffineTransform {
-        // CATransform3Dから2Dアフィン変換への簡易的な射影
-        // m34がパース深度、m11/m12/m21/m22が回転成分
-        return CGAffineTransform(
-            a: transform.m11, b: transform.m12,
-            c: transform.m21, d: transform.m22,
-            tx: 0, ty: 0
-        )
     }
 }
 
 // MARK: - Overlay & Grid Drawing
 
 extension CropEditorCanvasView {
+
+    private static let cropBorderLineWidth: CGFloat = 1
+    private static let gridLineAlpha: CGFloat = 0.5
 
     func drawOverlay(context: CGContext, cropFrame: NSRect, shapePath: CGPath?) {
         context.saveGState()
@@ -139,7 +62,7 @@ extension CropEditorCanvasView {
 
     func drawCropBorder(context: CGContext, cropFrame: NSRect, shapePath: CGPath?) {
         context.setStrokeColor(NSColor.white.cgColor)
-        context.setLineWidth(1.0)
+        context.setLineWidth(Self.cropBorderLineWidth)
 
         switch cropShape {
         case .rectangle:
@@ -153,7 +76,7 @@ extension CropEditorCanvasView {
     }
 
     func drawGrid(context: CGContext, cropFrame: NSRect) {
-        context.setStrokeColor(NSColor.white.withAlphaComponent(0.5).cgColor)
+        context.setStrokeColor(NSColor.white.withAlphaComponent(Self.gridLineAlpha).cgColor)
         context.setLineWidth(AppConstants.cropEditorGridLineWidth)
 
         for idx in 1...2 {
@@ -261,20 +184,20 @@ extension CropEditorCanvasView {
         }
     }
 
+    /// ヒット範囲内で最も近い角丸ハンドルとその距離を返す
     func hitTestCornerRadiusHandle(
         point: NSPoint, cropFrame: NSRect
-    ) -> CropGeometry.Corner? {
+    ) -> (corner: CropGeometry.Corner, distance: CGFloat)? {
         let tolerance = AppConstants.cornerRadiusHandleHitTolerance
-        for corner in CropGeometry.Corner.allCases {
-            let radius = cornerRadii.radius(for: corner)
-            let pos = CropGeometry.cornerRadiusHandlePosition(
-                corner: corner, cropFrame: cropFrame, normalizedRadius: radius
-            )
-            let dist = hypot(point.x - pos.x, point.y - pos.y)
-            if dist <= tolerance {
-                return corner
+        return CropGeometry.Corner.allCases
+            .map { corner -> (corner: CropGeometry.Corner, distance: CGFloat) in
+                let pos = CropGeometry.cornerRadiusHandlePosition(
+                    corner: corner, cropFrame: cropFrame,
+                    normalizedRadius: cornerRadii.radius(for: corner)
+                )
+                return (corner, hypot(point.x - pos.x, point.y - pos.y))
             }
-        }
-        return nil
+            .filter { $0.distance <= tolerance }
+            .min { $0.distance < $1.distance }
     }
 }

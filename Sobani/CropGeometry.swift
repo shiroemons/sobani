@@ -4,31 +4,109 @@ import CoreGraphics
 /// クロップ関連の幾何学計算ユーティリティ
 enum CropGeometry {
 
-    // MARK: - Straighten Zoom
+    // MARK: - Image Transform
 
-    /// 傾き補正時の自動ズーム倍率を計算
-    /// iPhone写真アプリのように、回転後も画像がクロップ領域内に収まるようにズームする
-    /// - Parameters:
-    ///   - angleDegrees: 傾き角度（度）
-    ///   - aspectRatio: クロップ領域のアスペクト比（width / height）
-    /// - Returns: 必要なズーム倍率（1.0 = ズームなし）
-    static func zoomScaleForStraighten(angleDegrees: CGFloat, aspectRatio: CGFloat) -> CGFloat {
-        // 角度0ならズーム不要
-        guard !GeometryUtils.isApproximatelyZero(angleDegrees) else { return 1.0 }
-        let radians = abs(angleDegrees) * .pi / 180
-        let sinA = sin(radians)
-        let cosA = cos(radians)
-        // 回転後に矩形内に収まるための最小ズーム倍率
-        // 幅方向: (w*cos + h*sin) / w = cos + sin/aspectRatio
-        // 高さ方向: (w*sin + h*cos) / h = aspectRatio*sin + cos
-        let scaleW = cosA + sinA / max(aspectRatio, AppConstants.floatingPointTolerance)
-        let scaleH = aspectRatio * sinA + cosA
-        return max(scaleW, scaleH)
+    /// 浮動小数点誤差でピクセル数が 1 増えるのを防ぐためのスナップ許容誤差（例: 300.00000000000006 → 300）
+    private static let pixelSnapTolerance: CGFloat = 1e-6
+
+    /// quarterTurns を考慮した表示上の画像サイズ（奇数回の 90° 回転で幅と高さを入れ替える）
+    static func effectiveSize(_ size: CGSize, quarterTurns: Int) -> CGSize {
+        guard normalizeQuarterTurns(quarterTurns) % 2 == 1 else { return size }
+        return CGSize(width: size.height, height: size.width)
     }
 
-    // MARK: - Quarter Turn
+    /// 元画像の中心を原点とする座標を、表示空間（y 軸上向き）へ写す線形変換
+    ///
+    /// 適用順は 90° 単位の時計回り回転 → 水平反転 → パース補正（cos による縮小）→ 傾き補正（正の角度で時計回り）。
+    /// エディタのキャンバスと `CropImageProcessor` の両方がこの変換を使うため、プレビューと出力は常に一致する。
+    static func contentTransform(for cropRect: CropRect) -> CGAffineTransform {
+        var transform = quarterTurnTransform(cropRect.quarterTurns)
+        if cropRect.isFlippedInCrop {
+            transform = transform.concatenating(CGAffineTransform(scaleX: -1, y: 1))
+        }
+        transform = transform.concatenating(CGAffineTransform(
+            scaleX: perspectiveScale(degrees: cropRect.horizontalPerspective),
+            y: perspectiveScale(degrees: cropRect.verticalPerspective)
+        ))
+        if !GeometryUtils.isApproximatelyZero(cropRect.straightenAngle) {
+            transform = transform.concatenating(
+                CGAffineTransform(rotationAngle: -radians(fromDegrees: cropRect.straightenAngle))
+            )
+        }
+        return transform
+    }
 
-    /// 90°回転後のクロップ矩形を計算（反時計回り）
+    /// 元画像の座標（原点左下、`sourceSize` 単位）を、`imageRect` に配置した表示上の座標へ写す変換
+    /// - Parameters:
+    ///   - cropRect: 適用する変換（quarterTurns・反転・パース・傾き）を持つ CropRect
+    ///   - sourceSize: 元画像のサイズ（ピクセルでもポイントでもよい）
+    ///   - imageRect: 傾き補正・パース補正を除いた（90° 回転後の）画像全体が占める矩形。
+    ///     傾き補正とパース補正はこの矩形の中心を基準に適用される
+    static func imageTransform(
+        for cropRect: CropRect, sourceSize: CGSize, imageRect: CGRect
+    ) -> CGAffineTransform {
+        let effective = effectiveSize(sourceSize, quarterTurns: cropRect.quarterTurns)
+        guard effective.width > 0, effective.height > 0 else { return .identity }
+        return CGAffineTransform(translationX: -sourceSize.width / 2, y: -sourceSize.height / 2)
+            .concatenating(contentTransform(for: cropRect))
+            .concatenating(CGAffineTransform(
+                scaleX: imageRect.width / effective.width, y: imageRect.height / effective.height
+            ))
+            .concatenating(CGAffineTransform(translationX: imageRect.midX, y: imageRect.midY))
+    }
+
+    /// 出力画像の座標系（原点 = クロップ領域の左下、`scale` 倍）で、画像全体が占める矩形
+    static func outputImageRect(
+        for cropRect: CropRect, effectiveSize: CGSize, scale: CGFloat = 1
+    ) -> CGRect {
+        CGRect(
+            x: -cropRect.x * effectiveSize.width * scale,
+            y: -cropRect.y * effectiveSize.height * scale,
+            width: effectiveSize.width * scale,
+            height: effectiveSize.height * scale
+        )
+    }
+
+    /// 整数にごく近い値を整数に丸める（それ以外はそのまま）
+    static func snappedToPixel(_ value: CGFloat) -> CGFloat {
+        let rounded = value.rounded()
+        return abs(value - rounded) < pixelSnapTolerance ? rounded : value
+    }
+
+    /// 長さ（ピクセル）を、浮動小数点誤差を吸収したうえで切り上げた整数ピクセル数に変換する
+    /// - Returns: 有限かつ 0 より大きく `limit` 以下ならピクセル数、それ以外は nil
+    static func pixelExtent(_ value: CGFloat, limit: CGFloat) -> Int? {
+        guard value.isFinite, value > 0 else { return nil }
+        let extent = ceil(snappedToPixel(value))
+        guard extent <= limit else { return nil }
+        return max(Int(extent), 1)
+    }
+
+    private static func quarterTurnTransform(_ turns: Int) -> CGAffineTransform {
+        // 誤差を出さないよう 90° 単位の回転行列を直接組み立てる（いずれも時計回り）
+        switch normalizeQuarterTurns(turns) {
+        case 1: return CGAffineTransform(a: 0, b: -1, c: 1, d: 0, tx: 0, ty: 0)   // (x, y) → (y, −x)
+        case 2: return CGAffineTransform(a: -1, b: 0, c: 0, d: -1, tx: 0, ty: 0)  // (x, y) → (−x, −y)
+        case 3: return CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: 0, ty: 0)   // (x, y) → (−y, x)
+        default: return .identity
+        }
+    }
+
+    /// パース補正角（度）を縮小率に変換する。CropRect のパース補正は奥行きを持たない cos スケールとして扱う
+    private static func perspectiveScale(degrees: CGFloat) -> CGFloat {
+        GeometryUtils.isApproximatelyZero(degrees) ? 1 : cos(radians(fromDegrees: degrees))
+    }
+
+    private static func radians(fromDegrees degrees: CGFloat) -> CGFloat {
+        degrees * .pi / 180
+    }
+
+    // MARK: - Quarter Turn / Flip
+
+    /// 表示上でクロップ領域ごと時計回りに 90° × turns 回転した CropRect を返す
+    ///
+    /// 反転中に quarterTurns を増やすと表示は反時計回りに回るため、反転中は quarterTurns を逆向きに進める。
+    /// 奇数回の回転ではパース補正の縦横も入れ替え、表示内容がそのまま回転するようにする。
     static func cropRectAfterQuarterTurn(cropRect: CropRect, turns: Int) -> CropRect {
         let normalizedTurns = normalizeQuarterTurns(turns)
         var x = cropRect.x
@@ -47,9 +125,30 @@ enum CropGeometry {
             h = newH
         }
 
+        let turnDelta = cropRect.isFlippedInCrop ? -turns : turns
+        let swapsAxes = normalizedTurns % 2 == 1
         return cropRect.with(
             x: x, y: y, width: w, height: h,
-            quarterTurns: normalizeQuarterTurns(cropRect.quarterTurns + turns)
+            quarterTurns: normalizeQuarterTurns(cropRect.quarterTurns + turnDelta),
+            verticalPerspective: swapsAxes ? cropRect.horizontalPerspective : cropRect.verticalPerspective,
+            horizontalPerspective: swapsAxes ? cropRect.verticalPerspective : cropRect.horizontalPerspective
+        )
+    }
+
+    /// 表示を左右反転した CropRect を返す
+    ///
+    /// 反転は傾き補正より内側で適用されるため、傾き角とクロップ位置・角丸も鏡像にして、
+    /// クロップ結果がそのまま左右反転するようにする。
+    static func cropRectAfterFlip(_ cropRect: CropRect) -> CropRect {
+        let radii = cropRect.cornerRadii
+        return cropRect.with(
+            x: 1 - cropRect.x - cropRect.width,
+            straightenAngle: -cropRect.straightenAngle,
+            isFlippedInCrop: !cropRect.isFlippedInCrop,
+            cornerRadii: CornerRadii(
+                topLeft: radii.topRight, topRight: radii.topLeft,
+                bottomLeft: radii.bottomRight, bottomRight: radii.bottomLeft
+            )
         )
     }
 
@@ -107,7 +206,7 @@ enum CropGeometry {
     // MARK: - Constrained Resize
 
     /// ハンドルの種類（リサイズ方向）
-    enum ResizeHandle {
+    enum ResizeHandle: CaseIterable {
         case topLeft, topRight, bottomLeft, bottomRight
         case top, bottom, left, right
 
@@ -127,97 +226,127 @@ enum CropGeometry {
         let originY: CGFloat
     }
 
-    /// アスペクト比制約付きリサイズ計算
-    /// - Parameters:
-    ///   - input: リサイズ入力パラメータ
-    /// - Returns: 制約適用後の結果
-    static func constrainedResize(input: ConstrainedResizeInput) -> ConstrainedResizeResult {
-        var size = constrainedSize(
-            newWidth: input.newWidth, newHeight: input.newHeight,
-            handle: input.handle, normalizedRatio: input.normalizedRatio,
-            minSize: input.minSize
-        )
-        var origin = anchorOrigin(
-            start: input.start, handle: input.handle,
-            width: size.width, height: size.height
-        )
-        clampToBounds(
-            origin: &origin, size: &size,
-            normalizedRatio: input.normalizedRatio, minSize: input.minSize
-        )
-        return ConstrainedResizeResult(
-            width: size.width, height: size.height,
-            originX: origin.x, originY: origin.y
-        )
-    }
-
     /// リサイズ入力パラメータ
     struct ConstrainedResizeInput {
         let start: CropRect
         let newWidth: CGFloat
         let newHeight: CGFloat
         let handle: ResizeHandle
+        /// 正規化座標での幅 / 高さ
         let normalizedRatio: CGFloat
         let minSize: CGFloat
+        /// クロップ領域を収める範囲（正規化座標）。開始時の矩形がはみ出している分は常に許容する
+        let bounds: CGRect
+
+        init(
+            start: CropRect, newWidth: CGFloat, newHeight: CGFloat,
+            handle: ResizeHandle, normalizedRatio: CGFloat, minSize: CGFloat,
+            bounds: CGRect = CGRect(x: 0, y: 0, width: 1, height: 1)
+        ) {
+            self.start = start
+            self.newWidth = newWidth
+            self.newHeight = newHeight
+            self.handle = handle
+            self.normalizedRatio = normalizedRatio
+            self.minSize = minSize
+            self.bounds = bounds
+        }
+    }
+
+    /// アスペクト比制約付きリサイズ計算
+    ///
+    /// ドラッグ中のハンドルの反対側（辺ハンドルなら反対の辺と中心線）を固定したまま、
+    /// 比率を保って拡大縮小する。範囲に収まらない場合も固定側は動かさず、全体を同じ倍率で縮める。
+    static func constrainedResize(input: ConstrainedResizeInput) -> ConstrainedResizeResult {
+        let start = input.start
+        guard input.normalizedRatio.isFinite, input.normalizedRatio > 0 else {
+            return ConstrainedResizeResult(
+                width: start.width, height: start.height, originX: start.x, originY: start.y
+            )
+        }
+        var size = proportionalSize(input: input)
+
+        // 最小サイズ（比率を保ったまま拡大）
+        let growScale = max(1, input.minSize / size.width, input.minSize / size.height)
+        // 固定側から使える範囲に収める（比率を保ったまま縮小）
+        let available = availableSize(start: start, handle: input.handle, bounds: input.bounds)
+        let grown = CGSize(width: size.width * growScale, height: size.height * growScale)
+        let fitScale = min(1, available.width / grown.width, available.height / grown.height)
+        size = CGSize(width: grown.width * fitScale, height: grown.height * fitScale)
+
+        let origin = anchorOrigin(start: start, handle: input.handle, size: size)
+        return ConstrainedResizeResult(
+            width: size.width, height: size.height, originX: origin.x, originY: origin.y
+        )
     }
 
     // MARK: - Constrained Resize Helpers
 
-    private static func constrainedSize(
-        newWidth: CGFloat, newHeight: CGFloat,
-        handle: ResizeHandle, normalizedRatio: CGFloat, minSize: CGFloat
-    ) -> (width: CGFloat, height: CGFloat) {
-        var width: CGFloat
-        var height: CGFloat
+    /// ハンドルに応じて比率を保ったサイズを求める（角ハンドルは面積の小さい方を採用）
+    private static func proportionalSize(input: ConstrainedResizeInput) -> CGSize {
+        let ratio = input.normalizedRatio
+        let floorSize = max(input.minSize, AppConstants.normalizedTolerance)
+        let newWidth = max(input.newWidth, floorSize)
+        let newHeight = max(input.newHeight, floorSize)
+        let widthBased = CGSize(width: newWidth, height: newWidth / ratio)
+        let heightBased = CGSize(width: newHeight * ratio, height: newHeight)
 
-        if handle.isCorner {
-            let widthBasedArea = newWidth * (newWidth / normalizedRatio)
-            let heightBasedArea = (newHeight * normalizedRatio) * newHeight
-            if widthBasedArea <= heightBasedArea {
-                width = newWidth
-                height = newWidth / normalizedRatio
-            } else {
-                width = newHeight * normalizedRatio
-                height = newHeight
-            }
-        } else {
-            switch handle {
-            case .top, .bottom:
-                height = newHeight
-                width = newHeight * normalizedRatio
-            case .left, .right:
-                width = newWidth
-                height = newWidth / normalizedRatio
-            default:
-                width = newWidth
-                height = newHeight
-            }
+        switch input.handle {
+        case .top, .bottom:
+            return heightBased
+        case .left, .right:
+            return widthBased
+        case .topLeft, .topRight, .bottomLeft, .bottomRight:
+            let widthBasedArea = widthBased.width * widthBased.height
+            let heightBasedArea = heightBased.width * heightBased.height
+            return widthBasedArea <= heightBasedArea ? widthBased : heightBased
+        }
+    }
+
+    /// 固定側（反対の辺、または辺ハンドルの中心線）から確保できる最大サイズ
+    private static func availableSize(
+        start: CropRect, handle: ResizeHandle, bounds: CGRect
+    ) -> CGSize {
+        let lowerX = min(bounds.minX, start.x)
+        let upperX = max(bounds.maxX, start.x + start.width)
+        let lowerY = min(bounds.minY, start.y)
+        let upperY = max(bounds.maxY, start.y + start.height)
+
+        let width: CGFloat
+        switch handle {
+        case .topLeft, .left, .bottomLeft:
+            width = start.x + start.width - lowerX   // 右端固定
+        case .topRight, .right, .bottomRight:
+            width = upperX - start.x                 // 左端固定
+        case .top, .bottom:
+            let centerX = start.x + start.width / 2  // 横方向は中心固定
+            width = 2 * min(centerX - lowerX, upperX - centerX)
         }
 
-        width = max(width, minSize)
-        height = max(height, minSize)
-
-        // 最小サイズ適用後もアスペクト比を維持
-        if width / normalizedRatio > height {
-            height = width / normalizedRatio
-        } else {
-            width = height * normalizedRatio
+        let height: CGFloat
+        switch handle {
+        case .bottomLeft, .bottom, .bottomRight:
+            height = start.y + start.height - lowerY  // 上端固定
+        case .topLeft, .top, .topRight:
+            height = upperY - start.y                 // 下端固定
+        case .left, .right:
+            let centerY = start.y + start.height / 2  // 縦方向は中心固定
+            height = 2 * min(centerY - lowerY, upperY - centerY)
         }
-        return (width, height)
+        return CGSize(width: max(width, 0), height: max(height, 0))
     }
 
     private static func anchorOrigin(
-        start: CropRect, handle: ResizeHandle,
-        width: CGFloat, height: CGFloat
-    ) -> (x: CGFloat, y: CGFloat) {
+        start: CropRect, handle: ResizeHandle, size: CGSize
+    ) -> CGPoint {
         let originX: CGFloat
         switch handle {
         case .topRight, .right, .bottomRight:
             originX = start.x
         case .topLeft, .left, .bottomLeft:
-            originX = start.x + start.width - width
+            originX = start.x + start.width - size.width
         case .top, .bottom:
-            originX = start.x + start.width / 2 - width / 2
+            originX = start.x + start.width / 2 - size.width / 2
         }
 
         let originY: CGFloat
@@ -225,38 +354,49 @@ enum CropGeometry {
         case .topLeft, .top, .topRight:
             originY = start.y
         case .bottomLeft, .bottom, .bottomRight:
-            originY = start.y + start.height - height
+            originY = start.y + start.height - size.height
         case .left, .right:
-            originY = start.y + start.height / 2 - height / 2
+            originY = start.y + start.height / 2 - size.height / 2
         }
-        return (originX, originY)
+        return CGPoint(x: originX, y: originY)
     }
 
-    private static func clampToBounds(
-        origin: inout (x: CGFloat, y: CGFloat),
-        size: inout (width: CGFloat, height: CGFloat),
-        normalizedRatio: CGFloat, minSize: CGFloat
-    ) {
-        if origin.x < 0 {
-            size.width += origin.x
-            origin.x = 0
-            size.height = size.width / normalizedRatio
+    // MARK: - Free Resize
+
+    /// フリーリサイズ後のクロップ枠（ビュー座標）を計算する
+    /// - Parameters:
+    ///   - start: ドラッグ開始時のクロップ枠
+    ///   - handle: ドラッグ中のハンドル
+    ///   - delta: ドラッグ開始点からの移動量
+    ///   - minSize: クロップ枠の最小サイズ（`limit` より優先）
+    ///   - limit: 動かした辺が越えてはいけない範囲（キャンバス）
+    static func freeResizedFrame(
+        start: CGRect, handle: ResizeHandle, delta: CGVector, minSize: CGSize, limit: CGRect
+    ) -> CGRect {
+        var minX = start.minX
+        var minY = start.minY
+        var maxX = start.maxX
+        var maxY = start.maxY
+
+        switch handle {
+        case .topLeft, .left, .bottomLeft:
+            minX = min(max(start.minX + delta.dx, limit.minX), maxX - minSize.width)
+        case .topRight, .right, .bottomRight:
+            maxX = max(min(start.maxX + delta.dx, limit.maxX), minX + minSize.width)
+        case .top, .bottom:
+            break
         }
-        if origin.y < 0 {
-            size.height += origin.y
-            origin.y = 0
-            size.width = size.height * normalizedRatio
+
+        switch handle {
+        case .bottomLeft, .bottom, .bottomRight:
+            minY = min(max(start.minY + delta.dy, limit.minY), maxY - minSize.height)
+        case .topLeft, .top, .topRight:
+            maxY = max(min(start.maxY + delta.dy, limit.maxY), minY + minSize.height)
+        case .left, .right:
+            break
         }
-        if origin.x + size.width > 1 {
-            size.width = 1 - origin.x
-            size.height = size.width / normalizedRatio
-        }
-        if origin.y + size.height > 1 {
-            size.height = 1 - origin.y
-            size.width = size.height * normalizedRatio
-        }
-        size.width = max(size.width, minSize)
-        size.height = max(size.height, minSize)
+
+        return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
     }
 
     // MARK: - View Coordinate Conversion
@@ -287,69 +427,6 @@ enum CropGeometry {
         )
     }
 
-    // MARK: - Pan Offset Clamping
-
-    /// Clamps a pan offset so that the image fully covers the crop frame.
-    /// If the image is smaller than the crop frame on an axis, that axis is locked to zero.
-    /// - Parameters:
-    ///   - offset: The current pan offset
-    ///   - imageSize: The rendered image size (post-zoom)
-    ///   - cropFrameSize: The crop frame size
-    /// - Returns: Clamped offset
-    static func clampOffset(offset: CGPoint, imageSize: CGSize, cropFrameSize: CGSize) -> CGPoint {
-        let maxOffsetX = max(0, (imageSize.width - cropFrameSize.width) / 2)
-        let maxOffsetY = max(0, (imageSize.height - cropFrameSize.height) / 2)
-        return CGPoint(
-            x: max(-maxOffsetX, min(maxOffsetX, offset.x)),
-            y: max(-maxOffsetY, min(maxOffsetY, offset.y))
-        )
-    }
-
-    // MARK: - Editor State Reconstruction
-
-    /// Reconstructs the zoom and pan offset from a persisted CropRect so the editor can resume
-    /// a previous crop session at the correct view state.
-    /// - Parameters:
-    ///   - cropRect: The persisted normalized crop rect
-    ///   - canvasSize: The visible canvas size in the editor
-    ///   - imageSize: The original image size (pixels or points)
-    /// - Returns: The zoom scale and pan offset that reproduce the crop rect in the editor
-    static func initialStateFromCropRect(
-        cropRect: CropRect, canvasSize: CGSize, imageSize: CGSize
-    ) -> (offset: CGPoint, zoom: CGFloat) {
-        guard !GeometryUtils.isApproximatelyZero(cropRect.width),
-              !GeometryUtils.isApproximatelyZero(cropRect.height) else {
-            return (offset: .zero, zoom: 1.0)
-        }
-
-        let imageAspect = imageSize.width
-            / max(imageSize.height, AppConstants.floatingPointTolerance)
-        let canvasAspect = canvasSize.width
-            / max(canvasSize.height, AppConstants.floatingPointTolerance)
-
-        // Zoom is the reciprocal of the crop fraction that fills the smaller canvas dimension.
-        let zoom = 1.0 / max(cropRect.width, cropRect.height)
-
-        // Compute the fitted image size on the canvas at zoom = 1.0.
-        let fitSize: CGSize
-        if imageAspect > canvasAspect {
-            fitSize = CGSize(width: canvasSize.width, height: canvasSize.width / imageAspect)
-        } else {
-            fitSize = CGSize(width: canvasSize.height * imageAspect, height: canvasSize.height)
-        }
-
-        // Offset is the displacement from the image center to the crop center, in canvas points.
-        let cropCenterX = cropRect.x + cropRect.width / 2
-        let cropCenterY = cropRect.y + cropRect.height / 2
-        let imageCenterX: CGFloat = 0.5
-        let imageCenterY: CGFloat = 0.5
-
-        let offsetX = (imageCenterX - cropCenterX) * fitSize.width * zoom
-        let offsetY = (imageCenterY - cropCenterY) * fitSize.height * zoom
-
-        return (offset: CGPoint(x: offsetX, y: offsetY), zoom: zoom)
-    }
-
     // MARK: - Normalization / Clamping
 
     /// quarterTurnsを0〜3に正規化
@@ -362,6 +439,20 @@ enum CropGeometry {
     /// straightenAngleを-45〜+45にクランプ
     static func clampStraightenAngle(_ angle: CGFloat) -> CGFloat {
         min(max(angle, AppConstants.straightenMinAngle), AppConstants.straightenMaxAngle)
+    }
+
+    // MARK: - Shape Path
+
+    /// クロップ形状のパスを返す（y 軸上向き。`.rectangle` は矩形そのもの）
+    static func shapePath(_ shape: CropShape, in rect: CGRect, radii: CornerRadii) -> CGPath {
+        switch shape {
+        case .rectangle:
+            return CGPath(rect: rect, transform: nil)
+        case .circle:
+            return CGPath(ellipseIn: rect, transform: nil)
+        case .roundedRectangle:
+            return roundedRectPath(rect: rect, radii: radii, shorterSide: min(rect.width, rect.height))
+        }
     }
 
     // MARK: - Corner Radius
@@ -482,6 +573,19 @@ enum CropGeometry {
         }
         let normalized = pixelDistance / halfShorter
         return max(AppConstants.cornerRadiusMin, min(AppConstants.cornerRadiusMax, normalized))
+    }
+
+    /// 角丸ハンドルとリサイズハンドルの両方がヒットしたとき、角丸ハンドルを優先するか
+    ///
+    /// 近い方を優先する。ほぼ同じ距離（角丸半径がほぼ 0 でハンドルが角に重なる）のときは、
+    /// クロップ枠の内側をクリックした場合だけ角丸を選び、外側からはリサイズできるようにする。
+    static func prefersCornerRadiusHandle(
+        radiusHandleDistance: CGFloat, resizeHandleDistance: CGFloat, isInsideCropFrame: Bool
+    ) -> Bool {
+        if abs(radiusHandleDistance - resizeHandleDistance) < AppConstants.floatingPointTolerance {
+            return isInsideCropFrame
+        }
+        return radiusHandleDistance < resizeHandleDistance
     }
 
     /// クロップ領域のアスペクト比の向き

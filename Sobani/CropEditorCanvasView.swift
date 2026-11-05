@@ -1,5 +1,4 @@
 import Cocoa
-import QuartzCore
 
 // MARK: - Crop Editor Canvas View
 
@@ -8,18 +7,17 @@ final class CropEditorCanvasView: NSView {
 
     // MARK: - Constants
 
-    static let handleHitTolerance: CGFloat = 14
     static let minZoom: CGFloat = 1.0
     static let maxZoom: CGFloat = 10.0
     static let zoomSensitivity: CGFloat = 0.02
-    static let perspectiveDepth: CGFloat = -1.0 / 500.0
+    /// トラックパッド等の精密スクロール量（ポイント）を、マウスホイールの行数相当に換算する係数
+    static let preciseScrollPointsPerLine: CGFloat = 10
+    /// 編集表示用に保持する画像の長辺の上限（ピクセル）。巨大な画像を毎フレーム描画しないようにする
+    static let displayImageMaxPixelSize: CGFloat = 2048
 
     // MARK: - Handle Position
 
-    enum HandlePosition: CaseIterable {
-        case topLeft, topRight, bottomLeft, bottomRight
-        case top, bottom, left, right
-    }
+    typealias HandlePosition = CropGeometry.ResizeHandle
 
     // MARK: - Drag State
 
@@ -28,6 +26,11 @@ final class CropEditorCanvasView: NSView {
         case movingImage
         case resizingHandle(HandlePosition)
         case adjustingCornerRadius(CropGeometry.Corner)
+
+        var isMovingImage: Bool {
+            if case .movingImage = self { return true }
+            return false
+        }
     }
 
     // MARK: - Properties
@@ -51,6 +54,7 @@ final class CropEditorCanvasView: NSView {
     var dragStartCropFrame: NSRect = .zero
     var activeDragCropFrame: NSRect?
     var dragStartImageDrawRect: NSRect = .zero
+    let scrollEndDebouncer = ScrollEndDebouncer()
 
     var cropShape: CropShape { cropRect.shape }
     var cornerRadii: CornerRadii { cropRect.cornerRadii }
@@ -58,9 +62,21 @@ final class CropEditorCanvasView: NSView {
 
     // MARK: - Setup
 
+    /// 編集対象の画像を設定する。大きな画像は表示用に縮小したコピーを使う（座標計算はポイントサイズ基準のまま）
     func setImage(_ image: NSImage) {
-        displayImage = image
+        displayImage = Self.makeDisplayImage(from: image)
         needsDisplay = true
+    }
+
+    private static func makeDisplayImage(from image: NSImage) -> NSImage {
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
+              CGFloat(max(cgImage.width, cgImage.height)) > displayImageMaxPixelSize,
+              let downsampled = CropImageProcessor.applyFullCrop(
+                to: cgImage, cropRect: .full, maxOutputPixelSize: displayImageMaxPixelSize
+              ) else {
+            return image
+        }
+        return NSImage(cgImage: downsampled, size: image.size)
     }
 
     // MARK: - Drawing
@@ -83,21 +99,10 @@ final class CropEditorCanvasView: NSView {
         }
         guard cropFrame.width > 0, cropFrame.height > 0 else { return }
 
-        // 形状パスを一度だけ計算
-        let shapePath: CGPath?
-        switch cropShape {
-        case .rectangle:
-            shapePath = nil
-        case .circle:
-            let path = CGMutablePath()
-            path.addEllipse(in: cropFrame)
-            shapePath = path
-        case .roundedRectangle:
-            let shorterSide = min(cropFrame.width, cropFrame.height)
-            shapePath = CropGeometry.roundedRectPath(
-                rect: cropFrame, radii: cornerRadii, shorterSide: shorterSide
-            )
-        }
+        // 形状パスを一度だけ計算（矩形は塗り分けで描くためパス不要）
+        let shapePath: CGPath? = cropShape == .rectangle
+            ? nil
+            : CropGeometry.shapePath(cropShape, in: cropFrame, radii: cornerRadii)
 
         // 画像がキャンバス領域外に描画されないようクリッピング
         context.saveGState()
@@ -151,19 +156,28 @@ final class CropEditorCanvasView: NSView {
     // MARK: - State Initialization
 
     /// 既存の CropRect からズーム/オフセットの初期状態を復元する
+    /// コントローラから CropRect を反映するときは必ずこれを使う（ズームが残ったまま cropRect だけ差し替えると二重に効く）
     func initializeFromCropRect(_ rect: CropRect) {
+        scrollEndDebouncer.cancel()
         cropRect = rect
         imageZoom = Self.minZoom
         recalculateImageOffset()
         needsDisplay = true
     }
 
-    /// cropRect変更後に imageOffset を再計算（ズームは維持）
+    /// パン・ズームの表示状態を cropRect に取り込み、ズーム 1 と対応するオフセットに戻す（見た目は変わらない）
+    func commitViewTransformToCropRect() {
+        cropRect = computeFinalCropRect()
+        imageZoom = Self.minZoom
+        recalculateImageOffset()
+    }
+
+    /// cropRect に対応する imageOffset を再計算する（ズーム 1 を前提とする）
     func recalculateImageOffset() {
         let cropFrame = calculateCropFrameRect()
         guard cropFrame.width > 0, cropFrame.height > 0,
-              cropRect.width > AppConstants.floatingPointTolerance,
-              cropRect.height > AppConstants.floatingPointTolerance else {
+              cropRect.width > AppConstants.normalizedTolerance,
+              cropRect.height > AppConstants.normalizedTolerance else {
             imageOffset = .zero
             return
         }
@@ -173,33 +187,28 @@ final class CropEditorCanvasView: NSView {
         let offsetY = baseHeight * (0.5 - cropRect.y) - cropFrame.height / 2
         imageOffset = CGPoint(x: offsetX, y: offsetY)
     }
-
-    /// ズーム/オフセットをリセットする
-    func resetZoomAndOffset() {
-        imageZoom = Self.minZoom
-        imageOffset = .zero
-        needsDisplay = true
-    }
 }
 
 // MARK: - Crop Frame & Image Rect Calculation
 
 extension CropEditorCanvasView {
 
+    /// 90° 回転を考慮した表示上の画像サイズ（ポイント）
+    var effectiveImageSize: CGSize {
+        guard let image = displayImage else { return .zero }
+        return CropGeometry.effectiveSize(image.size, quarterTurns: cropRect.quarterTurns)
+    }
+
     /// クロップ枠をキャンバス中央に配置
     func calculateCropFrameRect() -> NSRect {
-        guard let image = displayImage, image.size.width > 0, image.size.height > 0 else {
+        let effectiveSize = effectiveImageSize
+        guard effectiveSize.width > 0, effectiveSize.height > 0 else {
             return .zero
         }
-        let imageSize = image.size
-        let normalizedTurns = CropGeometry.normalizeQuarterTurns(cropRect.quarterTurns)
-        let isSwapped = (normalizedTurns == 1 || normalizedTurns == 3)
-        let effectiveWidth = isSwapped ? imageSize.height : imageSize.width
-        let effectiveHeight = isSwapped ? imageSize.width : imageSize.height
 
         // クロップ領域のアスペクト比を計算
-        let cropAspect = (cropRect.width * effectiveWidth)
-            / max(cropRect.height * effectiveHeight, AppConstants.floatingPointTolerance)
+        let cropAspect = (cropRect.width * effectiveSize.width)
+            / max(cropRect.height * effectiveSize.height, AppConstants.normalizedTolerance)
 
         let availableRect = bounds.insetBy(
             dx: AppConstants.cropEditorCanvasPadding, dy: AppConstants.cropEditorCanvasPadding
@@ -231,9 +240,9 @@ extension CropEditorCanvasView {
         }
 
         // zoom=1.0でクロップ枠にちょうど画像全体が収まるスケールを基準にする
-        let baseWidth = cropFrame.width / max(cropRect.width, AppConstants.floatingPointTolerance)
+        let baseWidth = cropFrame.width / max(cropRect.width, AppConstants.normalizedTolerance)
         let baseHeight = cropFrame.height
-            / max(cropRect.height, AppConstants.floatingPointTolerance)
+            / max(cropRect.height, AppConstants.normalizedTolerance)
 
         let drawWidth = baseWidth * imageZoom
         let drawHeight = baseHeight * imageZoom

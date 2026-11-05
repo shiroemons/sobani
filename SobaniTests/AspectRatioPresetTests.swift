@@ -75,4 +75,24 @@ import Testing
             #expect(!preset.localizedName.isEmpty)
         }
     }
+
+    // MARK: - ratio(forImageSize:)
+
+    /// original は渡した（90° 回転後の）画像サイズの比率になる
+    @Test func ratioForImageSize_originalUsesGivenSize() throws {
+        let landscape = try #require(AspectRatioPreset.original.ratio(forImageSize: CGSize(width: 400, height: 200)))
+        #expect(abs(landscape - 2.0) < AppConstants.normalizedTolerance)
+        let rotated = try #require(AspectRatioPreset.original.ratio(forImageSize: CGSize(width: 200, height: 400)))
+        #expect(abs(rotated - 0.5) < AppConstants.normalizedTolerance)
+    }
+
+    @Test func ratioForImageSize_fixedPresetsIgnoreImageSize() throws {
+        let ratio = try #require(AspectRatioPreset.ratio16x9.ratio(forImageSize: CGSize(width: 200, height: 400)))
+        #expect(abs(ratio - 16.0 / 9.0) < AppConstants.normalizedTolerance)
+    }
+
+    @Test func ratioForImageSize_freeAndDegenerateAreNil() {
+        #expect(AspectRatioPreset.free.ratio(forImageSize: CGSize(width: 400, height: 200)) == nil)
+        #expect(AspectRatioPreset.original.ratio(forImageSize: .zero) == nil)
+    }
 }

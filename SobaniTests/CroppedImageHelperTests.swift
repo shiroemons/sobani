@@ -136,4 +136,27 @@ import Testing
         // After invalidation, cache is empty — a new image is produced
         #expect(!(before === after))
     }
+
+    /// 全体に近いが 1% 未満だけ小さいクロップも、そのまま元画像を返さずに切り出す
+    @Test func testNearFullCropIsNotTreatedAsIdentity() throws {
+        let original = makeTestImage(width: 200, height: 100)
+        let crop = makeCropRect(x: 0, y: 0, width: 0.995, height: 1)
+        let result = CroppedImageHelper.croppedImage(
+            from: original, cropRect: crop, imageName: "near-full"
+        )
+        #expect(!(result === original))
+    }
+
+    /// 大きな画像のサムネイルは縮小して生成する（長辺が上限を超えない）
+    @Test func testLargeImageThumbnailIsDownscaled() throws {
+        let original = makeTestImage(width: 4000, height: 2000)
+        let crop = makeCropRect(x: 0, y: 0, width: 1, height: 1)
+            .with(isFlippedInCrop: true)
+        let result = CroppedImageHelper.croppedImage(
+            from: original, cropRect: crop, imageName: "large"
+        )
+        let cgImage = try #require(result.cgImage(forProposedRect: nil, context: nil, hints: nil))
+        #expect(max(cgImage.width, cgImage.height) <= 1024)
+        #expect(abs(CGFloat(cgImage.width) / CGFloat(cgImage.height) - 2) < AppConstants.floatingPointTolerance)
+    }
 }

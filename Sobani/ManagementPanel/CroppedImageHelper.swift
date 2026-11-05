@@ -2,11 +2,18 @@ import AppKit
 
 // swiftlint:disable legacy_objc_type
 enum CroppedImageHelper {
+    /// サムネイルの長辺の上限（ピクセル）。管理パネルのプレビュー（最大 300pt）を Retina で表示できる大きさ
+    private static let thumbnailMaxPixelSize: CGFloat = 1024
+    private static let cacheCountLimit = 100
+    /// キャッシュ全体の上限（バイト）。コストには各サムネイルのビットマップサイズを使う
+    private static let cacheTotalCostLimit = 128 * 1024 * 1024
+
     // NSCache is thread-safe internally; nonisolated(unsafe) suppresses Swift 6 Sendable warning.
     // External synchronisation is provided by NSCache's own locking.
     private nonisolated(unsafe) static let cache: NSCache<NSString, NSImage> = {
         let cache = NSCache<NSString, NSImage>()
-        cache.countLimit = 100
+        cache.countLimit = cacheCountLimit
+        cache.totalCostLimit = cacheTotalCostLimit
         return cache
     }()
 
@@ -52,13 +59,13 @@ enum CroppedImageHelper {
             return cached
         }
 
-        // CGImage に変換してフルパイプラインを適用
+        // CGImage に変換してフルパイプラインを適用（サムネイルなので縮小しながら 1 回で描画する）
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             return image
         }
 
         guard let croppedCG = CropImageProcessor.applyFullCrop(
-            to: cgImage, cropRect: cropRect
+            to: cgImage, cropRect: cropRect, maxOutputPixelSize: thumbnailMaxPixelSize
         ) else {
             return image
         }
@@ -68,7 +75,7 @@ enum CroppedImageHelper {
             size: NSSize(width: croppedCG.width, height: croppedCG.height)
         )
 
-        cache.setObject(result, forKey: key)
+        cache.setObject(result, forKey: key, cost: croppedCG.bytesPerRow * croppedCG.height)
 
         return result
     }

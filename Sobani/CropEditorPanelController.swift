@@ -94,6 +94,13 @@ final class CropEditorPanelController: NSObject {
         super.init()
     }
 
+    deinit {
+        // close() を経ずに解放されてもキー監視が残らないようにする
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+    }
+
     // MARK: - Show / Close
 
     func show(image: NSImage, near window: NSWindow) {
@@ -238,19 +245,20 @@ final class CropEditorPanelController: NSObject {
     }
 
     @objc func resetTapped() {
-        currentCropRect = .full
-        canvasView?.cropRect = .full
-        canvasView?.resetZoomAndOffset()
+        // スライダーのリセットは保留中のスクロール操作を先に履歴へ確定させるため、状態を戻す前に呼ぶ
         toolbarView?.resetStraightenAngle()
-        toolbarView?.hideAspectRatioSelector()
+        currentCropRect = .full
+        canvasView?.initializeFromCropRect(currentCropRect)
+        switchToolbarMode(to: .correction)
         syncToolbarState(to: currentCropRect)
         recordCurrentState()
         updateRevertButtonVisibility()
     }
 
     @objc func flipTapped() {
-        currentCropRect = currentCropRect.with(isFlippedInCrop: !currentCropRect.isFlippedInCrop)
-        canvasView?.cropRect = currentCropRect
+        currentCropRect = CropGeometry.cropRectAfterFlip(currentCropRect)
+        canvasView?.initializeFromCropRect(currentCropRect)
+        syncToolbarState(to: currentCropRect)
         recordCurrentState()
         updateRevertButtonVisibility()
     }
@@ -305,6 +313,11 @@ final class CropEditorPanelController: NSObject {
         }
         return .aspectRatio
     }
+}
+
+// MARK: - History & Toolbar State
+
+extension CropEditorPanelController {
 
     // MARK: - History Helpers
 
@@ -338,9 +351,10 @@ final class CropEditorPanelController: NSObject {
             verticalPerspective: cropRect.verticalPerspective,
             horizontalPerspective: cropRect.horizontalPerspective
         )
-        if let preset = AspectRatioPreset.from(presetName: cropRect.aspectRatioPreset) {
-            toolbarView?.updateAspectRatioSelection(preset)
-        }
+        // プリセットなし（nil）はフリー。選択表示を残すとリサイズの挙動と食い違う
+        toolbarView?.updateAspectRatioSelection(
+            AspectRatioPreset.from(presetName: cropRect.aspectRatioPreset) ?? .free
+        )
         toolbarView?.updateShapeSelection(cropRect.shape)
         toolbarView?.setCornersLinked(cropRect.cornersLinked)
         toolbarView?.updateShapeAspectOrientation(currentAspectOrientation(cropRect))
@@ -348,7 +362,7 @@ final class CropEditorPanelController: NSObject {
 
     /// 現在のクロップ領域のアスペクト比の向きを判定
     func currentAspectOrientation(_ cropRect: CropRect) -> CropGeometry.AspectOrientation {
-        let imageSize = effectiveImageSize()
+        let imageSize = effectiveImageSize(for: cropRect)
         let pixelWidth = cropRect.width * imageSize.width
         let pixelHeight = cropRect.height * imageSize.height
         if GeometryUtils.isApproximatelyEqual(pixelWidth, pixelHeight) {
@@ -416,15 +430,21 @@ extension CropEditorPanelController {
         updateDoneButtonAppearance()
     }
 
+    /// このパネルがキーウィンドウのときだけ Esc でキャンセルする（他のウィンドウの Esc は奪わない）
     func installKeyMonitor() {
+        removeKeyMonitor()
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == AppConstants.escKeyCode { // ESC
-                DispatchQueue.main.async {
-                    self?.cancelTapped()
-                }
-                return nil
+            guard event.keyCode == AppConstants.escKeyCode else { return event }
+            let eventWindowNumber = event.windowNumber
+            let isForPanel = MainActor.assumeIsolated {
+                guard let panel = self?.panel else { return false }
+                return panel.windowNumber == eventWindowNumber
             }
-            return event
+            guard isForPanel else { return event }
+            DispatchQueue.main.async {
+                self?.cancelTapped()
+            }
+            return nil
         }
     }
 

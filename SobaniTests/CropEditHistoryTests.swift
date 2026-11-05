@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Sobani
 
-/// CropEditHistoryクラスの編集履歴管理（undo/redo/reset）を検証するテスト
+/// CropEditHistoryクラスの編集履歴管理（undo/redo）を検証するテスト
 @Suite @MainActor struct CropEditHistoryTests {
 
     // MARK: - 初期状態テスト
@@ -124,24 +124,28 @@ import Testing
         #expect(!history.canRedo)
     }
 
-    // MARK: - resetテスト
+    // MARK: - 微小な変更の記録
 
-    /// reset()後は初期状態のみが残り、undo/redoできないことを検証
-    @Test func reset_keepsOnlyInitialState() throws {
-        let initial = CropRect(x: 0.05, y: 0.05, width: 0.9, height: 0.9)
+    /// 画像の 0.5% だけ動かした変更も重複扱いせずに記録する（以前は 1% 未満の変更が捨てられていた）
+    @Test func record_smallNudgeIsRecorded() throws {
+        let initial = CropRect(x: 0.1, y: 0.1, width: 0.5, height: 0.5)
         let history = CropEditHistory(initialState: initial)
 
-        history.record(CropRect(x: 0.1, y: 0.1, width: 0.8, height: 0.8))
-        history.record(CropRect(x: 0.2, y: 0.2, width: 0.6, height: 0.6))
+        history.record(initial.with(x: 0.105))
 
-        history.reset()
+        #expect(history.canUndo)
+        let undone = try #require(history.undo())
+        #expect(abs(undone.x - 0.1) < AppConstants.normalizedTolerance)
+    }
+
+    /// 浮動小数点誤差程度の差は重複として記録しない
+    @Test func record_floatingPointNoiseIsSkipped() {
+        let initial = CropRect(x: 0.1, y: 0.1, width: 0.5, height: 0.5)
+        let history = CropEditHistory(initialState: initial)
+
+        history.record(initial.with(x: 0.1 + 1e-9))
 
         #expect(!history.canUndo)
-        #expect(!history.canRedo)
-
-        // undoはnilを返す（初期状態のみ残っている）
-        let result = history.undo()
-        #expect(result == nil)
     }
 
     // MARK: - 空履歴でのundo/redoテスト
