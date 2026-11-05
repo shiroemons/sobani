@@ -120,18 +120,18 @@ flowchart TD
         P0VIS -->|画面外| P0MOVE
         P0MOVE --> P0REST
         P0REST -->|あり| P0OK
-        P0REST -->|なし| P0WAIT["キュー待機<br/>(300秒で期限切れ)"]
+        P0REST -->|なし| P0WAIT["キュー待機<br/>(起きている時間で300秒経つと期限切れ)"]
     end
 
     subgraph Phase1["Phase 1: スリープ/復帰"]
-        P1S["handleWillSleep<br/>captureWindowStates() で<br/>全ウィンドウの状態保存"]
+        P1S["handleWillSleep<br/>captureWindowStates() で<br/>ペンディング以外の状態保存"]
         P1W["handleDidWake<br/>3秒後に復元開始"]
         P1FIND{"保存時の<br/>モニター検索"}
         P1ID["displayID 一致"]
         P1GEO["geometry フォールバック<br/>(100px 許容差)"]
-        P1RESTORE["相対座標で復元<br/>+ クランプ"]
+        P1RESTORE["相対座標で復元<br/>(見えない場合だけクランプ)"]
         P1RETRY{"リトライ<br/>(最大10回<br/>3秒間隔)"}
-        P1PENDING["未復元 →<br/>ペンディングキューへ"]
+        P1PENDING["未復元 →<br/>ペンディングキューへ<br/>+ attemptPendingRestorations"]
 
         P1S --> P1W
         P1W --> P1FIND
@@ -160,26 +160,39 @@ flowchart TD
 
 1. 全ウィンドウの位置を確認し、いずれかの画面内に収まっているか検査します。
    - 画面外のウィンドウ → メイン画面の表示可能領域に移動し、`displayID: 0` としてペンディングキューに追加します。
-2. 既存のペンディングキューを確認し、元のモニターが再接続されている場合は元の位置に復元して `removePending` します。
+2. 既存のペンディングキューを確認し、元のモニターが再接続されている場合は元の位置に復元して `removePending` します（Phase 2）。
+3. 結果の配置でスナップショットを更新します（古いスナップショットで次の画面構成変更時にウェイクモードが再開されないようにするため）。
 
 ### Phase 1: スリープ/復帰
 
 **スリープ前 (`handleWillSleep`):**
 
-- ペンディングキューと `wakeContext` をクリアします。
-- `captureWindowStates()` で全ウィンドウの現在の状態（位置・サイズ・`displayID`・画面フレーム・ウィンドウの生の origin（captureState の座標変換を回避））をキャプチャし、`wakeContext` に保存します。
+- ペンディングキューの期限計測を一時停止します（`suspendExpiry`。スリープしていた時間は 300 秒の期限に含めません）。
+- 復元処理の途中（`wakeContext.isActive`）で再びスリープした場合は、現在位置が macOS に退避させられたままの可能性があるため取り直さず、既存の `wakeContext`（意図した位置）を保ったまま非アクティブにして次の復帰を待ちます。
+- それ以外は `captureWindowStates()` で各ウィンドウの現在の状態（位置・サイズ・`displayID`・画面フレーム・ウィンドウの生の origin（captureState の座標変換を回避））をキャプチャし、`wakeContext` に保存します。
+  - ペンディング中のウィンドウは退避先にいるため含めません（意図した位置はペンディングキューが持ち、復帰後に Phase 2 で戻します）。ペンディングキューは消去しません。
+  - どのスクリーンとも重ならないウィンドウも含めません。
 
 **復帰後 (`handleDidWake`):**
 
+- ペンディングキューの期限計測を再開し、スリープしていた時間だけ各エントリの作成時刻を後ろへずらします（`resumeExpiry`）。
 - `wakeContext.isActive = true`、`retryCount = 0` に設定します。
 - 3秒の遅延後に `attemptWakeRestoration` を開始します（macOS がモニターを再認識する時間を確保するため）。
 - 各ウィンドウについて、スリープ前に記録した `displayID` と一致するモニターを検索します。
-  - **displayID 一致**: そのモニター上の相対座標で復元し、画面内にクランプします。
+  - **displayID 一致**: スリープ前のスクリーンフレーム基準の相対位置で復元します（`ScreenRestorationUtils.restoredOrigin`）。起動時のアンカー復元（`WindowState.resolvedForRestore`）と同じく、スクリーンサイズが変わっていれば `mapOrigin` で拡縮し、写像先がどのスクリーンでも見えない場合（縦横 50px 未満しか重ならない）だけクランプします。意図的に画面外へはみ出させた配置はそのまま保たれます。
   - **geometry フォールバック**: `displayID` が一致しない場合、スクリーンフレームの位置を 100px の許容差で比較し、最も近いモニターに復元します。
   - **未検出**: リトライキューに入れます。
 - リトライは最大10回、3秒間隔で実行されます。
 - 最初の2回（インクリメント後の retryCount ≤ 2）は成功しても、macOS の自動移動に対抗するための追加リトライも実行します。
-- 最大リトライ回数に達した後も未復元のウィンドウは `moveUnrestoredToPendingQueue` でペンディングキューに移行し、`wakeContext` をクリアします。
+- 復元中にユーザーが動かした・大きさを変えたウィンドウ（`imageWindowStateDidChange` のトリガーが `.position` / `.size` / `.reset` / `.crop` / `.rotation`）は `wakeContext.release(windowId:)` で復元対象から外し、以後のリトライで元に戻しません。
+- 全ウィンドウを復元できた、または最大リトライ回数に達したら、未復元のウィンドウを `moveUnrestoredToPendingQueue` でペンディングキューに移行し、`wakeContext` をクリアしてから `attemptPendingRestorations()` を呼びます（スリープ前からペンディング中だったウィンドウの復元とスナップショットの更新）。
+
+### 起動直後の追従（launchContext）
+
+起動後 120 秒間は、画面構成が変わるたびにディスプレイアンカー（UUID）基準で位置を再適用します（ログイン直後のディスプレイ認識遅延・プライマリ入れ替わり対策）。
+
+- ユーザーが動かした・大きさを変えたウィンドウ（上記と同じトリガー）は追従対象から外します。
+- 追従を終える時点でアンカーのディスプレイが接続されていないウィンドウは、意図した位置のままペンディングキューへ追加します（`launchContext` を消すと意図した位置が失われるため）。
 
 ### Phase 2: モニター再接続（ペンディングキュー）
 
@@ -188,27 +201,30 @@ flowchart TD
 | 項目 | 内容 |
 |---|---|
 | 保存場所 | `~/Library/Application Support/Sobani/pending_restorations.json` |
-| タイムアウト | 300秒（期限切れエントリは自動削除） |
-| 復元条件 | `displayID` の一致、または保存時の画面フレームとの geometry マッチ。`displayID` が 0 の場合は元の位置が画面上に表示可能かで判定 |
+| タイムアウト | 300秒（`ScreenRestorationManager.defaultTimeout`。スリープしていた時間は含めない。期限切れエントリは自動削除） |
+| 復元条件 | アンカー（ディスプレイ UUID）の一致を最優先。なければ `displayID` の一致、または保存時の画面フレームとの geometry マッチ。`displayID` が 0 の場合は元の位置が画面上に表示可能かで判定 |
 
-**`PendingRestoration` の主なフィールド:**
+**`PendingRestoration` の主なフィールド（JSON 上の表現）:**
 
 ```swift
 struct PendingRestoration: Codable {
     let windowId: Int
-    let originalState: WindowState
+    let originalState: WindowState   // 意図した位置（画像基準の原点）
     let displayID: CGDirectDisplayID
-    let adjustedOriginX: CGFloat
-    let adjustedOriginY: CGFloat
     let createdAt: Date
-    let screenFrameX: CGFloat?
+    let screenFrameX: CGFloat?       // スリープ前の画面フレーム（preSleepScreenFrame）
     let screenFrameY: CGFloat?
     let screenFrameWidth: CGFloat?
     let screenFrameHeight: CGFloat?
 }
 ```
 
-`restorableEntries()` を呼び出すと、期限切れエントリを除去した上で、現在接続されているモニターと `displayID` または geometry が一致するエントリを返します。一致したエントリは元の位置に復元され、`removePending` でキューから削除されます。
+旧形式の JSON に含まれる `adjustedOriginX` / `adjustedOriginY`（退避先の座標）は使われていなかったため削除しました。旧形式のファイルもそのまま読み込めます。
+
+`restorableEntries(screens:)` を呼び出すと、期限切れエントリを除去した上で、指定のスクリーン構成で復元できるエントリを返します。各エントリは次の順で復元され、`removePending` でキューから削除されます:
+
+1. アンカーのディスプレイが接続されていれば、ディスプレイ基準の相対位置で再適用（`reapplyAnchoredPosition`）
+2. それ以外は対象モニタ（displayID → geometry → 元の位置と最も重なるスクリーン）を探し、スリープ前の画面フレーム基準の相対位置で復元（見えない場合だけクランプ）。`originalState` は画像基準のため、計算も配置（`ImageWindow.setImageOrigin`）も画像基準で行い、回転中のウィンドウがずれないようにしています。
 
 ### スナップショット機構
 
@@ -216,14 +232,15 @@ struct PendingRestoration: Codable {
 
 **保存タイミング:**
 
-- `imageWindowStateDidChange` / `imageWindowListDidChange` 通知を受信したとき（0.3秒デバウンス付き）
+- `imageWindowStateDidChange` / `imageWindowListDidChange` 通知を受信したとき（0.3秒デバウンス付き。連続した通知ではタイマーを作り直さず発火時刻を後ろへずらす）
 - アプリ起動完了時（`applicationDidFinishLaunching`）
+- `attemptPendingRestorations()` の最後（通常の画面構成変更・スリープ復帰の完了・起動直後の追従の終了時）
 
 **保存先:** `AppDelegate.screenSnapshot`（`WakeRestorationContext` 型、メモリ内のみ）
 
-**保存内容:** `captureWindowStates()` で `handleWillSleep` と同一の情報（全ウィンドウの `WindowState`・生の origin・`displayID`・画面フレーム）をキャプチャします。
+**保存内容:** `captureWindowStates()` で `handleWillSleep` と同一の情報（ペンディング中・画面外を除く各ウィンドウの `WindowState`・生の origin・`displayID`・画面フレーム）をキャプチャします。
 
-**復元中のガード:** `wakeContext.isActive` が `true` のとき（復元処理中）はスナップショットを更新しません。macOS が一時的に移動したウィンドウの位置を保存しないためです。
+**復元中のガード:** `wakeContext.isActive` または起動直後の追従中（`launchContext.isActive`）はスナップショットを更新しません。macOS が一時的に移動したウィンドウの位置を保存しないためです。
 
 **使用タイミング:** `handleScreenChange` でスクリーン減少を検知し、`wakeContext` が空の場合に `screenSnapshot` から `wakeContext` にコピーしてウェイクモードを有効化します。
 

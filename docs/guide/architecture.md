@@ -56,7 +56,7 @@ classDiagram
     }
     class ScreenRestorationManager {
         +addPending()
-        +restorableEntries()
+        +restorableEntries(screens)
     }
     class LanguageManager {
         +shared: LanguageManager
@@ -263,7 +263,7 @@ classDiagram
 | `SparkleManager.swift` | Sparkle フレームワークによる自動アップデート（シングルトン） |
 | `WakeRestorationContext.swift` | スリープ/復帰時の復元コンテキスト |
 | `WindowStateManager.swift` | ウィンドウ状態の永続化（シングルトン） |
-| `ZOrderUtils.swift` | Z-order配列操作ユーティリティ（`moveToFront`, `moveForward`, `moveBackward`, `moveToBack`, `nextId`） |
+| `ZOrderUtils.swift` | Z-order配列操作ユーティリティ（`moveToFront`, `moveForward`, `moveBackward`, `moveToBack`） |
 
 ## シングルトン一覧
 
