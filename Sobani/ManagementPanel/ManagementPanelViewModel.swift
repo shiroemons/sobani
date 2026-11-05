@@ -206,11 +206,11 @@ final class ManagementPanelViewModel {
         triggerRefresh()
     }
 
-    /// 共通のゴースト不透明度の変更を、個別の不透明度を持たないゴースト中のウィンドウへ反映する。
-    func applyGlobalGhostAlpha() {
-        appDelegate?.zOrderedWindows
-            .filter { $0.isGhostMode && $0.customGhostAlpha == nil }
-            .forEach { $0.refreshImageAlpha() }
+    /// ゴーストモードの共通の不透明度を変更して各ウィンドウの見た目に反映し、パネルの表示も更新する。
+    ///
+    /// 見た目の再適用は状態変更通知を伴わないため、ここで再構築する。
+    func applyGlobalGhostAlpha(_ alpha: CGFloat) {
+        appDelegate?.applyGlobalGhostAlpha(alpha)
         triggerRefresh()
     }
 

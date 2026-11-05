@@ -71,9 +71,7 @@ struct SettingsView: View {
                     valueFont: .body.monospaced()
                 )
                 .onChange(of: ghostAlpha) {
-                    GhostModeSettings.globalAlpha = ghostAlpha
-                    // 個別の不透明度を持たないゴースト中のウィンドウは共通値で表示されているため再適用する
-                    viewModel.applyGlobalGhostAlpha()
+                    viewModel.applyGlobalGhostAlpha(ghostAlpha)
                 }
             }
         }
