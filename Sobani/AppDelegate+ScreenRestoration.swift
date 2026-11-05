@@ -149,9 +149,18 @@ extension AppDelegate {
     @objc func handleWillSleep() {
         // Wake 復元中のタイマーをキャンセル
         screenChangeDebounceTimer?.invalidate()
+        // スリープしている時間はペンディングの期限に含めない（復帰時に resumeExpiry）
+        screenRestorationManager.suspendExpiry()
 
-        screenRestorationManager.clearAll()
-        wakeContext = captureWindowStates(screens: ScreenInfo.current())
+        if wakeContext.isActive {
+            // 復元の途中で再びスリープした。現在位置は macOS が退避させたままの可能性があるため
+            // 取り直さず、意図した位置（既存の context）を保ったまま次の復帰を待つ
+            wakeContext.isActive = false
+            wakeContext.retryCount = 0
+        } else {
+            // ペンディング中のウィンドウは退避先にいるため含めない（復帰後に Phase 2 で元の位置へ戻す）
+            wakeContext = captureWindowStates(screens: ScreenInfo.current())
+        }
         Self.screenRestorationLogger.info(
             "[ScreenRestoration] willSleep: saved \(self.wakeContext.states.count, privacy: .public) windows"
         )
@@ -176,6 +185,7 @@ extension AppDelegate {
         logWindowPositions(label: "didWake")
         logPositionEvent("sleep.wake", context: ["restoreCount": "\(restoreCount)"])
         logWakeDrift()
+        screenRestorationManager.resumeExpiry()
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
         wakeContext.isActive = true
@@ -192,13 +202,14 @@ extension AppDelegate {
     }
 
     func attemptWakeRestoration() {
-        guard wakeContext.isActive, !wakeContext.states.isEmpty else {
-            wakeContext.isActive = false
-            wakeContext.retryCount = 0
+        guard wakeContext.isActive else { return }
+        let screens = ScreenInfo.current()
+        guard !wakeContext.states.isEmpty else {
+            // 復元対象が残っていない（ウィンドウなし・全ウィンドウがユーザー操作で外れた等）
+            finishWakeRestoration(screens: screens)
             return
         }
 
-        let screens = ScreenInfo.current()
         let restoredAll = restoreAllPreSleepWindows(screens: screens)
         wakeContext.retryCount += 1
         let retryNum = wakeContext.retryCount
@@ -215,12 +226,23 @@ extension AppDelegate {
             scheduleWakeRetry(interval: AppConstants.wakeRetryInterval)
         } else if restoredAll || wakeContext.retryCount >= AppConstants.wakeRetryMaxAttempts {
             // 確実に全復元完了 or タイムアウト → 残りをペンディングキューに移行
-            moveUnrestoredToPendingQueue(screens: screens)
-            wakeContext.clear()
+            finishWakeRestoration(screens: screens)
         } else {
             // 未復元ウィンドウがある → リトライ
             scheduleWakeRetry(interval: AppConstants.wakeRetryInterval)
         }
+    }
+
+    /// スリープ復帰の復元を終える。
+    ///
+    /// 未復元のウィンドウをペンディングキューへ移したあと、スリープ前からペンディング中だった
+    /// ウィンドウ（`captureWindowStates` で除外）の復元を試みる。`attemptPendingRestorations` の
+    /// 最後にスナップショットも更新されるため、スリープ前の古いスナップショットで次の画面構成変更時に
+    /// wake モードが再開されることはない。
+    private func finishWakeRestoration(screens: [ScreenInfo]) {
+        moveUnrestoredToPendingQueue(screens: screens)
+        wakeContext.clear()
+        attemptPendingRestorations()
     }
 
     /// 全ウィンドウをスリープ前のディスプレイ基準の相対位置で復元。全ウィンドウ復元できたら true を返す。
@@ -281,16 +303,17 @@ extension AppDelegate {
 
     /// 未復元ウィンドウをペンディングキューに移行
     private func moveUnrestoredToPendingQueue(screens: [ScreenInfo]) {
-        for windowId in wakeContext.states.keys {
+        for imageWindow in zOrderedWindows {
+            let windowId = imageWindow.windowId
             let savedDisplayID = wakeContext.displayIDs[windowId]
-            guard findWakeTargetScreen(displayID: savedDisplayID, screens: screens) == nil,
-                  let savedState = wakeContext.states[windowId] else { continue }
+            guard let savedState = wakeContext.states[windowId],
+                  findWakeTargetScreen(displayID: savedDisplayID, screens: screens) == nil else { continue }
 
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
             let adjusted = savedState.adjustedToVisibleArea(on: screens)
 
             // WindowState の原点は画像基準のため、回転中のウィンドウはウィンドウ原点へ変換して配置する
-            zOrderedWindows.first { $0.windowId == windowId }?.setImageOrigin(adjusted.frame.origin)
+            imageWindow.setImageOrigin(adjusted.frame.origin)
             if PositionLogger.shared.isEnabled {
                 PositionLogger.shared.log(
                     event: "pending.add",
@@ -329,12 +352,15 @@ extension AppDelegate {
         }
     }
 
+    /// Phase 0（画面外ウィンドウの退避）と Phase 2（ペンディングキューからの復元）を行い、
+    /// 結果の配置でスナップショットを更新する（古いスナップショットで wake モードが再開されないように）。
     func attemptPendingRestorations() {
         let screens = ScreenInfo.current()
         moveInvisibleWindowsToPending(screens: screens)
 
         // フェーズ2: モニター再接続後の復元（ペンディングキュー）
         restorePendingWindows(screens: screens)
+        updateScreenSnapshot()
     }
 
     /// フェーズ0: スリープなしのモニター切断対応
@@ -475,11 +501,12 @@ extension AppDelegate {
 
     /// zOrderedWindows の現在位置を WakeRestorationContext に収集して返す。
     ///
-    /// どのスクリーンとも重ならないウィンドウは、ディスプレイ基準で復元しようがないため含めない。
+    /// - ペンディング中のウィンドウは退避先にいるため含めない（意図した位置はペンディングキューが持つ）
+    /// - どのスクリーンとも重ならないウィンドウは、ディスプレイ基準で復元しようがないため含めない
     private func captureWindowStates(screens: [ScreenInfo]) -> WakeRestorationContext {
         var ctx = WakeRestorationContext()
         let screenFrames = screens.map(\.frame)
-        for imageWindow in zOrderedWindows {
+        for imageWindow in zOrderedWindows where !screenRestorationManager.isPending(windowId: imageWindow.windowId) {
             let frame = imageWindow.window.frame
             guard let index = ScreenRestorationUtils.indexOfLargestOverlap(for: frame, in: screenFrames) else {
                 continue

@@ -76,14 +76,40 @@ import Testing
         #expect(manager.hasPending)
     }
 
-    // MARK: - clearAll
+    // MARK: - suspendExpiry / resumeExpiry
 
-    /// 全エントリがクリアされることを検証
-    @Test func clearAll() {
-        manager.addPending(windowId: 1, originalState: makeState(windowId: 1), displayID: 0, adjustedOriginX: 10, adjustedOriginY: 20)
-        manager.addPending(windowId: 2, originalState: makeState(windowId: 2), displayID: 0, adjustedOriginX: 30, adjustedOriginY: 40)
-        manager.clearAll()
-        #expect(manager.pendingRestorations.isEmpty)
+    /// スリープしていた時間が期限に含まれないことを検証
+    @Test func resumeExpiryExcludesSuspendedDuration() {
+        let baseDate = Date()
+        manager.currentDate = { baseDate }
+        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+
+        // 100 秒後にスリープし、1000 秒後に復帰（スリープ 900 秒）
+        manager.currentDate = { baseDate.addingTimeInterval(100) }
+        manager.suspendExpiry()
+        manager.currentDate = { baseDate.addingTimeInterval(1000) }
+        manager.resumeExpiry()
+
+        // 起きていた時間は 100 + 199 = 299 秒 → 期限内
+        manager.currentDate = { baseDate.addingTimeInterval(1199) }
+        manager.purgeExpired()
+        #expect(manager.isPending(windowId: 1))
+
+        // 起きていた時間が 301 秒 → 期限切れ
+        manager.currentDate = { baseDate.addingTimeInterval(1201) }
+        manager.purgeExpired()
+        #expect(!manager.hasPending)
+    }
+
+    /// suspendExpiry なしの resumeExpiry は何もしないことを検証
+    @Test func resumeExpiryWithoutSuspendDoesNothing() throws {
+        let baseDate = Date()
+        manager.currentDate = { baseDate }
+        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.currentDate = { baseDate.addingTimeInterval(500) }
+        manager.resumeExpiry()
+        let entry = try #require(manager.pendingRestorations.first)
+        #expect(abs(entry.createdAt.timeIntervalSince(baseDate)) < AppConstants.floatingPointTolerance)
     }
 
     // MARK: - purgeExpired

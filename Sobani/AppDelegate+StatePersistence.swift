@@ -261,8 +261,8 @@ extension AppDelegate {
         let wasRunning = launchContext.isActive
         cancelLaunchRestoration()
         guard wasRunning else { return }
+        // ペンディング復元の最後にスナップショットも更新される
         attemptPendingRestorations()
-        updateScreenSnapshot()
     }
 
     /// ユーザーが手動でウィンドウを動かした・大きさを変えた場合、以後そのウィンドウは起動時復元の対象外にする。
@@ -273,7 +273,6 @@ extension AppDelegate {
             // 最後の 1 枚が外れたら追従を終える（launchContext が空なので end 側の後処理を直接行う）
             cancelLaunchRestoration()
             attemptPendingRestorations()
-            updateScreenSnapshot()
         }
     }
 

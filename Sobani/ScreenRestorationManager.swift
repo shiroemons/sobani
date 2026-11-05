@@ -9,7 +9,8 @@ struct PendingRestoration: Codable, Sendable {
     let displayID: CGDirectDisplayID
     let adjustedOriginX: CGFloat
     let adjustedOriginY: CGFloat
-    let createdAt: Date
+    /// 期限判定の起点。スリープしていた時間は `ScreenRestorationManager.resumeExpiry()` で後ろへずらす
+    var createdAt: Date
     let preSleepScreenFrame: NSRect?
 
     private enum CodingKeys: String, CodingKey {
@@ -68,13 +69,18 @@ struct PendingRestoration: Codable, Sendable {
 
 @MainActor
 final class ScreenRestorationManager {
+    /// ペンディングエントリの有効期限（秒）。モニターが戻らないまま期限を過ぎたエントリは復元せず破棄する
+    static let defaultTimeout: TimeInterval = 300
+
     private let logger = Logger(category: "ScreenRestorationManager")
     private(set) var pendingRestorations: [PendingRestoration] = []
     private let timeout: TimeInterval
+    /// スリープ開始時刻（スリープ中の経過時間を期限に含めないため）
+    private var expirySuspendedAt: Date?
     let pendingFileURL: URL?
     var currentDate: @Sendable () -> Date = { Date() }
 
-    init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
+    init(timeout: TimeInterval = ScreenRestorationManager.defaultTimeout, baseDirectory: URL? = nil) {
         self.timeout = timeout
         if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger) {
             self.pendingFileURL = appDir.appendingPathComponent("pending_restorations.json")
@@ -118,6 +124,22 @@ final class ScreenRestorationManager {
         pendingRestorations.removeAll { now.timeIntervalSince($0.createdAt) > timeout }
     }
 
+    /// スリープ開始時に呼ぶ。`resumeExpiry()` までの経過時間は期限に含めない。
+    func suspendExpiry() {
+        expirySuspendedAt = currentDate()
+    }
+
+    /// スリープ復帰時に呼ぶ。スリープしていた時間だけ各エントリの期限の起点を後ろへずらす。
+    func resumeExpiry() {
+        guard let suspendedAt = expirySuspendedAt else { return }
+        expirySuspendedAt = nil
+        let suspendedDuration = currentDate().timeIntervalSince(suspendedAt)
+        guard suspendedDuration > 0 else { return }
+        for index in pendingRestorations.indices {
+            pendingRestorations[index].createdAt += suspendedDuration
+        }
+    }
+
     /// 期限切れを除去したうえで、指定のスクリーン構成で元の位置へ復元できるエントリを返す。
     func restorableEntries(screens: [ScreenInfo]) -> [PendingRestoration] {
         purgeExpired()
@@ -140,10 +162,6 @@ final class ScreenRestorationManager {
                 return entry.originalState.isPositionVisible(on: screens)
             }
         }
-    }
-
-    func clearAll() {
-        pendingRestorations.removeAll()
     }
 
     func savePending() {
