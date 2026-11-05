@@ -10,8 +10,6 @@ final class CropEditorCanvasView: NSView {
     static let minZoom: CGFloat = 1.0
     static let maxZoom: CGFloat = 10.0
     static let zoomSensitivity: CGFloat = 0.02
-    /// トラックパッド等の精密スクロール量（ポイント）を、マウスホイールの行数相当に換算する係数
-    static let preciseScrollPointsPerLine: CGFloat = 10
     /// 編集表示用に保持する画像の長辺の上限（ピクセル）。巨大な画像を毎フレーム描画しないようにする
     static let displayImageMaxPixelSize: CGFloat = 2048
 
@@ -54,7 +52,7 @@ final class CropEditorCanvasView: NSView {
     var dragStartCropFrame: NSRect = .zero
     var activeDragCropFrame: NSRect?
     var dragStartImageDrawRect: NSRect = .zero
-    let scrollEndDebouncer = ScrollEndDebouncer()
+    let scrollEndDebouncer = Debouncer(delay: Debouncer.scrollEndSettleDelay)
 
     var cropShape: CropShape { cropRect.shape }
     var cornerRadii: CornerRadii { cropRect.cornerRadii }

@@ -72,7 +72,7 @@ extension CropEditorCanvasView {
     override func scrollWheel(with event: NSEvent) {
         guard case .idle = dragState else { return }
         let lines = event.hasPreciseScrollingDeltas
-            ? event.scrollingDeltaY / Self.preciseScrollPointsPerLine
+            ? event.scrollingDeltaY / AppConstants.scrollPointsPerLine
             : event.scrollingDeltaY
         let oldZoom = imageZoom
         let newZoom = Swift.min(

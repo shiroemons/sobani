@@ -23,7 +23,7 @@ final class StraightenSliderView: NSView {
     private var isDragging = false
     private var dragStartAngle: CGFloat = 0
     private var dragStartX: CGFloat = 0
-    private let scrollEndDebouncer = ScrollEndDebouncer()
+    private let scrollEndDebouncer = Debouncer(delay: Debouncer.scrollEndSettleDelay)
 
     // Inertia
     private var inertiaVelocity: CGFloat = 0
