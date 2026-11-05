@@ -25,7 +25,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
-    var snapshotDebounceTimer: Timer?
+    /// ウィンドウ状態の変更からスナップショットを更新するまでのデバウンス間隔
+    private static let snapshotDebounceInterval: TimeInterval = 0.3
+    let snapshotDebouncer = Debouncer(delay: AppDelegate.snapshotDebounceInterval)
     var pendingSnapshotTriggers: Set<AppConstants.SnapshotTrigger> = []
     var wakeContext = WakeRestorationContext()
     /// ディスプレイ切断時の復元用スナップショット。安定状態で定期的に更新される。
@@ -33,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// 起動直後のディスプレイ構成変化に追従するためのアンカー復元状態
     var launchContext = LaunchRestorationContext()
     var launchRestoreTimer: Timer?
-    var persistDebounceTimer: Timer?
+    let persistDebouncer = Debouncer(delay: AppConstants.statePersistDebounceInterval)
     /// 最後に書き込んだ状態（変化がなければ書き込みを省く）
     var lastPersistedStates: [WindowState] = []
     /// 起動時に読み込んだ状態（「保存せずに終了」で書き戻す。随時保存で上書き済みのため）
@@ -356,7 +358,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard !Self.isRunningUnitTests else { return }
         if shouldSkipSave {
             // 随時保存でセッション中の変更が書き込まれているため、起動時の状態に戻す
-            persistDebounceTimer?.invalidate()
+            persistDebouncer.cancel()
             WindowStateManager.shared.saveStates(statesAtLaunch)
         } else {
             let count = persistNow(includingPending: true)
