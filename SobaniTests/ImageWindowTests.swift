@@ -323,16 +323,31 @@ struct ImageWindowTests {
 struct ImageWindowNotificationTests {
     private final class NotificationCapture: @unchecked Sendable {
         private let lock = NSLock()
-        private var value: String?
+        private var values: [String] = []
 
         func record(_ trigger: String?) {
             lock.withLock {
-                value = trigger
+                values.append(trigger ?? "")
             }
         }
 
         var trigger: String? {
-            lock.withLock { value }
+            lock.withLock { values.last }
+        }
+
+        var triggers: [String] {
+            lock.withLock { values }
+        }
+    }
+
+    /// `imageWindow` が発行する状態変更通知を記録する。戻り値のオブザーバーはテスト終了時に解除すること。
+    private func observeStateChanges(of imageWindow: ImageWindow, into capture: NotificationCapture) -> NSObjectProtocol {
+        NotificationCenter.default.addObserver(
+            forName: AppConstants.imageWindowStateDidChange,
+            object: imageWindow,
+            queue: nil
+        ) { notification in
+            capture.record(notification.userInfo?[AppConstants.notificationTriggerKey] as? String)
         }
     }
 
@@ -343,17 +358,65 @@ struct ImageWindowNotificationTests {
         defer { imageWindow.window.orderOut(nil) }
 
         let capture = NotificationCapture()
-        let observer = NotificationCenter.default.addObserver(
-            forName: AppConstants.imageWindowStateDidChange,
-            object: nil,
-            queue: nil
-        ) { notification in
-            capture.record(notification.userInfo?[AppConstants.notificationTriggerKey] as? String)
-        }
+        let observer = observeStateChanges(of: imageWindow, into: capture)
         defer { NotificationCenter.default.removeObserver(observer) }
 
         imageWindow.imageView.onSizeChanged?()
 
         #expect(capture.trigger == AppConstants.SnapshotTrigger.size.rawValue)
+    }
+
+    @Test("setPositionAndSize は画像基準の原点・サイズで配置し位置とサイズの変更を通知する", arguments: [0.0, 30.0])
+    func setPositionAndSizeUsesImageSpace(rotation: Double) {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.applyRotation(CGFloat(rotation))
+
+        let capture = NotificationCapture()
+        let observer = observeStateChanges(of: imageWindow, into: capture)
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 300, y: 400), size: NSSize(width: 400, height: 200))
+
+        let imageSize = imageWindow.imageView.frame.size
+        #expect(abs(imageSize.width - 400) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageSize.height - 200) < AppConstants.floatingPointTolerance)
+        // captureState と同じ式で画像原点を求め、指定した原点と一致することを確認（ウィンドウ原点は丸められる）
+        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
+        #expect(abs(imageOrigin.x - 300) <= 1.0)
+        #expect(abs(imageOrigin.y - 400) <= 1.0)
+        #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.position.rawValue))
+        #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.size.rawValue))
+    }
+
+    @Test("setPositionAndSize はサイズが変わらなければ .size を通知しない")
+    func setPositionAndSizeWithoutResize() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        let currentSize = imageWindow.imageView.frame.size
+
+        let capture = NotificationCapture()
+        let observer = observeStateChanges(of: imageWindow, into: capture)
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 10, y: 20), size: currentSize)
+
+        #expect(capture.triggers == [AppConstants.SnapshotTrigger.position.rawValue])
+    }
+
+    @Test("setPositionAndSize は非有限値を無視する")
+    func setPositionAndSizeIgnoresNonFinite() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        let frameBefore = imageWindow.window.frame
+
+        imageWindow.setPositionAndSize(origin: NSPoint(x: CGFloat.nan, y: 0), size: NSSize(width: 100, height: 50))
+        imageWindow.setPositionAndSize(origin: .zero, size: NSSize(width: 100, height: CGFloat.infinity))
+
+        let frameAfter = imageWindow.window.frame
+        #expect(abs(frameAfter.minX - frameBefore.minX) < AppConstants.floatingPointTolerance)
+        #expect(abs(frameAfter.minY - frameBefore.minY) < AppConstants.floatingPointTolerance)
+        #expect(abs(frameAfter.width - frameBefore.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(frameAfter.height - frameBefore.height) < AppConstants.floatingPointTolerance)
     }
 }

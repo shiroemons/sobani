@@ -531,14 +531,17 @@ extension ImageWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
-        let origin = Self.windowOrigin(forImageOrigin: position, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle)
-        window.setFrameOrigin(origin)
+        guard position.x.isFinite, position.y.isFinite else { return }
+        setImageOrigin(position)
+        notifyStateDidChange(.position)
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize) {
+        guard size.width.isFinite, size.height.isFinite else { return }
         imageView.frame.size = size
         adjustWindowForRotation()
         adjustmentPanelController?.updatePosition(currentImageOrigin())
+        notifyStateDidChange(.size)
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didSelectMonitor screen: NSScreen) {
@@ -557,6 +560,7 @@ extension ImageWindow: AdjustmentPanelDelegate {
             newWindowOrigin, windowSize: window.frame.size, to: screen.visibleFrame
         ))
         adjustmentPanelController?.updatePosition(currentImageOrigin())
+        notifyStateDidChange(.position)
     }
 
     func adjustmentPanelDidResetPositionAndSize(_ panel: AdjustmentPanelController) {

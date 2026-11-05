@@ -22,10 +22,27 @@ extension ImageWindow {
         ))
     }
 
+    /// 画像（imageView）基準の原点とサイズで配置する。
+    ///
+    /// 座標系は `WindowState` / `WindowStateManager.captureState` と同じ（原点 = imageView の
+    /// スクリーン座標上の原点、サイズ = imageView のサイズ）。サイズは現在の縦横比を保ち、
+    /// 高さを最小・最大値にクランプする。移動は `.position`、サイズ変更は `.size` で通知する。
     func setPositionAndSize(origin: NSPoint, size: NSSize) {
         // NaN/無限大はフレームを壊し、JSON 保存も失敗させるため無視する
         guard origin.x.isFinite, origin.y.isFinite,
               size.width.isFinite, size.height.isFinite else { return }
-        window.setFrame(NSRect(origin: origin, size: size), display: true)
+        let oldSize = imageView.frame.size
+        let newSize = Self.clampedImageSize(height: size.height, aspectRatio: imageView.aspectRatio)
+        let sizeChanged = !GeometryUtils.isApproximatelyEqual(newSize.width, oldSize.width)
+            || !GeometryUtils.isApproximatelyEqual(newSize.height, oldSize.height)
+        if sizeChanged {
+            imageView.frame.size = newSize
+            adjustWindowForRotation()
+        }
+        setImageOrigin(origin)
+        notifyStateDidChange(.position)
+        if sizeChanged {
+            notifyStateDidChange(.size)
+        }
     }
 }
