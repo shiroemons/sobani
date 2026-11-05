@@ -34,67 +34,6 @@ struct ImageWindowTests {
         #expect(abs(result.y - 25) < AppConstants.floatingPointTolerance)
     }
 
-    // MARK: - windowOrigin Tests
-
-    @Test("ウィンドウ原点の基本計算（回転なし）")
-    func windowOriginNoRotation() {
-        let imageOrigin = CGPoint(x: 100, y: 100)
-        let imageSize = NSSize(width: 200, height: 200)
-        let result = ImageWindow.windowOrigin(
-            forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 0
-        )
-        #expect(abs(result.x - 100) < 1.0)
-        #expect(abs(result.y - 100) < 1.0)
-    }
-
-    @Test("回転時にウィンドウ原点がオフセット")
-    func windowOriginWithRotation() {
-        let imageOrigin = CGPoint(x: 100, y: 100)
-        let imageSize = NSSize(width: 200, height: 100)
-        let resultNoRotation = ImageWindow.windowOrigin(
-            forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 0
-        )
-        let resultRotated = ImageWindow.windowOrigin(
-            forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 45
-        )
-        #expect(resultRotated.x < resultNoRotation.x)
-        #expect(resultRotated.y < resultNoRotation.y)
-    }
-
-    // MARK: - Round-trip Tests
-
-    @Test("imageOrigin → windowOrigin のラウンドトリップ（回転なし）")
-    func roundTripNoRotation() {
-        let originalWindowFrame = NSRect(x: 150, y: 250, width: 200, height: 200)
-        let imageSize = NSSize(width: 200, height: 200)
-        let imgOrigin = ImageWindow.imageOrigin(
-            windowFrame: originalWindowFrame, imageViewSize: imageSize
-        )
-        let recoveredWindowOrigin = ImageWindow.windowOrigin(
-            forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: 0
-        )
-        #expect(abs(recoveredWindowOrigin.x - originalWindowFrame.origin.x) <= 1.0)
-        #expect(abs(recoveredWindowOrigin.y - originalWindowFrame.origin.y) <= 1.0)
-    }
-
-    @Test("imageOrigin → windowOrigin のラウンドトリップ（回転あり）")
-    func roundTripWithRotation() {
-        let imageSize = NSSize(width: 200, height: 100)
-        let rotationAngle: CGFloat = 30
-        let bbSize = GeometryUtils.rotatedBoundingBox(
-            width: imageSize.width, height: imageSize.height, angleDegrees: rotationAngle
-        )
-        let originalWindowFrame = NSRect(x: 150, y: 250, width: bbSize.width, height: bbSize.height)
-        let imgOrigin = ImageWindow.imageOrigin(
-            windowFrame: originalWindowFrame, imageViewSize: imageSize
-        )
-        let recoveredWindowOrigin = ImageWindow.windowOrigin(
-            forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: rotationAngle
-        )
-        #expect(abs(recoveredWindowOrigin.x - originalWindowFrame.origin.x) <= 1.0)
-        #expect(abs(recoveredWindowOrigin.y - originalWindowFrame.origin.y) <= 1.0)
-    }
-
     // MARK: - calculateWindowSize Tests
 
     @Test("画像がmaxHeight以下の場合はスケールアップされる")
@@ -434,10 +373,10 @@ struct ImageWindowNotificationTests {
         let imageSize = imageWindow.imageView.frame.size
         #expect(abs(imageSize.width - 400) < AppConstants.floatingPointTolerance)
         #expect(abs(imageSize.height - 200) < AppConstants.floatingPointTolerance)
-        // captureState と同じ式で画像原点を求め、指定した原点と一致することを確認（ウィンドウ原点は丸められる）
-        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
-        #expect(abs(imageOrigin.x - 300) <= 1.0)
-        #expect(abs(imageOrigin.y - 400) <= 1.0)
+        // captureState と同じく imageView の実際のスクリーン座標で、指定した原点と一致することを確認
+        let imageOrigin = imageWindow.imageFrameInScreen.origin
+        #expect(abs(imageOrigin.x - 300) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageOrigin.y - 400) < AppConstants.floatingPointTolerance)
         #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.position.rawValue))
         #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.size.rawValue))
     }
@@ -475,9 +414,9 @@ struct ImageWindowNotificationTests {
         #expect(imageWindow.imageView.isFlippedHorizontally)
         #expect(abs(imageWindow.imageView.opacityLevel - 0.5) < AppConstants.floatingPointTolerance)
         let expectedOrigin = GeometryUtils.centeredOrigin(size: imageSize, in: NSScreen.mainFrameOrFallback)
-        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
-        #expect(abs(imageOrigin.x - expectedOrigin.x) <= 1.0)
-        #expect(abs(imageOrigin.y - expectedOrigin.y) <= 1.0)
+        let imageOrigin = imageWindow.imageFrameInScreen.origin
+        #expect(abs(imageOrigin.x - expectedOrigin.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageOrigin.y - expectedOrigin.y) < AppConstants.floatingPointTolerance)
     }
 
     @Test("画面中央への配置は画像を可視領域の中央に置き、位置の変更を通知する", arguments: [0.0, 30.0])
