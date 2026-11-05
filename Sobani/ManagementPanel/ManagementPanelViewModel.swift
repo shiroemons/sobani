@@ -318,8 +318,8 @@ final class ManagementPanelViewModel {
             ) { @Sendable [weak self] note in
                 let window = note.object as? NSWindow
                 MainActor.assumeIsolated {
-                    guard let self, let window, self.isImageWindow(window) else { return }
-                    self.scheduleGeometryRefresh()
+                    guard let window else { return }
+                    self?.scheduleGeometryRefresh(for: window)
                 }
             }
             geometryObservers.append(observer)
@@ -335,10 +335,6 @@ final class ManagementPanelViewModel {
         requestRefresh()
     }
 
-    private func isImageWindow(_ window: NSWindow) -> Bool {
-        appDelegate?.zOrderedWindows.contains { $0.window === window } ?? false
-    }
-
     /// 通知を契機とした再構築。パネル非表示中・ミニマップのドラッグ中は省く（表示時・ドラッグ完了時に再構築する）。
     private func requestRefresh() {
         guard isPanelVisible, !isMinimapDragging else { return }
@@ -348,8 +344,9 @@ final class ManagementPanelViewModel {
     /// ウィンドウ移動・リサイズ通知を間引いて再構築する。
     ///
     /// 予約中に届いた通知は無視するが、予約した再構築は実行時点の位置を読むため最終位置は必ず反映される。
-    private func scheduleGeometryRefresh() {
-        guard isPanelVisible, !isMinimapDragging, !isGeometryRefreshScheduled else { return }
+    private func scheduleGeometryRefresh(for window: NSWindow) {
+        guard isPanelVisible, !isMinimapDragging, !isGeometryRefreshScheduled,
+              appDelegate?.zOrderedWindows.contains(where: { $0.window === window }) == true else { return }
         isGeometryRefreshScheduled = true
         Task { [weak self] in
             try? await Task.sleep(for: Self.geometryRefreshInterval)
