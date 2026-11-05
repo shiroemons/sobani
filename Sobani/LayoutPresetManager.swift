@@ -33,7 +33,7 @@ final class LayoutPresetManager {
     static let shared = LayoutPresetManager()
     private let logger = Logger(category: "LayoutPresetManager")
     private var cachedPresets: [LayoutPreset]?
-    private(set) var layoutsDirectoryURL: URL?
+    let layoutsDirectoryURL: URL?
 
     /// テストDI用。プロダクションコードでは `shared` を使用すること。
     init(baseDirectory: URL? = nil) {
