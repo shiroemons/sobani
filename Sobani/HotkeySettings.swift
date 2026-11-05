@@ -53,11 +53,31 @@ enum HotkeySettings {
 
     // MARK: - Low-level Storage Helpers
 
-    private static func storedKeyCode(forKey key: String, default fallback: UInt16) -> UInt16 {
-        guard let stored = UserDefaults.standard.object(forKey: key) as? Int else {
+    /// ホットキーとして扱う修飾キー。Carbon の `RegisterEventHotKey` が扱えるのはこの 4 つだけで、
+    /// CapsLock・fn・テンキー等のビットが混ざると重複判定や `isDefault` が狂う。
+    static let supportedModifiers: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
+
+    /// 保存値をキーコードとして解釈する。範囲外・負数（手動編集や破損した設定）は `fallback`。
+    static func keyCode(fromStored stored: Any?, default fallback: UInt16) -> UInt16 {
+        guard let raw = stored as? Int, let keyCode = UInt16(exactly: raw) else {
             return fallback
         }
-        return UInt16(stored)
+        return keyCode
+    }
+
+    /// 保存値を修飾キーとして解釈する。負数は `fallback`、未対応の修飾キーのビットは除去する。
+    static func modifiers(
+        fromStored stored: Any?,
+        default fallback: NSEvent.ModifierFlags
+    ) -> NSEvent.ModifierFlags {
+        guard let raw = stored as? Int, let rawValue = UInt(exactly: raw) else {
+            return fallback
+        }
+        return NSEvent.ModifierFlags(rawValue: rawValue).intersection(supportedModifiers)
+    }
+
+    private static func storedKeyCode(forKey key: String, default fallback: UInt16) -> UInt16 {
+        keyCode(fromStored: UserDefaults.standard.object(forKey: key), default: fallback)
     }
 
     private static func saveKeyCode(_ value: UInt16, forKey key: String) {
@@ -68,14 +88,11 @@ enum HotkeySettings {
         forKey key: String,
         default fallback: NSEvent.ModifierFlags
     ) -> NSEvent.ModifierFlags {
-        guard let raw = UserDefaults.standard.object(forKey: key) as? Int else {
-            return fallback
-        }
-        return NSEvent.ModifierFlags(rawValue: UInt(raw))
+        modifiers(fromStored: UserDefaults.standard.object(forKey: key), default: fallback)
     }
 
     private static func saveModifiers(_ value: NSEvent.ModifierFlags, forKey key: String) {
-        UserDefaults.standard.set(Int(value.rawValue), forKey: key)
+        UserDefaults.standard.set(Int(value.intersection(supportedModifiers).rawValue), forKey: key)
     }
 
     // MARK: - Global Enable/Disable
@@ -87,38 +104,6 @@ enum HotkeySettings {
         set {
             UserDefaults.standard.set(newValue, forKey: AppConstants.hotkeyEnabledKey)
         }
-    }
-
-    // MARK: - Named Computed Properties (for backwards compatibility)
-
-    static var toggleVisibilityKeyCode: UInt16 {
-        get { keyCode(for: .toggleVisibility) }
-        set { setKeyCode(newValue, for: .toggleVisibility) }
-    }
-
-    static var toggleVisibilityModifiers: NSEvent.ModifierFlags {
-        get { modifiers(for: .toggleVisibility) }
-        set { setModifiers(newValue, for: .toggleVisibility) }
-    }
-
-    static var toggleGhostModeKeyCode: UInt16 {
-        get { keyCode(for: .toggleGhostMode) }
-        set { setKeyCode(newValue, for: .toggleGhostMode) }
-    }
-
-    static var toggleGhostModeModifiers: NSEvent.ModifierFlags {
-        get { modifiers(for: .toggleGhostMode) }
-        set { setModifiers(newValue, for: .toggleGhostMode) }
-    }
-
-    static var toggleManagementKeyCode: UInt16 {
-        get { keyCode(for: .toggleManagement) }
-        set { setKeyCode(newValue, for: .toggleManagement) }
-    }
-
-    static var toggleManagementModifiers: NSEvent.ModifierFlags {
-        get { modifiers(for: .toggleManagement) }
-        set { setModifiers(newValue, for: .toggleManagement) }
     }
 
     // MARK: - Action-based Accessors
