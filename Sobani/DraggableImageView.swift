@@ -17,6 +17,8 @@ final class DraggableImageView: NSImageView {
     private var isSnapEnabled = false
     private var cachedOtherWindowFrames: [CGRect]?
     private var cachedScreenFrames: [CGRect]?
+    /// ドラッグ開始時の各ウィンドウの原点。mouseUp で実際に動いたウィンドウだけ位置変更を通知する。
+    private var dragStartOrigins: [(imageView: DraggableImageView, origin: NSPoint)] = []
     var isFlippedHorizontally: Bool = false {
         didSet { needsLayout = true }
     }
@@ -66,8 +68,9 @@ final class DraggableImageView: NSImageView {
 
     weak var imageWindowDelegate: ImageWindowDelegate?
 
-    private var allImageWindows: [ImageWindow] {
-        imageWindowDelegate?.allImageWindows ?? []
+    /// 一括ドラッグ・一括リサイズ・スナップの対象にする、表示中のウィンドウ
+    private var visibleImageWindows: [ImageWindow] {
+        (imageWindowDelegate?.allImageWindows ?? []).filter { !$0.isHidden }
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -83,14 +86,16 @@ final class DraggableImageView: NSImageView {
         if isDraggingAll {
             guard let currentWindow = window else { return }
             dragStartScreenLocation = currentWindow.convertPoint(toScreen: event.locationInWindow)
-            cachedAllWindows = allImageWindows
+            let targets = visibleImageWindows
+            cachedAllWindows = targets
+            dragStartOrigins = targets.map { ($0.imageView, $0.window.frame.origin) }
         } else if let currentWindow = window {
             initialMouseInWindow = event.locationInWindow
-            let allWindows = allImageWindows
-            cachedOtherWindowFrames = allWindows
+            cachedOtherWindowFrames = visibleImageWindows
                 .filter { $0.window !== currentWindow }
                 .map { $0.window.frame }
             cachedScreenFrames = NSScreen.screens.map { $0.visibleFrame }
+            dragStartOrigins = [(self, currentWindow.frame.origin)]
         }
     }
 
@@ -138,7 +143,6 @@ final class DraggableImageView: NSImageView {
 
             currentWindow.setFrameOrigin(origin)
         }
-        onPositionChanged?()
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -146,7 +150,15 @@ final class DraggableImageView: NSImageView {
         cachedAllWindows = nil
         cachedOtherWindowFrames = nil
         cachedScreenFrames = nil
-        onPositionChanged?()
+        // クリックだけで動いていないウィンドウには位置変更を通知しない
+        let movedViews = dragStartOrigins.filter { target in
+            guard let currentOrigin = target.imageView.window?.frame.origin else { return false }
+            return Self.hasMoved(from: target.origin, to: currentOrigin)
+        }
+        dragStartOrigins = []
+        for target in movedViews {
+            target.imageView.onPositionChanged?()
+        }
     }
 
     override func scrollWheel(with event: NSEvent) {
@@ -159,8 +171,7 @@ final class DraggableImageView: NSImageView {
         }
         let scaleFactor = Self.scaleFactor(fromScrollDelta: delta)
         if event.modifierFlags.contains(.option) {
-            let allWindows = allImageWindows
-            for imageWindow in allWindows {
+            for imageWindow in visibleImageWindows {
                 resizeWindow(
                     imageWindow.window, imageView: imageWindow.imageView, scaleFactor: scaleFactor)
             }
@@ -257,6 +268,11 @@ final class DraggableImageView: NSImageView {
     }
 
     // MARK: - Testable Static Methods
+
+    /// ドラッグの前後でウィンドウ原点が動いたか
+    nonisolated static func hasMoved(from start: NSPoint, to end: NSPoint) -> Bool {
+        !GeometryUtils.isApproximatelyEqual(start.x, end.x) || !GeometryUtils.isApproximatelyEqual(start.y, end.y)
+    }
 
     /// スクロールデルタからスケールファクターを計算
     nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat) -> CGFloat {

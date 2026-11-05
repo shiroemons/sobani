@@ -6,6 +6,18 @@ import Testing
 @Suite("DraggableImageView Static Methods Tests")
 struct DraggableImageViewTests {
 
+    // MARK: - hasMoved Tests
+
+    @Test("原点が変わらなければ移動なし（クリックのみ）")
+    func hasMovedSameOrigin() {
+        #expect(!DraggableImageView.hasMoved(from: NSPoint(x: 10, y: 20), to: NSPoint(x: 10, y: 20)))
+    }
+
+    @Test("x または y が変われば移動あり", arguments: [NSPoint(x: 11, y: 20), NSPoint(x: 10, y: 19)])
+    func hasMovedDifferentOrigin(end: NSPoint) {
+        #expect(DraggableImageView.hasMoved(from: NSPoint(x: 10, y: 20), to: end))
+    }
+
     // MARK: - scaleFactor Tests
 
     @Test("正のデルタでスケールファクター > 1")
