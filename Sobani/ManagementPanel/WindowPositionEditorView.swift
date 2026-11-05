@@ -4,8 +4,6 @@ struct WindowPositionEditorView: View {
     @Bindable var viewModel: ManagementPanelViewModel
     let windowInfo: ManagementPanelViewModel.WindowInfo
     @State private var fields = PositionEditorInput.Fields()
-    /// 最後に読み込んだ値。未編集のまま適用して丸め誤差でずれるのを防ぐ
-    @State private var loadedFields = PositionEditorInput.Fields()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -30,7 +28,7 @@ struct WindowPositionEditorView: View {
                 applyChanges()
             }
             .buttonStyle(.bordered)
-            .disabled(fields == loadedFields || PositionEditorInput.parseFrame(fields) == nil)
+            .disabled(!hasEdits || PositionEditorInput.parseFrame(fields) == nil)
             .padding(.top, 4)
         }
         .onAppear { loadValues() }
@@ -44,6 +42,11 @@ struct WindowPositionEditorView: View {
             originX: windowInfo.originX, originY: windowInfo.originY,
             width: windowInfo.width, height: windowInfo.height
         )
+    }
+
+    /// 現在の値から編集されているか。未編集のまま適用して丸め誤差でずれるのを防ぐ
+    private var hasEdits: Bool {
+        fields != currentFields
     }
 
     @ViewBuilder
@@ -62,11 +65,10 @@ struct WindowPositionEditorView: View {
 
     private func loadValues() {
         fields = currentFields
-        loadedFields = fields
     }
 
     private func applyChanges() {
-        guard fields != loadedFields, let frame = PositionEditorInput.parseFrame(fields) else { return }
+        guard hasEdits, let frame = PositionEditorInput.parseFrame(fields) else { return }
         viewModel.changePositionAndSize(
             windowId: windowInfo.windowId,
             origin: frame.origin,
@@ -86,37 +88,24 @@ enum PositionEditorInput {
         var height = ""
     }
 
-    /// 入力として受け付ける座標・サイズの絶対値の上限（極端な値でウィンドウが不正な位置へ飛ぶのを防ぐ）
-    static let maxMagnitude: CGFloat = 100_000
-
     /// 表示用の文字列に変換する。切り捨てではなく四捨五入する（切り捨てると適用のたびに最大 1pt ずれる）。
+    /// 表現できない値（NaN・無限大・Int の範囲外）は空にする。
     static func fields(originX: CGFloat, originY: CGFloat, width: CGFloat, height: CGFloat) -> Fields {
         Fields(
-            x: displayString(originX), y: displayString(originY),
-            width: displayString(width), height: displayString(height)
+            x: FormatUtils.integerString(originX), y: FormatUtils.integerString(originY),
+            width: FormatUtils.integerString(width), height: FormatUtils.integerString(height)
         )
     }
 
     /// 入力値を検証して画像のフレームを返す。数値でない・有限でない・範囲外・サイズが正でない場合は nil。
+    ///
+    /// 範囲は `AppConstants.maxNumericInputMagnitude`（極端な値でウィンドウが不正な位置へ飛ぶのを防ぐ）。
     static func parseFrame(_ fields: Fields) -> CGRect? {
-        guard let x = parseValue(fields.x),
-              let y = parseValue(fields.y),
-              let width = parseValue(fields.width),
-              let height = parseValue(fields.height),
+        guard let x = FormatUtils.parseFiniteNumber(fields.x),
+              let y = FormatUtils.parseFiniteNumber(fields.y),
+              let width = FormatUtils.parseFiniteNumber(fields.width),
+              let height = FormatUtils.parseFiniteNumber(fields.height),
               width > 0, height > 0 else { return nil }
         return CGRect(x: x, y: y, width: width, height: height)
-    }
-
-    private static func displayString(_ value: CGFloat) -> String {
-        // NaN・無限大・Int の範囲外では Int(_:) がクラッシュするため、表現できない値は空にする
-        Int(exactly: value.rounded()).map(String.init) ?? ""
-    }
-
-    private static func parseValue(_ text: String) -> CGFloat? {
-        // Double は "nan" や "inf" も受け付けるため、有限かつ範囲内に限る
-        guard let value = Double(text.trimmingCharacters(in: .whitespaces)),
-              value.isFinite,
-              abs(value) <= maxMagnitude else { return nil }
-        return CGFloat(value)
     }
 }

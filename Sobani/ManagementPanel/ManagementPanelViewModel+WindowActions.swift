@@ -7,7 +7,7 @@ extension ManagementPanelViewModel {
     func flipWindow(windowId: Int) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
         imageWindow.toggleFlip()
-        // toggleFlip fires notifyStateDidChange → triggerRefresh handled by observer
+        triggerRefresh()
     }
 
     func openCropEditor(windowId: Int) {
@@ -30,7 +30,7 @@ extension ManagementPanelViewModel {
     func resetDisplay(windowId: Int) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
         imageWindow.resetDisplay()
-        // resetDisplay fires notifyStateDidChange → triggerRefresh handled by observer
+        triggerRefresh()
     }
 
     // MARK: - Ghost Mode Custom Opacity
@@ -38,13 +38,13 @@ extension ManagementPanelViewModel {
     func setCustomGhostAlpha(windowId: Int, alpha: CGFloat) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
         imageWindow.setCustomGhostAlpha(alpha)
-        // setCustomGhostAlpha fires notifyStateDidChange → triggerRefresh handled by observer
+        triggerRefresh()
     }
 
     func clearCustomGhostAlpha(windowId: Int) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
         imageWindow.setCustomGhostAlpha(nil)
-        // setCustomGhostAlpha fires notifyStateDidChange → triggerRefresh handled by observer
+        triggerRefresh()
     }
 
     // MARK: - Image Addition
@@ -171,6 +171,7 @@ extension ManagementPanelViewModel {
         LayoutPresetManager.shared.updatePreset(preset, states: states)
     }
 
+    @discardableResult
     func renamePreset(from oldName: String, to newName: String) -> Bool {
         LayoutPresetManager.shared.renamePreset(from: oldName, to: newName)
     }

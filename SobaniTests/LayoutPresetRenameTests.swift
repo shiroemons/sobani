@@ -112,6 +112,27 @@ import Testing
         #expect(renamed.states == states)
     }
 
+    /// リネームの変更通知は1回だけで、旧ファイルの削除後に送られることを検証
+    /// （新旧両方のファイルがある途中の状態で一覧を読み直させない）
+    @Test func renamePostsSingleNotificationAfterRemovingOldFile() async throws {
+        let manager = presetManager
+        manager.savePreset(name: "OldName", states: [makeState()])
+
+        await confirmation("layoutPresetsDidChange is posted once", expectedCount: 1) { confirm in
+            let observer = NotificationCenter.default.addObserver(
+                forName: AppConstants.layoutPresetsDidChange, object: manager, queue: nil
+            ) { _ in
+                MainActor.assumeIsolated {
+                    #expect(!manager.presetExists(named: "OldName"))
+                    #expect(manager.presetExists(named: "NewName"))
+                }
+                confirm()
+            }
+            defer { NotificationCenter.default.removeObserver(observer) }
+            #expect(manager.renamePreset(from: "OldName", to: "NewName"))
+        }
+    }
+
     /// 自分自身を除外した重複判定が、別プリセットとの衝突だけを検出することを検証
     @Test func presetExistsExcludingSelf() {
         presetManager.savePreset(name: "Work", states: [makeState()])

@@ -112,7 +112,7 @@ struct LayoutPresetsView: View {
         .onDisappear {
             toastTimerTask?.cancel()
         }
-        // メニューなど管理パネル以外からの保存・削除・リネームも反映する
+        // この画面・メニューなど、すべての経路からの保存・更新・削除・リネーム・復元をここで反映する
         .onReceive(NotificationCenter.default.publisher(for: AppConstants.layoutPresetsDidChange)) { _ in
             refreshPresets()
         }
@@ -382,7 +382,6 @@ extension LayoutPresetsView {
     private func savePreset(name: String) {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
         viewModel.savePreset(name: name, states: states)
-        refreshPresets()
     }
 
     private func applyPreset(_ preset: LayoutPreset) {
@@ -393,14 +392,12 @@ extension LayoutPresetsView {
     private func updatePreset(_ preset: LayoutPreset) {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
         viewModel.updatePreset(preset, states: states)
-        refreshPresets()
         showToast(.success(String(format: L("layout.updated_message"), preset.name)))
     }
 
     private func renamePreset(_ preset: LayoutPreset, to newName: String) {
         guard newName != preset.name else { return }
-        guard viewModel.renamePreset(from: preset.name, to: newName) else { return }
-        refreshPresets()
+        viewModel.renamePreset(from: preset.name, to: newName)
     }
 
     private func confirmDeletePreset(_ preset: LayoutPreset) {
@@ -409,9 +406,8 @@ extension LayoutPresetsView {
     }
 
     private func performDeletePreset(_ preset: LayoutPreset) {
+        // 詳細表示中なら、変更通知を受けた refreshPresets で一覧へ戻る
         viewModel.deletePreset(named: preset.name)
-        // 詳細表示中なら refreshPresets で一覧へ戻る
-        refreshPresets()
         showToast(.deleted(preset))
     }
 
@@ -422,7 +418,6 @@ extension LayoutPresetsView {
         withAnimation {
             activeToast = nil
         }
-        refreshPresets()
     }
 
     private func showToast(_ toast: ToastType) {
@@ -444,7 +439,6 @@ extension LayoutPresetsView {
 
     private func createNewLayout(name: String) {
         viewModel.createNewLayout(name: name)
-        refreshPresets()
     }
 }
 

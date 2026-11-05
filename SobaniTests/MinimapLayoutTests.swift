@@ -16,7 +16,7 @@ import Testing
         )
 
         // Window at bottom-left corner, 100x200
-        let rect = layout.windowRect(for: 0, originY: 0, width: 100, height: 200)
+        let rect = layout.windowRect(for: CGRect(x: 0, y: 0, width: 100, height: 200))
 
         // scaledX = (0 - 0) * 0.5 + 10 = 10
         // scaledY = (1080 - (0 - 0 + 200)) * 0.5 + 10 = 880 * 0.5 + 10 = 450
@@ -37,7 +37,7 @@ import Testing
         )
 
         // Window at top-right in macOS coords (origin at bottom-left)
-        let rect = layout.windowRect(for: 1820, originY: 980, width: 100, height: 100)
+        let rect = layout.windowRect(for: CGRect(x: 1820, y: 980, width: 100, height: 100))
 
         // scaledX = (1820 - 0) * 0.5 + 10 = 920
         // scaledY = (1080 - (980 - 0 + 100)) * 0.5 + 10 = 0 * 0.5 + 10 = 10
@@ -53,7 +53,7 @@ import Testing
             rawTotalBounds: CGRect(x: 0, y: 0, width: 3840, height: 2160)
         )
 
-        let rect = layout.windowRect(for: 0, originY: 0, width: 400, height: 300)
+        let rect = layout.windowRect(for: CGRect(x: 0, y: 0, width: 400, height: 300))
 
         #expect(abs(rect.width - 100) < 0.001)
         #expect(abs(rect.height - 75) < 0.001)
@@ -72,7 +72,7 @@ import Testing
         )
 
         // Window on left screen at (-1000, 500) size 200x300
-        let rect = layout.windowRect(for: -1000, originY: 500, width: 200, height: 300)
+        let rect = layout.windowRect(for: CGRect(x: -1000, y: 500, width: 200, height: 300))
 
         // scaledX = (-1000 - (-1920)) * 0.1 + 20 = 920 * 0.1 + 20 = 112
         // scaledY = (1080 - (500 - 0 + 300)) * 0.1 + 20 = 280 * 0.1 + 20 = 48
@@ -92,12 +92,35 @@ import Testing
         )
 
         // Window on main screen at (100, 100) size 200x200
-        let rect = layout.windowRect(for: 100, originY: 100, width: 200, height: 200)
+        let rect = layout.windowRect(for: CGRect(x: 100, y: 100, width: 200, height: 200))
 
         // scaledX = (100 - (-1920)) * 0.1 + 20 = 2020 * 0.1 + 20 = 222
         // scaledY = (1080 - (100 - 0 + 200)) * 0.1 + 20 = 780 * 0.1 + 20 = 98
         #expect(abs(rect.origin.x - 222) < 0.001)
         #expect(abs(rect.origin.y - 98) < 0.001)
+    }
+
+    /// WindowState からの変換は、その状態のフレーム（画像基準の原点・サイズ）を変換した結果と一致することを検証
+    @Test func testWindowRectForStateUsesStateFrame() throws {
+        let layout = MinimapLayout(
+            screens: [],
+            scale: 0.1,
+            offset: CGPoint(x: 20, y: 20),
+            rawTotalBounds: CGRect(x: -1920, y: 0, width: 3840, height: 1080)
+        )
+        let state = WindowState(
+            imageName: AppConstants.defaultImageName,
+            originX: -1000, originY: 500, width: 200, height: 300,
+            isFlippedHorizontally: false, rotationAngle: 0, opacityLevel: 1, windowId: 0
+        )
+
+        let rect = layout.windowRect(for: state)
+
+        let expected = layout.windowRect(for: CGRect(x: -1000, y: 500, width: 200, height: 300))
+        #expect(abs(rect.origin.x - expected.origin.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(rect.origin.y - expected.origin.y) < AppConstants.floatingPointTolerance)
+        #expect(abs(rect.width - expected.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(rect.height - expected.height) < AppConstants.floatingPointTolerance)
     }
 
     // MARK: - macOSDelta

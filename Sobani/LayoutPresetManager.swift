@@ -46,9 +46,11 @@ final class LayoutPresetManager {
         }
     }
 
-    private func invalidateCache() {
+    /// キャッシュを破棄し、`notify` が true なら `layoutPresetsDidChange` を通知する（object は self）。
+    private func invalidateCache(notify: Bool = true) {
         cachedPresets = nil
-        NotificationCenter.default.post(name: AppConstants.layoutPresetsDidChange, object: nil)
+        guard notify else { return }
+        NotificationCenter.default.post(name: AppConstants.layoutPresetsDidChange, object: self)
     }
 
     /// ユーザー入力のプリセット名を正規化する（前後の空白・改行を除去）。空になる場合は nil。
@@ -81,9 +83,10 @@ final class LayoutPresetManager {
         return layoutsDir.appendingPathComponent(fileName)
     }
 
+    /// - Parameter notify: false なら変更を通知しない（続けて別の変更を行い、最後にまとめて通知する場合）。
     /// - Returns: ファイルへの書き込みに成功したか。
     @discardableResult
-    private func persistPreset(_ preset: LayoutPreset) -> Bool {
+    private func persistPreset(_ preset: LayoutPreset, notify: Bool = true) -> Bool {
         guard let url = presetFileURL(for: preset.name) else { return false }
         let sanitized = LayoutPreset(
             id: preset.id, name: preset.name, createdAt: preset.createdAt,
@@ -95,7 +98,7 @@ final class LayoutPresetManager {
         ) {
             $0.dateEncodingStrategy = .iso8601
         }
-        invalidateCache()
+        invalidateCache(notify: notify)
         return saved
     }
 
@@ -194,25 +197,19 @@ final class LayoutPresetManager {
             id: oldPreset.id, name: newName,
             createdAt: oldPreset.createdAt, states: oldPreset.states
         )
-        guard persistPreset(renamedPreset) else { return false }
-        // Only delete old file if sanitized file names differ
-        let oldFileName = sanitizedFileName(for: oldName)
-        let newFileName = sanitizedFileName(for: newName)
-        if oldFileName != newFileName {
-            guard let oldURL = presetFileURL(for: oldName) else {
-                return true
-            }
-            // 大文字小文字だけの変更などで新旧が同じファイルに解決される場合、削除すると唯一のファイルが消える
-            if Self.isSameFile(oldURL, newURL) {
-                return true
-            }
+        // 新旧のファイルが両方ある途中の状態を通知しないよう、旧ファイルの削除後にまとめて通知する
+        guard persistPreset(renamedPreset, notify: false) else { return false }
+        // 大文字小文字だけの変更などで新旧が同じファイルに解決される場合、削除すると唯一のファイルが消える
+        if sanitizedFileName(for: oldName) != sanitizedFileName(for: newName),
+           let oldURL = presetFileURL(for: oldName),
+           !Self.isSameFile(oldURL, newURL) {
             do {
                 try FileManager.default.removeItem(at: oldURL)
             } catch {
                 logger.warning("Failed to remove old preset file at \(oldURL.path): \(error.localizedDescription)")
             }
-            invalidateCache()
         }
+        invalidateCache()
         return true
     }
 }

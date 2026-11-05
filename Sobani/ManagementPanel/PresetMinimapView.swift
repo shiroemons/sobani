@@ -113,10 +113,7 @@ struct PresetMinimapView: View {
         let isDragging = draggingIndex == index
         // ドラッグ中は開始位置 + ドラッグ量で描く（ドラッグ中に状態が更新されても二重に動かないように）
         let windowRect = isDragging
-            ? layout.windowRect(
-                for: dragStartOrigin.x, originY: dragStartOrigin.y,
-                width: state.width, height: state.height
-            )
+            ? layout.windowRect(for: CGRect(origin: dragStartOrigin, size: state.frame.size))
             : layout.windowRect(for: state)
         let displayOffset = isDragging ? dragOffset : .zero
         minimapWindow(state: state, isSelected: selectedIndices.contains(index))

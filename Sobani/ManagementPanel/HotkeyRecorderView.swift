@@ -7,7 +7,7 @@ import SwiftUI
 /// ホットキー入力の検証（UI から切り離してテストできるようにする）
 enum HotkeyInputValidator {
     enum Result: Equatable {
-        /// ホットキーとして登録できる組み合わせ（修飾キーは `supportedModifiers` に限定済み）
+        /// ホットキーとして登録できる組み合わせ（修飾キーは `HotkeySettings.supportedModifiers` に限定済み）
         case accept(keyCode: UInt16, modifiers: NSEvent.ModifierFlags)
         /// 録音を取り消す（Esc）
         case cancel
@@ -15,21 +15,13 @@ enum HotkeyInputValidator {
         case ignore
     }
 
-    /// グローバルホットキー（Carbon）が扱える修飾キー。
-    ///
-    /// `.deviceIndependentFlagsMask` には Caps Lock・fn・テンキーなども含まれるが、Carbon の登録では
-    /// 落とされるため、それらだけで「修飾キーあり」と判定すると単独キーがシステム全体で奪われてしまう。
-    static let supportedModifiers: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
-
-    static func normalizedModifiers(_ flags: NSEvent.ModifierFlags) -> NSEvent.ModifierFlags {
-        flags.intersection(supportedModifiers)
-    }
-
     static func evaluate(keyCode: UInt16, modifierFlags: NSEvent.ModifierFlags) -> Result {
         if keyCode == UInt16(kVK_Escape) {
             return .cancel
         }
-        let modifiers = normalizedModifiers(modifierFlags)
+        // キー入力のフラグには Caps Lock・fn・テンキーなども含まれるが、Carbon の登録では落とされるため、
+        // それらだけで「修飾キーあり」と判定すると単独キーがシステム全体で奪われてしまう
+        let modifiers = modifierFlags.intersection(HotkeySettings.supportedModifiers)
         // Shift だけでは通常の文字入力（大文字など）を奪ってしまうため、Shift 以外の修飾キーを必須にする
         guard !modifiers.subtracting(.shift).isEmpty else { return .ignore }
         return .accept(keyCode: keyCode, modifiers: modifiers)
@@ -37,12 +29,11 @@ enum HotkeyInputValidator {
 
     /// 同じキーと修飾キーの組み合わせが複数の操作に割り当てられているか。
     ///
-    /// 修飾キーは Carbon が扱うものに限定して比較する（Caps Lock などの違いだけでは別のホットキーにならない）。
+    /// 修飾キーは `HotkeySettings` から読んだ値（Carbon が扱うものに正規化済み）を渡すこと。
     static func containsDuplicates(_ shortcuts: [(keyCode: UInt16, modifiers: NSEvent.ModifierFlags)]) -> Bool {
         var seen = Set<UInt64>()
         for shortcut in shortcuts {
-            let modifiers = normalizedModifiers(shortcut.modifiers)
-            let key = UInt64(shortcut.keyCode) << 32 | UInt64(modifiers.rawValue)
+            let key = UInt64(shortcut.keyCode) << 32 | UInt64(shortcut.modifiers.rawValue)
             if !seen.insert(key).inserted {
                 return true
             }

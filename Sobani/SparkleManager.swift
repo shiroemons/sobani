@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import os.log
 import Sparkle
 
@@ -68,6 +69,13 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     var canCheckForUpdates: Bool {
         updater.canCheckForUpdates
     }
+
+    /// `canCheckForUpdates` の変化を流すパブリッシャー（購読時に現在値も流す）。
+    ///
+    /// 確認中・ダウンロード中に値が変わるが、`SPUUpdater.canCheckForUpdates` は KVO に対応しているため
+    /// ポーリングせずに追従できる。SwiftUI の `onReceive` に描画のたびに新しいパブリッシャーを渡さないよう保持する。
+    private(set) lazy var canCheckForUpdatesPublisher: AnyPublisher<Bool, Never> =
+        updater.publisher(for: \.canCheckForUpdates).eraseToAnyPublisher()
 
     // MARK: - Private Helpers
 
