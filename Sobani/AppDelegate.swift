@@ -329,8 +329,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc func addNewWindowWithNewImageFromMenu() {
         let panel = ImageFileDialog.makeOpenPanel(message: L("file.select_new_image_message"))
-        if panel.runModal() == .OK, let url = panel.url {
-            createNewWindow(registeringImageAt: url)
+        if panel.runModal() == .OK, let url = panel.url, !createNewWindow(registeringImageAt: url) {
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
         }
     }
 

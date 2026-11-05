@@ -55,8 +55,7 @@ extension ImageWindow {
         AlertFactory.make(
             style: .warning,
             messageText: L("background_removal.error.title"),
-            informativeText: message,
-            buttonTitles: [L("update.ok")]
+            informativeText: message
         ).runModal()
     }
 

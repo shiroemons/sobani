@@ -420,10 +420,12 @@ extension AppDelegate {
             title: L("dialog.select_default_image"),
             message: L("dialog.select_default_image_message")
         )
-        if panel.runModal() == .OK, let url = panel.url {
-            ImageManager.shared.setCustomDefault(from: url)
-            refreshDefaultImageWindows()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        guard ImageManager.shared.setCustomDefault(from: url) else {
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
+            return
         }
+        refreshDefaultImageWindows()
     }
 
     @objc func resetDefaultImage() {
@@ -440,6 +442,11 @@ extension AppDelegate {
     }
 
     @objc func showOnboarding() {
+        // 表示中に作り直すと旧コントローラーが解放されてパネルが消えるため、既存のものを前面に出す
+        if let existing = onboardingController, existing.isVisible {
+            existing.bringToFront()
+            return
+        }
         let controller = OnboardingWindowController()
         controller.onAddImage = { [weak self] in
             self?.changeDefaultImageFromMenu()

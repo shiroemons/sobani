@@ -54,15 +54,18 @@ extension ManagementPanelViewModel {
         panel.allowsMultipleSelection = true
         Task {
             guard await runDialog(panel) == .OK else { return }
+            var failedNames: [String] = []
             for url in panel.urls {
                 // 登録・ウィンドウ作成はそれぞれ registeredImagesDidChange / imageWindowListDidChange を発行し、
                 // 一覧の更新は通知の監視側で行われる
-                if createWindow {
-                    appDelegate?.createNewWindow(registeringImageAt: url)
-                } else {
-                    ImageManager.shared.registerImage(from: url)
+                let succeeded = createWindow
+                    ? appDelegate?.createNewWindow(registeringImageAt: url) ?? false
+                    : ImageManager.shared.registerImage(from: url) != nil
+                if !succeeded {
+                    failedNames.append(url.lastPathComponent)
                 }
             }
+            ImageFileDialog.showLoadFailedAlert(fileNames: failedNames)
         }
     }
 

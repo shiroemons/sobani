@@ -1025,22 +1025,6 @@
         }
       }
     },
-    "update.ok": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
-          }
-        }
-      }
-    },
     "quit.confirm_title": {
       "localizations": {
         "ja": {
@@ -1133,6 +1117,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancel"
+          }
+        }
+      }
+    },
+    "image.error.load_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を読み込めませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load the image"
+          }
+        }
+      }
+    },
+    "image.error.load_failed_hint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PNG / JPEG / GIF / TIFF / HEIC 形式で、一辺 %@px 以下の画像を選んでください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a PNG, JPEG, GIF, TIFF or HEIC image up to %@ px on each side."
           }
         }
       }

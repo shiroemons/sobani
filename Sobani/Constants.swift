@@ -661,6 +661,18 @@ enum ImageFileDialog {
         panel.level = .floating
         return panel
     }
+
+    /// ユーザーが選んだ画像を読み込めなかったことを、対応形式とサイズ上限とともに知らせる。
+    /// `fileNames` が空なら何もしない。
+    static func showLoadFailedAlert(fileNames: [String]) {
+        guard !fileNames.isEmpty else { return }
+        let hint = String(format: L("image.error.load_failed_hint"), "\(AppConstants.maxImagePixelDimension)")
+        AlertFactory.make(
+            style: .warning,
+            messageText: L("image.error.load_failed"),
+            informativeText: fileNames.joined(separator: "\n") + "\n\n" + hint
+        ).runModal()
+    }
 }
 
 extension NSMenu {
