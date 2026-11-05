@@ -9,7 +9,7 @@ enum AlertFactory {
         style: NSAlert.Style = .informational,
         messageText: String,
         informativeText: String = "",
-        buttonTitles: [String] = ["OK"]
+        buttonTitles: [String] = [L("common.ok")]
     ) -> NSAlert {
         let alert = NSAlert()
         alert.alertStyle = style
@@ -25,8 +25,8 @@ enum AlertFactory {
     static func confirmation(
         messageText: String,
         informativeText: String = "",
-        okTitle: String = "OK",
-        cancelTitle: String = L("quit.cancel")
+        okTitle: String = L("common.ok"),
+        cancelTitle: String = L("common.cancel")
     ) -> NSAlert {
         make(
             style: .warning,

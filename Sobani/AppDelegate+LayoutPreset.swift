@@ -191,8 +191,7 @@ extension AppDelegate {
         let alert = AlertFactory.confirmation(
             messageText: L("layout.overwrite_title"),
             informativeText: String(format: L("layout.update_confirm_message"), name),
-            okTitle: L("layout.overwrite_button"),
-            cancelTitle: L("quit.cancel")
+            okTitle: L("layout.overwrite_button")
         )
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
@@ -206,8 +205,7 @@ extension AppDelegate {
         let alert = AlertFactory.confirmation(
             messageText: L("layout.delete_confirm_title"),
             informativeText: String(format: L("layout.delete_confirm_message"), name),
-            okTitle: L("layout.delete_button"),
-            cancelTitle: L("quit.cancel")
+            okTitle: L("layout.delete_button")
         )
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
@@ -268,7 +266,7 @@ extension AppDelegate {
             style: .informational,
             messageText: messageText,
             informativeText: informativeText,
-            buttonTitles: [okTitle, L("quit.cancel")]
+            buttonTitles: [okTitle, L("common.cancel")]
         )
         let textField = makeLayoutNameField(for: alert)
         textField.stringValue = initialValue
@@ -301,8 +299,7 @@ extension AppDelegate {
         let overwriteAlert = AlertFactory.confirmation(
             messageText: L("layout.overwrite_title"),
             informativeText: String(format: L("layout.overwrite_message"), name),
-            okTitle: L("layout.overwrite_button"),
-            cancelTitle: L("quit.cancel")
+            okTitle: L("layout.overwrite_button")
         )
         return overwriteAlert.runModal() == .alertFirstButtonReturn
     }

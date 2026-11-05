@@ -117,7 +117,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             zOrderedWindows = loadedWindows.reversed()
         }
 
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
 
         if OnboardingManager.shared.shouldShowOnboarding {
             if savedStates.isEmpty {
@@ -147,7 +147,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func bringAllToFront() {
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         setWindowsHidden(false)
     }
 
@@ -281,7 +281,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         )
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         shouldTerminate = true
-        NSApplication.shared.terminate(nil)
+        NSApp.terminate(nil)
     }
 
     func requestQuit() { quitFromMenu() }
@@ -289,7 +289,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func quitWithoutSavingFromMenu() {
         shouldSkipSave = true
         shouldTerminate = true
-        NSApplication.shared.terminate(nil)
+        NSApp.terminate(nil)
     }
 
     func requestQuitWithoutSaving() { quitWithoutSavingFromMenu() }
