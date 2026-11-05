@@ -1,6 +1,5 @@
 import Cocoa
 import os.log
-import ServiceManagement
 
 // MARK: - App Delegate
 
@@ -17,7 +16,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     private var shouldSkipSave = false
-    var areWindowsHidden = false
+    /// すべてのウィンドウが非表示か。各ウィンドウの `isHidden` から導出する（二重管理による不整合を防ぐ）。
+    var areWindowsHidden: Bool {
+        !zOrderedWindows.isEmpty && zOrderedWindows.allSatisfy(\.isHidden)
+    }
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
@@ -42,7 +44,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     weak var lastHighlightedWindow: ImageWindow?
     private var managementPanelController: ManagementPanelController?
 
+    /// ユニットテストのホストとして起動されたか。
+    ///
+    /// テストはこのアプリをホストに実行されるため、通常起動すると実ユーザーの
+    /// `window_states.json` などを読み書きし、ステータスバーやホットキーも登録してしまう。
+    nonisolated static var isRunningUnitTests: Bool {
+        let environment = ProcessInfo.processInfo.environment
+        return ["XCTestConfigurationFilePath", "XCTestBundlePath", "XCTestSessionIdentifier"]
+            .contains { environment[$0] != nil }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        guard !Self.isRunningUnitTests else {
+            logger.notice("Running as unit test host; skipping launch sequence")
+            return
+        }
         NSApp.appearance = AppThemeSettings.currentTheme.nsAppearance
         setupStatusBar()
         SparkleManager.shared.startUpdater()
@@ -130,42 +146,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func bringAllToFront() {
-        areWindowsHidden = false
         NSApp.activate(ignoringOtherApps: true)
-        for imageWindow in zOrderedWindows where imageWindow.isHidden {
-            imageWindow.setHidden(false)
-        }
-        applyZOrderToWindows()
+        setWindowsHidden(false)
     }
 
     @objc func toggleAllWindowsVisibility() {
-        guard !zOrderedWindows.isEmpty else { return }
-        if areWindowsHidden {
-            for imageWindow in zOrderedWindows where imageWindow.isHidden {
-                imageWindow.setHidden(false)
-            }
-            applyZOrderToWindows()
-        } else {
-            for imageWindow in zOrderedWindows {
-                imageWindow.setHidden(true)
-            }
-        }
-        areWindowsHidden.toggle()
+        toggleWindows(zOrderedWindows)
     }
 
+    /// 指定ウィンドウ（省略時は全ウィンドウ）の表示状態を変更する。
+    ///
+    /// 表示状態の変更はこのメソッドに集約すること。表示に戻したときは `zOrderedWindows` の
+    /// 重なり順を OS ウィンドウへ再適用する（個別に `orderFront` すると Z-order がずれるため）。
+    func setWindowsHidden(_ hidden: Bool, windows: [ImageWindow]? = nil) {
+        let targets = windows ?? zOrderedWindows
+        for imageWindow in targets where imageWindow.isHidden != hidden {
+            imageWindow.setHidden(hidden)
+        }
+        if !hidden {
+            applyZOrderToWindows()
+        }
+    }
+
+    /// すべて非表示なら表示し、1つでも表示中ならすべて非表示にする。
     private func toggleWindows(_ windows: [ImageWindow]) {
         guard !windows.isEmpty else { return }
-        if windows.allSatisfy({ $0.isHidden }) {
-            for imageWindow in windows {
-                imageWindow.setHidden(false)
-            }
-            applyZOrderToWindows()
-            if areWindowsHidden { areWindowsHidden = false }
-        } else {
-            for imageWindow in windows where !imageWindow.isHidden {
-                imageWindow.setHidden(true)
-            }
-        }
+        setWindowsHidden(!windows.allSatisfy(\.isHidden), windows: windows)
     }
 
     private func windowsOnCurrentScreen() -> [ImageWindow] {
@@ -195,7 +201,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// zOrderedWindowsの順序をNSWindowに反映する（最背面から順に重ねる）
     func applyZOrderToWindows() {
-        guard !areWindowsHidden else { return }
         var previousWindow: ImageWindow?
         for imageWindow in zOrderedWindows.reversed() {
             guard !imageWindow.isHidden else { continue }
@@ -246,8 +251,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func closeAllWindows() {
-        areWindowsHidden = false
         for imageWindow in zOrderedWindows {
+            imageWindow.dismissAuxiliaryPanels()
             imageWindow.window.orderOut(nil)
         }
         zOrderedWindows.removeAll()
@@ -304,10 +309,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// - Parameter imageName: 表示する画像名。`nil` の場合はデフォルト画像を使用する。
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
-            areWindowsHidden = false
-            for imageWindow in zOrderedWindows {
-                imageWindow.window.orderFront(nil)
-            }
+            setWindowsHidden(false)
         }
         let image: NSImage
         if let name = imageName,
@@ -324,12 +326,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         addImageWindow(imageWindow)
     }
 
+    /// 外部の画像ファイルを登録し、新しいウィンドウで開く。登録に失敗した場合は開かない。
+    ///
+    /// - Returns: ウィンドウを開けたかどうか。
+    @discardableResult
+    func createNewWindow(registeringImageAt url: URL) -> Bool {
+        guard let savedName = ImageManager.shared.registerImage(from: url) else {
+            logger.error("Failed to register image for new window")
+            return false
+        }
+        createNewWindow(imageName: savedName)
+        return true
+    }
+
     @objc func addNewWindowWithNewImageFromMenu() {
         let panel = ImageFileDialog.makeOpenPanel(message: L("file.select_new_image_message"))
         if panel.runModal() == .OK, let url = panel.url {
-            if let savedName = ImageManager.shared.registerImage(from: url) {
-                createNewWindow(imageName: savedName)
-            }
+            createNewWindow(registeringImageAt: url)
         }
     }
 
@@ -350,6 +363,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        guard !Self.isRunningUnitTests else { return }
         if shouldSkipSave {
             // 随時保存でセッション中の変更が書き込まれているため、起動時の状態に戻す
             persistDebounceTimer?.invalidate()
@@ -375,16 +389,11 @@ extension AppDelegate: ImageWindowDelegate {
     }
 
     func imageWindowRequestedNewWindowWithFileURL(_ sender: ImageWindow, fileURL: URL) {
-        if let savedName = ImageManager.shared.registerImage(from: fileURL) {
-            createNewWindow(imageName: savedName)
-        }
+        createNewWindow(registeringImageAt: fileURL)
     }
 
     func imageWindowDidClose(_ sender: ImageWindow) {
         removeImageWindow(sender)
-        if zOrderedWindows.isEmpty {
-            areWindowsHidden = false
-        }
         quitIfNoWindows()
     }
 
@@ -411,12 +420,12 @@ extension AppDelegate: ImageWindowDelegate {
 
 extension AppDelegate {
     @objc func toggleLaunchAtLogin() {
+        let manager = LaunchAtLoginManager.shared
         do {
-            try LaunchAtLoginManager.shared.toggle()
+            try manager.setEnabled(!manager.isEnabled)
         } catch {
-            if LaunchAtLoginManager.shared.status == .requiresApproval {
-                SMAppService.openSystemSettingsLoginItems()
-            }
+            logger.error("Failed to toggle launch at login: \(error.localizedDescription, privacy: .public)")
+            manager.openSystemSettingsIfApprovalRequired()
         }
     }
 

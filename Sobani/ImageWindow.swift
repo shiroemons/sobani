@@ -90,7 +90,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
             self?.adjustmentPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
         }
         imageView.onOpacityChanged = { [weak self] in
-            self?.updateImageAlpha()
+            self?.refreshImageAlpha()
         }
         imageView.onPositionChanged = { [weak self] in
             self?.notifyStateDidChange(.position)
@@ -369,12 +369,16 @@ extension ImageWindow {
         guard alpha != customGhostAlpha else { return }
         customGhostAlpha = alpha
         if isGhostMode {
-            updateImageAlpha()
+            refreshImageAlpha()
         }
         notifyStateDidChange(.ghostAlpha)
     }
 
-    private func updateImageAlpha() {
+    /// 不透明度とゴーストモードを合成した alpha を imageView に再適用する。
+    ///
+    /// ゴーストの共通 alpha（`GhostModeSettings.globalAlpha`）を変えたときなど、
+    /// ウィンドウ側の状態が変わらないまま見た目だけ更新したい場合に呼ぶ。
+    func refreshImageAlpha() {
         imageView.alphaValue = composedImageAlpha
     }
 }
@@ -382,13 +386,21 @@ extension ImageWindow {
 // MARK: - Hidden Window
 
 extension ImageWindow {
+    /// このウィンドウに付属するパネル（フローティングメニュー・調整パネル・クロップエディタ）をすべて閉じる。
+    ///
+    /// 非表示化・クローズ・レイアウト適用など、ウィンドウが画面から消えるすべての経路で呼ぶこと。
+    /// 閉じずに解放するとクロップエディタのキー監視などが残る。
+    func dismissAuxiliaryPanels() {
+        floatingMenuController?.dismiss()
+        adjustmentPanelController?.close()
+        cropEditorController?.close()
+    }
+
     func setHidden(_ hidden: Bool) {
         guard hidden != isHidden else { return }
         isHidden = hidden
         if hidden {
-            floatingMenuController?.dismiss()
-            adjustmentPanelController?.close()
-            cropEditorController?.close()
+            dismissAuxiliaryPanels()
             window.orderOut(nil)
         } else {
             window.orderFront(nil)

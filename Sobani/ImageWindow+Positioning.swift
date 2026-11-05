@@ -5,13 +5,21 @@ import AppKit
 extension ImageWindow {
     func centerOnScreen() {
         guard let screen = window.screen ?? NSScreen.main else { return }
-        let screenFrame = screen.visibleFrame
-        let windowSize = window.frame.size
-        let newOrigin = NSPoint(
-            x: screenFrame.midX - windowSize.width / 2,
-            y: screenFrame.midY - windowSize.height / 2
+        window.setFrameOrigin(
+            GeometryUtils.centeredOrigin(size: window.frame.size, in: screen.visibleFrame)
         )
-        window.setFrameOrigin(newOrigin)
+    }
+
+    /// 画像（imageView）基準の原点でウィンドウを配置する。
+    ///
+    /// `WindowState` の原点は imageView 基準（`WindowStateManager.captureState` と同じ）。
+    /// 回転中はウィンドウが回転後のバウンディングボックスになるため、ウィンドウ原点へ変換してから設定する。
+    func setImageOrigin(_ imageOrigin: NSPoint) {
+        window.setFrameOrigin(Self.windowOrigin(
+            forImageOrigin: imageOrigin,
+            imageViewSize: imageView.frame.size,
+            rotationAngle: imageView.rotationAngle
+        ))
     }
 
     func setPositionAndSize(origin: NSPoint, size: NSSize) {

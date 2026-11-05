@@ -14,6 +14,7 @@ extension AppDelegate {
     }
 
     func removeImageWindow(_ window: ImageWindow) {
+        window.dismissAuxiliaryPanels()
         zOrderedWindows.removeAll { $0 === window }
         notifyWindowListDidChange(.windowRemove)
     }
@@ -41,9 +42,9 @@ extension AppDelegate {
     func applyLayout(_ preset: LayoutPreset) {
         cancelLaunchRestoration()
         isApplyingLayout = true
-        areWindowsHidden = false
 
         for imageWindow in zOrderedWindows {
+            imageWindow.dismissAuxiliaryPanels()
             imageWindow.window.orderOut(nil)
         }
         zOrderedWindows.removeAll()

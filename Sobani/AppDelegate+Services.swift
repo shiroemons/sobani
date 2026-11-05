@@ -23,6 +23,7 @@ extension AppDelegate {
     }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        guard !Self.isRunningUnitTests else { return }
         NSApp.registerServicesMenuSendTypes([.fileURL], returnTypes: [])
         NSApp.servicesProvider = self
     }

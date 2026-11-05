@@ -165,7 +165,7 @@ final class CropEditorPanelController: NSObject {
         newPanel.contentView = contentView
 
         // Position near the target window
-        let panelOrigin = Self.calculatePanelOrigin(near: window, panelSize: panelRect.size)
+        let panelOrigin = NSPanel.auxiliaryPanelOrigin(near: window, panelSize: panelRect.size, gap: Self.panelGap)
         newPanel.setFrameOrigin(panelOrigin)
         newPanel.makeKeyAndOrderFront(nil)
         panel = newPanel
@@ -433,29 +433,6 @@ extension CropEditorPanelController {
             NSEvent.removeMonitor(monitor)
             keyMonitor = nil
         }
-    }
-
-    static func calculatePanelOrigin(near window: NSWindow, panelSize: NSSize) -> NSPoint {
-        let windowFrame = window.frame
-        let screenFrame = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? .zero
-
-        // Try to place to the right of the window
-        var x = windowFrame.maxX + panelGap
-        var y = windowFrame.midY - panelSize.height / 2
-
-        // If it doesn't fit on the right, try the left
-        if x + panelSize.width > screenFrame.maxX {
-            x = windowFrame.minX - panelSize.width - panelGap
-        }
-        // If it still doesn't fit, center on screen
-        if x < screenFrame.minX {
-            x = screenFrame.midX - panelSize.width / 2
-        }
-
-        // Clamp vertically
-        y = max(screenFrame.minY, min(y, screenFrame.maxY - panelSize.height))
-
-        return NSPoint(x: x, y: y)
     }
 }
 

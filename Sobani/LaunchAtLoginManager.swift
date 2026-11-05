@@ -24,15 +24,29 @@ final class LaunchAtLoginManager {
         service.status == .enabled
     }
 
-    func toggle() throws {
-        if isEnabled {
-            try service.unregister()
-        } else {
+    var status: SMAppService.Status {
+        service.status
+    }
+
+    /// ログイン時起動を指定の状態にする。すでにその状態なら何もしない。
+    ///
+    /// 現在の状態を反転する操作だと、システム設定側で変更された直後に UI と逆の結果になるため、
+    /// 呼び出し側は「望む状態」を渡すこと。
+    func setEnabled(_ enabled: Bool) throws {
+        guard enabled != isEnabled else { return }
+        if enabled {
             try service.register()
+        } else {
+            try service.unregister()
         }
     }
 
-    var status: SMAppService.Status {
-        service.status
+    /// ユーザーの承認待ち（`.requiresApproval`）ならシステム設定のログイン項目を開く。
+    /// - Returns: システム設定を開いたかどうか。
+    @discardableResult
+    func openSystemSettingsIfApprovalRequired() -> Bool {
+        guard status == .requiresApproval else { return false }
+        SMAppService.openSystemSettingsLoginItems()
+        return true
     }
 }

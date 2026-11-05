@@ -74,6 +74,9 @@ enum AppConstants {
 
     // Floating-point comparison
     static let floatingPointTolerance: CGFloat = 0.01
+    /// 0〜1 に正規化された座標（`CropRect` 等）同士の比較に使う許容誤差。
+    /// `floatingPointTolerance`（0.01）は正規化座標では画像の 1% に相当し粗すぎるため別に持つ。
+    static let normalizedTolerance: CGFloat = 1e-4
 
     // Hit Test
     /// 透過ピクセル判定のしきい値。alpha 値がこの値未満ならクリックスルーする。
@@ -300,6 +303,10 @@ enum AppConstants {
     static let managementPanelWillClose = Notification.Name(
         "\(loggerSubsystem).managementPanelWillClose"
     )
+    /// レイアウトプリセットの保存・削除・リネームで発火する
+    static let layoutPresetsDidChange = Notification.Name(
+        "\(loggerSubsystem).layoutPresetsDidChange"
+    )
 
     // MARK: - Notification UserInfo Keys
     static let notificationTriggerKey = "trigger"
@@ -395,6 +402,14 @@ enum GeometryUtils {
     /// 2つの値が実質的に等しいかどうかを判定
     static func isApproximatelyEqual(_ lhs: CGFloat, _ rhs: CGFloat) -> Bool {
         abs(lhs - rhs) < AppConstants.floatingPointTolerance
+    }
+
+    /// `size` の矩形を `container` の中央に置いたときの原点（container の原点オフセットも考慮する）
+    static func centeredOrigin(size: NSSize, in container: NSRect) -> NSPoint {
+        NSPoint(
+            x: container.midX - size.width / 2,
+            y: container.midY - size.height / 2
+        )
     }
 }
 

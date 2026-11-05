@@ -397,12 +397,7 @@ extension ImageWindow {
     func reapplyAnchoredPosition(of state: WindowState, screens: [ScreenInfo]) -> Bool {
         let resolution = state.resolvedForRestore(on: screens)
         guard resolution.anchor == .matched else { return false }
-        // WindowState の原点は imageView 基準（captureState と同じ）。回転を考慮してウィンドウ原点へ変換する
-        window.setFrameOrigin(Self.windowOrigin(
-            forImageOrigin: resolution.state.frame.origin,
-            imageViewSize: imageView.frame.size,
-            rotationAngle: imageView.rotationAngle
-        ))
+        setImageOrigin(resolution.state.frame.origin)
         return true
     }
 }

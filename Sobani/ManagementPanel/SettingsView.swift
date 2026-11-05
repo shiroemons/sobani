@@ -34,11 +34,15 @@ struct SettingsView: View {
     private var generalSection: some View {
         Section(L("management.general")) {
             Toggle(L("management.launch_at_login"), isOn: $isLaunchAtLogin)
-                .onChange(of: isLaunchAtLogin) {
+                .onChange(of: isLaunchAtLogin) { _, requested in
+                    // 望む状態を渡す（反転操作だとシステム設定側の変更と食い違う）。
+                    // 失敗時に実状態へ戻すと onChange が再発火するが、setEnabled は同じ状態なら何もしない
+                    let manager = LaunchAtLoginManager.shared
                     do {
-                        try LaunchAtLoginManager.shared.toggle()
+                        try manager.setEnabled(requested)
                     } catch {
-                        isLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
+                        manager.openSystemSettingsIfApprovalRequired()
+                        isLaunchAtLogin = manager.isEnabled
                     }
                 }
 
