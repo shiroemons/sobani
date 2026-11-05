@@ -235,7 +235,8 @@ struct WindowState: Codable, Equatable, Sendable {
 ///
 /// `window_states.json` への保存・読み込みを担当し、起動時の状態復元と
 /// 終了時の状態保存を `AppDelegate` から呼び出される。
-/// レガシー画像名（`"デフォルト"` → `"default"`）の正規化も行う。
+/// 画像名はそのまま保存・復元する。レガシー画像名（`"デフォルト"` 等）や登録が消えた画像は、
+/// 復元時に `AppDelegate.resolveImageName` がデフォルト画像へフォールバックさせる。
 @MainActor
 final class WindowStateManager {
     static let shared = WindowStateManager()
