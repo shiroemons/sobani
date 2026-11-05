@@ -100,13 +100,10 @@ final class ManagementPanelViewModel {
         }
         let newWindows = appDelegate.zOrderedWindows.map { imageWindow in
             // 位置・サイズは画像（imageView）基準。WindowState・プリセット・位置エディタと同じ座標系にそろえる
-            let imageSize = imageWindow.imageView.frame.size
-            let imageOrigin = ImageWindow.imageOrigin(
-                windowFrame: imageWindow.window.frame, imageViewSize: imageSize
-            )
+            let imageFrame = imageWindow.imageFrameInScreen
             let screenName = imageWindow.window.screen?.localizedName ?? L("image.unknown")
             let dims = FormatUtils.formatDimensions(
-                width: imageSize.width, height: imageSize.height)
+                width: imageFrame.width, height: imageFrame.height)
             let subtitle = "\(dims) ・ \(screenName)"
             return WindowInfo(
                 windowId: imageWindow.windowId,
@@ -121,10 +118,10 @@ final class ManagementPanelViewModel {
                 customGhostAlpha: imageWindow.customGhostAlpha,
                 effectiveGhostAlpha: imageWindow.effectiveGhostAlpha,
                 isRemoveBackgroundEnabled: imageWindow.isRemoveBackgroundAvailable,
-                originX: imageOrigin.x,
-                originY: imageOrigin.y,
-                width: imageSize.width,
-                height: imageSize.height,
+                originX: imageFrame.minX,
+                originY: imageFrame.minY,
+                width: imageFrame.width,
+                height: imageFrame.height,
                 imageName: imageWindow.displayName,
                 isFlippedHorizontally: imageWindow.imageView.isFlippedHorizontally,
                 rotationAngle: imageWindow.imageView.rotationAngle
