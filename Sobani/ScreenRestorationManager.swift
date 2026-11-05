@@ -3,31 +3,30 @@ import os.log
 
 // MARK: - Pending Restoration
 
+/// モニター切断・スリープ復帰で元の位置へ戻せなかったウィンドウの、意図した位置の記録。
+///
+/// 旧形式の JSON に含まれる退避先の座標（`adjustedOriginX` / `adjustedOriginY`）は使われていなかったため
+/// 保持しない（デコード時は無視される）。
 struct PendingRestoration: Codable, Sendable {
     let windowId: Int
     let originalState: WindowState
     let displayID: CGDirectDisplayID
-    let adjustedOriginX: CGFloat
-    let adjustedOriginY: CGFloat
     /// 期限判定の起点。スリープしていた時間は `ScreenRestorationManager.resumeExpiry()` で後ろへずらす
     var createdAt: Date
     let preSleepScreenFrame: NSRect?
 
     private enum CodingKeys: String, CodingKey {
-        case windowId, originalState, displayID, adjustedOriginX, adjustedOriginY, createdAt
+        case windowId, originalState, displayID, createdAt
         case screenFrameX, screenFrameY, screenFrameWidth, screenFrameHeight
     }
 
     init(
-        windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
-        adjustedOriginX: CGFloat, adjustedOriginY: CGFloat, createdAt: Date,
+        windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID, createdAt: Date,
         preSleepScreenFrame: NSRect? = nil
     ) {
         self.windowId = windowId
         self.originalState = originalState
         self.displayID = displayID
-        self.adjustedOriginX = adjustedOriginX
-        self.adjustedOriginY = adjustedOriginY
         self.createdAt = createdAt
         self.preSleepScreenFrame = preSleepScreenFrame
     }
@@ -37,8 +36,6 @@ struct PendingRestoration: Codable, Sendable {
         windowId = try container.decode(Int.self, forKey: .windowId)
         originalState = try container.decode(WindowState.self, forKey: .originalState)
         displayID = try container.decode(CGDirectDisplayID.self, forKey: .displayID)
-        adjustedOriginX = try container.decode(CGFloat.self, forKey: .adjustedOriginX)
-        adjustedOriginY = try container.decode(CGFloat.self, forKey: .adjustedOriginY)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         if let x = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameX),
            let y = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameY),
@@ -55,8 +52,6 @@ struct PendingRestoration: Codable, Sendable {
         try container.encode(windowId, forKey: .windowId)
         try container.encode(originalState, forKey: .originalState)
         try container.encode(displayID, forKey: .displayID)
-        try container.encode(adjustedOriginX, forKey: .adjustedOriginX)
-        try container.encode(adjustedOriginY, forKey: .adjustedOriginY)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encodeIfPresent(preSleepScreenFrame?.origin.x, forKey: .screenFrameX)
         try container.encodeIfPresent(preSleepScreenFrame?.origin.y, forKey: .screenFrameY)
@@ -95,7 +90,6 @@ final class ScreenRestorationManager {
 
     func addPending(
         windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
-        adjustedOriginX: CGFloat, adjustedOriginY: CGFloat,
         preSleepScreenFrame: NSRect? = nil
     ) {
         pendingRestorations.removeAll { $0.windowId == windowId }
@@ -103,8 +97,6 @@ final class ScreenRestorationManager {
             windowId: windowId,
             originalState: originalState,
             displayID: displayID,
-            adjustedOriginX: adjustedOriginX,
-            adjustedOriginY: adjustedOriginY,
             createdAt: currentDate(),
             preSleepScreenFrame: preSleepScreenFrame
         )

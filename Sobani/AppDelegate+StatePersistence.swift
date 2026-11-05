@@ -230,9 +230,7 @@ extension AppDelegate {
                 screenRestorationManager.addPending(
                     windowId: imageWindow.windowId,
                     originalState: state,
-                    displayID: AppConstants.unknownDisplayID,
-                    adjustedOriginX: resolution.state.originX,
-                    adjustedOriginY: resolution.state.originY
+                    displayID: AppConstants.unknownDisplayID
                 )
             }
         }
@@ -294,9 +292,7 @@ extension AppDelegate {
             screenRestorationManager.addPending(
                 windowId: windowId,
                 originalState: state,
-                displayID: AppConstants.unknownDisplayID,
-                adjustedOriginX: state.originX,
-                adjustedOriginY: state.originY
+                displayID: AppConstants.unknownDisplayID
             )
             queuedCount += 1
         }

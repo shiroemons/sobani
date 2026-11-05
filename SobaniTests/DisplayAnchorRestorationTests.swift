@@ -314,8 +314,7 @@ import Testing
         let manager = ScreenRestorationManager(baseDirectory: directory)
         let state = Self.largePortraitState(anchor: Self.portraitAnchor)
         manager.addPending(
-            windowId: 145, originalState: state, displayID: AppConstants.unknownDisplayID,
-            adjustedOriginX: 0, adjustedOriginY: 0
+            windowId: 145, originalState: state, displayID: AppConstants.unknownDisplayID
         )
         #expect(manager.restorableEntries(screens: [Self.normalScreens[0]]).isEmpty)
         #expect(manager.restorableEntries(screens: Self.normalScreens).map(\.windowId) == [145])

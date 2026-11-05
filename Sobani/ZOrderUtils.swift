@@ -2,8 +2,9 @@ import Foundation
 
 /// Z-order 配列操作のユーティリティ
 enum ZOrderUtils {
-    /// 要素を配列の先頭（最前面）に移動
+    /// 要素を配列の先頭（最前面）に移動。配列にない要素は追加しない
     static func moveToFront<T: AnyObject>(_ element: T, in array: [T]) -> [T] {
+        guard array.contains(where: { $0 === element }) else { return array }
         var result = array.filter { $0 !== element }
         result.insert(element, at: 0)
         return result
@@ -27,15 +28,11 @@ enum ZOrderUtils {
         return result
     }
 
-    /// 要素を配列の末尾（最背面）に移動
+    /// 要素を配列の末尾（最背面）に移動。配列にない要素は追加しない
     static func moveToBack<T: AnyObject>(_ element: T, in array: [T]) -> [T] {
+        guard array.contains(where: { $0 === element }) else { return array }
         var result = array.filter { $0 !== element }
         result.append(element)
         return result
-    }
-
-    /// 既存IDの配列から次のウィンドウIDを計算
-    static func nextId(from existingIds: [Int]) -> Int {
-        return (existingIds.max() ?? 0) + 1
     }
 }

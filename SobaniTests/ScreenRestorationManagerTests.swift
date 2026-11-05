@@ -28,20 +28,18 @@ import Testing
     /// 保留エントリが正しく追加されることを検証
     @Test func addPending() {
         let state = makeState()
-        manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: state, displayID: 0)
         #expect(manager.pendingRestorations.count == 1)
         #expect(manager.pendingRestorations[0].windowId == 1)
         #expect(manager.pendingRestorations[0].originalState == state)
-        #expect(manager.pendingRestorations[0].adjustedOriginX == 50)
-        #expect(manager.pendingRestorations[0].adjustedOriginY == 60)
     }
 
     /// 同じwindowIdのエントリが上書きされることを検証
     @Test func addPendingOverwritesSameWindowId() {
         let state1 = makeState(windowId: 1, originX: 100)
         let state2 = makeState(windowId: 1, originX: 999)
-        manager.addPending(windowId: 1, originalState: state1, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
-        manager.addPending(windowId: 1, originalState: state2, displayID: 0, adjustedOriginX: 70, adjustedOriginY: 80)
+        manager.addPending(windowId: 1, originalState: state1, displayID: 0)
+        manager.addPending(windowId: 1, originalState: state2, displayID: 0)
         #expect(manager.pendingRestorations.count == 1)
         #expect(manager.pendingRestorations[0].originalState.originX == 999)
     }
@@ -51,7 +49,7 @@ import Testing
     /// 保留エントリが正しく削除されることを検証
     @Test func removePending() {
         let state = makeState()
-        manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: state, displayID: 0)
         manager.removePending(windowId: 1)
         #expect(manager.pendingRestorations.isEmpty)
     }
@@ -72,7 +70,7 @@ import Testing
     /// エントリがある場合にhasPendingがtrueを返すことを検証
     @Test func hasPendingWhenNotEmpty() {
         let state = makeState()
-        manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: state, displayID: 0)
         #expect(manager.hasPending)
     }
 
@@ -82,7 +80,7 @@ import Testing
     @Test func resumeExpiryExcludesSuspendedDuration() {
         let baseDate = Date()
         manager.currentDate = { baseDate }
-        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0)
 
         // 100 秒後にスリープし、1000 秒後に復帰（スリープ 900 秒）
         manager.currentDate = { baseDate.addingTimeInterval(100) }
@@ -105,7 +103,7 @@ import Testing
     @Test func resumeExpiryWithoutSuspendDoesNothing() throws {
         let baseDate = Date()
         manager.currentDate = { baseDate }
-        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0)
         manager.currentDate = { baseDate.addingTimeInterval(500) }
         manager.resumeExpiry()
         let entry = try #require(manager.pendingRestorations.first)
@@ -119,7 +117,7 @@ import Testing
     func purgeExpiredBoundary(elapsed: Double, shouldKeep: Bool) {
         let baseDate = Date()
         manager.currentDate = { baseDate }
-        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0)
 
         manager.currentDate = { baseDate.addingTimeInterval(elapsed) }
         manager.purgeExpired()
@@ -138,8 +136,8 @@ import Testing
         // displayID: 999999 は実際のモニターに対応しないため、接続中スクリーンに一致しない
         let state1 = makeState(windowId: 1, originX: 100)
         let state2 = makeState(windowId: 2, originX: 200)
-        manager.addPending(windowId: 1, originalState: state1, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
-        manager.addPending(windowId: 2, originalState: state2, displayID: 999999, adjustedOriginX: 70, adjustedOriginY: 80)
+        manager.addPending(windowId: 1, originalState: state1, displayID: 999999)
+        manager.addPending(windowId: 2, originalState: state2, displayID: 999999)
         // displayID: 999999 は実スクリーンと一致しないため空になる
         #expect(manager.restorableEntries(screens: Self.singleScreen).isEmpty)
     }
@@ -148,7 +146,7 @@ import Testing
     @Test func restorableEntriesCallsPurgeExpired() {
         let baseDate = Date()
         manager.currentDate = { baseDate }
-        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: makeState(), displayID: 0)
         manager.currentDate = { baseDate.addingTimeInterval(301) }
         let results = manager.restorableEntries(screens: Self.singleScreen)
         #expect(results.isEmpty)
@@ -159,7 +157,7 @@ import Testing
     @Test func restorableEntriesWithKnownDisplayIDNotMatching() {
         // displayID が非0で実スクリーンに存在しない場合は空
         let state = makeState(windowId: 1, originX: 100, originY: 200)
-        manager.addPending(windowId: 1, originalState: state, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: state, displayID: 999999)
         #expect(manager.restorableEntries(screens: Self.singleScreen).isEmpty)
     }
 
@@ -167,7 +165,7 @@ import Testing
     @Test func restorableEntriesWithZeroDisplayIDAndInvisiblePosition() {
         // displayID: 0（スリープなし切断）かつ画面外の位置 → 空（元の位置がまだ不可視）
         let state = makeState(windowId: 1, originX: -99999, originY: -99999)
-        manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: state, displayID: 0)
         // 元の位置が不可視のため、復元対象にならない
         #expect(manager.restorableEntries(screens: Self.singleScreen).isEmpty)
     }
@@ -184,7 +182,7 @@ import Testing
     /// 保存と読み込みのラウンドトリップが正しく動作することを検証
     @Test func saveAndLoadRoundTrip() {
         let state = makeState(windowId: 1, originX: 100, originY: 200)
-        ioManager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 50, adjustedOriginY: 60)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 42)
         ioManager.savePending()
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
@@ -193,16 +191,14 @@ import Testing
         #expect(entry.windowId == 1)
         #expect(entry.originalState == state)
         #expect(entry.displayID == 42)
-        #expect(entry.adjustedOriginX == 50)
-        #expect(entry.adjustedOriginY == 60)
     }
 
     /// 複数エントリの保存と読み込みが正しく動作することを検証
     @Test func saveAndLoadMultipleEntries() {
         let state1 = makeState(windowId: 1, originX: 100)
         let state2 = makeState(windowId: 2, originX: 200)
-        ioManager.addPending(windowId: 1, originalState: state1, displayID: 10, adjustedOriginX: 10, adjustedOriginY: 20)
-        ioManager.addPending(windowId: 2, originalState: state2, displayID: 20, adjustedOriginX: 30, adjustedOriginY: 40)
+        ioManager.addPending(windowId: 1, originalState: state1, displayID: 10)
+        ioManager.addPending(windowId: 2, originalState: state2, displayID: 20)
         ioManager.savePending()
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
@@ -232,7 +228,7 @@ import Testing
         let baseDate = Date()
         ioManager.currentDate = { baseDate }
         let state = makeState(windowId: 1)
-        ioManager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 0)
         ioManager.savePending()
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.currentDate = { baseDate.addingTimeInterval(301) }
@@ -244,13 +240,13 @@ import Testing
     @Test func startupEntryOverwritesLoadedEntry() {
         // 起動時のaddPendingが読み込んだエントリを上書きする
         let stateOld = makeState(windowId: 1, originX: 100)
-        ioManager.addPending(windowId: 1, originalState: stateOld, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
+        ioManager.addPending(windowId: 1, originalState: stateOld, displayID: 0)
         ioManager.savePending()
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
         // 起動時に新しいエントリで上書き
         let stateNew = makeState(windowId: 1, originX: 999)
-        loader.addPending(windowId: 1, originalState: stateNew, displayID: 0, adjustedOriginX: 70, adjustedOriginY: 80)
+        loader.addPending(windowId: 1, originalState: stateNew, displayID: 0)
 
         #expect(loader.pendingRestorations.count == 1)
         #expect(loader.pendingRestorations[0].originalState.originX == 999)
@@ -268,7 +264,7 @@ import Testing
     @Test func displayIDPreservedAcrossSaveLoad() {
         let displayID: CGDirectDisplayID = 1234567890
         let state = makeState(windowId: 1)
-        ioManager.addPending(windowId: 1, originalState: state, displayID: displayID, adjustedOriginX: 0, adjustedOriginY: 0)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: displayID)
         ioManager.savePending()
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
@@ -281,7 +277,7 @@ import Testing
     @Test func addPendingWithScreenFrame() {
         let state = makeState()
         let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
-        manager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 50, adjustedOriginY: 60, preSleepScreenFrame: frame)
+        manager.addPending(windowId: 1, originalState: state, displayID: 42, preSleepScreenFrame: frame)
         #expect(manager.pendingRestorations.count == 1)
         #expect(manager.pendingRestorations[0].preSleepScreenFrame == frame)
     }
@@ -289,7 +285,7 @@ import Testing
     /// スリープ前画面フレーム省略時にnilがデフォルトになることを検証
     @Test func addPendingWithoutScreenFrameDefaultsToNil() {
         let state = makeState()
-        manager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 50, adjustedOriginY: 60)
+        manager.addPending(windowId: 1, originalState: state, displayID: 42)
         #expect(manager.pendingRestorations[0].preSleepScreenFrame == nil)
     }
 
@@ -297,7 +293,7 @@ import Testing
     @Test func screenFramePreservedAcrossSaveLoad() {
         let state = makeState(windowId: 1)
         let frame = NSRect(x: 1920, y: 0, width: 2560, height: 1440)
-        ioManager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 0, adjustedOriginY: 0, preSleepScreenFrame: frame)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 42, preSleepScreenFrame: frame)
         ioManager.savePending()
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
@@ -307,7 +303,7 @@ import Testing
     /// nilのスリープ前画面フレームが保存・読み込みで保持されることを検証
     @Test func nilScreenFramePreservedAcrossSaveLoad() {
         let state = makeState(windowId: 1)
-        ioManager.addPending(windowId: 1, originalState: state, displayID: 42, adjustedOriginX: 0, adjustedOriginY: 0)
+        ioManager.addPending(windowId: 1, originalState: state, displayID: 42)
         ioManager.savePending()
         let loader = ScreenRestorationManager(timeout: 300, baseDirectory: tempDirectory)
         loader.loadPending()
@@ -316,7 +312,8 @@ import Testing
 
     /// screenFrameフィールドなしの旧フォーマットJSONが読み込めることを検証
     @Test func loadPendingBackwardCompatibilityWithoutScreenFrame() throws {
-        // 古いフォーマット（screenFrame フィールドなし）のJSONを読み込めることを確認
+        // 古いフォーマット（screenFrame フィールドなし）のJSONを読み込めることを確認。
+        // 旧フォーマットにある adjustedOriginX / adjustedOriginY は現在使わないため無視される
         let createdAt = Date().timeIntervalSinceReferenceDate
         // swiftlint:disable:next line_length
         let oldFormatJSON = "[{\"windowId\":1,\"originalState\":{\"imageName\":\"テスト\",\"originX\":100,\"originY\":200,\"width\":300,\"height\":400,\"isFlippedHorizontally\":false,\"windowId\":1},\"displayID\":42,\"adjustedOriginX\":50,\"adjustedOriginY\":60,\"createdAt\":\(createdAt)}]"

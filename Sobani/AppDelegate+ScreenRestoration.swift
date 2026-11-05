@@ -336,7 +336,6 @@ extension AppDelegate {
             screenRestorationManager.addPending(
                 windowId: windowId, originalState: savedState,
                 displayID: savedDisplayID ?? AppConstants.unknownDisplayID,
-                adjustedOriginX: adjusted.originX, adjustedOriginY: adjusted.originY,
                 preSleepScreenFrame: screenFrame
             )
         }
@@ -398,9 +397,7 @@ extension AppDelegate {
             screenRestorationManager.addPending(
                 windowId: imageWindow.windowId,
                 originalState: currentState,
-                displayID: AppConstants.unknownDisplayID,
-                adjustedOriginX: adjusted.originX,
-                adjustedOriginY: adjusted.originY
+                displayID: AppConstants.unknownDisplayID
             )
         }
     }

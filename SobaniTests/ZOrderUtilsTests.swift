@@ -112,25 +112,13 @@ struct ZOrderUtilsTests {
         #expect(ids(result) == [1, 2, 3])
     }
 
-    // MARK: - nextId Tests
+    // MARK: - 配列にない要素
 
-    @Test("nextId: 空配列")
-    func nextIdEmpty() {
-        #expect(ZOrderUtils.nextId(from: []) == 1)
-    }
-
-    @Test("nextId: 連続ID")
-    func nextIdSequential() {
-        #expect(ZOrderUtils.nextId(from: [1, 2, 3]) == 4)
-    }
-
-    @Test("nextId: ギャップあり")
-    func nextIdWithGaps() {
-        #expect(ZOrderUtils.nextId(from: [1, 5, 3]) == 6)
-    }
-
-    @Test("nextId: 0を含む（レガシー）")
-    func nextIdWithZero() {
-        #expect(ZOrderUtils.nextId(from: [0]) == 1)
+    @Test("先頭・末尾への移動: 配列にない要素は追加せず元の配列を返す")
+    func moveToFrontAndBackIgnoreMissingElement() {
+        let elemA = Element(1), elemB = Element(2), missing = Element(9)
+        #expect(ids(ZOrderUtils.moveToFront(missing, in: [elemA, elemB])) == [1, 2])
+        #expect(ids(ZOrderUtils.moveToBack(missing, in: [elemA, elemB])) == [1, 2])
+        #expect(ZOrderUtils.moveToFront(missing, in: []).isEmpty)
     }
 }
