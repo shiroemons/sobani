@@ -171,6 +171,7 @@ extension ManagementPanelViewModel {
         LayoutPresetManager.shared.updatePreset(preset, states: states)
     }
 
+    @discardableResult
     func renamePreset(from oldName: String, to newName: String) -> Bool {
         LayoutPresetManager.shared.renamePreset(from: oldName, to: newName)
     }
