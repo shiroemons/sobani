@@ -325,4 +325,18 @@ import Testing
         context.release(windowId: 2)
         #expect(!context.isActive)
     }
+
+    @Test("LaunchRestorationContext: アンカーのディスプレイが未接続のウィンドウだけを返す")
+    func launchContextWindowIdsWithMissingDisplay() {
+        var context = LaunchRestorationContext()
+        let mainAnchor = DisplayAnchor(displayUUID: Self.mainUUID, screenFrame: Self.normalScreens[0].frame)
+        context.states = [
+            145: Self.largePortraitState(anchor: Self.portraitAnchor),
+            2: Self.makeState(windowId: 2, originX: 100, originY: 100)
+                .withPosition(originX: 100, originY: 100, displayAnchor: mainAnchor),
+        ]
+        #expect(context.windowIdsWithMissingDisplay(on: Self.normalScreens).isEmpty)
+        #expect(context.windowIdsWithMissingDisplay(on: [Self.normalScreens[0]]) == [145])
+        #expect(context.windowIdsWithMissingDisplay(on: [Self.normalScreens[1]]) == [2])
+    }
 }

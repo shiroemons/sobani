@@ -259,10 +259,37 @@ extension AppDelegate {
 
     func endLaunchRestoration() {
         let wasRunning = launchContext.isActive
+        if wasRunning {
+            queueLaunchWindowsWithMissingDisplay()
+        }
         cancelLaunchRestoration()
         guard wasRunning else { return }
         // ペンディング復元の最後にスナップショットも更新される
         attemptPendingRestorations()
+    }
+
+    /// 追従を終える時点でアンカーのディスプレイが接続されていないウィンドウを、意図した位置のまま
+    /// ペンディングキューへ移す（launchContext を消すと意図した位置が失われ、ディスプレイが戻っても復元されないため）。
+    private func queueLaunchWindowsWithMissingDisplay() {
+        var queuedCount = 0
+        for windowId in launchContext.windowIdsWithMissingDisplay(on: ScreenInfo.current())
+        where !screenRestorationManager.isPending(windowId: windowId) {
+            guard let state = launchContext.states[windowId],
+                  zOrderedWindows.contains(where: { $0.windowId == windowId }) else { continue }
+            screenRestorationManager.addPending(
+                windowId: windowId,
+                originalState: state,
+                displayID: AppConstants.unknownDisplayID,
+                adjustedOriginX: state.originX,
+                adjustedOriginY: state.originY
+            )
+            queuedCount += 1
+        }
+        if queuedCount > 0 {
+            Self.persistenceLogger.notice(
+                "launch restore: queued \(queuedCount, privacy: .public) windows whose display is missing"
+            )
+        }
     }
 
     /// ユーザーが手動でウィンドウを動かした・大きさを変えた場合、以後そのウィンドウは起動時復元の対象外にする。

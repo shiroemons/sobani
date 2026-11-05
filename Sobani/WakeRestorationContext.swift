@@ -40,4 +40,11 @@ struct LaunchRestorationContext: Sendable {
     mutating func release(windowId: Int) {
         states[windowId] = nil
     }
+
+    /// アンカーのディスプレイが接続されておらず、位置を再適用できないウィンドウの ID（昇順）
+    func windowIdsWithMissingDisplay(on screens: [ScreenInfo]) -> [Int] {
+        states.filter { $0.value.resolvedForRestore(on: screens).anchor == .displayMissing }
+            .keys
+            .sorted()
+    }
 }
