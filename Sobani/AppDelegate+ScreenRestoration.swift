@@ -632,4 +632,11 @@ extension NSScreen {
         return ScreenRestorationUtils.indexOfLargestOverlap(for: rect, in: screens.map(\.frame))
             .map { screens[$0] }
     }
+
+    /// マウス座標などの点を含むスクリーンを返す（最上端 `maxY` も含む。`indexOfScreen(containingMouseLocation:in:)` 参照）。
+    static func screen(containingPoint point: NSPoint) -> NSScreen? {
+        let screens = screens
+        return ScreenRestorationUtils.indexOfScreen(containingMouseLocation: point, in: screens.map(\.frame))
+            .map { screens[$0] }
+    }
 }
