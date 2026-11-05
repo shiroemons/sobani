@@ -560,4 +560,29 @@ struct DraggableImageViewImageReplacementTests {
         view.resetCrop()
         #expect(view.image === newImage)
     }
+
+    @Test("元画像の差し替え（背景除去）ではクロップが維持され新しい元画像に再適用される")
+    func setOriginalImageKeepsCrop() throws {
+        let view = DraggableImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        let source = try Self.makeImage(width: 40, height: 20)
+        let processed = try Self.makeImage(width: 40, height: 20)
+        let crop = CropRect(x: 0, y: 0, width: 0.5, height: 1)
+        view.image = source
+        view.cropRect = crop
+
+        view.setOriginalImage(processed)
+
+        let currentCrop = try #require(view.cropRect)
+        #expect(abs(currentCrop.width - crop.width) < AppConstants.floatingPointTolerance)
+        #expect(view.originalImage === processed)
+        let displayed = try #require(view.image)
+        #expect(displayed !== processed)
+        // 40x20 の左半分 → 20x20
+        #expect(abs(displayed.size.width - 20) < AppConstants.floatingPointTolerance)
+        #expect(abs(displayed.size.height - 20) < AppConstants.floatingPointTolerance)
+
+        // 切り取りリセットで背景除去後の元画像に戻る
+        view.resetCrop()
+        #expect(view.image === processed)
+    }
 }

@@ -123,7 +123,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         }
     }
 
-    private func notifyStateDidChange(_ trigger: AppConstants.SnapshotTrigger) {
+    func notifyStateDidChange(_ trigger: AppConstants.SnapshotTrigger) {
         NotificationCenter.default.post(
             name: AppConstants.imageWindowStateDidChange,
             object: self,
