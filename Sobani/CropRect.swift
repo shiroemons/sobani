@@ -10,7 +10,7 @@ enum CropShape: String, Codable, Sendable, CaseIterable {
 
 // MARK: - CornerRadii
 
-struct CornerRadii: Codable, Equatable, Sendable {
+struct CornerRadii: Codable, Hashable, Sendable {
     let topLeft: CGFloat
     let topRight: CGFloat
     let bottomLeft: CGFloat
@@ -86,7 +86,8 @@ struct CornerRadii: Codable, Equatable, Sendable {
 
 // MARK: - CropRect
 
-struct CropRect: Codable, Equatable, Sendable {
+/// `==` / `hash` は値の完全一致（キャッシュキー用）。編集状態の比較には `isEffectivelyEqual(to:)` を使う
+struct CropRect: Codable, Hashable, Sendable {
     let x: CGFloat       // 0.0〜1.0 ratio from left
     let y: CGFloat       // 0.0〜1.0 ratio from bottom
     let width: CGFloat   // 0.0〜1.0 ratio
