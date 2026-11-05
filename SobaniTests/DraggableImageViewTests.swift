@@ -162,6 +162,47 @@ struct DraggableImageViewTests {
         #expect(!transform.isIdentity)
     }
 
+    /// 反転の有無にかかわらず、画像の「上方向」は時計回りに rotationDegrees 度傾く（反転→回転の順）
+    @Test("反転時も見た目の傾きはダイアルの角度と一致", arguments: [30.0, 45.0, 90.0, 135.0, 300.0])
+    func imageTransformFlipKeepsVisibleTilt(degrees: Double) {
+        let width: CGFloat = 200
+        let height: CGFloat = 100
+        let center = CGPoint(x: width / 2, y: height / 2)
+        let upPoint = CGPoint(x: center.x, y: center.y + 10)
+        let radians = CGFloat(degrees) * .pi / 180
+        // 時計回りに θ 回転した上方向ベクトル（y-up 座標系）
+        let expected = CGPoint(x: center.x + 10 * sin(radians), y: center.y + 10 * cos(radians))
+
+        for isFlipped in [false, true] {
+            let transform = DraggableImageView.imageTransform(
+                rotationDegrees: CGFloat(degrees), isFlipped: isFlipped,
+                boundsWidth: width, boundsHeight: height
+            )
+            let mappedCenter = center.applying(transform)
+            let mappedUp = upPoint.applying(transform)
+            #expect(abs(mappedCenter.x - center.x) < AppConstants.floatingPointTolerance)
+            #expect(abs(mappedCenter.y - center.y) < AppConstants.floatingPointTolerance)
+            #expect(abs(mappedUp.x - expected.x) < AppConstants.floatingPointTolerance)
+            #expect(abs(mappedUp.y - expected.y) < AppConstants.floatingPointTolerance)
+        }
+    }
+
+    /// 反転時は画像の右方向が回転後の左方向になる（鏡像を回転させる）
+    @Test("反転+回転で右方向ベクトルは回転後に左右反転する")
+    func imageTransformFlipMirrorsBeforeRotation() {
+        let size: CGFloat = 100
+        let center = CGPoint(x: size / 2, y: size / 2)
+        let rightPoint = CGPoint(x: center.x + 10, y: center.y)
+        let transform = DraggableImageView.imageTransform(
+            rotationDegrees: 90, isFlipped: true,
+            boundsWidth: size, boundsHeight: size
+        )
+        // 鏡像化で右→左 (-10, 0)、時計回り 90° で (0, +10)（上方向）
+        let mapped = rightPoint.applying(transform)
+        #expect(abs(mapped.x - center.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(mapped.y - (center.y + 10)) < AppConstants.floatingPointTolerance)
+    }
+
     @Test("360度回転はidentityに近い")
     func imageTransformFullRotation() {
         let transform = DraggableImageView.imageTransform(

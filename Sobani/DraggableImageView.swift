@@ -282,7 +282,10 @@ final class DraggableImageView: NSImageView {
         return (windowFrame, imageViewFrame)
     }
 
-    /// 回転・反転のアフィン変換を計算
+    /// 回転・反転のアフィン変換を計算する（中心基準）。
+    ///
+    /// 先に左右反転し、その後に回転する。反転の有無にかかわらず、見た目の傾きは
+    /// ダイアルに表示される角度（時計回り `rotationDegrees` 度）と一致する。
     nonisolated static func imageTransform(
         rotationDegrees: CGFloat, isFlipped: Bool,
         boundsWidth: CGFloat, boundsHeight: CGFloat
@@ -291,20 +294,21 @@ final class DraggableImageView: NSImageView {
         let centerX = boundsWidth / 2
         let centerY = boundsHeight / 2
 
-        if !GeometryUtils.isApproximatelyZero(rotationDegrees) {
-            let radians = -rotationDegrees * .pi / 180
-            transform = transform
-                .translatedBy(x: centerX, y: centerY)
-                .rotated(by: radians)
-                .translatedBy(x: -centerX, y: -centerY)
-        }
-
         if isFlipped {
-            let flip = CGAffineTransform.identity
+            transform = CGAffineTransform.identity
                 .translatedBy(x: centerX, y: centerY)
                 .scaledBy(x: -1, y: 1)
                 .translatedBy(x: -centerX, y: -centerY)
-            transform = transform.concatenating(flip)
+        }
+
+        if !GeometryUtils.isApproximatelyZero(rotationDegrees) {
+            let radians = -rotationDegrees * .pi / 180
+            let rotation = CGAffineTransform.identity
+                .translatedBy(x: centerX, y: centerY)
+                .rotated(by: radians)
+                .translatedBy(x: -centerX, y: -centerY)
+            // CGAffineTransform は行ベクトル規約のため、a.concatenating(b) は「a の後に b」を適用する
+            transform = transform.concatenating(rotation)
         }
 
         return transform
