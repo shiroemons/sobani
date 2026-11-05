@@ -122,6 +122,10 @@ enum AppConstants {
     static let statePersistDebounceInterval: TimeInterval = 1.0
     /// 画面構成変更の直後は macOS がウィンドウを一時退避している可能性があるため保存を見送る期間
     static let statePersistScreenSettleInterval: TimeInterval = 10
+    /// 登録できる画像の縦横それぞれの最大ピクセル数（巨大画像のデコードでメモリを使い果たさないため）
+    static let maxImagePixelDimension = 16_384
+    /// 登録できる画像の総ピクセル数の上限（約 1.3 億ピクセル。RGBA で約 512MB）
+    static let maxImagePixelCount = 128 * 1_024 * 1_024
 
     // Opacity
     static let opacityMin: CGFloat = 0.1
@@ -485,7 +489,9 @@ enum PathSanitizer {
     }
 
     /// パスの最終要素を返す（末尾の `/` は無視する。空文字列は空、`/` のみなら `/`）。
-    private static func lastPathComponent(of path: String) -> String {
+    ///
+    /// `URL(fileURLWithPath:)` と違いカレントディレクトリに依存しない。
+    static func lastPathComponent(of path: String) -> String {
         guard let last = path.split(separator: "/").last else {
             return path.isEmpty ? "" : "/"
         }
