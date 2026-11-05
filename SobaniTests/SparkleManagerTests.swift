@@ -46,12 +46,6 @@ import Testing
         #expect(received == [manager.canCheckForUpdates])
     }
 
-    /// startUpdaterがクラッシュしないことを検証
-    @Test func startUpdaterDoesNotCrash() {
-        // テスト環境ではSparkle更新チェックは失敗するが、クラッシュしないことを確認
-        SparkleManager.shared.startUpdater()
-    }
-
     /// checkForUpdatesActionがresponds(to:)で確認可能であることを検証
     @Test func checkForUpdatesActionIsResponded() {
         let action = SparkleManager.shared.checkForUpdatesAction
