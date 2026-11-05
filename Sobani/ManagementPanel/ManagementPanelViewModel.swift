@@ -261,8 +261,9 @@ final class ManagementPanelViewModel {
             queue: .main
         ) { @Sendable [weak self] note in
             let rawTrigger = note.userInfo?[AppConstants.notificationTriggerKey] as? String
+            let imageWindow = note.object as? ImageWindow
             MainActor.assumeIsolated {
-                self?.handleWindowStateChange(rawTrigger: rawTrigger)
+                self?.handleWindowStateChange(rawTrigger: rawTrigger, imageName: imageWindow?.displayName)
             }
         }
         listObserver = center.addObserver(
@@ -309,11 +310,16 @@ final class ManagementPanelViewModel {
         }
     }
 
-    private func handleWindowStateChange(rawTrigger: String?) {
+    private func handleWindowStateChange(rawTrigger: String?, imageName: String?) {
         let trigger = rawTrigger.flatMap(AppConstants.SnapshotTrigger.init(rawValue:))
         if trigger == .image {
-            // クロップ済みプレビューのキャッシュは画像名がキーのため、同じ名前で画像が変わったら破棄する
-            CroppedImageHelper.invalidateCache()
+            // クロップ済みプレビューのキャッシュは画像名がキー。同じ名前で中身が変わる（カスタムのデフォルト画像の
+            // 差し替えなど）と古くなるため、その画像名のエントリだけを無効にする
+            if let imageName {
+                CroppedImageHelper.invalidateCache(forImageNamed: imageName)
+            } else {
+                CroppedImageHelper.invalidateCache()
+            }
         }
         // スクロールでのリサイズ・回転ダイヤル・不透明度スライダーなどはイベントごとに届くため間引く
         scheduleRefresh()
