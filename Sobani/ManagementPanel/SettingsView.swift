@@ -12,6 +12,10 @@ struct SettingsView: View {
     @State private var hasDuplicateHotkeys = false
     @State private var hasNonDefaultHotkeys = false
     @State private var hotkeyDebounceTask: Task<Void, Never>?
+    @State private var canCheckForUpdates = false
+
+    /// 更新確認が可能かを読み直す間隔（Sparkle の状態は確認中・ダウンロード中に変わるが通知されないため）
+    private static let updateAvailabilityRefreshInterval: Duration = .seconds(1)
 
     var body: some View {
         Form {
@@ -250,8 +254,16 @@ struct SettingsView: View {
 
             Button(L("management.check_update")) {
                 SparkleManager.shared.checkForUpdates(nil)
+                canCheckForUpdates = SparkleManager.shared.canCheckForUpdates
             }
-            .disabled(!SparkleManager.shared.canCheckForUpdates)
+            .disabled(!canCheckForUpdates)
+            .task {
+                // 表示中だけ定期的に読み直す（非表示になるとタスクはキャンセルされる）
+                while !Task.isCancelled {
+                    canCheckForUpdates = SparkleManager.shared.canCheckForUpdates
+                    try? await Task.sleep(for: Self.updateAvailabilityRefreshInterval)
+                }
+            }
         }
     }
 }
