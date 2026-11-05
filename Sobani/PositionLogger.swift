@@ -133,17 +133,19 @@ final class PositionLogger {
 
     /// 現在のスクリーン状態をスナップショットとして返す。
     func currentScreenSnapshots() -> [ScreenSnapshot] {
-        NSScreen.screens.map { screen in
-            let frame = screen.frame
-            let displayID = (screen.deviceDescription[AppConstants.screenNumberKey]
-                as? CGDirectDisplayID) ?? 0
-            return ScreenSnapshot(
-                displayID: displayID,
-                originX: frame.origin.x,
-                originY: frame.origin.y,
-                width: frame.size.width,
-                height: frame.size.height,
-                isMain: screen == NSScreen.main
+        Self.screenSnapshots(from: ScreenInfo.current())
+    }
+
+    /// スクリーン情報をログ用のスナップショットに変換する。
+    nonisolated static func screenSnapshots(from screens: [ScreenInfo]) -> [ScreenSnapshot] {
+        screens.map { screen in
+            ScreenSnapshot(
+                displayID: screen.displayID,
+                originX: screen.frame.origin.x,
+                originY: screen.frame.origin.y,
+                width: screen.frame.size.width,
+                height: screen.frame.size.height,
+                isMain: screen.isMain
             )
         }
     }
@@ -190,13 +192,20 @@ final class PositionLogger {
         guard var lineData = try? Self.lineEncoder.encode(entry) else { return }
         lineData.append(UInt8(ascii: "\n"))
 
-        if FileManager.default.fileExists(atPath: url.path) {
-            guard let handle = try? FileHandle(forWritingTo: url) else { return }
-            handle.seekToEndOfFile()
-            handle.write(lineData)
-            handle.closeFile()
-        } else {
-            try? lineData.write(to: url, options: .atomic)
+        do {
+            if FileManager.default.fileExists(atPath: url.path) {
+                // 旧 API（seekToEndOfFile / write(_:)）はディスクフル等で捕捉できない例外を投げて
+                // クラッシュするため、throws 版を使う
+                let handle = try FileHandle(forWritingTo: url)
+                defer { try? handle.close() }
+                try handle.seekToEnd()
+                try handle.write(contentsOf: lineData)
+            } else {
+                try lineData.write(to: url, options: .atomic)
+            }
+        } catch {
+            logger.error("Failed to append position log: \(error.localizedDescription)")
+            return
         }
 
         entryCount += 1
@@ -228,7 +237,8 @@ extension PositionLogger.LogEntry {
     var summary: String {
         var parts: [String] = []
         if let ctx = context {
-            parts.append(contentsOf: ctx.map { "\($0.key)=\($0.value)" })
+            // Dictionary の列挙順は不定のため、キー順に並べて表示を安定させる
+            parts.append(contentsOf: ctx.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" })
         }
         if let screens = screens {
             parts.append("screens=\(screens.count)")

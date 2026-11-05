@@ -122,6 +122,12 @@ enum AppConstants {
     static let statePersistDebounceInterval: TimeInterval = 1.0
     /// 画面構成変更の直後は macOS がウィンドウを一時退避している可能性があるため保存を見送る期間
     static let statePersistScreenSettleInterval: TimeInterval = 10
+    /// 登録できる画像の縦横それぞれの最大ピクセル数（巨大画像のデコードでメモリを使い果たさないため）
+    static let maxImagePixelDimension = 16_384
+    /// 登録できる画像の総ピクセル数の上限（約 1.3 億ピクセル。RGBA で約 512MB）
+    static let maxImagePixelCount = 128 * 1_024 * 1_024
+    /// サービス（「Sobani で表示」）1 回の呼び出しで開く画像の最大数（大量のウィンドウ生成を防ぐ）
+    static let maxServiceImageCount = 20
 
     // Opacity
     static let opacityMin: CGFloat = 0.1
@@ -445,30 +451,79 @@ enum AppSupportDirectory {
     }
 }
 
+/// ファイル名・パスの無害化。カレントディレクトリに依存しないよう、純粋な文字列処理で行う。
 enum PathSanitizer {
-    /// Returns a safe URL within the given directory, preventing path traversal.
-    /// Returns nil if the name is empty or resolves to a traversal attempt.
+    /// ファイル名として使えない名前（ディレクトリ自身・親ディレクトリ・ルートを指す）
+    private static let reservedNames: Set<String> = ["", ".", "..", "/"]
+    private static let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|\0")
+    /// ファイル名の UTF-8 バイト数の上限。ファイルシステムの 255 バイト制限から ".json" の分を引いた値。
+    /// これより短い名前は従来も保存できていたため、既存のプリセットファイルとの対応が変わらない。
+    static let maxNameByteCount = 250
+    /// 切り詰め時に残す拡張子の最大バイト数（これより長い「拡張子」は名前の一部として扱う）
+    private static let maxPreservedExtensionByteCount = 16
+
+    /// `directory` 直下のファイルを指す安全な URL を返す。パストラバーサルを防ぐ。
+    ///
+    /// `name` にパス区切りが含まれる場合は最終要素だけを使う（`"subdir/file.png"` → `"file.png"`）。
+    /// 最終要素が空・`.`・`..`・`/` になる場合や、NUL 文字を含む場合は nil。
     static func safeURL(name: String, in directory: URL) -> URL? {
-        let safeName = URL(fileURLWithPath: name).lastPathComponent
-        guard !safeName.isEmpty, safeName != "." else { return nil }
-        let url = directory.appendingPathComponent(safeName)
-        guard url.path.hasPrefix(directory.path + "/") else { return nil }
+        guard !name.contains("\0") else { return nil }
+        let component = lastPathComponent(of: name)
+        guard !reservedNames.contains(component) else { return nil }
+        let url = directory.appendingPathComponent(component)
+        // 念のため、正規化後も directory の直下であることを確認する。
+        // `standardizedFileURL` は実在するパスだけ `/private` を除去するなどファイルシステムに依存し、
+        // 未作成のファイルと比較が食い違うため、字句的に `.` / `..` を解決する `standardized` を使う。
+        guard url.standardized.deletingLastPathComponent().path == directory.standardized.path else {
+            return nil
+        }
         return url
     }
 
-    /// Sanitizes a file name by replacing invalid filesystem characters and preventing path traversal.
-    /// Returns nil if the result is empty or invalid.
+    /// ファイル名に使えない文字を `_` に置き換え、長すぎる名前を切り詰める。
+    ///
+    /// 結果が空・`.`・`..` になる場合は nil。
     static func safeName(from name: String) -> String? {
-        let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|")
         let sanitized = name.components(separatedBy: invalidCharacters).joined(separator: "_")
-        if sanitized.isEmpty || sanitized == "." || sanitized == ".." {
-            return nil
+        let truncated = truncatedToByteLimit(sanitized)
+        guard !reservedNames.contains(truncated) else { return nil }
+        return truncated
+    }
+
+    /// パスの最終要素を返す（末尾の `/` は無視する。空文字列は空、`/` のみなら `/`）。
+    ///
+    /// `URL(fileURLWithPath:)` と違いカレントディレクトリに依存しない。
+    static func lastPathComponent(of path: String) -> String {
+        guard let last = path.split(separator: "/").last else {
+            return path.isEmpty ? "" : "/"
         }
-        let resolved = URL(fileURLWithPath: sanitized).lastPathComponent
-        if resolved.isEmpty || resolved == "." || resolved == ".." {
-            return nil
+        return String(last)
+    }
+
+    /// UTF-8 のバイト数が上限を超える場合、文字境界で切り詰める。短い拡張子は残す。
+    private static func truncatedToByteLimit(_ name: String) -> String {
+        guard name.utf8.count > maxNameByteCount else { return name }
+        // 先頭のドット（隠しファイル）は拡張子の区切りとみなさない
+        if let dotIndex = name.lastIndex(of: "."), dotIndex != name.startIndex {
+            let suffix = String(name[dotIndex...])
+            if suffix.utf8.count > 1, suffix.utf8.count <= maxPreservedExtensionByteCount {
+                let base = String(name[..<dotIndex])
+                return prefix(of: base, maxByteCount: maxNameByteCount - suffix.utf8.count) + suffix
+            }
         }
-        return resolved
+        return prefix(of: name, maxByteCount: maxNameByteCount)
+    }
+
+    private static func prefix(of string: String, maxByteCount: Int) -> String {
+        var result = ""
+        var byteCount = 0
+        for character in string {
+            let size = character.utf8.count
+            guard byteCount + size <= maxByteCount else { break }
+            result.append(character)
+            byteCount += size
+        }
+        return result
     }
 }
 

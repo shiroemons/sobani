@@ -13,6 +13,7 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     /// `AppDelegate.applicationShouldTerminate` で終了を許可するために使用。
     private(set) var isInstallingUpdate = false
     private static let sparkleLastCheckTimeKey = "SULastCheckTime"
+    private static let sparkleAutomaticallyUpdateKey = "SUAutomaticallyUpdate"
 
     private lazy var userDriver = SPUStandardUserDriver(hostBundle: .main, delegate: self)
     private lazy var updater = SPUUpdater(
@@ -34,7 +35,7 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
         UserDefaults.standard.removeObject(forKey: Self.sparkleLastCheckTimeKey)
         // ダイアログなしの自動インストールを無効化
         // （UserDefaultsに保存された値がInfo.plistの設定を上書きするため）
-        UserDefaults.standard.removeObject(forKey: "SUAutomaticallyUpdate")
+        UserDefaults.standard.removeObject(forKey: Self.sparkleAutomaticallyUpdateKey)
         do {
             try updater.start()
             logger.info("Sparkle アップデーターを開始しました")
@@ -72,7 +73,7 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
 
     private func bringAppToForeground() {
         NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 
     private func restoreBackgroundPolicy() {
@@ -80,28 +81,27 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
     }
 
     // MARK: - SPUUpdaterDelegate
+    // SPUUpdaterDelegate は NS_SWIFT_UI_ACTOR（メインアクター）のため、各メソッドで同期的に状態を更新できる。
 
-    nonisolated func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
-        let version = item.displayVersionString
-        Task { @MainActor [weak self] in
-            self?.isInstallingUpdate = true
-            self?.logger.info(
-                "Sparkle: アップデートをインストールします - \(version, privacy: .public)"
-            )
-        }
+    func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
+        // 同じランループ内で届く終了要求を applicationShouldTerminate が許可できるよう、同期的に立てる
+        isInstallingUpdate = true
+        logger.info(
+            "Sparkle: アップデートをインストールします - \(item.displayVersionString, privacy: .public)"
+        )
     }
 
-    nonisolated func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+    func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
         logger.info(
             "Sparkle: 新しいアップデートが見つかりました - \(item.displayVersionString, privacy: .public)"
         )
     }
 
-    nonisolated func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
+    func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
         logger.info("Sparkle: 新しいアップデートはありません")
     }
 
-    nonisolated func updater(_ updater: SPUUpdater, didAbortWithError error: any Error) {
+    func updater(_ updater: SPUUpdater, didAbortWithError error: any Error) {
         logger.error(
             "Sparkle: アップデートチェックが中断されました - \(error.localizedDescription, privacy: .public)"
         )
@@ -110,6 +110,9 @@ final class SparkleManager: NSObject, SPUUpdaterDelegate {
 
 // MARK: - SPUStandardUserDriverDelegate
 
+// SPUStandardUserDriverDelegate 自体にアクター指定はないが、呼び出し元の SPUStandardUserDriver が
+// メインアクター専用のため、各メソッドはメインスレッドで呼ばれる。ダイアログ表示より先に前面化を
+// 済ませるため、Task で後回しにせず同期的に処理する。
 extension SparkleManager: SPUStandardUserDriverDelegate {
     nonisolated var supportsGentleScheduledUpdateReminders: Bool { false }
 
@@ -118,31 +121,24 @@ extension SparkleManager: SPUStandardUserDriverDelegate {
         forUpdate update: SUAppcastItem,
         state: SPUUserUpdateState
     ) {
-        if handleShowingUpdate {
-            Task { @MainActor [weak self] in
-                self?.bringAppToForeground()
-                self?.logger.info(
-                    "Sparkle: 更新ダイアログ表示のためアプリを前面に移動しました"
-                )
-            }
+        guard handleShowingUpdate else { return }
+        MainActor.assumeIsolated {
+            bringAppToForeground()
+            logger.info("Sparkle: 更新ダイアログ表示のためアプリを前面に移動しました")
         }
     }
 
     nonisolated func standardUserDriverWillShowModalAlert() {
-        Task { @MainActor [weak self] in
-            self?.bringAppToForeground()
-            self?.logger.info(
-                "Sparkle: モーダルアラート表示のためアプリを前面に移動しました"
-            )
+        MainActor.assumeIsolated {
+            bringAppToForeground()
+            logger.info("Sparkle: モーダルアラート表示のためアプリを前面に移動しました")
         }
     }
 
     nonisolated func standardUserDriverWillFinishUpdateSession() {
-        Task { @MainActor [weak self] in
-            self?.restoreBackgroundPolicy()
-            self?.logger.info(
-                "Sparkle: 更新セッション終了、アクティベーションポリシーを復元しました"
-            )
+        MainActor.assumeIsolated {
+            restoreBackgroundPolicy()
+            logger.info("Sparkle: 更新セッション終了、アクティベーションポリシーを復元しました")
         }
     }
 }

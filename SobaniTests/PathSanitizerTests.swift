@@ -93,4 +93,59 @@ import Testing
         #expect(result == "______")
     }
 
+    // MARK: - CWD-independent traversal tests
+
+    /// 最終要素が親・自身・ルートを指す名前やNULを含む名前をsafeURLが拒否することを検証（CWDに依存しない）
+    @Test(arguments: ["a/..", "foo/../..", "./..", "/", "//", "a/.", "image\0.png", "\0"])
+    func safeURLRejectsTraversalAndNUL(name: String) {
+        let dir = URL(fileURLWithPath: "/tmp/test")
+        #expect(PathSanitizer.safeURL(name: name, in: dir) == nil)
+    }
+
+    /// パス区切りを含む名前で最終要素だけがディレクトリ直下に使われることを検証
+    @Test(arguments: [("../etc/passwd", "passwd"), ("a/b/c.png", "c.png"), ("dir/", "dir"), ("/abs/file.png", "file.png")])
+    func safeURLUsesLastComponentDirectlyUnderDirectory(name: String, expected: String) throws {
+        let dir = URL(fileURLWithPath: "/tmp/test")
+        let result = try #require(PathSanitizer.safeURL(name: name, in: dir))
+        #expect(result.path == "/tmp/test/\(expected)")
+    }
+
+    /// 実在しない /private 配下のディレクトリでも直下判定が食い違わないことを検証
+    @Test func safeURLWorksForNonexistentPrivatePath() throws {
+        let dir = URL(fileURLWithPath: "/private/tmp/\(UUID().uuidString)")
+        let result = try #require(PathSanitizer.safeURL(name: "file.png", in: dir))
+        #expect(result.deletingLastPathComponent().path == dir.path)
+    }
+
+    /// safeNameがパス区切りを置換しトラバーサル文字列を無害化することを検証
+    @Test(arguments: [("a/..", "a_.."), ("foo/../..", "foo_.._.."), ("a\0b", "a_b")])
+    func safeNameNeutralizesTraversalAndNUL(name: String, expected: String) {
+        #expect(PathSanitizer.safeName(from: name) == expected)
+    }
+
+    /// 長すぎる名前が上限バイト数以内に切り詰められ、拡張子が保持されることを検証
+    @Test func safeNameTruncatesLongNameKeepingExtension() throws {
+        let name = String(repeating: "x", count: 300) + ".png"
+        let result = try #require(PathSanitizer.safeName(from: name))
+        #expect(result.utf8.count == PathSanitizer.maxNameByteCount)
+        #expect(result.hasSuffix(".png"))
+        #expect(result.hasPrefix("xxx"))
+    }
+
+    /// マルチバイト文字の名前が文字境界で切り詰められることを検証
+    @Test func safeNameTruncatesAtCharacterBoundary() throws {
+        let character = "あ"  // UTF-8 で 3 バイト
+        let name = String(repeating: character, count: 100)
+        let result = try #require(PathSanitizer.safeName(from: name))
+        let expectedCount = PathSanitizer.maxNameByteCount / character.utf8.count
+        #expect(result == String(repeating: character, count: expectedCount))
+    }
+
+    /// 上限以内の名前は切り詰められないことを検証（従来から保存できていた名前の互換性）
+    @Test func safeNameKeepsNameWithinLimit() {
+        let name = String(repeating: "y", count: PathSanitizer.maxNameByteCount)
+        #expect(PathSanitizer.safeName(from: name) == name)
+        let presetFileName = name + ".json"
+        #expect(presetFileName.utf8.count <= Int(NAME_MAX))
+    }
 }

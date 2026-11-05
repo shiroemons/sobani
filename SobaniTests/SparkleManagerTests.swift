@@ -51,4 +51,20 @@ import Testing
         #expect(SparkleManager.shared.supportsGentleScheduledUpdateReminders == false)
     }
 
+    /// willInstallUpdateでisInstallingUpdateが同期的にtrueになることを検証
+    /// （非同期だと同じランループ内の終了要求が applicationShouldTerminate で拒否されうる）
+    @Test func willInstallUpdateSetsFlagSynchronously() {
+        let manager = SparkleManager()
+        let updater = SPUUpdater(
+            hostBundle: .main,
+            applicationBundle: .main,
+            userDriver: SPUStandardUserDriver(hostBundle: .main, delegate: nil),
+            delegate: nil
+        )
+        #expect(!manager.isInstallingUpdate)
+
+        manager.updater(updater, willInstallUpdate: SUAppcastItem.empty())
+
+        #expect(manager.isInstallingUpdate)
+    }
 }

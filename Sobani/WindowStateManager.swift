@@ -27,6 +27,11 @@ struct DisplayAnchor: Codable, Equatable, Sendable {
         NSRect(x: screenX, y: screenY, width: screenWidth, height: screenHeight)
     }
 
+    /// すべての座標が有限値か（NaN / ±inf は JSON にエンコードできない）
+    var hasFiniteValues: Bool {
+        [screenX, screenY, screenWidth, screenHeight].allSatisfy(\.isFinite)
+    }
+
     /// 矩形と最も大きく重なるスクリーンをアンカーとする。UUID が取れない・どこにも重ならない場合は nil。
     static func make(for rect: NSRect, screens: [ScreenInfo]) -> Self? {
         guard let index = ScreenRestorationUtils.indexOfLargestOverlap(
@@ -53,6 +58,13 @@ struct WindowState: Codable, Equatable, Sendable {
     var customGhostAlpha: CGFloat?
     var isHidden: Bool
     var displayAnchor: DisplayAnchor?
+    /// 画像変換（反転・回転）の合成順序のバージョン。メモリ上の値は常に `currentTransformVersion`。
+    ///
+    /// - 1（キーなし）: 回転してから反転していたため、反転時の見た目の傾きは `-rotationAngle` だった。
+    /// - 2: 反転してから回転する。`rotationAngle` がそのまま見た目の傾きになる。
+    let transformVersion = Self.currentTransformVersion
+
+    static let currentTransformVersion = 2
 
     enum CodingKeys: String, CodingKey {
         case imageName, originX, originY, width, height
@@ -62,6 +74,7 @@ struct WindowState: Codable, Equatable, Sendable {
         case customGhostAlpha
         case isHidden
         case displayAnchor
+        case transformVersion
     }
 
     init(
@@ -104,7 +117,11 @@ struct WindowState: Codable, Equatable, Sendable {
         width = try container.decode(CGFloat.self, forKey: .width)
         height = try container.decode(CGFloat.self, forKey: .height)
         isFlippedHorizontally = try container.decode(Bool.self, forKey: .isFlippedHorizontally)
-        rotationAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
+        let storedAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
+        let storedVersion = try container.decodeIfPresent(Int.self, forKey: .transformVersion)
+        rotationAngle = Self.migratedRotationAngle(
+            storedAngle, isFlipped: isFlippedHorizontally, transformVersion: storedVersion
+        )
         opacityLevel = try container.decodeIfPresent(CGFloat.self, forKey: .opacityLevel) ?? 1.0
         windowId = try container.decodeIfPresent(Int.self, forKey: .windowId) ?? 0
         cropRect = try container.decodeIfPresent(CropRect.self, forKey: .cropRect)
@@ -112,6 +129,20 @@ struct WindowState: Codable, Equatable, Sendable {
         customGhostAlpha = try container.decodeIfPresent(CGFloat.self, forKey: .customGhostAlpha)
         isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
         displayAnchor = try container.decodeIfPresent(DisplayAnchor.self, forKey: .displayAnchor)
+        // transformVersion はデコード後も常に現行バージョン（移行済みの値として扱う）
+    }
+
+    /// 保存データの回転角を現行の変換順序（反転してから回転）での角度に移行する。
+    ///
+    /// 旧形式（バージョンキーなし）は回転してから反転していたため、反転ありの見た目の傾きは
+    /// `-rotationAngle` だった。同じ見た目を保つため符号を反転する。反転なしは合成順に依存しない。
+    static func migratedRotationAngle(
+        _ angle: CGFloat, isFlipped: Bool, transformVersion: Int?
+    ) -> CGFloat {
+        guard transformVersion == nil, isFlipped, !GeometryUtils.isApproximatelyZero(angle) else {
+            return angle
+        }
+        return GeometryUtils.normalizeAngle(-angle)
     }
 
     var frame: NSRect {
@@ -229,13 +260,66 @@ struct WindowState: Codable, Equatable, Sendable {
     }
 }
 
+// MARK: - Persistence Sanitization
+
+extension WindowState {
+    /// 永続化できる値に補正したコピーを返す（入力側のガードに対する多層防御）。
+    ///
+    /// `JSONEncoder` は非有限値（NaN / ±inf）を含むとエンコード自体に失敗するため、1 ウィンドウの
+    /// 不正値でセッション中の保存がすべて失敗してしまう。保存直前にこの関数を通す。
+    func sanitizedForPersistence() -> Self {
+        Self(
+            imageName: imageName,
+            originX: originX.isFinite ? originX : 0,
+            originY: originY.isFinite ? originY : 0,
+            width: Self.sanitizedLength(width),
+            height: Self.sanitizedLength(height),
+            isFlippedHorizontally: isFlippedHorizontally,
+            rotationAngle: rotationAngle.isFinite ? rotationAngle : 0,
+            opacityLevel: Self.sanitizedOpacity(opacityLevel),
+            windowId: windowId,
+            cropRect: cropRect.flatMap { Self.isEncodable($0) ? $0 : nil },
+            isGhostMode: isGhostMode,
+            customGhostAlpha: customGhostAlpha.flatMap { $0.isFinite ? $0 : nil },
+            isHidden: isHidden,
+            displayAnchor: displayAnchor.flatMap { $0.hasFiniteValues ? $0 : nil }
+        )
+    }
+
+    /// 配列の各要素を `sanitizedForPersistence()` で補正し、補正が発生した件数をログに残す。
+    static func sanitizedForPersistence(_ states: [Self], logger: Logger) -> [Self] {
+        let sanitized = states.map { $0.sanitizedForPersistence() }
+        // NaN を含む要素は自身とも等しくならないため、補正対象として数えられる
+        let changedCount = zip(states, sanitized).filter { $0 != $1 }.count
+        if changedCount > 0 {
+            logger.warning("Sanitized invalid values in \(changedCount, privacy: .public) window states before saving")
+        }
+        return sanitized
+    }
+
+    private static func sanitizedLength(_ value: CGFloat) -> CGFloat {
+        value.isFinite && value > 0 ? value : AppConstants.defaultWindowHeight
+    }
+
+    private static func sanitizedOpacity(_ value: CGFloat) -> CGFloat {
+        guard value.isFinite else { return AppConstants.opacityMax }
+        return min(max(value, AppConstants.opacityMin), AppConstants.opacityMax)
+    }
+
+    /// クロップ情報は項目が多く今後も増えうるため、個別に検査せず実際にエンコードできるかで判定する
+    private static func isEncodable(_ cropRect: CropRect) -> Bool {
+        (try? JSONEncoder().encode(cropRect)) != nil
+    }
+}
+
 // MARK: - Window State Manager
 
 /// ウィンドウ状態の永続化を管理するシングルトン。
 ///
 /// `window_states.json` への保存・読み込みを担当し、起動時の状態復元と
 /// 終了時の状態保存を `AppDelegate` から呼び出される。
-/// レガシー画像名（`"デフォルト"` → `"default"`）の正規化も行う。
+/// 画像名はそのまま保存・復元する。レガシー画像名（`"デフォルト"` 等）や登録が消えた画像は、
+/// 復元時に `AppDelegate.resolveImageName` がデフォルト画像へフォールバックさせる。
 @MainActor
 final class WindowStateManager {
     static let shared = WindowStateManager()
@@ -253,29 +337,37 @@ final class WindowStateManager {
 
     /// 全ウィンドウの状態を JSON にエンコードして保存する。
     ///
+    /// 非有限値などエンコードできない値は `WindowState.sanitizedForPersistence` で補正してから書き込む。
     /// - Parameter states: 保存するウィンドウ状態の配列。Z-order は配列順で表現される。
     func saveStates(_ states: [WindowState]) {
         guard let url = statesFileURL else { return }
         JSONPersistence.save(
-            states, to: url, logger: logger, errorMessage: "Failed to save window states"
+            WindowState.sanitizedForPersistence(states, logger: logger),
+            to: url, logger: logger, errorMessage: "Failed to save window states"
         )
     }
 
     /// 保存済みのウィンドウ状態を JSON から読み込む。
     ///
-    /// レガシー画像名の正規化を自動的に行う。
-    /// ファイルが存在しない場合は空配列を返す。
+    /// ファイルが存在しない場合は空配列を返す。デコードできない要素は読み飛ばし、
+    /// 1 つでも読み飛ばした場合やファイル全体が読めない場合は、直後の保存で上書きされる前に
+    /// 元ファイルを `window_states.corrupt-<日時>.json` として退避する。
     /// - Returns: デコードされたウィンドウ状態の配列。
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
-        guard let states = JSONPersistence.load(
-            [WindowState].self,
+        guard let decoded = JSONPersistence.load(
+            LossyDecodableArray<WindowState>.self,
             from: url,
             logger: logger,
             notFoundMessage: "No saved states found",
-            errorMessage: "Failed to decode window states"
+            errorMessage: "Failed to decode window states",
+            backupOnDecodeFailure: true
         ) else { return [] }
-        return states
+        if decoded.skippedCount > 0 {
+            logger.error("Skipped \(decoded.skippedCount, privacy: .public) undecodable window states")
+            JSONPersistence.backupUnreadableFile(at: url, logger: logger)
+        }
+        return decoded.elements
     }
 
     /// 指定されたウィンドウの現在の状態をキャプチャする。
