@@ -24,8 +24,6 @@ final class ManagementPanelViewModel {
     @ObservationIgnored private var isBatchUpdating = false
     /// 管理パネルが表示中か。非表示中は通知による再構築を省き、表示時にまとめて反映する。
     @ObservationIgnored private var isPanelVisible = false
-    /// ミニマップでウィンドウをドラッグ中か。ドラッグ中は表示側が「開始位置 + ドラッグ量」で描くため再構築しない。
-    @ObservationIgnored private var isMinimapDragging = false
     @ObservationIgnored private var isGeometryRefreshScheduled = false
     /// ウィンドウ移動・リサイズ通知による再構築の間引き間隔（ドラッグ中の毎イベント再描画を防ぐ）
     private static let geometryRefreshInterval: Duration = .milliseconds(100)
@@ -83,7 +81,6 @@ final class ManagementPanelViewModel {
     /// 管理パネルの表示状態を伝える。表示に切り替わったら、非表示中に省いた更新をまとめて反映する。
     func setPanelVisible(_ visible: Bool) {
         isPanelVisible = visible
-        isMinimapDragging = false
         guard visible else { return }
         refreshRegisteredImageNames()
         rebuildAll()
@@ -233,23 +230,21 @@ final class ManagementPanelViewModel {
         triggerRefresh()
     }
 
-    /// ミニマップでのドラッグ中: 画像の原点だけ動かす（パネルは再構築しない）
-    func moveWindowWithoutRefresh(windowId: Int, origin: CGPoint) {
-        isMinimapDragging = true
-        applyWindowPosition(windowId: windowId, origin: origin)
+    /// ミニマップでのドラッグ中: 画像の原点だけ動かす（ミニマップの座標は windowStates と同じ画像基準）。
+    ///
+    /// 状態変更の通知はドラッグ完了時に1回だけ送る。ドラッグ中のパネルの再構築は移動通知の間引きに任せる
+    /// （ミニマップはドラッグ中のウィンドウを「開始位置 + ドラッグ量」で描くため、再構築されても二重に動かない）。
+    func moveWindowDuringDrag(windowId: Int, origin: CGPoint) {
+        findImageWindow(by: windowId)?.setImageOrigin(origin)
     }
 
-    /// ミニマップでのドラッグ完了: 画像の原点を動かし、パネルの状態を同期する
-    func moveWindowAndRefresh(windowId: Int, origin: CGPoint) {
-        applyWindowPosition(windowId: windowId, origin: origin)
-        isMinimapDragging = false
-        triggerRefresh()
-    }
-
-    private func applyWindowPosition(windowId: Int, origin: CGPoint) {
+    /// ミニマップでのドラッグ完了: 最終位置へ動かして `.position` を通知し、パネルの状態を同期する。
+    ///
+    /// 通知しないと、起動時・スリープ復帰時の画面復元がドラッグ前の位置へ戻してしまう。
+    func finishWindowDrag(windowId: Int, origin: CGPoint) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
-        // ミニマップの座標は画像基準（windowStates と同じ）なので、回転を考慮してウィンドウ原点へ変換する
-        imageWindow.setImageOrigin(origin)
+        imageWindow.setPositionAndSize(origin: origin, size: imageWindow.imageView.frame.size)
+        triggerRefresh()
     }
 
     // MARK: - Dialogs
@@ -332,9 +327,9 @@ final class ManagementPanelViewModel {
         requestRefresh()
     }
 
-    /// 通知を契機とした再構築。パネル非表示中・ミニマップのドラッグ中は省く（表示時・ドラッグ完了時に再構築する）。
+    /// 通知を契機とした再構築。パネル非表示中は省く（表示時に再構築する）。
     private func requestRefresh() {
-        guard isPanelVisible, !isMinimapDragging else { return }
+        guard isPanelVisible else { return }
         triggerRefresh()
     }
 
@@ -342,7 +337,7 @@ final class ManagementPanelViewModel {
     ///
     /// 予約中に届いた通知は無視するが、予約した再構築は実行時点の位置を読むため最終位置は必ず反映される。
     private func scheduleGeometryRefresh(for window: NSWindow) {
-        guard isPanelVisible, !isMinimapDragging, !isGeometryRefreshScheduled,
+        guard isPanelVisible, !isGeometryRefreshScheduled,
               appDelegate?.zOrderedWindows.contains(where: { $0.window === window }) == true else { return }
         isGeometryRefreshScheduled = true
         Task { [weak self] in

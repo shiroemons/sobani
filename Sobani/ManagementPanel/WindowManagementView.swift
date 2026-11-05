@@ -35,14 +35,10 @@ struct WindowManagementView: View {
                     },
                     isDragEnabled: isMinimapUnlocked,
                     onWindowDragChanged: { windowId, newOrigin in
-                        viewModel.moveWindowWithoutRefresh(
-                            windowId: windowId, origin: newOrigin
-                        )
+                        viewModel.moveWindowDuringDrag(windowId: windowId, origin: newOrigin)
                     },
                     onWindowDragEnded: { windowId, newOrigin in
-                        viewModel.moveWindowAndRefresh(
-                            windowId: windowId, origin: newOrigin
-                        )
+                        viewModel.finishWindowDrag(windowId: windowId, origin: newOrigin)
                     }
                 )
             }
