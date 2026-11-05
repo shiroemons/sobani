@@ -1,30 +1,46 @@
 import Cocoa
+import os.log
 
 // MARK: - NSServices Provider
+
+private let servicesLogger = Logger(category: "AppDelegate+Services")
 
 extension AppDelegate {
     struct ServiceURLResult {
         let imageURLs: [URL]?
         let errorMessage: String?
+        /// 上限（`AppConstants.maxServiceImageCount`）を超えたため開かない画像の数
+        let skippedCount: Int
+
+        init(imageURLs: [URL]?, errorMessage: String?, skippedCount: Int = 0) {
+            self.imageURLs = imageURLs
+            self.errorMessage = errorMessage
+            self.skippedCount = skippedCount
+        }
     }
 
-    /// サービス経由で受け取った URL 配列から対応画像を抽出する
+    /// サービス経由で受け取った URL 配列から対応画像を抽出する（上限を超えた分は除外する）
     nonisolated static func extractImageURLsFromService(
-        _ urls: [URL]?
+        _ urls: [URL]?,
+        maxCount: Int = AppConstants.maxServiceImageCount
     ) -> ServiceURLResult {
         guard let urls = urls else {
-            return ServiceURLResult(imageURLs: nil, errorMessage: "No file URLs found")
+            return ServiceURLResult(imageURLs: nil, errorMessage: L("service.error.no_file_urls"))
         }
         let imageURLs = DragDropUtils.filterSupportedImages(urls)
         guard !imageURLs.isEmpty else {
-            return ServiceURLResult(imageURLs: nil, errorMessage: "No supported image files")
+            return ServiceURLResult(imageURLs: nil, errorMessage: L("service.error.no_supported_images"))
         }
-        return ServiceURLResult(imageURLs: imageURLs, errorMessage: nil)
+        let accepted = Array(imageURLs.prefix(maxCount))
+        return ServiceURLResult(
+            imageURLs: accepted, errorMessage: nil, skippedCount: imageURLs.count - accepted.count
+        )
     }
 
+    /// サービスは Info.plist の `NSServices` で宣言し、`servicesProvider` で受け取る。
+    /// （`registerServicesMenuSendTypes` はサービスを「利用する」側の宣言のため、提供側では不要）
     func applicationWillFinishLaunching(_ notification: Notification) {
         guard !Self.isRunningUnitTests else { return }
-        NSApp.registerServicesMenuSendTypes([.fileURL], returnTypes: [])
         NSApp.servicesProvider = self
     }
 
@@ -40,15 +56,21 @@ extension AppDelegate {
         ) as? [URL]
 
         let result = Self.extractImageURLsFromService(urls)
-        if let imageURLs = result.imageURLs {
-            NSApp.activate(ignoringOtherApps: true)
-            for url in imageURLs {
-                if let savedName = ImageManager.shared.registerImage(from: url) {
-                    createNewWindow(imageName: savedName)
-                }
+        guard let imageURLs = result.imageURLs else {
+            if let message = result.errorMessage {
+                error.pointee = message as NSString
             }
-        } else if let message = result.errorMessage {
-            error.pointee = message as NSString
+            return
+        }
+        if result.skippedCount > 0 {
+            servicesLogger.notice(
+                "Service request exceeded the limit; skipped \(result.skippedCount, privacy: .public) images"
+            )
+        }
+        NSApp.activate()
+        let openedResults = imageURLs.map { createNewWindow(registeringImageAt: $0) }
+        if !openedResults.contains(true) {
+            error.pointee = L("service.error.registration_failed") as NSString
         }
     }
     // swiftlint:enable legacy_objc_type

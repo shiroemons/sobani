@@ -1201,6 +1201,54 @@
         }
       }
     },
+    "service.error.no_file_urls": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイルが見つかりませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No files were found"
+          }
+        }
+      }
+    },
+    "service.error.no_supported_images": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "対応している画像ファイルがありません"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No supported image files"
+          }
+        }
+      }
+    },
+    "service.error.registration_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を読み込めませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load the images"
+          }
+        }
+      }
+    },
     "onboarding.title": {
       "localizations": {
         "ja": {

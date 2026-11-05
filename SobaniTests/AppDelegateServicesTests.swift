@@ -8,14 +8,14 @@ struct AppDelegateServicesTests {
     func extractImageURLs_nil() {
         let result = AppDelegate.extractImageURLsFromService(nil)
         #expect(result.imageURLs == nil)
-        #expect(result.errorMessage == "No file URLs found")
+        #expect(result.errorMessage == L("service.error.no_file_urls"))
     }
 
     @Test("空配列の場合はエラーを返す")
     func extractImageURLs_empty() {
         let result = AppDelegate.extractImageURLsFromService([])
         #expect(result.imageURLs == nil)
-        #expect(result.errorMessage == "No supported image files")
+        #expect(result.errorMessage == L("service.error.no_supported_images"))
     }
 
     @Test("非画像ファイルのみの場合はエラーを返す")
@@ -26,7 +26,7 @@ struct AppDelegateServicesTests {
         ]
         let result = AppDelegate.extractImageURLsFromService(urls)
         #expect(result.imageURLs == nil)
-        #expect(result.errorMessage == "No supported image files")
+        #expect(result.errorMessage == L("service.error.no_supported_images"))
     }
 
     @Test("PNG ファイルを正しく抽出する")
@@ -65,5 +65,31 @@ struct AppDelegateServicesTests {
         let result = AppDelegate.extractImageURLsFromService(urls)
         #expect(result.errorMessage == nil)
         #expect(result.imageURLs?.count == 1)
+    }
+
+    @Test("上限を超えた画像は除外され、除外数を返す")
+    func extractImageURLs_capsCount() {
+        let maxCount = AppConstants.maxServiceImageCount
+        let urls = (0..<(maxCount + 5)).map { URL(fileURLWithPath: "/tmp/image\($0).png") }
+        let result = AppDelegate.extractImageURLsFromService(urls)
+        #expect(result.errorMessage == nil)
+        #expect(result.imageURLs?.count == maxCount)
+        #expect(result.imageURLs?.first?.lastPathComponent == "image0.png")
+        #expect(result.skippedCount == 5)
+    }
+
+    @Test("上限以内なら除外しない")
+    func extractImageURLs_withinLimitSkipsNothing() {
+        let urls = [URL(fileURLWithPath: "/tmp/a.png"), URL(fileURLWithPath: "/tmp/b.pdf")]
+        let result = AppDelegate.extractImageURLsFromService(urls, maxCount: 1)
+        #expect(result.imageURLs?.count == 1)
+        #expect(result.skippedCount == 0)
+    }
+
+    @Test("エラーメッセージがローカライズされている")
+    func errorMessagesAreLocalized() {
+        for key in ["service.error.no_file_urls", "service.error.no_supported_images", "service.error.registration_failed"] {
+            #expect(L(key) != key)
+        }
     }
 }

@@ -126,6 +126,8 @@ enum AppConstants {
     static let maxImagePixelDimension = 16_384
     /// 登録できる画像の総ピクセル数の上限（約 1.3 億ピクセル。RGBA で約 512MB）
     static let maxImagePixelCount = 128 * 1_024 * 1_024
+    /// サービス（「Sobani で表示」）1 回の呼び出しで開く画像の最大数（大量のウィンドウ生成を防ぐ）
+    static let maxServiceImageCount = 20
 
     // Opacity
     static let opacityMin: CGFloat = 0.1
