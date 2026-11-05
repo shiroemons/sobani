@@ -4,10 +4,16 @@ struct MinimapLayout {
     static let minimapFallbackHeight: CGFloat = 150
     private static var padding: CGFloat { AppConstants.managementMinimapPadding }
 
+    /// 描画できない場合（範囲が空・表示領域が余白より小さいなど）のレイアウト。何も描かない
+    static let empty = Self(screens: [], scale: 1, offset: .zero, rawTotalBounds: .zero)
+
     let screens: [CGRect]
     let scale: CGFloat
     let offset: CGPoint
     let rawTotalBounds: CGRect
+
+    /// 描画するものがないか。`calculate` はスクリーンがない・計算できない場合に空のレイアウトを返す
+    var isEmpty: Bool { screens.isEmpty }
 
     func windowRect(
         for originX: CGFloat, originY: CGFloat, width: CGFloat, height: CGFloat
@@ -28,23 +34,24 @@ struct MinimapLayout {
 
     /// ミニマップ上のドラッグ差分をmacOS座標系の差分に変換
     func macOSDelta(from minimapDelta: CGSize) -> CGPoint {
-        CGPoint(
+        guard scale > 0 else { return .zero }
+        return CGPoint(
             x: minimapDelta.width / scale,
             y: -(minimapDelta.height / scale)
         )
     }
 
+    /// スクリーンとウィンドウをすべて含む範囲（画面外のウィンドウも含める）
+    static func totalBounds(screenFrames: [CGRect], windowFrames: [CGRect]) -> CGRect {
+        (screenFrames + windowFrames).reduce(CGRect.null) { $0.union($1) }
+    }
+
     @MainActor
     static func computeTotalBounds(states: [WindowState], screenFrames: [CGRect]? = nil) -> CGRect {
-        let screenFrames = screenFrames ?? NSScreen.screens.map(\.frame)
-        var totalBounds = screenFrames.reduce(CGRect.null) { $0.union($1) }
-        for state in states {
-            let windowFrame = CGRect(
-                x: state.originX, y: state.originY, width: state.width, height: state.height
-            )
-            totalBounds = totalBounds.union(windowFrame)
-        }
-        return totalBounds
+        totalBounds(
+            screenFrames: screenFrames ?? NSScreen.screens.map(\.frame),
+            windowFrames: states.map { CGRect(x: $0.originX, y: $0.originY, width: $0.width, height: $0.height) }
+        )
     }
 
     @MainActor
@@ -55,9 +62,7 @@ struct MinimapLayout {
         screenFrames: [CGRect]? = nil
     ) -> Self {
         let screenFrames = screenFrames ?? NSScreen.screens.map(\.frame)
-        guard !screenFrames.isEmpty else {
-            return Self(screens: [], scale: 1, offset: .zero, rawTotalBounds: .zero)
-        }
+        guard !screenFrames.isEmpty else { return .empty }
 
         // Use caller-supplied bounds to avoid redundant computation when available
         let totalBounds = precomputedBounds
@@ -65,6 +70,12 @@ struct MinimapLayout {
 
         let usableWidth = availableSize.width - Self.padding * 2
         let usableHeight = availableSize.height - Self.padding * 2
+        // 範囲が空だと倍率が無限大・NaN になり、余白より狭いと負の倍率で反転して描かれるため描画しない
+        guard !totalBounds.isNull,
+              totalBounds.width.isFinite, totalBounds.height.isFinite,
+              totalBounds.width > 0, totalBounds.height > 0,
+              usableWidth > 0, usableHeight > 0 else { return .empty }
+
         let scaleX = usableWidth / totalBounds.width
         let scaleY = usableHeight / totalBounds.height
         let scale = min(scaleX, scaleY)
@@ -92,22 +103,5 @@ struct MinimapLayout {
             offset: CGPoint(x: offsetX, y: offsetY),
             rawTotalBounds: totalBounds
         )
-    }
-
-    @MainActor
-    static func idealHeight(
-        for width: CGFloat,
-        states: [WindowState] = [],
-        precomputedBounds: CGRect? = nil
-    ) -> CGFloat {
-        let screenFrames = NSScreen.screens.map(\.frame)
-        guard !screenFrames.isEmpty else { return Self.minimapFallbackHeight }
-
-        // Use caller-supplied bounds to avoid redundant computation when available
-        let totalBounds = precomputedBounds ?? computeTotalBounds(states: states)
-
-        let usableWidth = width - Self.padding * 2
-        let aspectRatio = totalBounds.height / totalBounds.width
-        return usableWidth * aspectRatio + Self.padding * 2
     }
 }

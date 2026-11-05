@@ -140,6 +140,72 @@ import Testing
         #expect(abs(delta.x - 0) < 0.001)
         #expect(abs(delta.y - 0) < 0.001)
     }
+
+    /// 倍率が 0 の（描画できない）レイアウトではドラッグ量が無限大にならないことを検証
+    @Test func testMacOSDeltaWithZeroScaleIsZero() throws {
+        let layout = MinimapLayout(screens: [], scale: 0, offset: .zero, rawTotalBounds: .zero)
+        let delta = layout.macOSDelta(from: CGSize(width: 10, height: 20))
+        #expect(delta.x.isFinite && delta.y.isFinite)
+        #expect(abs(delta.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(delta.y) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - calculate
+
+    private let mainScreen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+
+    /// 範囲が空（.zero・.null）の場合は空のレイアウトになり、NaN・無限大を生まないことを検証
+    @Test(arguments: [CGRect.zero, CGRect.null, CGRect(x: 0, y: 0, width: 100, height: 0)])
+    @MainActor func testCalculateWithEmptyBoundsIsEmpty(bounds: CGRect) throws {
+        let layout = MinimapLayout.calculate(
+            in: CGSize(width: 400, height: 300), precomputedBounds: bounds, screenFrames: [mainScreen]
+        )
+        #expect(layout.isEmpty)
+        #expect(layout.scale.isFinite)
+        #expect(layout.offset.x.isFinite && layout.offset.y.isFinite)
+    }
+
+    /// 表示領域が余白（両側）より小さい場合は空のレイアウトになり、負の倍率で反転しないことを検証
+    @Test(arguments: [CGSize.zero, CGSize(width: 20, height: 300), CGSize(width: 400, height: 30)])
+    @MainActor func testCalculateWithTooSmallAreaIsEmpty(size: CGSize) throws {
+        let layout = MinimapLayout.calculate(in: size, screenFrames: [mainScreen])
+        #expect(layout.isEmpty)
+        #expect(layout.scale > 0)
+    }
+
+    /// スクリーンがない場合は空のレイアウトになることを検証
+    @Test @MainActor func testCalculateWithoutScreensIsEmpty() throws {
+        let layout = MinimapLayout.calculate(in: CGSize(width: 400, height: 300), screenFrames: [])
+        #expect(layout.isEmpty)
+    }
+
+    /// 通常の範囲では正の倍率で中央に配置されることを検証
+    @Test @MainActor func testCalculateCentersContent() throws {
+        let size = CGSize(width: 400, height: 300)
+        let padding = AppConstants.managementMinimapPadding
+        let layout = MinimapLayout.calculate(in: size, screenFrames: [mainScreen])
+        let screen = try #require(layout.screens.first)
+        let expectedScale = min((size.width - padding * 2) / 1920, (size.height - padding * 2) / 1080)
+        #expect(!layout.isEmpty)
+        #expect(abs(layout.scale - expectedScale) < AppConstants.floatingPointTolerance)
+        #expect(abs(screen.midX - size.width / 2) < AppConstants.floatingPointTolerance)
+        #expect(abs(screen.midY - size.height / 2) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - totalBounds
+
+    /// 画面外のウィンドウも範囲に含めることを検証
+    @Test func testTotalBoundsIncludesOffscreenWindows() throws {
+        let offscreen = CGRect(x: -500, y: 2000, width: 200, height: 100)
+        let bounds = MinimapLayout.totalBounds(screenFrames: [mainScreen], windowFrames: [offscreen])
+        #expect(bounds.contains(mainScreen))
+        #expect(bounds.contains(offscreen))
+    }
+
+    /// スクリーンもウィンドウもない場合は .null になることを検証
+    @Test func testTotalBoundsOfNothingIsNull() throws {
+        #expect(MinimapLayout.totalBounds(screenFrames: [], windowFrames: []).isNull)
+    }
 }
 
 // MARK: - Position Editor Input

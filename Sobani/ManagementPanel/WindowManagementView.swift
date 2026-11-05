@@ -5,6 +5,7 @@ struct WindowManagementView: View {
     @State private var isMinimapUnlocked = false
 
     var body: some View {
+        let states = viewModel.windowStates
         VStack(spacing: 0) {
             VStack(spacing: 4) {
                 HStack {
@@ -22,11 +23,15 @@ struct WindowManagementView: View {
                 .padding(.top, 4)
 
                 PresetMinimapView(
-                    states: viewModel.windowStates,
+                    states: states,
                     images: viewModel.windowImages,
-                    selectedWindowId: viewModel.selectedWindowIds.first,
-                    onWindowTapped: { windowId in
-                        viewModel.selectedWindowIds = [windowId]
+                    // 複数選択時はすべて強調する
+                    selectedIndices: Set(states.indices.filter {
+                        viewModel.selectedWindowIds.contains(states[$0].windowId)
+                    }),
+                    onWindowTapped: { index in
+                        guard states.indices.contains(index) else { return }
+                        viewModel.selectedWindowIds = [states[index].windowId]
                     },
                     isDragEnabled: isMinimapUnlocked,
                     onWindowDragChanged: { windowId, newOrigin in

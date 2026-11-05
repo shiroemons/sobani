@@ -296,11 +296,10 @@ extension LayoutPresetsView {
             PresetMinimapView(
                 states: preset.states,
                 images: presetImages,
-                selectedWindowId: selectedPresetWindowIndex.flatMap { index in
-                    index < preset.states.count ? preset.states[index].windowId : nil
-                },
-                onWindowTapped: { windowId in
-                    selectedPresetWindowIndex = preset.states.firstIndex { $0.windowId == windowId }
+                // 古いプリセットは windowId がすべて 0 のため、ID ではなく位置で選択する
+                selectedIndices: selectedPresetWindowIndex.map { [$0] } ?? [],
+                onWindowTapped: { index in
+                    selectedPresetWindowIndex = index
                 }
             )
 

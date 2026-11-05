@@ -5,6 +5,10 @@ import SwiftUI
 struct PositionLogDetailView: View {
     let entry: PositionLogger.LogEntry
 
+    private static let minimapHeight: CGFloat = 100
+    /// ミニマップ上でウィンドウを描く最小サイズ（極小のウィンドウも見えるように）
+    private static let minWindowMarkerSize: CGFloat = 2
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
@@ -70,45 +74,58 @@ struct PositionLogDetailView: View {
             CGRect(x: screen.originX, y: screen.originY, width: screen.width, height: screen.height)
         }
         let windowFrames = (entry.windows ?? []).map { win in
-            (windowId: win.windowId,
-             frame: CGRect(x: win.originX, y: win.originY, width: win.width, height: win.height))
+            CGRect(x: win.originX, y: win.originY, width: win.width, height: win.height)
         }
+        // ログが調べたいのは画面外に出たウィンドウなので、スクリーンだけでなくウィンドウも範囲に含める
+        let bounds = MinimapLayout.totalBounds(screenFrames: screenFrames, windowFrames: windowFrames)
 
         if !screenFrames.isEmpty {
             GeometryReader { geo in
-                let layout = MinimapLayout.calculate(in: geo.size, screenFrames: screenFrames)
-                ZStack(alignment: .topLeading) {
-                    ForEach(Array(layout.screens.enumerated()), id: \.offset) { _, rect in
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(.quaternary)
-                            .frame(width: rect.width, height: rect.height)
-                            .offset(x: rect.origin.x, y: rect.origin.y)
-                    }
-                    ForEach(windowFrames, id: \.windowId) { item in
-                        let rect = layout.windowRect(
-                            for: item.frame.origin.x,
-                            originY: item.frame.origin.y,
-                            width: item.frame.width,
-                            height: item.frame.height
-                        )
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(.blue.opacity(0.3))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 1)
-                                    .stroke(.blue.opacity(0.6), lineWidth: 1)
-                            )
-                            .frame(width: max(rect.width, 2), height: max(rect.height, 2))
-                            .offset(x: rect.origin.x, y: rect.origin.y)
-                    }
+                let layout = MinimapLayout.calculate(
+                    in: geo.size, precomputedBounds: bounds, screenFrames: screenFrames
+                )
+                if !layout.isEmpty {
+                    minimapContent(layout: layout, windowFrames: windowFrames)
                 }
             }
-            .frame(height: 100)
+            .frame(height: Self.minimapHeight)
             .background(.background)
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay(
                 RoundedRectangle(cornerRadius: 6)
                     .stroke(.separator, lineWidth: 0.5)
             )
+        }
+    }
+
+    private func minimapContent(layout: MinimapLayout, windowFrames: [CGRect]) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(Array(layout.screens.enumerated()), id: \.offset) { _, rect in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(.quaternary)
+                    .frame(width: rect.width, height: rect.height)
+                    .offset(x: rect.origin.x, y: rect.origin.y)
+            }
+            // windowId は古いログで重複しうるため位置を ID にする
+            ForEach(Array(windowFrames.enumerated()), id: \.offset) { _, frame in
+                let rect = layout.windowRect(
+                    for: frame.origin.x,
+                    originY: frame.origin.y,
+                    width: frame.width,
+                    height: frame.height
+                )
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(.blue.opacity(0.3))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 1)
+                            .stroke(.blue.opacity(0.6), lineWidth: 1)
+                    )
+                    .frame(
+                        width: max(rect.width, Self.minWindowMarkerSize),
+                        height: max(rect.height, Self.minWindowMarkerSize)
+                    )
+                    .offset(x: rect.origin.x, y: rect.origin.y)
+            }
         }
     }
 
@@ -153,7 +170,8 @@ struct ScreensTable: View {
             Divider()
                 .gridCellUnsizedAxes(.horizontal)
 
-            ForEach(screens, id: \.displayID) { screen in
+            // displayID は取得できないと 0 になり重複しうるため位置を ID にする
+            ForEach(Array(screens.enumerated()), id: \.offset) { _, screen in
                 GridRow {
                     Text("\(screen.displayID)")
                         .frame(width: 90, alignment: .leading)
@@ -179,7 +197,7 @@ struct WindowsTable: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            ForEach(windows, id: \.windowId) { win in
+            ForEach(Array(windows.enumerated()), id: \.offset) { _, win in
                 Text(windowDescription(win))
                     .font(.system(.caption, design: .monospaced))
             }
