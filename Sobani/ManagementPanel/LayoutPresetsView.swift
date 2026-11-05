@@ -188,7 +188,7 @@ struct LayoutPresetsView: View {
                     .fontWeight(.medium)
                     .lineLimit(1)
                 HStack(spacing: 4) {
-                    Text("\(preset.states.count)\(L("layout.items_suffix"))")
+                    Text(LayoutPresetText.itemsCount(preset.states.count))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text("・")
@@ -511,6 +511,23 @@ struct PresetNameSheetView: View {
             }
         }
         .padding(20)
+    }
+}
+
+// MARK: - LayoutPresetText
+
+enum LayoutPresetText {
+    private static let itemsCountKey = "layout.items_count"
+
+    /// プリセットのウィンドウ数の表示（例: "1 item" / "3 items" / "3件"）。
+    ///
+    /// 複数形は書式化するときのロケールで選ばれるため、システムではなく表示言語のロケールを渡す
+    /// （アプリ内で言語を切り替えたときに、システムの言語の規則で "1 items" にならないように）。
+    static func itemsCount(_ count: Int, bundle: Bundle? = sharedLocalizationBundle) -> String {
+        let format = bundle.map { NSLocalizedString(itemsCountKey, bundle: $0, comment: "") } ?? L(itemsCountKey)
+        let languageCode = bundle?.bundleURL.deletingPathExtension().lastPathComponent
+        let locale = languageCode.map { Locale(identifier: $0) } ?? .current
+        return String(format: format, locale: locale, count)
     }
 }
 

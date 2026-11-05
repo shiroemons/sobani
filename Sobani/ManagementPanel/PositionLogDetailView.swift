@@ -19,7 +19,7 @@ struct PositionLogDetailView: View {
                     GroupBox {
                         ScreensTable(screens: screens)
                     } label: {
-                        Label("Screens", systemImage: "display")
+                        Label(L("log.detail.screens"), systemImage: "display")
                             .font(.subheadline.bold())
                     }
                 }
@@ -28,7 +28,7 @@ struct PositionLogDetailView: View {
                     GroupBox {
                         WindowsTable(windows: windows, windowDescription: windowDescription)
                     } label: {
-                        Label("Windows", systemImage: "macwindow")
+                        Label(L("log.detail.windows"), systemImage: "macwindow")
                             .font(.subheadline.bold())
                     }
                 }
@@ -37,7 +37,7 @@ struct PositionLogDetailView: View {
                     GroupBox {
                         ContextGrid(context: ctx)
                     } label: {
-                        Label("Context", systemImage: "list.bullet.rectangle")
+                        Label(L("log.detail.context"), systemImage: "list.bullet.rectangle")
                             .font(.subheadline.bold())
                     }
                 }
@@ -155,13 +155,13 @@ struct ScreensTable: View {
     var body: some View {
         Grid(alignment: .leading, horizontalSpacing: 0, verticalSpacing: 4) {
             GridRow {
-                Text("displayID")
+                Text(L("log.detail.column.display_id"))
                     .frame(width: 90, alignment: .leading)
-                Text("Origin")
+                Text(L("log.detail.column.origin"))
                     .frame(width: 110, alignment: .leading)
-                Text("Size")
+                Text(L("log.detail.column.size"))
                     .frame(width: 110, alignment: .leading)
-                Text("Main")
+                Text(L("log.detail.column.main"))
                     .frame(width: 40, alignment: .leading)
             }
             .font(.system(.caption2, design: .monospaced))
