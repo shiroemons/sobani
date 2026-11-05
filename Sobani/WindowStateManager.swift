@@ -58,6 +58,13 @@ struct WindowState: Codable, Equatable, Sendable {
     var customGhostAlpha: CGFloat?
     var isHidden: Bool
     var displayAnchor: DisplayAnchor?
+    /// 画像変換（反転・回転）の合成順序のバージョン。メモリ上の値は常に `currentTransformVersion`。
+    ///
+    /// - 1（キーなし）: 回転してから反転していたため、反転時の見た目の傾きは `-rotationAngle` だった。
+    /// - 2: 反転してから回転する。`rotationAngle` がそのまま見た目の傾きになる。
+    let transformVersion = Self.currentTransformVersion
+
+    static let currentTransformVersion = 2
 
     enum CodingKeys: String, CodingKey {
         case imageName, originX, originY, width, height
@@ -67,6 +74,7 @@ struct WindowState: Codable, Equatable, Sendable {
         case customGhostAlpha
         case isHidden
         case displayAnchor
+        case transformVersion
     }
 
     init(
@@ -109,7 +117,11 @@ struct WindowState: Codable, Equatable, Sendable {
         width = try container.decode(CGFloat.self, forKey: .width)
         height = try container.decode(CGFloat.self, forKey: .height)
         isFlippedHorizontally = try container.decode(Bool.self, forKey: .isFlippedHorizontally)
-        rotationAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
+        let storedAngle = try container.decodeIfPresent(CGFloat.self, forKey: .rotationAngle) ?? 0
+        let storedVersion = try container.decodeIfPresent(Int.self, forKey: .transformVersion)
+        rotationAngle = Self.migratedRotationAngle(
+            storedAngle, isFlipped: isFlippedHorizontally, transformVersion: storedVersion
+        )
         opacityLevel = try container.decodeIfPresent(CGFloat.self, forKey: .opacityLevel) ?? 1.0
         windowId = try container.decodeIfPresent(Int.self, forKey: .windowId) ?? 0
         cropRect = try container.decodeIfPresent(CropRect.self, forKey: .cropRect)
@@ -117,6 +129,20 @@ struct WindowState: Codable, Equatable, Sendable {
         customGhostAlpha = try container.decodeIfPresent(CGFloat.self, forKey: .customGhostAlpha)
         isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
         displayAnchor = try container.decodeIfPresent(DisplayAnchor.self, forKey: .displayAnchor)
+        // transformVersion はデコード後も常に現行バージョン（移行済みの値として扱う）
+    }
+
+    /// 保存データの回転角を現行の変換順序（反転してから回転）での角度に移行する。
+    ///
+    /// 旧形式（バージョンキーなし）は回転してから反転していたため、反転ありの見た目の傾きは
+    /// `-rotationAngle` だった。同じ見た目を保つため符号を反転する。反転なしは合成順に依存しない。
+    static func migratedRotationAngle(
+        _ angle: CGFloat, isFlipped: Bool, transformVersion: Int?
+    ) -> CGFloat {
+        guard transformVersion == nil, isFlipped, !GeometryUtils.isApproximatelyZero(angle) else {
+            return angle
+        }
+        return GeometryUtils.normalizeAngle(-angle)
     }
 
     var frame: NSRect {

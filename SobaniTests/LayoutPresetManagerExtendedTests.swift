@@ -120,6 +120,24 @@ import Testing
         #expect(!presetManager.presetExists(named: "WillBeDeleted"))
     }
 
+    // MARK: - Transform Version Migration Tests
+
+    /// 旧形式のプリセットファイルでも反転ありの回転角が移行されることを検証
+    @Test func legacyPresetFlippedRotationIsMigrated() throws {
+        let layoutsDir = try #require(presetManager.layoutsDirectoryURL)
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Legacy","createdAt":"2026-01-01T00:00:00Z","states":[
+          {"imageName":"a.png","originX":0,"originY":0,"width":100,"height":100,
+           "isFlippedHorizontally":true,"rotationAngle":45}
+        ]}
+        """
+        try json.write(to: layoutsDir.appendingPathComponent("Legacy.json"), atomically: true, encoding: .utf8)
+
+        let preset = try #require(presetManager.loadPreset(named: "Legacy"))
+        let state = try #require(preset.states.first)
+        #expect(abs(state.rotationAngle - 315) < AppConstants.floatingPointTolerance)
+    }
+
     // MARK: - Sanitization Tests
 
     /// 非有限値を含む状態でもプリセットを保存でき、値が補正されることを検証

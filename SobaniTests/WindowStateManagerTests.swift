@@ -456,6 +456,57 @@ import Testing
         #expect(try corruptBackups().isEmpty)
     }
 
+    // MARK: - Transform Version Migration Tests
+
+    private func decodeSingleState(_ json: String) throws -> WindowState {
+        try #require(JSONDecoder().decode([WindowState].self, from: Data(json.utf8)).first)
+    }
+
+    /// 旧形式（transformVersionなし）で反転ありの回転角が符号反転で移行されることを検証
+    @Test(arguments: [(CGFloat(30), CGFloat(330)), (CGFloat(270), CGFloat(90)), (CGFloat(180), CGFloat(180))])
+    func legacyFlippedRotationIsMigrated(stored: CGFloat, expected: CGFloat) throws {
+        let state = try decodeSingleState("""
+        [{"imageName":"a.png","originX":0,"originY":0,"width":100,"height":100,
+          "isFlippedHorizontally":true,"rotationAngle":\(stored)}]
+        """)
+        #expect(abs(state.rotationAngle - expected) < AppConstants.floatingPointTolerance)
+        #expect(state.transformVersion == WindowState.currentTransformVersion)
+    }
+
+    /// 旧形式で反転なし、または回転0の場合は回転角が変わらないことを検証
+    @Test(arguments: [(false, CGFloat(30)), (true, CGFloat(0))])
+    func legacyRotationWithoutEffectiveFlipIsUnchanged(isFlipped: Bool, angle: CGFloat) throws {
+        let state = try decodeSingleState("""
+        [{"imageName":"a.png","originX":0,"originY":0,"width":100,"height":100,
+          "isFlippedHorizontally":\(isFlipped),"rotationAngle":\(angle)}]
+        """)
+        #expect(abs(state.rotationAngle - angle) < AppConstants.floatingPointTolerance)
+    }
+
+    /// transformVersion=2 のデータは再移行されないことを検証
+    @Test func currentVersionRotationIsNotMigratedAgain() throws {
+        let state = try decodeSingleState("""
+        [{"imageName":"a.png","originX":0,"originY":0,"width":100,"height":100,
+          "isFlippedHorizontally":true,"rotationAngle":30,"transformVersion":2}]
+        """)
+        #expect(abs(state.rotationAngle - 30) < AppConstants.floatingPointTolerance)
+    }
+
+    /// エンコード結果に現行のtransformVersionが含まれ、保存・再読み込みで二重に移行されないことを検証
+    @Test func transformVersionRoundTrip() throws {
+        let state = WindowState(
+            imageName: "a.png", originX: 0, originY: 0, width: 100, height: 100,
+            isFlippedHorizontally: true, rotationAngle: 30
+        )
+        let data = try JSONEncoder().encode(state)
+        let object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(object["transformVersion"] as? Int == WindowState.currentTransformVersion)
+        #expect(try JSONDecoder().decode(WindowState.self, from: data) == state)
+
+        stateManager.saveStates([state])
+        #expect(stateManager.loadStates() == [state])
+    }
+
     // MARK: - Persistence Sanitization Tests
 
     private func makeNonFiniteState() -> WindowState {
