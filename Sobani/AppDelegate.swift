@@ -226,6 +226,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func moveWindowToFront(_ imageWindow: ImageWindow) {
+        // クリックのたびに呼ばれるため、すでに最前面なら並べ替えと通知（保存・スナップショット・パネル再構築）を省く
+        guard zOrderedWindows.first !== imageWindow else { return }
         zOrderedWindows = ZOrderUtils.moveToFront(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
         notifyWindowListDidChange(.zorder)
