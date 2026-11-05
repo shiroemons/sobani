@@ -388,3 +388,71 @@ import Testing
     }
 
 }
+
+/// window_states.json の破損・不正値に対する保護（退避・要素単位の読み飛ばし）を検証するテスト
+@Suite @MainActor struct WindowStatePersistenceSafetyTests {
+    let tempDirectory: URL
+    let stateManager: WindowStateManager
+
+    init() throws {
+        tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(
+            at: tempDirectory, withIntermediateDirectories: true
+        )
+        stateManager = WindowStateManager(baseDirectory: tempDirectory)
+    }
+
+    private func makeState(imageName: String = "test.png") -> WindowState {
+        WindowState(
+            imageName: imageName, originX: 100, originY: 200, width: 300, height: 400,
+            isFlippedHorizontally: false
+        )
+    }
+
+    private func corruptBackups() throws -> [String] {
+        try FileManager.default.contentsOfDirectory(atPath: tempDirectory.path)
+            .filter { $0.hasPrefix("window_states.corrupt-") }
+    }
+
+    // MARK: - Corrupt File Backup Tests
+
+    /// 破損JSONで空配列が返され、元ファイルが同じ内容で退避されることを検証
+    @Test func corruptedFileIsBackedUp() throws {
+        let url = try #require(stateManager.statesFileURL)
+        try "{ invalid json".write(to: url, atomically: true, encoding: .utf8)
+
+        #expect(stateManager.loadStates() == [])
+
+        let backups = try corruptBackups()
+        #expect(backups.count == 1)
+        let backupName = try #require(backups.first)
+        let backupContent = try String(contentsOf: tempDirectory.appendingPathComponent(backupName), encoding: .utf8)
+        #expect(backupContent == "{ invalid json")
+    }
+
+    /// 一部の要素だけが壊れている場合、正常な要素を残し元ファイルを退避することを検証
+    @Test func loadStatesSkipsOnlyInvalidElements() throws {
+        let url = try #require(stateManager.statesFileURL)
+        let json = """
+        [
+          {"imageName":"ok1.png","originX":1,"originY":2,"width":300,"height":400,"isFlippedHorizontally":false},
+          {"imageName":"broken.png","originX":"oops"},
+          {"imageName":"ok2.png","originX":5,"originY":6,"width":300,"height":400,"isFlippedHorizontally":false}
+        ]
+        """
+        try json.write(to: url, atomically: true, encoding: .utf8)
+
+        let loaded = stateManager.loadStates()
+
+        #expect(loaded.map(\.imageName) == ["ok1.png", "ok2.png"])
+        #expect(try corruptBackups().count == 1)
+    }
+
+    /// 正常なファイルの読み込みではバックアップを作らないことを検証
+    @Test func loadStatesValidFileDoesNotBackUp() throws {
+        stateManager.saveStates([makeState()])
+        #expect(stateManager.loadStates().count == 1)
+        #expect(try corruptBackups().isEmpty)
+    }
+}

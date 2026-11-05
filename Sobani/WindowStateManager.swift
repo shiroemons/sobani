@@ -263,19 +263,25 @@ final class WindowStateManager {
 
     /// 保存済みのウィンドウ状態を JSON から読み込む。
     ///
-    /// レガシー画像名の正規化を自動的に行う。
-    /// ファイルが存在しない場合は空配列を返す。
+    /// ファイルが存在しない場合は空配列を返す。デコードできない要素は読み飛ばし、
+    /// 1 つでも読み飛ばした場合やファイル全体が読めない場合は、直後の保存で上書きされる前に
+    /// 元ファイルを `window_states.corrupt-<日時>.json` として退避する。
     /// - Returns: デコードされたウィンドウ状態の配列。
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
-        guard let states = JSONPersistence.load(
-            [WindowState].self,
+        guard let decoded = JSONPersistence.load(
+            LossyDecodableArray<WindowState>.self,
             from: url,
             logger: logger,
             notFoundMessage: "No saved states found",
-            errorMessage: "Failed to decode window states"
+            errorMessage: "Failed to decode window states",
+            backupOnDecodeFailure: true
         ) else { return [] }
-        return states
+        if decoded.skippedCount > 0 {
+            logger.error("Skipped \(decoded.skippedCount, privacy: .public) undecodable window states")
+            JSONPersistence.backupUnreadableFile(at: url, logger: logger)
+        }
+        return decoded.elements
     }
 
     /// 指定されたウィンドウの現在の状態をキャプチャする。

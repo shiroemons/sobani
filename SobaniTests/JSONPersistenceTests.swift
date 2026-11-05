@@ -174,4 +174,102 @@ import os.log
 
         #expect(loaded == original)
     }
+
+    // MARK: - Save result
+
+    /// saveが成功時にtrue、書き込めない場合にfalseを返すことを検証
+    @Test func saveReturnsWhetherWriteSucceeded() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let data = TestData(name: "test", value: 1)
+
+        #expect(JSONPersistence.save(data, to: tempDir.appendingPathComponent("ok.json"), logger: logger))
+        let missingDirURL = tempDir.appendingPathComponent("missing").appendingPathComponent("ng.json")
+        #expect(!JSONPersistence.save(data, to: missingDirURL, logger: logger))
+    }
+
+    // MARK: - Corrupt file backup
+
+    private func backupFiles(in dir: URL) throws -> [String] {
+        try FileManager.default.contentsOfDirectory(atPath: dir.path).filter { $0.contains(".corrupt-") }
+    }
+
+    /// backupOnDecodeFailure指定時、デコード失敗したファイルが同じ内容で退避されることを検証
+    @Test func loadBacksUpUndecodableFileWhenRequested() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("states.json")
+        let invalid = Data("not valid json {{{".utf8)
+        try invalid.write(to: url)
+
+        let result = JSONPersistence.load(TestData.self, from: url, logger: logger, backupOnDecodeFailure: true)
+
+        #expect(result == nil)
+        let backups = try backupFiles(in: tempDir)
+        #expect(backups.count == 1)
+        let backupName = try #require(backups.first)
+        #expect(backupName.hasPrefix("states.corrupt-"))
+        #expect(backupName.hasSuffix(".json"))
+        #expect(try Data(contentsOf: tempDir.appendingPathComponent(backupName)) == invalid)
+        // 元ファイルはそのまま残る
+        #expect(try Data(contentsOf: url) == invalid)
+    }
+
+    /// backupOnDecodeFailure未指定時はバックアップを作らないことを検証
+    @Test func loadDoesNotBackUpByDefault() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("states.json")
+        try Data("{".utf8).write(to: url)
+
+        #expect(JSONPersistence.load(TestData.self, from: url, logger: logger) == nil)
+        #expect(try backupFiles(in: tempDir).isEmpty)
+    }
+
+    /// ファイルが存在しない場合はbackupOnDecodeFailure指定時もバックアップしないことを検証
+    @Test func loadMissingFileDoesNotBackUp() throws {
+        let tempDir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let url = tempDir.appendingPathComponent("missing.json")
+
+        #expect(JSONPersistence.load(TestData.self, from: url, logger: logger, backupOnDecodeFailure: true) == nil)
+        #expect(try backupFiles(in: tempDir).isEmpty)
+    }
+
+    /// バックアップ先のファイル名が `<basename>.corrupt-<yyyyMMdd-HHmmss>.<ext>` 形式であることを検証
+    @Test func corruptBackupURLFormat() throws {
+        let url = URL(fileURLWithPath: "/tmp/dir/window_states.json")
+        var components = DateComponents()
+        components.year = 2026
+        components.month = 1
+        components.day = 2
+        components.hour = 3
+        components.minute = 4
+        components.second = 5
+        let date = try #require(Calendar(identifier: .gregorian).date(from: components))
+
+        let backup = JSONPersistence.corruptBackupURL(for: url, date: date)
+
+        #expect(backup.path == "/tmp/dir/window_states.corrupt-20260102-030405.json")
+    }
+
+    // MARK: - Lossy array
+
+    /// LossyDecodableArrayが壊れた要素だけを読み飛ばし件数を返すことを検証
+    @Test func lossyArraySkipsInvalidElements() throws {
+        let json = """
+        [{"name":"a","value":1},{"name":"b"},42,{"name":"c","value":3}]
+        """
+        let decoded = try JSONDecoder().decode(LossyDecodableArray<TestData>.self, from: Data(json.utf8))
+        #expect(decoded.elements == [TestData(name: "a", value: 1), TestData(name: "c", value: 3)])
+        #expect(decoded.skippedCount == 2)
+    }
+
+    /// LossyDecodableArrayは配列でないJSONではデコードに失敗することを検証
+    @Test func lossyArrayRejectsNonArray() {
+        let json = #"{"name":"a","value":1}"#
+        #expect(throws: (any Error).self) {
+            try JSONDecoder().decode(LossyDecodableArray<TestData>.self, from: Data(json.utf8))
+        }
+    }
 }

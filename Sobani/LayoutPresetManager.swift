@@ -81,15 +81,18 @@ final class LayoutPresetManager {
         return layoutsDir.appendingPathComponent(fileName)
     }
 
-    private func persistPreset(_ preset: LayoutPreset) {
-        guard let url = presetFileURL(for: preset.name) else { return }
-        JSONPersistence.save(
+    /// - Returns: ファイルへの書き込みに成功したか。
+    @discardableResult
+    private func persistPreset(_ preset: LayoutPreset) -> Bool {
+        guard let url = presetFileURL(for: preset.name) else { return false }
+        let saved = JSONPersistence.save(
             preset, to: url, logger: logger,
             errorMessage: "Failed to persist layout preset"
         ) {
             $0.dateEncodingStrategy = .iso8601
         }
         invalidateCache()
+        return saved
     }
 
     func savePreset(name: String, states: [WindowState]) {
@@ -187,8 +190,7 @@ final class LayoutPresetManager {
             id: oldPreset.id, name: newName,
             createdAt: oldPreset.createdAt, states: oldPreset.states
         )
-        persistPreset(renamedPreset)
-        guard FileManager.default.fileExists(atPath: newURL.path) else { return false }
+        guard persistPreset(renamedPreset) else { return false }
         // Only delete old file if sanitized file names differ
         let oldFileName = sanitizedFileName(for: oldName)
         let newFileName = sanitizedFileName(for: newName)
