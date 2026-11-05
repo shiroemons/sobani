@@ -270,6 +270,80 @@ struct ScreenRestorationUtilsTests {
         let frameB = NSRect(x: 100.1, y: 200, width: 1920, height: 1080)
         #expect(!ScreenRestorationUtils.isFrameMatch(frameA, frameB, tolerance: 0))
     }
+
+    // MARK: - restoredOrigin / isVisible Tests
+
+    private static let tol = AppConstants.floatingPointTolerance
+    private static let screenA = NSRect(x: 0, y: 0, width: 1920, height: 1080)
+
+    @Test("restoredOrigin: 見えている位置は意図的なはみ出しもクランプしない")
+    func restoredOriginKeepsVisibleOverhang() {
+        let rect = NSRect(x: 1800, y: -100, width: 400, height: 300)  // 右と下へはみ出し
+        let result = ScreenRestorationUtils.restoredOrigin(
+            of: rect, from: Self.screenA, to: Self.screenA, visibleIn: [Self.screenA]
+        )
+        #expect(abs(result.x - 1800) < Self.tol)
+        #expect(abs(result.y - -100) < Self.tol)
+    }
+
+    @Test("restoredOrigin: スクリーンの配置が変わったら相対位置を保って平行移動する")
+    func restoredOriginTranslatesWithScreen() {
+        let moved = NSRect(x: -1920, y: 200, width: 1920, height: 1080)
+        let result = ScreenRestorationUtils.restoredOrigin(
+            of: NSRect(x: 100, y: 50, width: 400, height: 300),
+            from: Self.screenA, to: moved, visibleIn: [moved]
+        )
+        #expect(abs(result.x - -1820) < Self.tol)
+        #expect(abs(result.y - 250) < Self.tol)
+    }
+
+    @Test("restoredOrigin: スクリーンサイズが変わったら中心を正規化座標で写像する（mapOrigin と同じ）")
+    func restoredOriginScalesWhenScreenSizeChanged() {
+        let oldFrame = NSRect(x: 0, y: 0, width: 1000, height: 1000)
+        let newFrame = NSRect(x: 0, y: 0, width: 2000, height: 1000)
+        let rect = NSRect(x: 200, y: 450, width: 100, height: 100)  // center (250, 500)
+        let result = ScreenRestorationUtils.restoredOrigin(
+            of: rect, from: oldFrame, to: newFrame, visibleIn: [newFrame]
+        )
+        // center' = (0.25 * 2000, 0.5 * 1000) = (500, 500)
+        #expect(abs(result.x - 450) < Self.tol)
+        #expect(abs(result.y - 450) < Self.tol)
+    }
+
+    @Test("restoredOrigin: 写像先がほとんど見えない場合だけ復元先スクリーン内にクランプする")
+    func restoredOriginClampsWhenNotVisible() {
+        // 右端に 20px だけ重なる（しきい値 50px 未満）
+        let rect = NSRect(x: 1900, y: 100, width: 400, height: 300)
+        let result = ScreenRestorationUtils.restoredOrigin(
+            of: rect, from: Self.screenA, to: Self.screenA, visibleIn: [Self.screenA]
+        )
+        #expect(abs(result.x - 1520) < Self.tol)
+        #expect(abs(result.y - 100) < Self.tol)
+    }
+
+    @Test("restoredOrigin: 保存時のスクリーンが不明なら元の原点を使う")
+    func restoredOriginWithoutOldScreenUsesOriginalOrigin() {
+        let result = ScreenRestorationUtils.restoredOrigin(
+            of: NSRect(x: 300, y: 400, width: 100, height: 100),
+            from: nil, to: Self.screenA, visibleIn: [Self.screenA]
+        )
+        #expect(abs(result.x - 300) < Self.tol)
+        #expect(abs(result.y - 400) < Self.tol)
+    }
+
+    @Test(
+        "isVisible: 縦横ともしきい値以上重なるスクリーンがあれば可視",
+        arguments: [
+            (NSRect(x: 100, y: 100, width: 200, height: 200), true),
+            (NSRect(x: 1870, y: 100, width: 200, height: 200), true),   // ちょうど 50px
+            (NSRect(x: 1871, y: 100, width: 200, height: 200), false),  // 49px
+            (NSRect(x: 100, y: 1031, width: 200, height: 200), false),  // 上へ 49px
+            (NSRect(x: 5000, y: 5000, width: 200, height: 200), false),
+        ]
+    )
+    func isVisibleUsesThreshold(rect: NSRect, expected: Bool) {
+        #expect(ScreenRestorationUtils.isVisible(rect, in: [Self.screenA]) == expected)
+    }
 }
 
 // MARK: - findTargetScreen / findTargetScreenForPending Tests

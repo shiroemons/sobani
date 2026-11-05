@@ -68,6 +68,39 @@ enum ScreenRestorationUtils {
         return NSPoint(x: centerX - rect.width / 2, y: centerY - rect.height / 2)
     }
 
+    /// 保存時のスクリーンから復元先スクリーンへ矩形を写像した原点を返す。
+    ///
+    /// `WindowState.resolvedForRestore`（起動時のアンカー復元）と同じ方針で、スクリーンサイズが
+    /// 変わっていれば `mapOrigin` で拡縮し、写像先がどのスクリーンでも見えない場合だけクランプする
+    /// （意図的に画面外へはみ出させた配置を保つため）。
+    /// - Parameters:
+    ///   - rect: 保存時の矩形（グローバル座標）。原点とサイズは同じ座標空間（画像基準 or ウィンドウ基準）で渡す
+    ///   - oldScreenFrame: 保存時に属していたスクリーンのフレーム。nil なら写像せず元の原点を使う
+    ///   - screenFrame: 復元先スクリーンのフレーム
+    ///   - screenFrames: 現在接続されている全スクリーンのフレーム（可視判定用）
+    static func restoredOrigin(
+        of rect: NSRect,
+        from oldScreenFrame: NSRect?,
+        to screenFrame: NSRect,
+        visibleIn screenFrames: [NSRect]
+    ) -> NSPoint {
+        let mapped = oldScreenFrame.map { mapOrigin(of: rect, from: $0, to: screenFrame) } ?? rect.origin
+        guard !isVisible(NSRect(origin: mapped, size: rect.size), in: screenFrames) else { return mapped }
+        return clampOrigin(mapped, windowSize: rect.size, to: screenFrame)
+    }
+
+    /// 矩形がいずれかのスクリーンと縦横とも `threshold` 以上重なっているか（`WindowState.isPositionVisible` と同じ基準）
+    static func isVisible(
+        _ rect: NSRect,
+        in screenFrames: [NSRect],
+        threshold: CGFloat = AppConstants.screenIntersectionThreshold
+    ) -> Bool {
+        screenFrames.contains { frame in
+            let intersection = rect.intersection(frame)
+            return !intersection.isNull && intersection.width >= threshold && intersection.height >= threshold
+        }
+    }
+
     /// 矩形との重なり面積が最大のスクリーンのインデックスを返す。どれとも重ならなければ nil。
     static func indexOfLargestOverlap(for rect: NSRect, in screenFrames: [NSRect]) -> Int? {
         var best: (index: Int, area: CGFloat)?

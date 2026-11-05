@@ -223,11 +223,15 @@ extension AppDelegate {
         }
     }
 
-    /// 全ウィンドウを相対座標ベースで復元。全ウィンドウ復元できたら true を返す。
+    /// 全ウィンドウをスリープ前のディスプレイ基準の相対位置で復元。全ウィンドウ復元できたら true を返す。
+    ///
+    /// 位置はウィンドウ（回転後のバウンディングボックス）基準の生の origin で扱う。
+    /// 起動時のアンカー復元と同じく、写像先が見えない場合だけクランプする。
     private func restoreAllPreSleepWindows(screens: [ScreenInfo]) -> Bool {
         // 注意: wakeContext.states から個別に除去しない。macOS はモニタ復帰時に
         // 全ウィンドウを再配置するため、リトライ毎に全ウィンドウを再復元する必要がある。
         let logScreens = PositionLogger.shared.isEnabled ? PositionLogger.shared.currentScreenSnapshots() : nil
+        let screenFrames = screens.map(\.frame)
         var restoredAll = true
 
         for imageWindow in zOrderedWindows {
@@ -244,22 +248,20 @@ extension AppDelegate {
                 continue
             }
             let oldFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
-            let newOrigin = ScreenRestorationUtils.computeRestoredOrigin(
-                savedOrigin: savedOrigin, oldScreenFrame: oldFrame, currentScreenFrame: screen.frame
-            )
             let windowSize = imageWindow.window.frame.size
-            let clamped = ScreenRestorationUtils.clampOrigin(
-                newOrigin, windowSize: windowSize, to: screen.frame
+            let restored = ScreenRestorationUtils.restoredOrigin(
+                of: NSRect(origin: savedOrigin, size: windowSize),
+                from: oldFrame, to: screen.frame, visibleIn: screenFrames
             )
             Self.screenRestorationLogger.debug("""
                 restore #\(windowId, privacy: .public): saved=\(NSStringFromPoint(savedOrigin), privacy: .public) \
-                -> \(NSStringFromPoint(newOrigin), privacy: .public) -> \(NSStringFromPoint(clamped), privacy: .public), \
+                -> \(NSStringFromPoint(restored), privacy: .public), \
                 currentPos=\(NSStringFromPoint(imageWindow.window.frame.origin), privacy: .public), \
                 displayID saved=\(savedDisplayID ?? AppConstants.unknownDisplayID, privacy: .public) \
                 current=\(screen.displayID, privacy: .public), oldFrame=\(oldFrame.debugDescription, privacy: .public), \
                 screen=\(NSStringFromRect(screen.frame), privacy: .public), winSize=\(NSStringFromSize(windowSize), privacy: .public)
                 """)
-            imageWindow.window.setFrameOrigin(clamped)
+            imageWindow.window.setFrameOrigin(restored)
             if PositionLogger.shared.isEnabled {
                 PositionLogger.shared.log(
                     event: "wake.restore",
@@ -267,8 +269,7 @@ extension AppDelegate {
                     windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
                     context: [
                         "savedOrigin": "\(NSStringFromPoint(savedOrigin))",
-                        "computedOrigin": "\(NSStringFromPoint(newOrigin))",
-                        "clampedOrigin": "\(NSStringFromPoint(clamped))",
+                        "restoredOrigin": "\(NSStringFromPoint(restored))",
                         "windowSize": "\(NSStringFromSize(windowSize))",
                         "screenFrame": "\(NSStringFromRect(screen.frame))",
                     ]
@@ -288,9 +289,8 @@ extension AppDelegate {
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
             let adjusted = savedState.adjustedToVisibleArea(on: screens)
 
-            if let imageWindow = zOrderedWindows.first(where: { $0.windowId == windowId }) {
-                imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
-            }
+            // WindowState の原点は画像基準のため、回転中のウィンドウはウィンドウ原点へ変換して配置する
+            zOrderedWindows.first { $0.windowId == windowId }?.setImageOrigin(adjusted.frame.origin)
             if PositionLogger.shared.isEnabled {
                 PositionLogger.shared.log(
                     event: "pending.add",
@@ -354,7 +354,7 @@ extension AppDelegate {
                 currentState.displayAnchor = nil
             }
             let adjusted = currentState.adjustedToVisibleArea(on: screens)
-            imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
+            imageWindow.setImageOrigin(adjusted.frame.origin)
             if PositionLogger.shared.isEnabled {
                 PositionLogger.shared.log(
                     event: "pending.phase0",
@@ -399,22 +399,22 @@ extension AppDelegate {
                 screenRestorationManager.removePending(windowId: entry.windowId)
                 continue
             }
-            // 対象モニタが見つかったら無条件でクランプ位置に復元
+            // 対象モニタが見つかったら、切断前のスクリーン基準の相対位置で復元する（見えない場合だけクランプ）。
+            // originalState は画像基準のため、原点・サイズとも画像基準で計算してから配置する
             if let screen = findPendingTargetScreen(for: entry, screens: screens) {
-                let windowSize = imageWindow.window.frame.size
-                let origin = NSPoint(x: entry.originalState.originX, y: entry.originalState.originY)
-                let clamped = ScreenRestorationUtils.clampOrigin(
-                    origin, windowSize: windowSize, to: screen.frame
+                let restored = ScreenRestorationUtils.restoredOrigin(
+                    of: entry.originalState.frame,
+                    from: entry.preSleepScreenFrame, to: screen.frame, visibleIn: screens.map(\.frame)
                 )
-                imageWindow.window.setFrameOrigin(clamped)
+                imageWindow.setImageOrigin(restored)
                 if PositionLogger.shared.isEnabled {
                     PositionLogger.shared.log(
                         event: "pending.phase2",
                         windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
                         context: [
                             "originalOrigin": "\(entry.originalState.originX),\(entry.originalState.originY)",
-                            "clampedOrigin": "\(NSStringFromPoint(clamped))",
-                            "windowSize": "\(NSStringFromSize(windowSize))",
+                            "restoredOrigin": "\(NSStringFromPoint(restored))",
+                            "imageSize": "\(NSStringFromSize(entry.originalState.frame.size))",
                             "screenFrame": "\(NSStringFromRect(screen.frame))",
                         ]
                     )
