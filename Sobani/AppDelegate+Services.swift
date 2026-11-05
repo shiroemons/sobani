@@ -10,13 +10,7 @@ extension AppDelegate {
         let imageURLs: [URL]?
         let errorMessage: String?
         /// 上限（`AppConstants.maxServiceImageCount`）を超えたため開かない画像の数
-        let skippedCount: Int
-
-        init(imageURLs: [URL]?, errorMessage: String?, skippedCount: Int = 0) {
-            self.imageURLs = imageURLs
-            self.errorMessage = errorMessage
-            self.skippedCount = skippedCount
-        }
+        var skippedCount = 0
     }
 
     /// サービス経由で受け取った URL 配列から対応画像を抽出する（上限を超えた分は除外する）
