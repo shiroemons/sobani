@@ -16,15 +16,24 @@ struct ScreenInfo: Sendable {
     let frame: NSRect
     let displayID: CGDirectDisplayID
     let isMain: Bool
+    /// 再起動をまたいでも変わらないディスプレイ識別子（`displayID` は再起動で変わる）。
+    let displayUUID: String?
+
+    init(frame: NSRect, displayID: CGDirectDisplayID, isMain: Bool, displayUUID: String? = nil) {
+        self.frame = frame
+        self.displayID = displayID
+        self.isMain = isMain
+        self.displayUUID = displayUUID
+    }
 
     @MainActor
     static func current() -> [Self] {
         NSScreen.screens.map { screen in
             Self(
                 frame: screen.frame,
-                displayID: (screen.deviceDescription[AppConstants.screenNumberKey]
-                    as? CGDirectDisplayID) ?? 0,
-                isMain: screen == NSScreen.main
+                displayID: screen.displayID ?? AppConstants.unknownDisplayID,
+                isMain: screen == NSScreen.main,
+                displayUUID: screen.displayUUID
             )
         }
     }
@@ -99,6 +108,17 @@ enum AppConstants {
     static let wakeRetryCountThreshold = 2
     static let wakeRetryMaxAttempts = 10
     static let wakeRetryInterval: TimeInterval = 3.0
+
+    // Launch Restoration
+    /// 起動後、ディスプレイ構成の変化に追従してアンカー位置を再適用し続ける期間（ログイン直後の
+    /// 外部ディスプレイ認識遅延・プライマリ入れ替わりに対応）
+    static let launchRestoreWindow: TimeInterval = 120
+
+    // Persistence
+    /// ウィンドウ状態変更から `window_states.json` へ保存するまでのデバウンス間隔
+    static let statePersistDebounceInterval: TimeInterval = 1.0
+    /// 画面構成変更の直後は macOS がウィンドウを一時退避している可能性があるため保存を見送る期間
+    static let statePersistScreenSettleInterval: TimeInterval = 10
 
     // Opacity
     static let opacityMin: CGFloat = 0.1

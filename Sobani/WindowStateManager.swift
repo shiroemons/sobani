@@ -1,6 +1,41 @@
 import Cocoa
 import os.log
 
+// MARK: - Display Anchor
+
+/// ウィンドウが属するディスプレイと、保存時のそのディスプレイのフレーム。
+///
+/// Cocoa のグローバル座標はプライマリディスプレイ基準のため、起動直後のディスプレイ認識順や
+/// 配置変更でずれる。ディスプレイ UUID とフレームを併せて保存し、復元時にディスプレイ基準の
+/// 相対位置で写像することで、再起動後も同じ見た目の位置に戻す。
+struct DisplayAnchor: Codable, Equatable, Sendable {
+    let displayUUID: String
+    let screenX: CGFloat
+    let screenY: CGFloat
+    let screenWidth: CGFloat
+    let screenHeight: CGFloat
+
+    init(displayUUID: String, screenFrame: NSRect) {
+        self.displayUUID = displayUUID
+        self.screenX = screenFrame.origin.x
+        self.screenY = screenFrame.origin.y
+        self.screenWidth = screenFrame.width
+        self.screenHeight = screenFrame.height
+    }
+
+    var screenFrame: NSRect {
+        NSRect(x: screenX, y: screenY, width: screenWidth, height: screenHeight)
+    }
+
+    /// 矩形と最も大きく重なるスクリーンをアンカーとする。UUID が取れない・どこにも重ならない場合は nil。
+    static func make(for rect: NSRect, screens: [ScreenInfo]) -> Self? {
+        guard let index = ScreenRestorationUtils.indexOfLargestOverlap(
+            for: rect, in: screens.map(\.frame)
+        ), let uuid = screens[index].displayUUID else { return nil }
+        return Self(displayUUID: uuid, screenFrame: screens[index].frame)
+    }
+}
+
 // MARK: - Window State
 
 struct WindowState: Codable, Equatable, Sendable {
@@ -17,6 +52,7 @@ struct WindowState: Codable, Equatable, Sendable {
     var isGhostMode: Bool
     var customGhostAlpha: CGFloat?
     var isHidden: Bool
+    var displayAnchor: DisplayAnchor?
 
     enum CodingKeys: String, CodingKey {
         case imageName, originX, originY, width, height
@@ -25,6 +61,7 @@ struct WindowState: Codable, Equatable, Sendable {
         case isGhostMode
         case customGhostAlpha
         case isHidden
+        case displayAnchor
     }
 
     init(
@@ -40,7 +77,8 @@ struct WindowState: Codable, Equatable, Sendable {
         cropRect: CropRect? = nil,
         isGhostMode: Bool = false,
         customGhostAlpha: CGFloat? = nil,
-        isHidden: Bool = false
+        isHidden: Bool = false,
+        displayAnchor: DisplayAnchor? = nil
     ) {
         self.imageName = imageName
         self.originX = originX
@@ -55,6 +93,7 @@ struct WindowState: Codable, Equatable, Sendable {
         self.isGhostMode = isGhostMode
         self.customGhostAlpha = customGhostAlpha
         self.isHidden = isHidden
+        self.displayAnchor = displayAnchor
     }
 
     init(from decoder: Decoder) throws {
@@ -72,6 +111,43 @@ struct WindowState: Codable, Equatable, Sendable {
         isGhostMode = try container.decodeIfPresent(Bool.self, forKey: .isGhostMode) ?? false
         customGhostAlpha = try container.decodeIfPresent(CGFloat.self, forKey: .customGhostAlpha)
         isHidden = try container.decodeIfPresent(Bool.self, forKey: .isHidden) ?? false
+        displayAnchor = try container.decodeIfPresent(DisplayAnchor.self, forKey: .displayAnchor)
+    }
+
+    var frame: NSRect {
+        NSRect(x: originX, y: originY, width: width, height: height)
+    }
+
+    /// 位置（原点とアンカー）だけを差し替えたコピーを返す。
+    func withPosition(originX: CGFloat, originY: CGFloat, displayAnchor: DisplayAnchor?) -> Self {
+        Self(
+            imageName: imageName,
+            originX: originX,
+            originY: originY,
+            width: width,
+            height: height,
+            isFlippedHorizontally: isFlippedHorizontally,
+            rotationAngle: rotationAngle,
+            opacityLevel: opacityLevel,
+            windowId: windowId,
+            cropRect: cropRect,
+            isGhostMode: isGhostMode,
+            customGhostAlpha: customGhostAlpha,
+            isHidden: isHidden,
+            displayAnchor: displayAnchor
+        )
+    }
+
+    /// `intended` の位置（ユーザーが意図した位置とアンカー）を採用し、それ以外の属性は自身の値を保つ。
+    ///
+    /// ディスプレイ切断・スリープ復帰・起動直後などで macOS やアプリがウィンドウを一時退避している間に
+    /// 保存すると、退避先が正として永続化されてしまう。それを防ぐために使う。
+    func preservingPosition(of intended: Self) -> Self {
+        withPosition(
+            originX: intended.originX,
+            originY: intended.originY,
+            displayAnchor: intended.displayAnchor
+        )
     }
 
     func isPositionVisible(on screens: [ScreenInfo]) -> Bool {
@@ -91,23 +167,65 @@ struct WindowState: Codable, Equatable, Sendable {
             return self
         }
         let mainFrame = ScreenInfo.mainFrame(from: screens)
-        let newOriginX = mainFrame.midX - width / 2
-        let newOriginY = mainFrame.midY - height / 2
-        return Self(
-            imageName: imageName,
-            originX: newOriginX,
-            originY: newOriginY,
-            width: width,
-            height: height,
-            isFlippedHorizontally: isFlippedHorizontally,
-            rotationAngle: rotationAngle,
-            opacityLevel: opacityLevel,
-            windowId: windowId,
-            cropRect: cropRect,
-            isGhostMode: isGhostMode,
-            customGhostAlpha: customGhostAlpha,
-            isHidden: isHidden
+        return withPosition(
+            originX: mainFrame.midX - width / 2,
+            originY: mainFrame.midY - height / 2,
+            displayAnchor: displayAnchor
         )
+    }
+
+    // MARK: - Restore Resolution
+
+    enum AnchorResolution: Equatable, Sendable {
+        /// アンカー情報なし（旧形式データ）。グローバル座標で復元した。
+        case unanchored
+        /// アンカーのディスプレイが見つかり、ディスプレイ基準で写像した。
+        case matched
+        /// アンカーのディスプレイが未接続。グローバル座標で仮配置した。
+        case displayMissing
+    }
+
+    struct RestoreResolution: Equatable, Sendable {
+        let state: WindowState
+        /// 可視領域への退避（メイン画面中央への移動）が発生したか
+        let wasAdjusted: Bool
+        let anchor: AnchorResolution
+    }
+
+    /// 現在のスクリーン構成で復元すべき位置を決める。
+    ///
+    /// アンカーのディスプレイが接続されていれば、保存時のディスプレイフレームとの相対位置で写像する
+    /// （グローバル座標の可視判定は使わない。意図的に画面外へはみ出させた配置も保つため）。
+    /// 見つからなければ従来どおりグローバル座標で配置し、見えなければメイン画面中央へ退避する。
+    func resolvedForRestore(on screens: [ScreenInfo]) -> RestoreResolution {
+        if let anchor = displayAnchor,
+           let screen = screens.first(where: { $0.displayUUID == anchor.displayUUID }) {
+            let newAnchor = DisplayAnchor(displayUUID: anchor.displayUUID, screenFrame: screen.frame)
+            let mappedOrigin = ScreenRestorationUtils.mapOrigin(
+                of: frame, from: anchor.screenFrame, to: screen.frame
+            )
+            let mapped = withPosition(originX: mappedOrigin.x, originY: mappedOrigin.y, displayAnchor: newAnchor)
+            // 写像先が見えない（解像度が極端に変わった等）場合だけスクリーン内にクランプする
+            let origin = mapped.isPositionVisible(on: screens)
+                ? mappedOrigin
+                : ScreenRestorationUtils.clampOrigin(mappedOrigin, windowSize: frame.size, to: screen.frame)
+            return RestoreResolution(
+                state: withPosition(originX: origin.x, originY: origin.y, displayAnchor: newAnchor),
+                wasAdjusted: false,
+                anchor: .matched
+            )
+        }
+        let adjusted = adjustedToVisibleArea(on: screens)
+        return RestoreResolution(
+            state: adjusted,
+            wasAdjusted: adjusted.hasDifferentOrigin(from: self),
+            anchor: displayAnchor == nil ? .unanchored : .displayMissing
+        )
+    }
+
+    func hasDifferentOrigin(from other: Self) -> Bool {
+        let tolerance = AppConstants.floatingPointTolerance
+        return abs(originX - other.originX) > tolerance || abs(originY - other.originY) > tolerance
     }
 }
 
@@ -162,9 +280,14 @@ final class WindowStateManager {
 
     /// 指定されたウィンドウの現在の状態をキャプチャする。
     ///
-    /// - Parameter imageWindow: 状態を取得するイメージウィンドウ。
     /// - Returns: 現在のウィンドウ状態を表す `WindowState`。
-    @MainActor static func captureState(from imageWindow: ImageWindow) -> WindowState {
+    /// - Parameters:
+    ///   - imageWindow: 状態を取得するイメージウィンドウ。
+    ///   - screens: アンカー算出に使うスクリーン構成。
+    @MainActor static func captureState(
+        from imageWindow: ImageWindow,
+        screens: [ScreenInfo]
+    ) -> WindowState {
         let windowCenter = NSPoint(x: imageWindow.window.frame.midX, y: imageWindow.window.frame.midY)
         let baseWidth = imageWindow.imageView.frame.width
         let baseHeight = imageWindow.imageView.frame.height
@@ -181,7 +304,8 @@ final class WindowStateManager {
             cropRect: imageWindow.imageView.cropRect,
             isGhostMode: imageWindow.isGhostMode,
             customGhostAlpha: imageWindow.customGhostAlpha,
-            isHidden: imageWindow.isHidden
+            isHidden: imageWindow.isHidden,
+            displayAnchor: DisplayAnchor.make(for: imageWindow.window.frame, screens: screens)
         )
     }
 
@@ -190,13 +314,17 @@ final class WindowStateManager {
 // MARK: - ImageWindow Restore Extension
 
 extension ImageWindow {
+    /// 保存状態からウィンドウを復元する。
+    ///
+    /// - Returns: 復元位置の解決結果。サイズが不正で復元しなかった場合は nil。
     @discardableResult
-    func restore(from state: WindowState) -> Bool {
-        let adjusted = state.adjustedToVisibleArea(on: ScreenInfo.current())
-        guard adjusted.width > 0, adjusted.height > 0 else { return false }
-        let tolerance = AppConstants.floatingPointTolerance
-        let wasAdjusted = abs(adjusted.originX - state.originX) > tolerance
-            || abs(adjusted.originY - state.originY) > tolerance
+    func restore(
+        from state: WindowState,
+        screens: [ScreenInfo] = ScreenInfo.current()
+    ) -> WindowState.RestoreResolution? {
+        let resolution = state.resolvedForRestore(on: screens)
+        let adjusted = resolution.state
+        guard adjusted.width > 0, adjusted.height > 0 else { return nil }
         if PositionLogger.shared.isEnabled {
             PositionLogger.shared.log(
                 event: "restore",
@@ -209,7 +337,8 @@ extension ImageWindow {
                     displayID: nil
                 )],
                 context: [
-                    "wasAdjusted": "\(wasAdjusted)",
+                    "wasAdjusted": "\(resolution.wasAdjusted)",
+                    "anchor": "\(resolution.anchor)",
                     "beforeOrigin": "\(state.originX),\(state.originY)",
                     "afterOrigin": "\(adjusted.originX),\(adjusted.originY)",
                 ]
@@ -258,6 +387,22 @@ extension ImageWindow {
             setHidden(true)
         }
 
-        return wasAdjusted
+        return resolution
+    }
+
+    /// 位置だけをディスプレイアンカー基準で再適用する（起動直後のディスプレイ構成変化への追従用）。
+    ///
+    /// - Returns: アンカーのディスプレイが見つかり位置を適用できた場合 true。
+    @discardableResult
+    func reapplyAnchoredPosition(of state: WindowState, screens: [ScreenInfo]) -> Bool {
+        let resolution = state.resolvedForRestore(on: screens)
+        guard resolution.anchor == .matched else { return false }
+        // WindowState の原点は imageView 基準（captureState と同じ）。回転を考慮してウィンドウ原点へ変換する
+        window.setFrameOrigin(Self.windowOrigin(
+            forImageOrigin: resolution.state.frame.origin,
+            imageViewSize: imageView.frame.size,
+            rotationAngle: imageView.rotationAngle
+        ))
+        return true
     }
 }

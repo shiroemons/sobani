@@ -25,7 +25,7 @@ enum ScreenRestorationUtils {
 
     /// スリープ前のスクリーン位置を基にウィンドウの相対位置を計算し、
     /// 新しいスクリーン位置に変換する。
-    static func computeRestoredOrigin(
+    nonisolated static func computeRestoredOrigin(
         savedOrigin: NSPoint,
         oldScreenFrame: NSRect?,
         currentScreenFrame: NSRect
@@ -39,6 +39,48 @@ enum ScreenRestorationUtils {
             x: currentScreenFrame.origin.x + relativeX,
             y: currentScreenFrame.origin.y + relativeY
         )
+    }
+
+    /// ディスプレイ基準の相対位置を保ったまま、矩形の原点を新しいスクリーンフレームへ写像する。
+    ///
+    /// - スクリーンサイズが同じ場合: 平行移動 `p' = S'.origin + (p − S.origin)`。
+    ///   ディスプレイ配置やプライマリディスプレイが変わってグローバル座標系がずれても、
+    ///   ディスプレイ上の見た目の位置は完全に保たれる。
+    /// - サイズが異なる場合（解像度変更など）: 中心点を正規化座標で写像し
+    ///   `c' = S'.origin + (c − S.origin) ⊙ (S'.size / S.size)`、ウィンドウサイズは維持する。
+    nonisolated static func mapOrigin(
+        of rect: NSRect,
+        from oldScreenFrame: NSRect,
+        to newScreenFrame: NSRect,
+        tolerance: CGFloat = AppConstants.floatingPointTolerance
+    ) -> NSPoint {
+        let sameSize = abs(oldScreenFrame.width - newScreenFrame.width) < tolerance
+            && abs(oldScreenFrame.height - newScreenFrame.height) < tolerance
+        guard !sameSize, oldScreenFrame.width > 0, oldScreenFrame.height > 0 else {
+            return computeRestoredOrigin(
+                savedOrigin: rect.origin, oldScreenFrame: oldScreenFrame, currentScreenFrame: newScreenFrame
+            )
+        }
+        let normalizedX = (rect.midX - oldScreenFrame.minX) / oldScreenFrame.width
+        let normalizedY = (rect.midY - oldScreenFrame.minY) / oldScreenFrame.height
+        let centerX = newScreenFrame.minX + normalizedX * newScreenFrame.width
+        let centerY = newScreenFrame.minY + normalizedY * newScreenFrame.height
+        return NSPoint(x: centerX - rect.width / 2, y: centerY - rect.height / 2)
+    }
+
+    /// 矩形との重なり面積が最大のスクリーンのインデックスを返す。どれとも重ならなければ nil。
+    nonisolated static func indexOfLargestOverlap(for rect: NSRect, in screenFrames: [NSRect]) -> Int? {
+        var best: (index: Int, area: CGFloat)?
+        for (index, frame) in screenFrames.enumerated() {
+            let intersection = frame.intersection(rect)
+            guard !intersection.isNull else { continue }
+            let area = intersection.width * intersection.height
+            guard area > 0 else { continue }
+            if best == nil || area > (best?.area ?? 0) {
+                best = (index, area)
+            }
+        }
+        return best?.index
     }
 
     /// 2つのフレームが tolerance 以内で一致するか判定
