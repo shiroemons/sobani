@@ -1,11 +1,25 @@
 import SwiftUI
 
-/// サムネイル表示: 画像がある場合は表示、ない場合はプレースホルダー
-struct ThumbnailView: View {
+/// 一覧の行で使う角丸サムネイル。画像がない場合はプレースホルダーを表示する
+struct RoundedThumbnail: View {
+    /// 一覧の行の標準サイズ
+    static let rowSize: CGFloat = 40
+    /// 1行に複数並べるときのサイズ
+    static let compactSize: CGFloat = 36
+    private static let cornerRadius: CGFloat = 6
+
     let image: NSImage?
+    var size: CGFloat = Self.rowSize
     var iconFont: Font?
 
     var body: some View {
+        content
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: Self.cornerRadius))
+    }
+
+    @ViewBuilder
+    private var content: some View {
         if let image {
             Image(nsImage: image)
                 .resizable()
@@ -19,25 +33,6 @@ struct ThumbnailView: View {
                         .foregroundStyle(.secondary)
                 }
         }
-    }
-}
-
-/// 一覧の行で使う角丸サムネイル
-struct RoundedThumbnail: View {
-    /// 一覧の行の標準サイズ
-    static let rowSize: CGFloat = 40
-    /// 1行に複数並べるときのサイズ
-    static let compactSize: CGFloat = 36
-    private static let cornerRadius: CGFloat = 6
-
-    let image: NSImage?
-    var size: CGFloat = Self.rowSize
-    var iconFont: Font?
-
-    var body: some View {
-        ThumbnailView(image: image, iconFont: iconFont)
-            .frame(width: size, height: size)
-            .clipShape(RoundedRectangle(cornerRadius: Self.cornerRadius))
     }
 }
 
