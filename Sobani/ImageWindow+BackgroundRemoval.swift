@@ -28,8 +28,8 @@ extension ImageWindow {
                     return
                 }
                 switch result {
-                case .success(let newImage):
-                    self.applyBackgroundRemovedImage(newImage)
+                case .success(let removal):
+                    self.applyBackgroundRemovedImage(removal)
                 case .failure(let error):
                     self.showBackgroundRemovalError(error.localizedDescription)
                 }
@@ -38,17 +38,19 @@ extension ImageWindow {
     }
 
     /// 背景除去済みの画像を登録し、クロップを保ったまま元画像として差し替える。
-    private func applyBackgroundRemovedImage(_ newImage: NSImage) {
+    ///
+    /// PNG へのエンコードは処理キューで済んでいるため、ここではファイルの書き込みと画像の差し替えだけを行う。
+    private func applyBackgroundRemovedImage(_ removal: BackgroundRemovalResult) {
         // URL(fileURLWithPath:) は相対名をカレントディレクトリ基準で解決するため、文字列だけで分割する
         let baseName = PathSanitizer.splitExtension(PathSanitizer.lastPathComponent(of: displayName)).base
         // 同名ファイルがあると自動リネームされるため、戻り値の名前を使う
-        guard let savedName = ImageManager.shared.registerImage(newImage, name: "\(baseName)_nobg.png") else {
+        guard let savedName = ImageManager.shared.registerPNGData(removal.pngData, name: "\(baseName)_nobg.png") else {
             Self.backgroundRemovalLogger.error("Failed to register background-removed image")
             showBackgroundRemovalError(L("background_removal.error.save_failed"))
             return
         }
         displayName = savedName
-        imageView.setOriginalImage(newImage)
+        imageView.setOriginalImage(removal.image)
         notifyStateDidChange(.image)
     }
 

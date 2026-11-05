@@ -25,7 +25,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var nextWindowId: Int = 1
     let screenRestorationManager = ScreenRestorationManager()
     var screenChangeDebounceTimer: Timer?
-    var snapshotDebounceTimer: Timer?
+    /// ウィンドウ状態の変更からスナップショットを更新するまでのデバウンス間隔
+    private static let snapshotDebounceInterval: TimeInterval = 0.3
+    let snapshotDebouncer = Debouncer(delay: AppDelegate.snapshotDebounceInterval)
     var pendingSnapshotTriggers: Set<AppConstants.SnapshotTrigger> = []
     var wakeContext = WakeRestorationContext()
     /// ディスプレイ切断時の復元用スナップショット。安定状態で定期的に更新される。
@@ -33,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// 起動直後のディスプレイ構成変化に追従するためのアンカー復元状態
     var launchContext = LaunchRestorationContext()
     var launchRestoreTimer: Timer?
-    var persistDebounceTimer: Timer?
+    let persistDebouncer = Debouncer(delay: AppConstants.statePersistDebounceInterval)
     /// 最後に書き込んだ状態（変化がなければ書き込みを省く）
     var lastPersistedStates: [WindowState] = []
     /// 起動時に読み込んだ状態（「保存せずに終了」で書き戻す。随時保存で上書き済みのため）
@@ -44,6 +46,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var onboardingController: OnboardingWindowController?
     weak var lastHighlightedWindow: ImageWindow?
     private var managementPanelController: ManagementPanelController?
+    /// `setWindowsHidden` でまとめて表示状態を変えている間か（Z-order の再適用を最後の 1 回にまとめる）
+    private var isBatchingVisibilityChanges = false
 
     /// ユニットテストのホストとして起動されたか。
     ///
@@ -155,15 +159,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         toggleWindows(zOrderedWindows)
     }
 
-    /// 指定ウィンドウ（省略時は全ウィンドウ）の表示状態を変更する。
+    /// 指定ウィンドウ（省略時は全ウィンドウ）の表示状態をまとめて変更する。
     ///
-    /// 表示状態の変更はこのメソッドに集約すること。表示に戻したときは `zOrderedWindows` の
-    /// 重なり順を OS ウィンドウへ再適用する（個別に `orderFront` すると Z-order がずれるため）。
+    /// 表示に戻したときの Z-order の再適用は `imageWindowDidChangeHidden` が行うが、
+    /// ここではウィンドウごとに適用せず最後に 1 回だけ適用する。
     func setWindowsHidden(_ hidden: Bool, windows: [ImageWindow]? = nil) {
         let targets = windows ?? zOrderedWindows
+        isBatchingVisibilityChanges = true
         for imageWindow in targets where imageWindow.isHidden != hidden {
             imageWindow.setHidden(hidden)
         }
+        isBatchingVisibilityChanges = false
         if !hidden {
             applyZOrderToWindows()
         }
@@ -252,10 +258,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func closeAllWindows() {
-        for imageWindow in zOrderedWindows {
-            imageWindow.dismissAuxiliaryPanels()
-            imageWindow.window.orderOut(nil)
-        }
+        zOrderedWindows.forEach { $0.dismiss() }
         zOrderedWindows.removeAll()
         notifyWindowListDidChange(.closeAll)
         quitIfNoWindows()
@@ -296,20 +299,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// 新しいキャラクターウィンドウを作成して表示する。
     ///
-    /// - Parameter imageName: 表示する画像名。`nil` の場合はデフォルト画像を使用する。
+    /// - Parameter imageName: 表示する画像名。`nil` または読み込めない名前の場合はデフォルト画像を使用する。
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
             setWindowsHidden(false)
         }
-        let image: NSImage
-        if let name = imageName,
-            let registered = ImageManager.shared.loadRegisteredImage(named: name) {
-            image = registered
-        } else {
-            image = ImageManager.shared.defaultImage() ?? NSImage()
-        }
+        let resolved = Self.resolvedImage(named: imageName ?? AppConstants.defaultImageName)
         let imageWindow = makeImageWindow(
-            image: image, displayName: imageName ?? AppConstants.defaultImageName, windowId: issueWindowId()
+            image: resolved.image, displayName: resolved.displayName, windowId: issueWindowId()
         )
         addImageWindow(imageWindow)
     }
@@ -355,7 +352,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard !Self.isRunningUnitTests else { return }
         if shouldSkipSave {
             // 随時保存でセッション中の変更が書き込まれているため、起動時の状態に戻す
-            persistDebounceTimer?.invalidate()
+            persistDebouncer.cancel()
             WindowStateManager.shared.saveStates(statesAtLaunch)
         } else {
             let count = persistNow(includingPending: true)
@@ -378,7 +375,9 @@ extension AppDelegate: ImageWindowDelegate {
     }
 
     func imageWindowRequestedNewWindowWithFileURL(_ sender: ImageWindow, fileURL: URL) {
-        createNewWindow(registeringImageAt: fileURL)
+        if !createNewWindow(registeringImageAt: fileURL) {
+            ImageFileDialog.showLoadFailedAlert(fileNames: [fileURL.lastPathComponent])
+        }
     }
 
     func imageWindowDidClose(_ sender: ImageWindow) {
@@ -390,10 +389,12 @@ extension AppDelegate: ImageWindowDelegate {
         moveWindowToFront(sender)
     }
 
+    /// 表示に戻したウィンドウを `zOrderedWindows` の重なり順に戻す（`orderFront` だけでは最前面に出てしまう）。
+    ///
+    /// ステータスメニューは開くたびに作り直すため、メニュー側の更新は不要。
     func imageWindowDidChangeHidden(_ sender: ImageWindow) {
-        // Intentionally empty: status bar menu rebuilds its content
-        // each time it opens (in buildStatusBarMenu), so no immediate
-        // update is needed here.
+        guard !sender.isHidden, !isBatchingVisibilityChanges else { return }
+        applyZOrderToWindows()
     }
 
     func imageWindowDidDeleteImage(named name: String) {

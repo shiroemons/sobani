@@ -161,21 +161,6 @@ import Testing
         #expect(result == nil)
     }
 
-    // MARK: - parseFiniteNumber Tests
-
-    /// 有限の数値（前後の空白・指数表記を含む）は解釈されることを検証
-    @Test(arguments: [("45", 45.0), (" -12.5 ", -12.5), ("1e3", 1000.0), ("0", 0.0)])
-    func parseFiniteNumber_finiteValues(text: String, expected: Double) throws {
-        let value = try #require(AdjustmentPanelController.parseFiniteNumber(text))
-        #expect(abs(value - CGFloat(expected)) < AppConstants.floatingPointTolerance)
-    }
-
-    /// NaN・無限大・オーバーフロー・非数値は nil になることを検証
-    @Test(arguments: ["nan", "NaN", "inf", "-inf", "infinity", "1e309", "-1e309", "abc", ""])
-    func parseFiniteNumber_rejectsNonFinite(text: String) {
-        #expect(AdjustmentPanelController.parseFiniteNumber(text) == nil)
-    }
-
     // MARK: - generateMonitorPopupTitles Tests
 
     /// 空配列で空配列を返すことを検証

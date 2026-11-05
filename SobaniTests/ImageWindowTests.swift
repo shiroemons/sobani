@@ -5,96 +5,6 @@ import Testing
 @Suite("ImageWindow Static Methods Tests")
 struct ImageWindowTests {
 
-    // MARK: - imageOrigin Tests
-
-    @Test("画像原点の基本計算")
-    func imageOriginBasic() {
-        let windowFrame = NSRect(x: 100, y: 100, width: 200, height: 200)
-        let imageSize = NSSize(width: 200, height: 200)
-        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
-        #expect(abs(result.x - 100) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 100) < AppConstants.floatingPointTolerance)
-    }
-
-    @Test("画像がウィンドウより小さい場合の中心計算")
-    func imageOriginSmallerImage() {
-        let windowFrame = NSRect(x: 100, y: 100, width: 300, height: 300)
-        let imageSize = NSSize(width: 200, height: 200)
-        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
-        #expect(abs(result.x - 150) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 150) < AppConstants.floatingPointTolerance)
-    }
-
-    @Test("非正方形ウィンドウでの計算")
-    func imageOriginNonSquare() {
-        let windowFrame = NSRect(x: 0, y: 0, width: 400, height: 200)
-        let imageSize = NSSize(width: 300, height: 150)
-        let result = ImageWindow.imageOrigin(windowFrame: windowFrame, imageViewSize: imageSize)
-        #expect(abs(result.x - 50) < AppConstants.floatingPointTolerance)
-        #expect(abs(result.y - 25) < AppConstants.floatingPointTolerance)
-    }
-
-    // MARK: - windowOrigin Tests
-
-    @Test("ウィンドウ原点の基本計算（回転なし）")
-    func windowOriginNoRotation() {
-        let imageOrigin = CGPoint(x: 100, y: 100)
-        let imageSize = NSSize(width: 200, height: 200)
-        let result = ImageWindow.windowOrigin(
-            forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 0
-        )
-        #expect(abs(result.x - 100) < 1.0)
-        #expect(abs(result.y - 100) < 1.0)
-    }
-
-    @Test("回転時にウィンドウ原点がオフセット")
-    func windowOriginWithRotation() {
-        let imageOrigin = CGPoint(x: 100, y: 100)
-        let imageSize = NSSize(width: 200, height: 100)
-        let resultNoRotation = ImageWindow.windowOrigin(
-            forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 0
-        )
-        let resultRotated = ImageWindow.windowOrigin(
-            forImageOrigin: imageOrigin, imageViewSize: imageSize, rotationAngle: 45
-        )
-        #expect(resultRotated.x < resultNoRotation.x)
-        #expect(resultRotated.y < resultNoRotation.y)
-    }
-
-    // MARK: - Round-trip Tests
-
-    @Test("imageOrigin → windowOrigin のラウンドトリップ（回転なし）")
-    func roundTripNoRotation() {
-        let originalWindowFrame = NSRect(x: 150, y: 250, width: 200, height: 200)
-        let imageSize = NSSize(width: 200, height: 200)
-        let imgOrigin = ImageWindow.imageOrigin(
-            windowFrame: originalWindowFrame, imageViewSize: imageSize
-        )
-        let recoveredWindowOrigin = ImageWindow.windowOrigin(
-            forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: 0
-        )
-        #expect(abs(recoveredWindowOrigin.x - originalWindowFrame.origin.x) <= 1.0)
-        #expect(abs(recoveredWindowOrigin.y - originalWindowFrame.origin.y) <= 1.0)
-    }
-
-    @Test("imageOrigin → windowOrigin のラウンドトリップ（回転あり）")
-    func roundTripWithRotation() {
-        let imageSize = NSSize(width: 200, height: 100)
-        let rotationAngle: CGFloat = 30
-        let bbSize = GeometryUtils.rotatedBoundingBox(
-            width: imageSize.width, height: imageSize.height, angleDegrees: rotationAngle
-        )
-        let originalWindowFrame = NSRect(x: 150, y: 250, width: bbSize.width, height: bbSize.height)
-        let imgOrigin = ImageWindow.imageOrigin(
-            windowFrame: originalWindowFrame, imageViewSize: imageSize
-        )
-        let recoveredWindowOrigin = ImageWindow.windowOrigin(
-            forImageOrigin: imgOrigin, imageViewSize: imageSize, rotationAngle: rotationAngle
-        )
-        #expect(abs(recoveredWindowOrigin.x - originalWindowFrame.origin.x) <= 1.0)
-        #expect(abs(recoveredWindowOrigin.y - originalWindowFrame.origin.y) <= 1.0)
-    }
-
     // MARK: - calculateWindowSize Tests
 
     @Test("画像がmaxHeight以下の場合はスケールアップされる")
@@ -310,38 +220,6 @@ struct ImageWindowTests {
         #expect(result == "")
     }
 
-    // MARK: - isAlphaInfoTransparent Tests
-
-    @Test("premultipliedLast は透明")
-    func isAlphaInfoTransparentPremultipliedLast() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.premultipliedLast) == true)
-    }
-
-    @Test("premultipliedFirst は透明")
-    func isAlphaInfoTransparentPremultipliedFirst() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.premultipliedFirst) == true)
-    }
-
-    @Test("first は透明")
-    func isAlphaInfoTransparentFirst() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.first) == true)
-    }
-
-    @Test("last は透明")
-    func isAlphaInfoTransparentLast() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.last) == true)
-    }
-
-    @Test("none は不透明")
-    func isAlphaInfoTransparentNone() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.none) == false)
-    }
-
-    @Test("noneSkipLast は不透明")
-    func isAlphaInfoTransparentNoneSkipLast() {
-        #expect(ImageWindow.isAlphaInfoTransparent(.noneSkipLast) == false)
-    }
-
     // MARK: - menuTitleLocalizationKey Tests
 
     @Test("有効なタグで対応するキーを返す")
@@ -434,10 +312,10 @@ struct ImageWindowNotificationTests {
         let imageSize = imageWindow.imageView.frame.size
         #expect(abs(imageSize.width - 400) < AppConstants.floatingPointTolerance)
         #expect(abs(imageSize.height - 200) < AppConstants.floatingPointTolerance)
-        // captureState と同じ式で画像原点を求め、指定した原点と一致することを確認（ウィンドウ原点は丸められる）
-        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
-        #expect(abs(imageOrigin.x - 300) <= 1.0)
-        #expect(abs(imageOrigin.y - 400) <= 1.0)
+        // captureState と同じく imageView の実際のスクリーン座標で、指定した原点と一致することを確認
+        let imageOrigin = imageWindow.imageFrameInScreen.origin
+        #expect(abs(imageOrigin.x - 300) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageOrigin.y - 400) < AppConstants.floatingPointTolerance)
         #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.position.rawValue))
         #expect(capture.triggers.contains(AppConstants.SnapshotTrigger.size.rawValue))
     }
@@ -475,9 +353,31 @@ struct ImageWindowNotificationTests {
         #expect(imageWindow.imageView.isFlippedHorizontally)
         #expect(abs(imageWindow.imageView.opacityLevel - 0.5) < AppConstants.floatingPointTolerance)
         let expectedOrigin = GeometryUtils.centeredOrigin(size: imageSize, in: NSScreen.mainFrameOrFallback)
-        let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
-        #expect(abs(imageOrigin.x - expectedOrigin.x) <= 1.0)
-        #expect(abs(imageOrigin.y - expectedOrigin.y) <= 1.0)
+        let imageOrigin = imageWindow.imageFrameInScreen.origin
+        #expect(abs(imageOrigin.x - expectedOrigin.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageOrigin.y - expectedOrigin.y) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("画面中央への配置は画像を可視領域の中央に置き、位置の変更を通知する", arguments: [0.0, 30.0])
+    func centerOnScreenCentersImageAndPostsPosition(rotation: Double) throws {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.applyRotation(CGFloat(rotation))
+        let visibleFrame = try #require(imageWindow.window.screen ?? NSScreen.main).visibleFrame
+        let sizeBefore = imageWindow.imageView.frame.size
+
+        let capture = NotificationCapture()
+        let observer = observeStateChanges(of: imageWindow, into: capture)
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        imageWindow.centerOnScreen()
+
+        let imageFrame = imageWindow.imageFrameInScreen
+        #expect(abs(imageFrame.midX - visibleFrame.midX) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrame.midY - visibleFrame.midY) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrame.width - sizeBefore.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrame.height - sizeBefore.height) < AppConstants.floatingPointTolerance)
+        #expect(capture.triggers == [AppConstants.SnapshotTrigger.position.rawValue])
     }
 
     @Test("回転を何度変えても画像の位置がずれない")
@@ -511,5 +411,22 @@ struct ImageWindowNotificationTests {
         #expect(abs(frameAfter.minY - frameBefore.minY) < AppConstants.floatingPointTolerance)
         #expect(abs(frameAfter.width - frameBefore.width) < AppConstants.floatingPointTolerance)
         #expect(abs(frameAfter.height - frameBefore.height) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("配置の共通入口は非有限の位置・サイズを無視する")
+    func placementIgnoresNonFinite() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        let imageFrameBefore = imageWindow.imageFrameInScreen
+
+        imageWindow.setImageOrigin(NSPoint(x: CGFloat.nan, y: 0))
+        imageWindow.adjustWindowForRotation(imageSize: NSSize(width: CGFloat.infinity, height: 50))
+        imageWindow.placeImage(center: NSPoint(x: 0, y: -CGFloat.infinity), size: NSSize(width: 100, height: 50))
+
+        let imageFrameAfter = imageWindow.imageFrameInScreen
+        #expect(abs(imageFrameAfter.minX - imageFrameBefore.minX) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrameAfter.minY - imageFrameBefore.minY) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrameAfter.width - imageFrameBefore.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrameAfter.height - imageFrameBefore.height) < AppConstants.floatingPointTolerance)
     }
 }

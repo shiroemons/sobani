@@ -3,11 +3,14 @@ import AppKit
 // MARK: - ImageWindow + Positioning
 
 extension ImageWindow {
+    /// 画像を今いる画面（なければメイン画面）の可視領域の中央に置く。
+    ///
+    /// UI 操作のため `.position` を通知する（通知しないと起動時・スリープ復帰の復元で元の位置に戻される）。
     func centerOnScreen() {
         guard let screen = window.screen ?? NSScreen.main else { return }
-        window.setFrameOrigin(
-            GeometryUtils.centeredOrigin(size: window.frame.size, in: screen.visibleFrame)
-        )
+        let visibleFrame = screen.visibleFrame
+        placeImage(center: CGPoint(x: visibleFrame.midX, y: visibleFrame.midY), size: imageView.frame.size)
+        notifyStateDidChange(.position)
     }
 
     /// imageView のスクリーン座標上のフレーム（`WindowState` の原点・サイズと同じ座標系）。
@@ -21,6 +24,9 @@ extension ImageWindow {
     ///
     /// `WindowState` の原点は imageView 基準（`WindowStateManager.captureState` と同じ）。
     /// 回転中はウィンドウが回転後のバウンディングボックスになるため、画像の中心を基準に配置する。
+    ///
+    /// 状態変更を通知しない、復元処理向けの低レベルな配置。ユーザー操作による移動は
+    /// `setPositionAndSize(origin:size:)` を使うこと（`.position` を通知しないと復元処理に位置を戻される）。
     func setImageOrigin(_ imageOrigin: NSPoint) {
         let size = imageView.frame.size
         placeImage(center: CGPoint(x: imageOrigin.x + size.width / 2, y: imageOrigin.y + size.height / 2), size: size)
@@ -32,17 +38,20 @@ extension ImageWindow {
     /// スクリーン座標上の原点、サイズ = imageView のサイズ）。サイズは現在の縦横比を保ち、
     /// 高さを最小・最大値にクランプする。移動は `.position`、サイズ変更は `.size` で通知する。
     func setPositionAndSize(origin: NSPoint, size: NSSize) {
-        // NaN/無限大はフレームを壊し、JSON 保存も失敗させるため無視する
+        // 非有限値は placeImage でも弾かれるが、無限大の高さはクランプで有限値になってしまうため、
+        // 通知も含めてここで無視する
         guard origin.x.isFinite, origin.y.isFinite,
               size.width.isFinite, size.height.isFinite else { return }
         let oldSize = imageView.frame.size
         let newSize = Self.clampedImageSize(height: size.height, aspectRatio: imageView.aspectRatio)
         let sizeChanged = !GeometryUtils.isApproximatelyEqual(newSize.width, oldSize.width)
             || !GeometryUtils.isApproximatelyEqual(newSize.height, oldSize.height)
-        if sizeChanged {
-            adjustWindowForRotation(imageSize: newSize)
-        }
-        setImageOrigin(origin)
+        // サイズが変わらないときは現在のサイズのまま置く（縦横比から計算し直した幅の誤差で大きさを変えない）
+        let placedSize = sizeChanged ? newSize : oldSize
+        placeImage(
+            center: CGPoint(x: origin.x + placedSize.width / 2, y: origin.y + placedSize.height / 2),
+            size: placedSize
+        )
         notifyStateDidChange(.position)
         if sizeChanged {
             notifyStateDidChange(.size)

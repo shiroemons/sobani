@@ -14,13 +14,12 @@ extension AppDelegate {
     }
 
     func removeImageWindow(_ window: ImageWindow) {
-        window.dismissAuxiliaryPanels()
+        window.dismiss()
         zOrderedWindows.removeAll { $0 === window }
         notifyWindowListDidChange(.windowRemove)
     }
 
     func closeImageWindow(_ window: ImageWindow) {
-        window.window.orderOut(nil)
         removeImageWindow(window)
         quitIfNoWindows()
     }
@@ -49,10 +48,7 @@ extension AppDelegate {
         }
         cancelLaunchRestoration()
 
-        for imageWindow in zOrderedWindows {
-            imageWindow.dismissAuxiliaryPanels()
-            imageWindow.window.orderOut(nil)
-        }
+        zOrderedWindows.forEach { $0.dismiss() }
 
         var loadedWindows: [ImageWindow] = []
         for state in preset.states {

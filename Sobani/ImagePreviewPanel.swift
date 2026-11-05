@@ -83,13 +83,8 @@ final class ImagePreviewPanel {
         guard imageSize.width > 0, imageSize.height > 0 else {
             return NSSize(width: maxDimension, height: maxDimension)
         }
-
-        let maxSide = max(imageSize.width, imageSize.height)
-        if maxSide <= maxDimension {
-            return imageSize
-        }
-
-        let scale = maxDimension / maxSide
+        let scale = GeometryUtils.downscaleFactor(for: imageSize, maxDimension: maxDimension)
+        guard scale < 1 else { return imageSize }
         return NSSize(
             width: round(imageSize.width * scale),
             height: round(imageSize.height * scale)

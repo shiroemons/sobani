@@ -10,11 +10,11 @@ final class DraggableImageView: NSImageView {
     var aspectRatio: CGFloat = 1.0
     private var initialMouseInWindow: NSPoint = .zero
     private var dragStartScreenLocation: NSPoint = .zero
-    private var cachedAllWindows: [ImageWindow]?
     private var isDraggingAll = false
     private var isSnapEnabled = false
     private var cachedOtherWindowFrames: [CGRect]?
-    /// ドラッグ開始時の各ウィンドウの原点。mouseUp で実際に動いたウィンドウだけ位置変更を通知する。
+    /// ドラッグ対象（一括ドラッグでは表示中の全ウィンドウ）と開始時の原点。
+    /// mouseUp で実際に動いたウィンドウだけ位置変更を通知する。
     private var dragStartOrigins: [(imageView: DraggableImageView, origin: NSPoint)] = []
     var isFlippedHorizontally: Bool = false {
         didSet { needsLayout = true }
@@ -84,9 +84,7 @@ final class DraggableImageView: NSImageView {
         if isDraggingAll {
             guard let currentWindow = window else { return }
             dragStartScreenLocation = currentWindow.convertPoint(toScreen: event.locationInWindow)
-            let targets = visibleImageWindows
-            cachedAllWindows = targets
-            dragStartOrigins = targets.map { ($0.imageView, $0.window.frame.origin) }
+            dragStartOrigins = visibleImageWindows.map { ($0.imageView, $0.window.frame.origin) }
         } else if let currentWindow = window {
             initialMouseInWindow = event.locationInWindow
             cachedOtherWindowFrames = visibleImageWindows
@@ -102,11 +100,12 @@ final class DraggableImageView: NSImageView {
             let deltaX = screenPoint.x - dragStartScreenLocation.x
             let deltaY = screenPoint.y - dragStartScreenLocation.y
             dragStartScreenLocation = screenPoint
-            for imageWindow in cachedAllWindows ?? [] {
-                var origin = imageWindow.window.frame.origin
+            for target in dragStartOrigins {
+                guard let targetWindow = target.imageView.window else { continue }
+                var origin = targetWindow.frame.origin
                 origin.x += deltaX
                 origin.y += deltaY
-                imageWindow.window.setFrameOrigin(origin)
+                targetWindow.setFrameOrigin(origin)
             }
         } else if let currentWindow = window {
             let current = event.locationInWindow
@@ -141,7 +140,6 @@ final class DraggableImageView: NSImageView {
 
     override func mouseUp(with event: NSEvent) {
         isDraggingAll = false
-        cachedAllWindows = nil
         cachedOtherWindowFrames = nil
         // クリックだけで動いていないウィンドウには位置変更を通知しない
         let movedViews = dragStartOrigins.filter { target in
@@ -270,15 +268,12 @@ final class DraggableImageView: NSImageView {
         !GeometryUtils.isApproximatelyEqual(start.x, end.x) || !GeometryUtils.isApproximatelyEqual(start.y, end.y)
     }
 
-    /// 非精密スクロール（マウスホイール）の 1 行あたりの点数。NSScrollView の既定の行スクロール量に合わせる。
-    nonisolated private static let scrollLineHeight: CGFloat = 10
-
     /// スクロールデルタからスケールファクターを計算する。
     ///
     /// 指数関数にすることで +δ と −δ の拡大縮小が打ち消し合い（往復しても大きさがずれない）、
     /// 大きな負のデルタでも倍率が 0 以下にならない。非精密スクロールのデルタは行単位のため点に換算する。
     nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat, isPrecise: Bool = true) -> CGFloat {
-        let points = isPrecise ? delta : delta * scrollLineHeight
+        let points = isPrecise ? delta : delta * AppConstants.scrollPointsPerLine
         return exp(points * AppConstants.scrollScaleSensitivity)
     }
 
@@ -431,17 +426,26 @@ extension DraggableImageView {
         return pixelY * mask.width + pixelX
     }
 
+    /// CGImageAlphaInfo が透明情報を持つかどうかを判定
+    nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
+        switch alphaInfo {
+        case .first, .last, .premultipliedFirst, .premultipliedLast: return true
+        default: return false
+        }
+    }
+
     /// アルファマスクの長辺の上限（ピクセル）。ヒットテストは比率で参照するため、縮小しても判定位置はずれない。
     nonisolated static let alphaMaskMaxDimension = 2048
 
     /// 長辺を `maxDimension` 以下に縮小したマスクのサイズ（縦横比を保ち、各辺 1 以上）
     nonisolated static func alphaMaskSize(width: Int, height: Int, maxDimension: Int) -> (width: Int, height: Int) {
-        let longSide = max(width, height)
-        guard longSide > maxDimension, maxDimension > 0 else { return (width, height) }
-        let scale = Double(maxDimension) / Double(longSide)
+        let scale = GeometryUtils.downscaleFactor(
+            for: CGSize(width: width, height: height), maxDimension: CGFloat(maxDimension)
+        )
+        guard scale < 1 else { return (width, height) }
         return (
-            max(1, Int((Double(width) * scale).rounded())),
-            max(1, Int((Double(height) * scale).rounded()))
+            max(1, Int((CGFloat(width) * scale).rounded())),
+            max(1, Int((CGFloat(height) * scale).rounded()))
         )
     }
 
@@ -483,11 +487,16 @@ extension DraggableImageView {
         }
     }
 
-    /// 表示画像が変わったら（クロップの適用・解除を含む）マスクと透過判定のキャッシュを破棄する。
+    /// 表示画像が変わったら（クロップの適用・解除を含む）ヒットテスト用のマスクを破棄する。
+    ///
+    /// 透過判定は元画像で行うため、クロップ中（`originalImage` あり）は表示画像が変わっても破棄しない
+    /// （元画像の差し替えは `originalImage` の didSet で破棄される）。
     private func invalidateAlphaMask() {
         cachedAlphaMask = nil
         alphaMaskBuildAttempted = false
-        cachedSourceHasAlpha = nil
+        if originalImage == nil {
+            cachedSourceHasAlpha = nil
+        }
     }
 
     func ensureAlphaMask() -> AlphaMask? {
@@ -512,7 +521,7 @@ extension DraggableImageView {
     private func computeSourceImageHasAlpha() -> Bool {
         guard let source = originalImage ?? image,
               let cgImage = Self.extractCGImage(from: source),
-              ImageWindow.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
+              Self.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
         let mask = originalImage == nil ? ensureAlphaMask() : Self.buildAlphaMask(from: cgImage)
         return mask?.bytes.contains { $0 < UInt8.max } ?? false
     }

@@ -5,8 +5,6 @@ import os.log
 
 extension AppDelegate {
     private static let screenRestorationLogger = Logger(category: "ScreenRestoration")
-    /// ウィンドウ状態の変更からスナップショットを更新するまでのデバウンス間隔
-    private static let snapshotDebounceInterval: TimeInterval = 0.3
 
     func setupScreenRestorationObservers() {
         let screenCount = NSScreen.screens.count
@@ -47,7 +45,7 @@ extension AppDelegate {
 
     func teardownScreenRestorationObservers() {
         screenChangeDebounceTimer?.invalidate()
-        snapshotDebounceTimer?.invalidate()
+        snapshotDebouncer.cancel()
         NotificationCenter.default.removeObserver(
             self,
             name: NSApplication.didChangeScreenParametersNotification,
@@ -468,22 +466,8 @@ extension AppDelegate {
             }
         }
         schedulePersist()
-        scheduleSnapshotUpdate()
-    }
-
-    /// デバウンス付きでスナップショット更新を予約する。予約済みならタイマーを作り直さず発火時刻を後ろへずらす。
-    private func scheduleSnapshotUpdate() {
-        if let timer = snapshotDebounceTimer, timer.isValid {
-            timer.fireDate = Date().addingTimeInterval(Self.snapshotDebounceInterval)
-            return
-        }
-        snapshotDebounceTimer = Timer.scheduledTimer(
-            withTimeInterval: Self.snapshotDebounceInterval,
-            repeats: false
-        ) { @Sendable [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.updateScreenSnapshot()
-            }
+        snapshotDebouncer.schedule { [weak self] in
+            self?.updateScreenSnapshot()
         }
     }
 

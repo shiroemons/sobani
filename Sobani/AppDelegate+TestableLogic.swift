@@ -26,19 +26,26 @@ extension AppDelegate {
     ///   - windowId: 使用するウィンドウID。nil の場合は state.windowId を使用する。
     /// - Returns: 設定済みの ImageWindow（restore 前）
     func createImageWindow(from state: WindowState, windowId: Int? = nil) -> ImageWindow {
-        let registeredImage = ImageManager.shared.loadRegisteredImage(named: state.imageName)
-        let resolved = Self.resolveImageName(
-            state.imageName,
+        let resolved = Self.resolvedImage(named: state.imageName)
+        return makeImageWindow(image: resolved.image, displayName: resolved.displayName, windowId: windowId ?? state.windowId)
+    }
+
+    /// ウィンドウに表示する画像と表示名を画像名から決める。
+    ///
+    /// 登録画像は `ImageManager` のキャッシュから読む（NSImage は変更しないためウィンドウ間で共有してよい）。
+    /// 読み込めない名前はデフォルト画像にし、表示名もデフォルトに戻す（存在しない名前を保存させないため）。
+    static func resolvedImage(
+        named imageName: String,
+        in imageManager: ImageManager = .shared
+    ) -> (image: NSImage, displayName: String) {
+        let image = imageManager.image(named: imageName)
+        let resolved = resolveImageName(
+            imageName,
             defaultImageName: AppConstants.defaultImageName,
-            registeredImageExists: registeredImage != nil
+            registeredImageExists: image != nil
         )
-        let image: NSImage
-        if resolved.isDefault {
-            image = ImageManager.shared.defaultImage() ?? NSImage()
-        } else {
-            image = registeredImage ?? NSImage()
-        }
-        return makeImageWindow(image: image, displayName: resolved.resolvedName, windowId: windowId ?? state.windowId)
+        let resolvedImage = resolved.isDefault ? imageManager.defaultImage() : image
+        return (resolvedImage ?? NSImage(), resolved.resolvedName)
     }
 
     /// ImageWindow を生成し、delegate・表示名・ウィンドウ ID を設定して返す。

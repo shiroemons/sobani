@@ -234,15 +234,19 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     func adjustWindowForRotation(imageSize: NSSize? = nil) {
         let imageFrame = imageFrameInScreen
         placeImage(center: CGPoint(x: imageFrame.midX, y: imageFrame.midY), size: imageSize ?? imageFrame.size)
-        syncAdjustmentPanelSize()
     }
 
     /// 画像の中心（スクリーン座標）とサイズを指定して、ウィンドウと imageView のフレームを設定する。
+    ///
+    /// 開いている調整パネルのサイズ表示もここで合わせる（配置を変えるすべての経路で古い値が残らないように）。
     func placeImage(center: CGPoint, size: NSSize) {
+        // NaN/無限大はフレームを壊し、JSON 保存も失敗させるため無視する（配置の共通の入口なのでここで弾く）
+        guard center.x.isFinite, center.y.isFinite, size.width.isFinite, size.height.isFinite else { return }
         let frames = Self.anchoredFrames(imageCenter: center, imageSize: size, rotationAngle: imageView.rotationAngle)
         window.setFrame(frames.windowFrame, display: false)
         imageView.frame = frames.imageViewFrame
         imageView.needsLayout = true
+        syncAdjustmentPanelSize()
     }
 
     @objc func changeImage() {
@@ -255,14 +259,16 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     /// 外部の画像ファイルを登録してから表示する。
     ///
     /// 登録できなかった画像を表示すると、`displayName` が保存先に存在しない名前になり
-    /// 再起動後にデフォルト画像へ戻ってしまうため、登録に失敗したら何もしない。
+    /// 再起動後にデフォルト画像へ戻ってしまうため、登録・読み込みに失敗したら画像は変えずにアラートで知らせる。
     func loadAndApplyImage(from url: URL) {
         guard let savedName = ImageManager.shared.registerImage(from: url) else {
             Self.logger.error("Failed to register image: \(url.lastPathComponent, privacy: .public)")
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
             return
         }
         if !selectRegisteredImage(named: savedName) {
             Self.logger.error("Failed to load registered image: \(savedName, privacy: .public)")
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
         }
     }
 
@@ -271,7 +277,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     /// - Returns: 画像を読み込めて切り替えた場合 true。
     @discardableResult
     func selectRegisteredImage(named name: String) -> Bool {
-        guard let image = ImageManager.shared.loadRegisteredImage(named: name) else { return false }
+        guard let image = ImageManager.shared.image(named: name) else { return false }
         displayName = name
         applyImage(image)
         return true
@@ -343,9 +349,8 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     /// 回転・反転・クロップ・不透明度・ゴーストは変更しない。通知は呼び出し側で行う。
     func resetPositionAndSize() {
         let size = Self.clampedImageSize(height: AppConstants.defaultWindowHeight, aspectRatio: imageView.aspectRatio)
-        let origin = GeometryUtils.centeredOrigin(size: size, in: NSScreen.mainFrameOrFallback)
-        placeImage(center: CGPoint(x: origin.x + size.width / 2, y: origin.y + size.height / 2), size: size)
-        syncAdjustmentPanelSize()
+        let screenFrame = NSScreen.mainFrameOrFallback
+        placeImage(center: CGPoint(x: screenFrame.midX, y: screenFrame.midY), size: size)
     }
 }
 
@@ -397,22 +402,22 @@ extension ImageWindow {
 // MARK: - Hidden Window
 
 extension ImageWindow {
-    /// このウィンドウに付属するパネル（フローティングメニュー・調整パネル・クロップエディタ）をすべて閉じる。
+    /// 付属パネル（フローティングメニュー・調整パネル・クロップエディタ）をすべて閉じ、ウィンドウを画面から消す。
     ///
     /// 非表示化・クローズ・レイアウト適用など、ウィンドウが画面から消えるすべての経路で呼ぶこと。
-    /// 閉じずに解放するとクロップエディタのキー監視などが残る。
-    func dismissAuxiliaryPanels() {
+    /// 付属パネルを閉じずに解放するとクロップエディタのキー監視などが残る。
+    func dismiss() {
         floatingMenuController?.dismiss()
         adjustmentPanelController?.close()
         cropEditorController?.close()
+        window.orderOut(nil)
     }
 
     func setHidden(_ hidden: Bool) {
         guard hidden != isHidden else { return }
         isHidden = hidden
         if hidden {
-            dismissAuxiliaryPanels()
-            window.orderOut(nil)
+            dismiss()
         } else {
             window.orderFront(nil)
         }
@@ -518,13 +523,11 @@ extension ImageWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
-        guard position.x.isFinite, position.y.isFinite else { return }
         setImageOrigin(position)
         notifyStateDidChange(.position)
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize) {
-        guard size.width.isFinite, size.height.isFinite else { return }
         adjustWindowForRotation(imageSize: size)
         adjustmentPanelController?.updatePosition(currentImageOrigin())
         notifyStateDidChange(.size)

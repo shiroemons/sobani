@@ -3,26 +3,6 @@ import Cocoa
 // MARK: - Testable Static Methods
 
 extension ImageWindow {
-    /// ウィンドウフレームから画像の原点座標を計算
-    nonisolated static func imageOrigin(windowFrame: NSRect, imageViewSize: NSSize) -> CGPoint {
-        CGPoint(
-            x: windowFrame.midX - imageViewSize.width / 2,
-            y: windowFrame.midY - imageViewSize.height / 2
-        )
-    }
-
-    /// 画像原点座標からウィンドウ原点座標を計算（逆変換）
-    nonisolated static func windowOrigin(
-        forImageOrigin imageOrigin: CGPoint, imageViewSize: NSSize, rotationAngle: CGFloat
-    ) -> NSPoint {
-        let bbSize = GeometryUtils.rotatedBoundingBox(
-            width: imageViewSize.width, height: imageViewSize.height, angleDegrees: rotationAngle
-        )
-        let centerX = imageOrigin.x + imageViewSize.width / 2
-        let centerY = imageOrigin.y + imageViewSize.height / 2
-        return NSPoint(x: round(centerX - bbSize.width / 2), y: round(centerY - bbSize.height / 2))
-    }
-
     /// 画像の中心（スクリーン座標）を固定して、回転後の外接矩形を覆うウィンドウと、その中の imageView のフレームを計算する。
     ///
     /// ウィンドウのフレームは整数に丸めるが、imageView は丸めずに中心がアンカーと一致する位置に置く。
@@ -110,13 +90,4 @@ extension ImageWindow {
     ) -> String {
         displayName == defaultName ? localizedDefault : displayName
     }
-
-    /// CGImageAlphaInfoが透明情報を持つかどうかを判定
-    nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
-        switch alphaInfo {
-        case .first, .last, .premultipliedFirst, .premultipliedLast: return true
-        default: return false
-        }
-    }
-
 }

@@ -5,9 +5,8 @@ import os.log
 
 /// ウィンドウ状態の常時保存と、起動直後のディスプレイ構成変化への追従を担う。
 ///
-/// 以前は `applicationWillTerminate` でのみ保存していたため、再起動・ログアウト時に
-/// 保存されず古い状態が復元されていた。状態変更をデバウンスして随時保存し、
-/// 一時退避中のウィンドウは「意図した位置」で保存する。
+/// `applicationWillTerminate` での保存だけでは再起動・ログアウト時に保存されないことがあるため、
+/// 状態変更をデバウンスして随時保存する。一時退避中のウィンドウは「意図した位置」で保存する。
 extension AppDelegate {
     private static let persistenceLogger = Logger(category: "StatePersistence")
 
@@ -37,7 +36,7 @@ extension AppDelegate {
     }
 
     func teardownStatePersistenceObservers() {
-        persistDebounceTimer?.invalidate()
+        persistDebouncer.cancel()
         launchRestoreTimer?.invalidate()
         for observer in windowGeometryObservers {
             NotificationCenter.default.removeObserver(observer)
@@ -53,8 +52,8 @@ extension AppDelegate {
     /// ログアウト・再起動・システム終了の直前。念のため即時保存し、受けた時刻を記録する。
     ///
     /// 終了理由（`kAEQuitReason`）が取得できない経路の保険として、この時刻から一定時間は
-    /// 終了要求を許可する（`terminateReply`）。以前は `shouldTerminate` を立てていたため、
-    /// ログアウトがキャンセルされると以後ずっと終了ガードが外れたままになっていた。
+    /// 終了要求を許可する（`terminateReply`）。フラグではなく時刻で持つのは、ログアウトが
+    /// キャンセルされた後まで終了ガードが外れたままにならないようにするため。
     @objc func handleWillPowerOff() {
         powerOffRequestedAt = Date()
         let count = persistNow(includingPending: true)
@@ -117,18 +116,11 @@ extension AppDelegate {
     // MARK: - Persistence
 
     /// デバウンス付きで保存を予約する。予約済みなら発火時刻を後ろへずらす（ドラッグ中の連続通知対策）。
-    func schedulePersist(after interval: TimeInterval = AppConstants.statePersistDebounceInterval) {
-        if let timer = persistDebounceTimer, timer.isValid {
-            timer.fireDate = Date().addingTimeInterval(interval)
-            return
-        }
-        persistDebounceTimer = Timer.scheduledTimer(
-            withTimeInterval: interval,
-            repeats: false
-        ) { @Sendable [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.persistIfSettled()
-            }
+    ///
+    /// - Parameter interval: 待ち時間。省略時は `AppConstants.statePersistDebounceInterval`。
+    func schedulePersist(after interval: TimeInterval? = nil) {
+        persistDebouncer.schedule(after: interval) { [weak self] in
+            self?.persistIfSettled()
         }
     }
 
@@ -138,8 +130,7 @@ extension AppDelegate {
     /// - Returns: 保存したウィンドウ数
     @discardableResult
     func persistNow(includingPending: Bool) -> Int {
-        persistDebounceTimer?.invalidate()
-        persistDebounceTimer = nil
+        persistDebouncer.cancel()
         let states = persistableWindowStates()
         if states != lastPersistedStates {
             logStates(event: "states.save", states)
@@ -153,7 +144,6 @@ extension AppDelegate {
     }
 
     private func persistIfSettled() {
-        persistDebounceTimer = nil
         let settling = Self.isScreenConfigurationSettling(
             now: Date(),
             lastScreenChangeAt: lastScreenChangeAt,

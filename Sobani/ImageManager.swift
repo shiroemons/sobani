@@ -205,13 +205,22 @@ final class ImageManager {
     /// 保存名の拡張子は常に `.png` になる。実際に保存された名前を返すため、呼び出し側はこの戻り値を使うこと。
     @discardableResult
     func registerImage(_ image: NSImage, name: String) -> String? {
-        guard let imagesDir = imagesDirectoryURL else { return nil }
-        guard let fileName = Self.pngFileName(for: name) else { return nil }
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-              let pngData = NSBitmapImageRep(cgImage: cgImage).representation(using: .png, properties: [:]) else {
+              let pngData = Self.pngData(from: cgImage) else {
             logger.error("Failed to encode image as PNG")
             return nil
         }
+        return registerPNGData(pngData, name: name)
+    }
+
+    /// PNG にエンコード済みのデータを `images/` に保存して登録する。重複名は自動リネームされる。
+    ///
+    /// 大きな画像のエンコードをメインスレッドで行わないよう、別のキューでエンコードしたデータを登録するときに使う。
+    /// 保存名の拡張子は常に `.png` になる。実際に保存された名前を返すため、呼び出し側はこの戻り値を使うこと。
+    @discardableResult
+    func registerPNGData(_ pngData: Data, name: String) -> String? {
+        guard let imagesDir = imagesDirectoryURL else { return nil }
+        guard let fileName = Self.pngFileName(for: name) else { return nil }
         guard let destURL = uniqueDestinationURL(for: fileName, in: imagesDir) else { return nil }
         do {
             try pngData.write(to: destURL)
@@ -224,6 +233,16 @@ final class ImageManager {
             return nil
         }
         return destURL.lastPathComponent
+    }
+
+    /// CGImage を PNG データにエンコードする。ImageIO はスレッドセーフなため、どのキューから呼んでもよい。
+    nonisolated static func pngData(from cgImage: CGImage) -> Data? {
+        guard let data = CFDataCreateMutable(nil, 0),
+              let destination = CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil)
+        else { return nil }
+        CGImageDestinationAddImage(destination, cgImage, nil)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return data as Data
     }
 
     func removeRegisteredImage(named name: String) {
