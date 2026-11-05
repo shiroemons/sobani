@@ -29,6 +29,11 @@
 		A1B2C3D401000027 /* KeyCodeMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000026 /* KeyCodeMapper.swift */; };
 		A1B2C3D401000029 /* HotkeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000028 /* HotkeyRecorderView.swift */; };
 		A1B2C3D401000031 /* KeyCodeMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000030 /* KeyCodeMapperTests.swift */; };
+		5B0B1A000000000000000002 /* GeometryUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B1A000000000000000001 /* GeometryUtilsTests.swift */; };
+		5B0B1A000000000000000004 /* HotkeyInputValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B1A000000000000000003 /* HotkeyInputValidatorTests.swift */; };
+		5B0B1A000000000000000006 /* PositionEditorInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B1A000000000000000005 /* PositionEditorInputTests.swift */; };
+		5B0B1A000000000000000008 /* LayoutPresetsViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B1A000000000000000007 /* LayoutPresetsViewTests.swift */; };
+		5B0B1A00000000000000000A /* ManagementPanelViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0B1A000000000000000009 /* ManagementPanelViewModelTests.swift */; };
 		A1B2C3D401000033 /* HotkeySettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000032 /* HotkeySettingsTests.swift */; };
 		A1B2C3D401000035 /* ManagementPanelViewModel+WindowInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000034 /* ManagementPanelViewModel+WindowInfo.swift */; };
 		A1B2C3D401000037 /* SharedViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401000036 /* SharedViews.swift */; };
@@ -181,6 +186,11 @@
 		A1B2C3D401000026 /* KeyCodeMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeMapper.swift; sourceTree = "<group>"; };
 		A1B2C3D401000028 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
 		A1B2C3D401000030 /* KeyCodeMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeMapperTests.swift; sourceTree = "<group>"; };
+		5B0B1A000000000000000001 /* GeometryUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtilsTests.swift; sourceTree = "<group>"; };
+		5B0B1A000000000000000003 /* HotkeyInputValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyInputValidatorTests.swift; sourceTree = "<group>"; };
+		5B0B1A000000000000000005 /* PositionEditorInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEditorInputTests.swift; sourceTree = "<group>"; };
+		5B0B1A000000000000000007 /* LayoutPresetsViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutPresetsViewTests.swift; sourceTree = "<group>"; };
+		5B0B1A000000000000000009 /* ManagementPanelViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagementPanelViewModelTests.swift; sourceTree = "<group>"; };
 		A1B2C3D401000032 /* HotkeySettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeySettingsTests.swift; sourceTree = "<group>"; };
 		A1B2C3D401000034 /* ManagementPanelViewModel+WindowInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagementPanelViewModel+WindowInfo.swift"; sourceTree = "<group>"; };
 		A1B2C3D401000036 /* SharedViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedViews.swift; sourceTree = "<group>"; };
@@ -499,6 +509,11 @@
 				A1B2C3D40100001E /* MinimapLayoutTests.swift */,
 				A1B2C3D401000020 /* CroppedImageHelperTests.swift */,
 				A1B2C3D401000030 /* KeyCodeMapperTests.swift */,
+				5B0B1A000000000000000001 /* GeometryUtilsTests.swift */,
+				5B0B1A000000000000000003 /* HotkeyInputValidatorTests.swift */,
+				5B0B1A000000000000000005 /* PositionEditorInputTests.swift */,
+				5B0B1A000000000000000007 /* LayoutPresetsViewTests.swift */,
+				5B0B1A000000000000000009 /* ManagementPanelViewModelTests.swift */,
 				A1B2C3D401000032 /* HotkeySettingsTests.swift */,
 				CHMT00001000000000001 /* CarbonHotkeyManagerTests.swift */,
 				A16EE3072EF4A8FAEB600DCE /* PositionLoggerTests.swift */,
@@ -766,6 +781,11 @@
 				A1B2C3D40100001F /* MinimapLayoutTests.swift in Sources */,
 				A1B2C3D401000021 /* CroppedImageHelperTests.swift in Sources */,
 				A1B2C3D401000031 /* KeyCodeMapperTests.swift in Sources */,
+				5B0B1A000000000000000002 /* GeometryUtilsTests.swift in Sources */,
+				5B0B1A000000000000000004 /* HotkeyInputValidatorTests.swift in Sources */,
+				5B0B1A000000000000000006 /* PositionEditorInputTests.swift in Sources */,
+				5B0B1A000000000000000008 /* LayoutPresetsViewTests.swift in Sources */,
+				5B0B1A00000000000000000A /* ManagementPanelViewModelTests.swift in Sources */,
 				A1B2C3D401000033 /* HotkeySettingsTests.swift in Sources */,
 				CHMT00002000000000001 /* CarbonHotkeyManagerTests.swift in Sources */,
 				940C7EB2876E2EB323B87C5C /* PositionLoggerTests.swift in Sources */,
