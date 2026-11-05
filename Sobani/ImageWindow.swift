@@ -108,12 +108,12 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 self.loadAndApplyImage(from: url)
             }
         }
-        let screenCenter = NSScreen.main?.frame ?? NSRect.zero
-        let offsetX = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
-        let offsetY = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
-        let originX = (screenCenter.width - windowWidth) / 2 + offsetX
-        let originY = (screenCenter.height - windowHeight) / 2 + offsetY
-        window.setFrameOrigin(NSPoint(x: originX, y: originY))
+        let spawnRange = -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset
+        window.setFrameOrigin(Self.spawnOrigin(
+            windowSize: window.frame.size,
+            screenFrame: NSScreen.mainFrameOrFallback,
+            offset: CGVector(dx: CGFloat.random(in: spawnRange), dy: CGFloat.random(in: spawnRange))
+        ))
         window.makeKeyAndOrderFront(nil)
     }
 
@@ -348,15 +348,14 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         adjustmentPanelController?.updateAngle(0)
         applyOpacity(1.0)
 
-        let defaultHeight: CGFloat = AppConstants.defaultWindowHeight
-        let defaultWidth = defaultHeight * imageView.aspectRatio
+        let defaultSize = NSSize(
+            width: AppConstants.defaultWindowHeight * imageView.aspectRatio,
+            height: AppConstants.defaultWindowHeight
+        )
+        let origin = GeometryUtils.centeredOrigin(size: defaultSize, in: NSScreen.mainFrameOrFallback)
 
-        let screenFrame = NSScreen.mainFrameOrFallback
-        let originX = screenFrame.minX + (screenFrame.width - defaultWidth) / 2
-        let originY = screenFrame.minY + (screenFrame.height - defaultHeight) / 2
-
-        window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
-        imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
+        window.setFrame(NSRect(origin: origin, size: defaultSize), display: true)
+        imageView.frame = NSRect(origin: .zero, size: defaultSize)
         imageView.needsLayout = true
         notifyStateDidChange(.reset)
     }
@@ -543,13 +542,20 @@ extension ImageWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didSelectMonitor screen: NSScreen) {
-        guard let oldScreen = NSScreen.screen(containing: window.frame) else { return }
-        let oldOrigin = currentImageOrigin()
-        let relativeX = oldOrigin.x - oldScreen.frame.origin.x
-        let relativeY = oldOrigin.y - oldScreen.frame.origin.y
-        let newOrigin = CGPoint(x: screen.frame.origin.x + relativeX, y: screen.frame.origin.y + relativeY)
-        let newWindowOrigin = Self.windowOrigin(forImageOrigin: newOrigin, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle)
-        window.setFrameOrigin(newWindowOrigin)
+        // 元のディスプレイ上の相対位置を保って移し、移動先の可視領域に収める
+        let newImageOrigin = ScreenRestorationUtils.computeRestoredOrigin(
+            savedOrigin: currentImageOrigin(),
+            oldScreenFrame: NSScreen.screen(containing: window.frame)?.frame,
+            currentScreenFrame: screen.frame
+        )
+        let newWindowOrigin = Self.windowOrigin(
+            forImageOrigin: newImageOrigin,
+            imageViewSize: imageView.frame.size,
+            rotationAngle: imageView.rotationAngle
+        )
+        window.setFrameOrigin(ScreenRestorationUtils.clampOrigin(
+            newWindowOrigin, windowSize: window.frame.size, to: screen.visibleFrame
+        ))
         adjustmentPanelController?.updatePosition(currentImageOrigin())
     }
 

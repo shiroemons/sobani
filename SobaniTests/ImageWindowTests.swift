@@ -167,6 +167,21 @@ struct ImageWindowTests {
         #expect(abs(result.aspectRatio - 0.25) < AppConstants.floatingPointTolerance)
     }
 
+    // MARK: - spawnOrigin Tests
+
+    @Test("新規ウィンドウはメイン画面の原点を考慮して中央に配置される")
+    func spawnOriginUsesScreenOrigin() {
+        // プライマリではない位置（原点が (1920, -200)）にあるメイン画面
+        let screenFrame = NSRect(x: 1920, y: -200, width: 1600, height: 1000)
+        let result = ImageWindow.spawnOrigin(
+            windowSize: NSSize(width: 400, height: 600), screenFrame: screenFrame,
+            offset: CGVector(dx: 10, dy: -20)
+        )
+        // 中央: x = 1920 + (1600 - 400) / 2 = 2520, y = -200 + (1000 - 600) / 2 = 0
+        #expect(abs(result.x - 2530) < AppConstants.floatingPointTolerance)
+        #expect(abs(result.y - (-20)) < AppConstants.floatingPointTolerance)
+    }
+
     // MARK: - clampedImageSize Tests
 
     @Test("範囲内の高さはそのまま縦横比を保つ")

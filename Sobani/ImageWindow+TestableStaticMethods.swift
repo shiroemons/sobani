@@ -23,6 +23,12 @@ extension ImageWindow {
         return NSPoint(x: round(centerX - bbSize.width / 2), y: round(centerY - bbSize.height / 2))
     }
 
+    /// 新規ウィンドウの初期原点（画面中央 + ランダムオフセット）。画面の原点（マルチディスプレイ）も考慮する。
+    nonisolated static func spawnOrigin(windowSize: NSSize, screenFrame: NSRect, offset: CGVector) -> NSPoint {
+        let centered = GeometryUtils.centeredOrigin(size: windowSize, in: screenFrame)
+        return NSPoint(x: centered.x + offset.dx, y: centered.y + offset.dy)
+    }
+
     /// 画像サイズからウィンドウサイズを計算（maxHeight以下にアスペクト比維持で縮小）
     nonisolated static func calculateWindowSize(imageSize: NSSize, maxHeight: CGFloat) -> NSSize {
         let scale = maxHeight / max(imageSize.height, 1)
