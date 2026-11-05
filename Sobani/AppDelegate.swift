@@ -44,6 +44,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var onboardingController: OnboardingWindowController?
     weak var lastHighlightedWindow: ImageWindow?
     private var managementPanelController: ManagementPanelController?
+    /// `setWindowsHidden` でまとめて表示状態を変えている間か（Z-order の再適用を最後の 1 回にまとめる）
+    private var isBatchingVisibilityChanges = false
 
     /// ユニットテストのホストとして起動されたか。
     ///
@@ -155,15 +157,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         toggleWindows(zOrderedWindows)
     }
 
-    /// 指定ウィンドウ（省略時は全ウィンドウ）の表示状態を変更する。
+    /// 指定ウィンドウ（省略時は全ウィンドウ）の表示状態をまとめて変更する。
     ///
-    /// 表示状態の変更はこのメソッドに集約すること。表示に戻したときは `zOrderedWindows` の
-    /// 重なり順を OS ウィンドウへ再適用する（個別に `orderFront` すると Z-order がずれるため）。
+    /// 表示に戻したときの Z-order の再適用は `imageWindowDidChangeHidden` が行うが、
+    /// ここではウィンドウごとに適用せず最後に 1 回だけ適用する。
     func setWindowsHidden(_ hidden: Bool, windows: [ImageWindow]? = nil) {
         let targets = windows ?? zOrderedWindows
+        isBatchingVisibilityChanges = true
         for imageWindow in targets where imageWindow.isHidden != hidden {
             imageWindow.setHidden(hidden)
         }
+        isBatchingVisibilityChanges = false
         if !hidden {
             applyZOrderToWindows()
         }
@@ -390,10 +394,12 @@ extension AppDelegate: ImageWindowDelegate {
         moveWindowToFront(sender)
     }
 
+    /// 表示に戻したウィンドウを `zOrderedWindows` の重なり順に戻す（`orderFront` だけでは最前面に出てしまう）。
+    ///
+    /// ステータスメニューは開くたびに作り直すため、メニュー側の更新は不要。
     func imageWindowDidChangeHidden(_ sender: ImageWindow) {
-        // Intentionally empty: status bar menu rebuilds its content
-        // each time it opens (in buildStatusBarMenu), so no immediate
-        // update is needed here.
+        guard !sender.isHidden, !isBatchingVisibilityChanges else { return }
+        applyZOrderToWindows()
     }
 
     func imageWindowDidDeleteImage(named name: String) {
