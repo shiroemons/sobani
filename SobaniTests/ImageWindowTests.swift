@@ -480,6 +480,28 @@ struct ImageWindowNotificationTests {
         #expect(abs(imageOrigin.y - expectedOrigin.y) <= 1.0)
     }
 
+    @Test("画面中央への配置は画像を可視領域の中央に置き、位置の変更を通知する", arguments: [0.0, 30.0])
+    func centerOnScreenCentersImageAndPostsPosition(rotation: Double) throws {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.applyRotation(CGFloat(rotation))
+        let visibleFrame = try #require(imageWindow.window.screen ?? NSScreen.main).visibleFrame
+        let sizeBefore = imageWindow.imageView.frame.size
+
+        let capture = NotificationCapture()
+        let observer = observeStateChanges(of: imageWindow, into: capture)
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        imageWindow.centerOnScreen()
+
+        let imageFrame = imageWindow.imageFrameInScreen
+        #expect(abs(imageFrame.midX - visibleFrame.midX) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrame.midY - visibleFrame.midY) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrame.width - sizeBefore.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrame.height - sizeBefore.height) < AppConstants.floatingPointTolerance)
+        #expect(capture.triggers == [AppConstants.SnapshotTrigger.position.rawValue])
+    }
+
     @Test("回転を何度変えても画像の位置がずれない")
     func repeatedRotationKeepsImagePosition() {
         let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 333, height: 501)))
