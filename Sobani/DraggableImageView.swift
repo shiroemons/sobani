@@ -268,15 +268,12 @@ final class DraggableImageView: NSImageView {
         !GeometryUtils.isApproximatelyEqual(start.x, end.x) || !GeometryUtils.isApproximatelyEqual(start.y, end.y)
     }
 
-    /// 非精密スクロール（マウスホイール）の 1 行あたりの点数。NSScrollView の既定の行スクロール量に合わせる。
-    nonisolated private static let scrollLineHeight: CGFloat = 10
-
     /// スクロールデルタからスケールファクターを計算する。
     ///
     /// 指数関数にすることで +δ と −δ の拡大縮小が打ち消し合い（往復しても大きさがずれない）、
     /// 大きな負のデルタでも倍率が 0 以下にならない。非精密スクロールのデルタは行単位のため点に換算する。
     nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat, isPrecise: Bool = true) -> CGFloat {
-        let points = isPrecise ? delta : delta * scrollLineHeight
+        let points = isPrecise ? delta : delta * AppConstants.scrollPointsPerLine
         return exp(points * AppConstants.scrollScaleSensitivity)
     }
 
@@ -434,12 +431,13 @@ extension DraggableImageView {
 
     /// 長辺を `maxDimension` 以下に縮小したマスクのサイズ（縦横比を保ち、各辺 1 以上）
     nonisolated static func alphaMaskSize(width: Int, height: Int, maxDimension: Int) -> (width: Int, height: Int) {
-        let longSide = max(width, height)
-        guard longSide > maxDimension, maxDimension > 0 else { return (width, height) }
-        let scale = Double(maxDimension) / Double(longSide)
+        let scale = GeometryUtils.downscaleFactor(
+            for: CGSize(width: width, height: height), maxDimension: CGFloat(maxDimension)
+        )
+        guard scale < 1 else { return (width, height) }
         return (
-            max(1, Int((Double(width) * scale).rounded())),
-            max(1, Int((Double(height) * scale).rounded()))
+            max(1, Int((CGFloat(width) * scale).rounded())),
+            max(1, Int((CGFloat(height) * scale).rounded()))
         )
     }
 
