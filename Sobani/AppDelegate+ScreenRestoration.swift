@@ -76,6 +76,7 @@ extension AppDelegate {
     @objc func handleScreenChange() {
         lastScreenChangeAt = Date()
         let isLaunch = launchContext.isActive
+        let screens = ScreenInfo.current()
         // handleWillSleep が位置を保存済みだが handleDidWake がまだ発火していない場合、
         // スリープ復帰中のスクリーン変更として扱う（通知センター間のレース条件対策）。
         // 起動直後はアンカー復元で追従するため wake モードにはしない
@@ -83,48 +84,39 @@ extension AppDelegate {
             if !wakeContext.states.isEmpty {
                 wakeContext.isActive = true
                 wakeContext.retryCount = 0
-                let raceModeMsg = "screenChange: activated wake mode (willSleep saved but didWake not yet received)"
-                Self.screenRestorationLogger.info("\(raceModeMsg, privacy: .public)")
+                Self.screenRestorationLogger.info(
+                    "screenChange: activated wake mode (willSleep saved but didWake not yet received)"
+                )
             } else if !screenSnapshot.states.isEmpty {
                 // ディスプレイスリープ等で willSleep が発火しない場合
-                let currentScreenIDs = Set(NSScreen.screens.compactMap { $0.displayID })
-                let snapshotScreenIDs = Set(screenSnapshot.screenFrames.keys)
-                let disconnectedScreens = snapshotScreenIDs.subtracting(currentScreenIDs)
+                let disconnectedScreens = Set(screenSnapshot.screenFrames.keys)
+                    .subtracting(screens.map(\.displayID))
+                    .sorted()
                 if !disconnectedScreens.isEmpty {
                     wakeContext = screenSnapshot
                     wakeContext.isActive = true
                     wakeContext.retryCount = 0
-                    let snapMsg = "screenChange: activated wake mode from snapshot"
-                        + " (disconnected: \(disconnectedScreens))"
-                    Self.screenRestorationLogger.info("\(snapMsg, privacy: .public)")
-                    if PositionLogger.shared.isEnabled {
-                        PositionLogger.shared.log(
-                            event: "sleep.enter.snapshot",
-                            screens: PositionLogger.shared.currentScreenSnapshots(),
-                            windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
-                            context: ["savedCount": "\(wakeContext.states.count)",
-                                      "disconnectedScreens": "\(disconnectedScreens)"]
-                        )
-                    }
+                    Self.screenRestorationLogger.info(
+                        "screenChange: activated wake mode from snapshot (disconnected: \(disconnectedScreens, privacy: .public))"
+                    )
+                    logPositionEvent(
+                        "sleep.enter.snapshot",
+                        context: ["savedCount": "\(wakeContext.states.count)",
+                                  "disconnectedScreens": "\(disconnectedScreens)"]
+                    )
                 }
             }
         }
         let isWake = wakeContext.isActive
-        let count = NSScreen.screens.count
         Self.screenRestorationLogger.notice(
-            "screenChange: isWake=\(isWake, privacy: .public), isLaunch=\(isLaunch, privacy: .public), screens=\(count, privacy: .public)"
+            "screenChange: isWake=\(isWake, privacy: .public), isLaunch=\(isLaunch, privacy: .public), screens=\(screens.count, privacy: .public)"
         )
-        for screen in NSScreen.screens {
-            let did = screen.displayID ?? AppConstants.unknownDisplayID
-            let frameDesc = NSStringFromRect(screen.frame)
-            let screenMsg = "  screen displayID=\(did), frame=\(frameDesc)"
-            Self.screenRestorationLogger.debug("\(screenMsg, privacy: .public)")
-        }
+        logScreenLayout(screens, label: "screenChange")
         if PositionLogger.shared.isEnabled {
             PositionLogger.shared.log(
                 event: "screen.change",
                 screens: PositionLogger.shared.currentScreenSnapshots(),
-                context: ["isWake": "\(isWake)", "isLaunch": "\(isLaunch)", "screenCount": "\(count)"]
+                context: ["isWake": "\(isWake)", "isLaunch": "\(isLaunch)", "screenCount": "\(screens.count)"]
             )
         }
         screenChangeDebounceTimer?.invalidate()
@@ -156,88 +148,34 @@ extension AppDelegate {
 
     @objc func handleWillSleep() {
         // Wake 復元中のタイマーをキャンセル
-        wakeContext.clear()
         screenChangeDebounceTimer?.invalidate()
 
         screenRestorationManager.clearAll()
-        let captured = captureWindowStates()
-        wakeContext.states = captured.states
-        wakeContext.windowOrigins = captured.windowOrigins
-        wakeContext.displayIDs = captured.displayIDs
-        wakeContext.screenFrames = captured.screenFrames
-        let savedCount = wakeContext.states.count
+        wakeContext = captureWindowStates(screens: ScreenInfo.current())
         Self.screenRestorationLogger.info(
-            "[ScreenRestoration] willSleep: saved \(savedCount, privacy: .public) windows"
+            "[ScreenRestoration] willSleep: saved \(self.wakeContext.states.count, privacy: .public) windows"
         )
-        for (wid, origin) in wakeContext.windowOrigins {
-            let did = wakeContext.displayIDs[wid] ?? AppConstants.unknownDisplayID
-            let sFrame = wakeContext.screenFrames[did]
-            let sFrameDesc = sFrame.debugDescription
-            let originDesc = NSStringFromPoint(origin)
-            let logMsg = "  #\(wid): origin=\(originDesc), displayID=\(did), sf=\(sFrameDesc)"
-            Self.screenRestorationLogger.debug("\(logMsg, privacy: .public)")
+        for (windowId, origin) in wakeContext.windowOrigins {
+            let displayID = wakeContext.displayIDs[windowId] ?? AppConstants.unknownDisplayID
+            let screenFrame = wakeContext.screenFrames[displayID]
+            Self.screenRestorationLogger.debug("""
+                  #\(windowId, privacy: .public): origin=\(NSStringFromPoint(origin), privacy: .public), \
+                displayID=\(displayID, privacy: .public), sf=\(screenFrame.debugDescription, privacy: .public)
+                """)
         }
-        if PositionLogger.shared.isEnabled {
-            PositionLogger.shared.log(
-                event: "sleep.enter",
-                screens: PositionLogger.shared.currentScreenSnapshots(),
-                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
-                context: ["savedCount": "\(wakeContext.states.count)"]
-            )
-        }
+        logPositionEvent("sleep.enter", context: ["savedCount": "\(wakeContext.states.count)"])
     }
 
     @objc func handleDidWake() {
         let restoreCount = wakeContext.states.count
+        let screens = ScreenInfo.current()
         Self.screenRestorationLogger.info(
-            "[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore"
+            "[ScreenRestoration] didWake: \(restoreCount, privacy: .public) windows to restore, screens=\(screens.count, privacy: .public)"
         )
-        let wakeScreenCount = NSScreen.screens.count
-        Self.screenRestorationLogger.info(
-            "  didWake screens=\(wakeScreenCount, privacy: .public)"
-        )
-        for screen in NSScreen.screens {
-            let did = screen.displayID ?? AppConstants.unknownDisplayID
-            let frameDesc = NSStringFromRect(screen.frame)
-            let wakeScreenMsg = "  didWake screen displayID=\(did), frame=\(frameDesc)"
-            Self.screenRestorationLogger.debug("\(wakeScreenMsg, privacy: .public)")
-        }
-        for imageWindow in zOrderedWindows {
-            let wid = imageWindow.windowId
-            let pos = NSStringFromPoint(imageWindow.window.frame.origin)
-            let wakeWinMsg = "  didWake window #\(wid): currentPos=\(pos)"
-            Self.screenRestorationLogger.debug("\(wakeWinMsg, privacy: .public)")
-        }
-        if PositionLogger.shared.isEnabled {
-            PositionLogger.shared.log(
-                event: "sleep.wake",
-                screens: PositionLogger.shared.currentScreenSnapshots(),
-                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
-                context: ["restoreCount": "\(restoreCount)"]
-            )
-        }
-        for imageWindow in zOrderedWindows {
-            let wid = imageWindow.windowId
-            guard let preSleepOrigin = wakeContext.windowOrigins[wid] else { continue }
-            let currentOrigin = imageWindow.window.frame.origin
-            let driftX = currentOrigin.x - preSleepOrigin.x
-            let driftY = currentOrigin.y - preSleepOrigin.y
-            guard abs(driftX) > AppConstants.wakeDetectDriftThreshold
-                || abs(driftY) > AppConstants.wakeDetectDriftThreshold else { continue }
-            if PositionLogger.shared.isEnabled {
-                PositionLogger.shared.log(
-                    event: "wake.detect",
-                    screens: PositionLogger.shared.currentScreenSnapshots(),
-                    windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
-                    context: [
-                        "preSleepOrigin": NSStringFromPoint(preSleepOrigin),
-                        "currentOrigin": NSStringFromPoint(currentOrigin),
-                        "driftX": String(format: "%.1f", driftX),
-                        "driftY": String(format: "%.1f", driftY),
-                    ]
-                )
-            }
-        }
+        logScreenLayout(screens, label: "didWake")
+        logWindowPositions(label: "didWake")
+        logPositionEvent("sleep.wake", context: ["restoreCount": "\(restoreCount)"])
+        logWakeDrift()
         // macOS はスリープ復帰時に外部モニター接続中でもウィンドウをメインモニターへ移動する。
         // モニターが完全に登録されるよう、3秒待ってからリトライ付き復元を開始する。
         wakeContext.isActive = true
@@ -260,19 +198,16 @@ extension AppDelegate {
             return
         }
 
-        let restoredAll = restoreAllPreSleepWindows()
+        let screens = ScreenInfo.current()
+        let restoredAll = restoreAllPreSleepWindows(screens: screens)
         wakeContext.retryCount += 1
         let retryNum = wakeContext.retryCount
-        let screenInfo = NSScreen.screens.map { "\($0.frame)" }.joined(separator: ", ")
-        let attemptMsg = "attempt #\(retryNum): restoredAll=\(restoredAll), screens=[\(screenInfo)]"
-        Self.screenRestorationLogger.debug("\(attemptMsg, privacy: .public)")
+        Self.screenRestorationLogger.debug("""
+            attempt #\(retryNum, privacy: .public): restoredAll=\(restoredAll, privacy: .public), \
+            screens=[\(screens.map { NSStringFromRect($0.frame) }.joined(separator: ", "), privacy: .public)]
+            """)
         if retryNum >= 2 {
-            for imageWindow in zOrderedWindows {
-                let wid = imageWindow.windowId
-                let pos = NSStringFromPoint(imageWindow.window.frame.origin)
-                let driftMsg = "  retry #\(retryNum) window #\(wid): currentPos=\(pos)"
-                Self.screenRestorationLogger.debug("\(driftMsg, privacy: .public)")
-            }
+            logWindowPositions(label: "retry #\(retryNum)")
         }
 
         if restoredAll && wakeContext.retryCount <= AppConstants.wakeRetryCountThreshold {
@@ -280,7 +215,7 @@ extension AppDelegate {
             scheduleWakeRetry(interval: AppConstants.wakeRetryInterval)
         } else if restoredAll || wakeContext.retryCount >= AppConstants.wakeRetryMaxAttempts {
             // 確実に全復元完了 or タイムアウト → 残りをペンディングキューに移行
-            moveUnrestoredToPendingQueue()
+            moveUnrestoredToPendingQueue(screens: screens)
             wakeContext.clear()
         } else {
             // 未復元ウィンドウがある → リトライ
@@ -289,116 +224,69 @@ extension AppDelegate {
     }
 
     /// 全ウィンドウを相対座標ベースで復元。全ウィンドウ復元できたら true を返す。
-    private func restoreAllPreSleepWindows() -> Bool {
+    private func restoreAllPreSleepWindows(screens: [ScreenInfo]) -> Bool {
         // 注意: wakeContext.states から個別に除去しない。macOS はモニタ復帰時に
         // 全ウィンドウを再配置するため、リトライ毎に全ウィンドウを再復元する必要がある。
-        let availableScreens = currentAvailableScreens
         let logScreens = PositionLogger.shared.isEnabled ? PositionLogger.shared.currentScreenSnapshots() : nil
         var restoredAll = true
 
         for imageWindow in zOrderedWindows {
-            guard wakeContext.states[imageWindow.windowId] != nil else { continue }
-            guard let savedOrigin = wakeContext.windowOrigins[imageWindow.windowId] else { continue }
+            let windowId = imageWindow.windowId
+            guard wakeContext.states[windowId] != nil,
+                  let savedOrigin = wakeContext.windowOrigins[windowId] else { continue }
 
-            let savedDisplayID = wakeContext.displayIDs[imageWindow.windowId]
-            let targetScreen = findTargetScreen(
-                displayID: savedDisplayID,
-                windowId: imageWindow.windowId,
-                availableScreens: availableScreens
-            )
-
-            if let screen = targetScreen {
-                let oldFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
-                let currentFrame = screen.frame
-                let frameMatch = oldFrame.map {
-                    ScreenRestorationUtils.isFrameMatch($0, currentFrame, tolerance: AppConstants.screenMatchTolerance)
-                } ?? false
-                let currentPos = imageWindow.window.frame.origin
-                let diagMsg = "  diag #\(imageWindow.windowId): oldFrame=\(oldFrame.debugDescription)"
-                    + ", currentFrame=\(NSStringFromRect(currentFrame))"
-                    + ", frameMatch=\(frameMatch)"
-                    + ", currentPos=\(NSStringFromPoint(currentPos))"
-                Self.screenRestorationLogger.debug("\(diagMsg, privacy: .public)")
-                if let savedID = savedDisplayID, let currentID = screen.displayID {
-                    let idMatch = savedID == currentID
-                    let idMsg = "  diag #\(imageWindow.windowId): savedDisplayID=\(savedID)"
-                        + ", currentDisplayID=\(currentID), idMatch=\(idMatch)"
-                    Self.screenRestorationLogger.debug("\(idMsg, privacy: .public)")
-                }
-                let newOrigin = computeRestoredOrigin(
-                    savedOrigin: savedOrigin, savedDisplayID: savedDisplayID, currentScreen: screen
-                )
-                let windowSize = imageWindow.window.frame.size
-                let clamped = ScreenRestorationUtils.clampOrigin(
-                    newOrigin, windowSize: windowSize, to: screen.frame
-                )
-                imageWindow.window.setFrameOrigin(clamped)
-                if PositionLogger.shared.isEnabled {
-                    PositionLogger.shared.log(
-                        event: "wake.restore",
-                        screens: logScreens,
-                        windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
-                        context: [
-                            "savedOrigin": "\(NSStringFromPoint(savedOrigin))",
-                            "computedOrigin": "\(NSStringFromPoint(newOrigin))",
-                            "clampedOrigin": "\(NSStringFromPoint(clamped))",
-                            "windowSize": "\(NSStringFromSize(windowSize))",
-                            "screenFrame": "\(NSStringFromRect(screen.frame))",
-                        ]
-                    )
-                }
-                let wid = imageWindow.windowId
-                let screenFrame = screen.frame
-                let savedDesc = NSStringFromPoint(savedOrigin)
-                let computedDesc = NSStringFromPoint(newOrigin)
-                let clampedDesc = NSStringFromPoint(clamped)
-                let sizeDesc = NSStringFromSize(windowSize)
-                let frameDesc = NSStringFromRect(screenFrame)
-                let restoreMsg = "restore #\(wid): saved=\(savedDesc)"
-                    + " -> \(computedDesc) -> \(clampedDesc)"
-                Self.screenRestorationLogger.debug("\(restoreMsg, privacy: .public)")
-                let detailMsg = "  winSize=\(sizeDesc), screen=\(frameDesc)"
-                Self.screenRestorationLogger.debug("\(detailMsg, privacy: .public)")
-            } else {
+            let savedDisplayID = wakeContext.displayIDs[windowId]
+            guard let screen = findWakeTargetScreen(displayID: savedDisplayID, screens: screens) else {
                 restoredAll = false
-                let displayIDValue = savedDisplayID ?? AppConstants.unknownDisplayID
-                let errMsg = "restore #\(imageWindow.windowId): screen not found"
-                    + " (displayID=\(displayIDValue))"
-                Self.screenRestorationLogger.error("\(errMsg, privacy: .public)")
+                Self.screenRestorationLogger.error(
+                    "restore #\(windowId, privacy: .public): screen not found (displayID=\(savedDisplayID ?? AppConstants.unknownDisplayID, privacy: .public))"
+                )
+                continue
+            }
+            let oldFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
+            let newOrigin = ScreenRestorationUtils.computeRestoredOrigin(
+                savedOrigin: savedOrigin, oldScreenFrame: oldFrame, currentScreenFrame: screen.frame
+            )
+            let windowSize = imageWindow.window.frame.size
+            let clamped = ScreenRestorationUtils.clampOrigin(
+                newOrigin, windowSize: windowSize, to: screen.frame
+            )
+            Self.screenRestorationLogger.debug("""
+                restore #\(windowId, privacy: .public): saved=\(NSStringFromPoint(savedOrigin), privacy: .public) \
+                -> \(NSStringFromPoint(newOrigin), privacy: .public) -> \(NSStringFromPoint(clamped), privacy: .public), \
+                currentPos=\(NSStringFromPoint(imageWindow.window.frame.origin), privacy: .public), \
+                displayID saved=\(savedDisplayID ?? AppConstants.unknownDisplayID, privacy: .public) \
+                current=\(screen.displayID, privacy: .public), oldFrame=\(oldFrame.debugDescription, privacy: .public), \
+                screen=\(NSStringFromRect(screen.frame), privacy: .public), winSize=\(NSStringFromSize(windowSize), privacy: .public)
+                """)
+            imageWindow.window.setFrameOrigin(clamped)
+            if PositionLogger.shared.isEnabled {
+                PositionLogger.shared.log(
+                    event: "wake.restore",
+                    screens: logScreens,
+                    windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
+                    context: [
+                        "savedOrigin": "\(NSStringFromPoint(savedOrigin))",
+                        "computedOrigin": "\(NSStringFromPoint(newOrigin))",
+                        "clampedOrigin": "\(NSStringFromPoint(clamped))",
+                        "windowSize": "\(NSStringFromSize(windowSize))",
+                        "screenFrame": "\(NSStringFromRect(screen.frame))",
+                    ]
+                )
             }
         }
         return restoredAll
     }
 
-    /// スリープ前のスクリーン位置を基にウィンドウの相対位置を計算し、
-    /// 新しいスクリーン位置に変換する。
-    private func computeRestoredOrigin(
-        savedOrigin: NSPoint,
-        savedDisplayID: CGDirectDisplayID?,
-        currentScreen: NSScreen
-    ) -> NSPoint {
-        let oldFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
-        return ScreenRestorationUtils.computeRestoredOrigin(
-            savedOrigin: savedOrigin,
-            oldScreenFrame: oldFrame,
-            currentScreenFrame: currentScreen.frame
-        )
-    }
-
     /// 未復元ウィンドウをペンディングキューに移行
-    private func moveUnrestoredToPendingQueue() {
-        let availableScreens = currentAvailableScreens
+    private func moveUnrestoredToPendingQueue(screens: [ScreenInfo]) {
         for windowId in wakeContext.states.keys {
             let savedDisplayID = wakeContext.displayIDs[windowId]
-            guard findTargetScreen(
-                displayID: savedDisplayID,
-                windowId: windowId,
-                availableScreens: availableScreens
-            ) == nil else { continue }
-            guard let savedState = wakeContext.states[windowId] else { continue }
+            guard findWakeTargetScreen(displayID: savedDisplayID, screens: screens) == nil,
+                  let savedState = wakeContext.states[windowId] else { continue }
 
             let screenFrame = savedDisplayID.flatMap { wakeContext.screenFrames[$0] }
-            let adjusted = savedState.adjustedToVisibleArea(on: ScreenInfo.current())
+            let adjusted = savedState.adjustedToVisibleArea(on: screens)
 
             if let imageWindow = zOrderedWindows.first(where: { $0.windowId == windowId }) {
                 imageWindow.window.setFrameOrigin(NSPoint(x: adjusted.originX, y: adjusted.originY))
@@ -416,7 +304,7 @@ extension AppDelegate {
                     context: [
                         "originalOrigin": "\(savedState.originX),\(savedState.originY)",
                         "adjustedOrigin": "\(adjusted.originX),\(adjusted.originY)",
-                        "displayID": "\(savedDisplayID ?? 0)",
+                        "displayID": "\(savedDisplayID ?? AppConstants.unknownDisplayID)",
                     ]
                 )
             }
@@ -490,9 +378,7 @@ extension AppDelegate {
     }
 
     private func restorePendingWindows(screens: [ScreenInfo]) {
-        let pendingAvailableScreens = currentAvailableScreens
-        let restorable = screenRestorationManager.restorableEntries()
-        for entry in restorable {
+        for entry in screenRestorationManager.restorableEntries(screens: screens) {
             guard let imageWindow = zOrderedWindows.first(where: { $0.windowId == entry.windowId })
             else {
                 screenRestorationManager.removePending(windowId: entry.windowId)
@@ -514,10 +400,7 @@ extension AppDelegate {
                 continue
             }
             // 対象モニタが見つかったら無条件でクランプ位置に復元
-            let targetScreen = findTargetScreenForPending(
-                entry, availableScreens: pendingAvailableScreens
-            )
-            if let screen = targetScreen {
+            if let screen = findPendingTargetScreen(for: entry, screens: screens) {
                 let windowSize = imageWindow.window.frame.size
                 let origin = NSPoint(x: entry.originalState.originX, y: entry.originalState.originY)
                 let clamped = ScreenRestorationUtils.clampOrigin(
@@ -571,82 +454,115 @@ extension AppDelegate {
         }
         let triggers = pendingSnapshotTriggers.map(\.rawValue).sorted()
         pendingSnapshotTriggers.removeAll()
-        screenSnapshot = captureWindowStates()
-        if PositionLogger.shared.isEnabled {
-            PositionLogger.shared.log(
-                event: "snapshot.update",
-                screens: PositionLogger.shared.currentScreenSnapshots(),
-                windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
-                context: triggers.isEmpty ? nil : ["triggers": triggers.joined(separator: ",")]
-            )
-        }
+        screenSnapshot = captureWindowStates(screens: ScreenInfo.current())
+        logPositionEvent(
+            "snapshot.update",
+            context: triggers.isEmpty ? nil : ["triggers": triggers.joined(separator: ",")]
+        )
     }
 
     // MARK: - Private Helpers
 
     /// zOrderedWindows の現在位置を WakeRestorationContext に収集して返す。
-    private func captureWindowStates() -> WakeRestorationContext {
+    ///
+    /// どのスクリーンとも重ならないウィンドウは、ディスプレイ基準で復元しようがないため含めない。
+    private func captureWindowStates(screens: [ScreenInfo]) -> WakeRestorationContext {
         var ctx = WakeRestorationContext()
-        let screens = ScreenInfo.current()
+        let screenFrames = screens.map(\.frame)
         for imageWindow in zOrderedWindows {
-            let state = WindowStateManager.captureState(from: imageWindow, screens: screens)
-            ctx.states[imageWindow.windowId] = state
-            ctx.windowOrigins[imageWindow.windowId] = imageWindow.window.frame.origin
-            if let screen = NSScreen.screen(containing: imageWindow.window.frame),
-               let displayID = screen.displayID {
-                ctx.displayIDs[imageWindow.windowId] = displayID
-                ctx.screenFrames[displayID] = screen.frame
+            let frame = imageWindow.window.frame
+            guard let index = ScreenRestorationUtils.indexOfLargestOverlap(for: frame, in: screenFrames) else {
+                continue
             }
+            let screen = screens[index]
+            let windowId = imageWindow.windowId
+            ctx.states[windowId] = WindowStateManager.captureState(from: imageWindow, screens: screens)
+            ctx.windowOrigins[windowId] = frame.origin
+            ctx.displayIDs[windowId] = screen.displayID
+            ctx.screenFrames[screen.displayID] = screen.frame
         }
         return ctx
     }
 
-    /// 現在接続されているスクリーンの displayID とフレームのリストを返す
-    private var currentAvailableScreens: [(displayID: UInt32, frame: NSRect)] {
-        NSScreen.screens.compactMap { screen -> (displayID: UInt32, frame: NSRect)? in
-            guard let did = screen.displayID else { return nil }
-            return (displayID: did, frame: screen.frame)
-        }
-    }
-
     /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
-    private func findTargetScreen(
-        displayID: CGDirectDisplayID?,
-        windowId: Int,
-        availableScreens: [(displayID: UInt32, frame: NSRect)]
-    ) -> NSScreen? {
-        guard let savedID = displayID else { return nil }
-        let savedFrame = wakeContext.screenFrames[savedID]
-        guard let result = ScreenRestorationUtils.findTargetScreen(
-            savedDisplayID: savedID,
-            savedScreenFrame: savedFrame,
-            availableScreens: availableScreens,
+    private func findWakeTargetScreen(displayID: CGDirectDisplayID?, screens: [ScreenInfo]) -> ScreenInfo? {
+        guard let displayID else { return nil }
+        return ScreenRestorationUtils.findTargetScreen(
+            savedDisplayID: displayID,
+            savedScreenFrame: wakeContext.screenFrames[displayID],
+            availableScreens: screens,
             tolerance: AppConstants.screenMatchTolerance
-        ) else { return nil }
-        return NSScreen.screen(withDisplayID: result.displayID)
+        )
     }
 
-    /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置を含むスクリーン
-    private func findTargetScreenForPending(
-        _ entry: PendingRestoration,
-        availableScreens: [(displayID: UInt32, frame: NSRect)]
-    ) -> NSScreen? {
-        let originalRect = NSRect(
-            x: entry.originalState.originX, y: entry.originalState.originY,
-            width: entry.originalState.width, height: entry.originalState.height
-        )
+    /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置と最も重なるスクリーン
+    private func findPendingTargetScreen(for entry: PendingRestoration, screens: [ScreenInfo]) -> ScreenInfo? {
         let search = ScreenRestorationUtils.PendingScreenSearch(
             displayID: entry.displayID,
             savedScreenFrame: entry.preSleepScreenFrame,
-            originalRect: originalRect,
+            originalRect: entry.originalState.frame,
             unknownDisplayID: AppConstants.unknownDisplayID
         )
-        guard let result = ScreenRestorationUtils.findTargetScreenForPending(
+        return ScreenRestorationUtils.findTargetScreenForPending(
             search,
-            availableScreens: availableScreens,
+            availableScreens: screens,
             tolerance: AppConstants.screenMatchTolerance
-        ) else { return nil }
-        return NSScreen.screen(withDisplayID: result.displayID)
+        )
+    }
+
+    // MARK: - Diagnostics
+
+    /// 位置ログ（有効時のみ）に、現在のスクリーン構成と全ウィンドウの位置を記録する。
+    /// `context` はログが有効なときだけ評価される。
+    func logPositionEvent(_ event: String, context: @autoclosure () -> [String: String]? = nil) {
+        guard PositionLogger.shared.isEnabled else { return }
+        PositionLogger.shared.log(
+            event: event,
+            screens: PositionLogger.shared.currentScreenSnapshots(),
+            windows: zOrderedWindows.map { PositionLogger.shared.windowSnapshot(from: $0) },
+            context: context()
+        )
+    }
+
+    private func logScreenLayout(_ screens: [ScreenInfo], label: String) {
+        for screen in screens {
+            Self.screenRestorationLogger.debug(
+                "  \(label, privacy: .public) screen displayID=\(screen.displayID, privacy: .public), frame=\(NSStringFromRect(screen.frame), privacy: .public)"
+            )
+        }
+    }
+
+    private func logWindowPositions(label: String) {
+        for imageWindow in zOrderedWindows {
+            Self.screenRestorationLogger.debug("""
+                  \(label, privacy: .public) window #\(imageWindow.windowId, privacy: .public): \
+                currentPos=\(NSStringFromPoint(imageWindow.window.frame.origin), privacy: .public)
+                """)
+        }
+    }
+
+    /// スリープ前の位置から macOS が動かしたウィンドウを位置ログに記録する（ログ有効時のみ）
+    private func logWakeDrift() {
+        guard PositionLogger.shared.isEnabled else { return }
+        for imageWindow in zOrderedWindows {
+            guard let preSleepOrigin = wakeContext.windowOrigins[imageWindow.windowId] else { continue }
+            let currentOrigin = imageWindow.window.frame.origin
+            let driftX = currentOrigin.x - preSleepOrigin.x
+            let driftY = currentOrigin.y - preSleepOrigin.y
+            guard abs(driftX) > AppConstants.wakeDetectDriftThreshold
+                || abs(driftY) > AppConstants.wakeDetectDriftThreshold else { continue }
+            PositionLogger.shared.log(
+                event: "wake.detect",
+                screens: PositionLogger.shared.currentScreenSnapshots(),
+                windows: [PositionLogger.shared.windowSnapshot(from: imageWindow)],
+                context: [
+                    "preSleepOrigin": NSStringFromPoint(preSleepOrigin),
+                    "currentOrigin": NSStringFromPoint(currentOrigin),
+                    "driftX": String(format: "%.1f", driftX),
+                    "driftY": String(format: "%.1f", driftY),
+                ]
+            )
+        }
     }
 }
 
@@ -666,29 +582,10 @@ extension NSScreen {
         return CFUUIDCreateString(nil, uuid) as String?
     }
 
-    /// 指定された displayID に一致するスクリーンを検索
-    static func screen(withDisplayID displayID: CGDirectDisplayID) -> NSScreen? {
-        screens.first { $0.displayID == displayID }
-    }
-
-    /// 指定された矩形と最も大きく重なるスクリーンを返す
+    /// 指定された矩形と最も大きく重なるスクリーンを返す。どのスクリーンとも重ならなければ nil。
     static func screen(containing rect: NSRect) -> NSScreen? {
-        screens.max {
-            let areaA = $0.frame.intersection(rect)
-            let areaB = $1.frame.intersection(rect)
-            return areaA.width * areaA.height < areaB.width * areaB.height
-        }
-    }
-
-    /// 指定されたフレームと位置・サイズが tolerance 以内で一致するスクリーンを返す
-    static func screen(matchingFrame savedFrame: NSRect, tolerance: CGFloat) -> NSScreen? {
-        screens.first { screen in
-            ScreenRestorationUtils.isFrameMatch(screen.frame, savedFrame, tolerance: tolerance)
-        }
-    }
-
-    /// 指定された点を含むスクリーンを返す
-    static func screen(containingPoint point: NSPoint) -> NSScreen? {
-        screens.first { $0.frame.contains(point) }
+        let screens = screens
+        return ScreenRestorationUtils.indexOfLargestOverlap(for: rect, in: screens.map(\.frame))
+            .map { screens[$0] }
     }
 }

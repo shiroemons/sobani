@@ -25,7 +25,7 @@ enum ScreenRestorationUtils {
 
     /// スリープ前のスクリーン位置を基にウィンドウの相対位置を計算し、
     /// 新しいスクリーン位置に変換する。
-    nonisolated static func computeRestoredOrigin(
+    static func computeRestoredOrigin(
         savedOrigin: NSPoint,
         oldScreenFrame: NSRect?,
         currentScreenFrame: NSRect
@@ -48,7 +48,7 @@ enum ScreenRestorationUtils {
     ///   ディスプレイ上の見た目の位置は完全に保たれる。
     /// - サイズが異なる場合（解像度変更など）: 中心点を正規化座標で写像し
     ///   `c' = S'.origin + (c − S.origin) ⊙ (S'.size / S.size)`、ウィンドウサイズは維持する。
-    nonisolated static func mapOrigin(
+    static func mapOrigin(
         of rect: NSRect,
         from oldScreenFrame: NSRect,
         to newScreenFrame: NSRect,
@@ -69,7 +69,7 @@ enum ScreenRestorationUtils {
     }
 
     /// 矩形との重なり面積が最大のスクリーンのインデックスを返す。どれとも重ならなければ nil。
-    nonisolated static func indexOfLargestOverlap(for rect: NSRect, in screenFrames: [NSRect]) -> Int? {
+    static func indexOfLargestOverlap(for rect: NSRect, in screenFrames: [NSRect]) -> Int? {
         var best: (index: Int, area: CGFloat)?
         for (index, frame) in screenFrames.enumerated() {
             let intersection = frame.intersection(rect)
@@ -83,6 +83,18 @@ enum ScreenRestorationUtils {
         return best?.index
     }
 
+    /// マウス座標（`NSEvent.mouseLocation`）を含むスクリーンのインデックスを返す。
+    ///
+    /// マウス座標の y はスクリーン最上端の行で `maxY` に一致し、`minY` には一致しない
+    /// （`NSMouseInRect` と同じ半開区間 `minX ≤ x < maxX`, `minY < y ≤ maxY`）。
+    /// `NSRect.contains` は `maxY` を含まないため、最上端（メニューバー上端）で判定が外れる。
+    static func indexOfScreen(containingMouseLocation point: NSPoint, in screenFrames: [NSRect]) -> Int? {
+        screenFrames.firstIndex { frame in
+            point.x >= frame.minX && point.x < frame.maxX
+                && point.y > frame.minY && point.y <= frame.maxY
+        }
+    }
+
     /// 2つのフレームが tolerance 以内で一致するか判定
     static func isFrameMatch(_ frameA: NSRect, _ frameB: NSRect, tolerance: CGFloat) -> Bool {
         abs(frameA.origin.x - frameB.origin.x) <= tolerance
@@ -92,69 +104,49 @@ enum ScreenRestorationUtils {
     }
 
     /// Wake 復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致
-    /// NSScreen に依存しないデータ型で引数・戻り値を定義
-    nonisolated static func findTargetScreen(
-        savedDisplayID: UInt32,
+    static func findTargetScreen(
+        savedDisplayID: CGDirectDisplayID,
         savedScreenFrame: NSRect?,
-        availableScreens: [(displayID: UInt32, frame: NSRect)],
+        availableScreens: [ScreenInfo],
         tolerance: CGFloat
-    ) -> (displayID: UInt32, frame: NSRect)? {
+    ) -> ScreenInfo? {
         // Phase 1: displayID 完全一致
         if let match = availableScreens.first(where: { $0.displayID == savedDisplayID }) {
             return match
         }
         // Phase 2: ジオメトリベースのフォールバック
-        if let savedFrame = savedScreenFrame {
-            if let match = availableScreens.first(where: {
-                isFrameMatch($0.frame, savedFrame, tolerance: tolerance)
-            }) {
-                return match
-            }
-        }
-        return nil
+        guard let savedFrame = savedScreenFrame else { return nil }
+        return availableScreens.first { isFrameMatch($0.frame, savedFrame, tolerance: tolerance) }
     }
 
     /// ペンディング復元時の検索パラメータ
     struct PendingScreenSearch {
-        let displayID: UInt32
+        let displayID: CGDirectDisplayID
         let savedScreenFrame: NSRect?
         let originalRect: NSRect
-        let unknownDisplayID: UInt32
+        let unknownDisplayID: CGDirectDisplayID
     }
 
-    /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置を含むスクリーン
-    /// NSScreen に依存しないデータ型で引数・戻り値を定義
-    nonisolated static func findTargetScreenForPending(
+    /// ペンディング復元時のモニタ検索: ① displayID 完全一致 → ② ジオメトリ一致 → ③ 元の位置と最も重なるスクリーン
+    static func findTargetScreenForPending(
         _ search: PendingScreenSearch,
-        availableScreens: [(displayID: UInt32, frame: NSRect)],
+        availableScreens: [ScreenInfo],
         tolerance: CGFloat
-    ) -> (displayID: UInt32, frame: NSRect)? {
-        let displayID = search.displayID
-        let savedScreenFrame = search.savedScreenFrame
-        let originalRect = search.originalRect
-        let unknownDisplayID = search.unknownDisplayID
+    ) -> ScreenInfo? {
+        let isUnknownDisplay = search.displayID == search.unknownDisplayID
         // Phase 1: displayID 完全一致（unknownDisplayID でない場合のみ）
-        if displayID != unknownDisplayID {
-            if let match = availableScreens.first(where: { $0.displayID == displayID }) {
-                return match
-            }
+        if !isUnknownDisplay, let match = availableScreens.first(where: { $0.displayID == search.displayID }) {
+            return match
         }
         // Phase 2: ジオメトリベースのフォールバック
-        if let savedFrame = savedScreenFrame {
-            if let match = availableScreens.first(where: {
-                isFrameMatch($0.frame, savedFrame, tolerance: tolerance)
-            }) {
-                return match
-            }
+        if let savedFrame = search.savedScreenFrame,
+           let match = availableScreens.first(where: { isFrameMatch($0.frame, savedFrame, tolerance: tolerance) }) {
+            return match
         }
-        // Phase 3: 元の位置が含まれるスクリーンを検索（最大重複面積）
-        if displayID == unknownDisplayID {
-            return availableScreens.max(by: { screenA, screenB in
-                let areaA = screenA.frame.intersection(originalRect)
-                let areaB = screenB.frame.intersection(originalRect)
-                return areaA.width * areaA.height < areaB.width * areaB.height
-            })
-        }
-        return nil
+        // Phase 3: 元の位置と最も重なるスクリーン（displayID が不明な場合のみ）
+        guard isUnknownDisplay,
+              let index = indexOfLargestOverlap(for: search.originalRect, in: availableScreens.map(\.frame))
+        else { return nil }
+        return availableScreens[index]
     }
 }

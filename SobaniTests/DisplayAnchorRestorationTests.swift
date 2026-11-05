@@ -296,10 +296,8 @@ import Testing
             windowId: 145, originalState: state, displayID: AppConstants.unknownDisplayID,
             adjustedOriginX: 0, adjustedOriginY: 0
         )
-        manager.screenProvider = { [Self.normalScreens[0]] }
-        #expect(manager.restorableEntries().isEmpty)
-        manager.screenProvider = { Self.normalScreens }
-        #expect(manager.restorableEntries().map(\.windowId) == [145])
+        #expect(manager.restorableEntries(screens: [Self.normalScreens[0]]).isEmpty)
+        #expect(manager.restorableEntries(screens: Self.normalScreens).map(\.windowId) == [145])
         #expect(manager.isPending(windowId: 145))
         #expect(!manager.isPending(windowId: 1))
     }

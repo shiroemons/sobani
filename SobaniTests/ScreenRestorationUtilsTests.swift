@@ -277,10 +277,12 @@ struct ScreenRestorationUtilsTests {
 @Suite("ScreenRestorationUtils ScreenSearch Tests")
 struct ScreenRestorationUtilsScreenSearchTests {
 
-    private let mainScreen: (displayID: UInt32, frame: NSRect) =
-        (displayID: 1, frame: NSRect(x: 0, y: 0, width: 1920, height: 1080))
-    private let secondaryScreen: (displayID: UInt32, frame: NSRect) =
-        (displayID: 2, frame: NSRect(x: 1920, y: 0, width: 2560, height: 1440))
+    private let mainScreen = ScreenInfo(
+        frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true
+    )
+    private let secondaryScreen = ScreenInfo(
+        frame: NSRect(x: 1920, y: 0, width: 2560, height: 1440), displayID: 2, isMain: false
+    )
     private let unknownID: UInt32 = 0
 
     // MARK: - findTargetScreen Tests
@@ -413,5 +415,50 @@ struct ScreenRestorationUtilsScreenSearchTests {
             search, availableScreens: screens, tolerance: 100
         )
         #expect(result == nil)
+    }
+
+    @Test("findTargetScreenForPending: displayID不明で元の位置がどのスクリーンとも重ならない → nil（先頭スクリーンにフォールバックしない）")
+    func findTargetScreenForPendingNoOverlap() {
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: unknownID, savedScreenFrame: nil,
+            originalRect: NSRect(x: -9000, y: -9000, width: 200, height: 200),
+            unknownDisplayID: unknownID
+        )
+        let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search, availableScreens: [mainScreen, secondaryScreen], tolerance: 100
+        )
+        #expect(result == nil)
+    }
+
+    @Test("findTargetScreenForPending: displayID不明なら最も大きく重なるスクリーンを選ぶ")
+    func findTargetScreenForPendingPicksLargestOverlap() {
+        // main と 20px、secondary と 180px 重なる
+        let search = ScreenRestorationUtils.PendingScreenSearch(
+            displayID: unknownID, savedScreenFrame: nil,
+            originalRect: NSRect(x: 1900, y: 100, width: 200, height: 200),
+            unknownDisplayID: unknownID
+        )
+        let result = ScreenRestorationUtils.findTargetScreenForPending(
+            search, availableScreens: [mainScreen, secondaryScreen], tolerance: 100
+        )
+        #expect(result?.displayID == 2)
+    }
+
+    // MARK: - indexOfScreen(containingMouseLocation:)
+
+    @Test(
+        "indexOfScreen: マウス座標は minY < y ≤ maxY・minX ≤ x < maxX で判定する（最上端も含む）",
+        arguments: [
+            (NSPoint(x: 100, y: 1080), 0 as Int?),     // メイン最上端（メニューバー上端）
+            (NSPoint(x: 0, y: 500), 0),                // メイン左端
+            (NSPoint(x: 1920, y: 500), 1),             // 境界はセカンダリ側
+            (NSPoint(x: 2000, y: 1440), 1),            // セカンダリ最上端
+            (NSPoint(x: 100, y: 0), nil),              // 最下端の外側
+            (NSPoint(x: 100, y: 1100), nil),           // スクリーン外
+        ]
+    )
+    func indexOfScreenContainingMouseLocation(point: NSPoint, expected: Int?) {
+        let frames = [mainScreen.frame, secondaryScreen.frame]
+        #expect(ScreenRestorationUtils.indexOfScreen(containingMouseLocation: point, in: frames) == expected)
     }
 }

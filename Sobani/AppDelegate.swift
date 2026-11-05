@@ -174,17 +174,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         setWindowsHidden(!windows.allSatisfy(\.isHidden), windows: windows)
     }
 
+    /// マウスカーソルのあるスクリーンに（最も大きく重なって）表示されているウィンドウ
     private func windowsOnCurrentScreen() -> [ImageWindow] {
-        let mouseLocation = NSEvent.mouseLocation
-        guard let currentScreen = NSScreen.screen(
-            containingPoint: mouseLocation
+        let screenFrames = NSScreen.screens.map(\.frame)
+        guard let currentIndex = ScreenRestorationUtils.indexOfScreen(
+            containingMouseLocation: NSEvent.mouseLocation, in: screenFrames
         ) else { return [] }
 
         return zOrderedWindows.filter { imageWindow in
-            guard let windowScreen = NSScreen.screen(
-                containing: imageWindow.window.frame
-            ) else { return false }
-            return windowScreen == currentScreen
+            ScreenRestorationUtils.indexOfLargestOverlap(for: imageWindow.window.frame, in: screenFrames) == currentIndex
         }
     }
 
@@ -447,18 +445,17 @@ extension AppDelegate {
 
 extension AppDelegate {
     @objc func toggleAllGhostMode() {
-        guard !zOrderedWindows.isEmpty else { return }
-        let anyGhosted = zOrderedWindows.contains { $0.isGhostMode }
-        for imageWindow in zOrderedWindows {
-            imageWindow.setGhostMode(!anyGhosted)
-        }
+        toggleGhostMode(for: zOrderedWindows)
     }
 
     func toggleCurrentScreenGhostMode() {
-        let windowsOnScreen = windowsOnCurrentScreen()
-        guard !windowsOnScreen.isEmpty else { return }
-        let anyGhosted = windowsOnScreen.contains { $0.isGhostMode }
-        for imageWindow in windowsOnScreen {
+        toggleGhostMode(for: windowsOnCurrentScreen())
+    }
+
+    /// 1つでもゴーストモードならすべて解除し、そうでなければすべてゴーストモードにする。
+    private func toggleGhostMode(for windows: [ImageWindow]) {
+        let anyGhosted = windows.contains(where: \.isGhostMode)
+        for imageWindow in windows {
             imageWindow.setGhostMode(!anyGhosted)
         }
     }

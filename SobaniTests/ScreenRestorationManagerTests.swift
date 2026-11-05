@@ -8,6 +8,9 @@ import Testing
     let manager: ScreenRestorationManager
     let tempDirectory: URL
     let ioManager: ScreenRestorationManager
+    private static let singleScreen = [
+        ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)
+    ]
 
     init() throws {
         manager = ScreenRestorationManager(timeout: 300)
@@ -111,9 +114,8 @@ import Testing
         let state2 = makeState(windowId: 2, originX: 200)
         manager.addPending(windowId: 1, originalState: state1, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
         manager.addPending(windowId: 2, originalState: state2, displayID: 999999, adjustedOriginX: 70, adjustedOriginY: 80)
-        manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
         // displayID: 999999 は実スクリーンと一致しないため空になる
-        #expect(manager.restorableEntries().isEmpty)
+        #expect(manager.restorableEntries(screens: Self.singleScreen).isEmpty)
     }
 
     /// restorableEntriesが期限切れエントリをパージすることを検証
@@ -122,7 +124,7 @@ import Testing
         manager.currentDate = { baseDate }
         manager.addPending(windowId: 1, originalState: makeState(), displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
         manager.currentDate = { baseDate.addingTimeInterval(301) }
-        let results = manager.restorableEntries()
+        let results = manager.restorableEntries(screens: Self.singleScreen)
         #expect(results.isEmpty)
         #expect(manager.pendingRestorations.isEmpty)
     }
@@ -132,8 +134,7 @@ import Testing
         // displayID が非0で実スクリーンに存在しない場合は空
         let state = makeState(windowId: 1, originX: 100, originY: 200)
         manager.addPending(windowId: 1, originalState: state, displayID: 999999, adjustedOriginX: 50, adjustedOriginY: 60)
-        manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
-        #expect(manager.restorableEntries().isEmpty)
+        #expect(manager.restorableEntries(screens: Self.singleScreen).isEmpty)
     }
 
     /// displayID 0かつ画面外位置で復元対象にならないことを検証
@@ -141,9 +142,8 @@ import Testing
         // displayID: 0（スリープなし切断）かつ画面外の位置 → 空（元の位置がまだ不可視）
         let state = makeState(windowId: 1, originX: -99999, originY: -99999)
         manager.addPending(windowId: 1, originalState: state, displayID: 0, adjustedOriginX: 50, adjustedOriginY: 60)
-        manager.screenProvider = { [ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 1, isMain: true)] }
         // 元の位置が不可視のため、復元対象にならない
-        #expect(manager.restorableEntries().isEmpty)
+        #expect(manager.restorableEntries(screens: Self.singleScreen).isEmpty)
     }
 
     // MARK: - Persistence

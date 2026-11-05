@@ -73,7 +73,6 @@ final class ScreenRestorationManager {
     private let timeout: TimeInterval
     let pendingFileURL: URL?
     var currentDate: @Sendable () -> Date = { Date() }
-    var screenProvider: () -> [ScreenInfo] = { ScreenInfo.current() }
 
     init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
         self.timeout = timeout
@@ -119,9 +118,9 @@ final class ScreenRestorationManager {
         pendingRestorations.removeAll { now.timeIntervalSince($0.createdAt) > timeout }
     }
 
-    func restorableEntries() -> [PendingRestoration] {
+    /// 期限切れを除去したうえで、指定のスクリーン構成で元の位置へ復元できるエントリを返す。
+    func restorableEntries(screens: [ScreenInfo]) -> [PendingRestoration] {
         purgeExpired()
-        let screens = screenProvider()
         return pendingRestorations.filter { entry in
             // アンカー（再起動をまたいで不変な UUID）があれば最優先で判定する
             if let uuid = entry.originalState.displayAnchor?.displayUUID {
