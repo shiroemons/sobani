@@ -182,15 +182,7 @@ struct WindowState: Codable, Equatable, Sendable {
     }
 
     func isPositionVisible(on screens: [ScreenInfo]) -> Bool {
-        let windowRect = NSRect(x: originX, y: originY, width: width, height: height)
-        for screen in screens {
-            let intersection = windowRect.intersection(screen.frame)
-            let threshold = AppConstants.screenIntersectionThreshold
-            if !intersection.isNull && intersection.width >= threshold && intersection.height >= threshold {
-                return true
-            }
-        }
-        return false
+        ScreenRestorationUtils.isVisible(frame, in: screens.map(\.frame))
     }
 
     func adjustedToVisibleArea(on screens: [ScreenInfo]) -> Self {

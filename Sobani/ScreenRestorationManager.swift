@@ -93,9 +93,10 @@ final class ScreenRestorationManager {
         preSleepScreenFrame: NSRect? = nil
     ) {
         pendingRestorations.removeAll { $0.windowId == windowId }
+        // 非有限値が 1 つでもあると JSON エンコードが失敗し、キュー全体が保存されなくなるため補正しておく
         let entry = PendingRestoration(
             windowId: windowId,
-            originalState: originalState,
+            originalState: originalState.sanitizedForPersistence(),
             displayID: displayID,
             createdAt: currentDate(),
             preSleepScreenFrame: preSleepScreenFrame
