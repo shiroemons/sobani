@@ -10,7 +10,7 @@ enum CropShape: String, Codable, Sendable, CaseIterable {
 
 // MARK: - CornerRadii
 
-struct CornerRadii: Codable, Equatable, Sendable {
+struct CornerRadii: Codable, Hashable, Sendable {
     let topLeft: CGFloat
     let topRight: CGFloat
     let bottomLeft: CGFloat
@@ -86,7 +86,8 @@ struct CornerRadii: Codable, Equatable, Sendable {
 
 // MARK: - CropRect
 
-struct CropRect: Codable, Equatable, Sendable {
+/// `==` / `hash` は値の完全一致（キャッシュキー用）。編集状態の比較には `isEffectivelyEqual(to:)` を使う
+struct CropRect: Codable, Hashable, Sendable {
     let x: CGFloat       // 0.0〜1.0 ratio from left
     let y: CGFloat       // 0.0〜1.0 ratio from bottom
     let width: CGFloat   // 0.0〜1.0 ratio
@@ -190,29 +191,49 @@ struct CropRect: Codable, Equatable, Sendable {
         case shapeType, cornerRadii, cornersLinked
     }
 
-    /// 保存データは手編集や旧バージョンで壊れている可能性があるため、読み込み時に安全な範囲へ補正する
+    /// 保存データは手編集や旧バージョンで壊れている可能性があるため、読み込み時に `sanitized()` で補正する
     /// （非有限値や巨大な値のまま画像処理に渡すと、起動時の復元でクラッシュする）
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        x = Self.sanitizedOrigin(try container.decode(CGFloat.self, forKey: .x))
-        y = Self.sanitizedOrigin(try container.decode(CGFloat.self, forKey: .y))
-        width = Self.sanitizedExtent(try container.decode(CGFloat.self, forKey: .width))
-        height = Self.sanitizedExtent(try container.decode(CGFloat.self, forKey: .height))
-        straightenAngle = Self.sanitizedAngle(
-            try container.decodeIfPresent(CGFloat.self, forKey: .straightenAngle) ?? 0)
-        quarterTurns = CropGeometry.normalizeQuarterTurns(
-            try container.decodeIfPresent(Int.self, forKey: .quarterTurns) ?? 0)
-        isFlippedInCrop = try container.decodeIfPresent(
-            Bool.self, forKey: .isFlippedInCrop) ?? false
-        aspectRatioPreset = try container.decodeIfPresent(String.self, forKey: .aspectRatioPreset)
-        verticalPerspective = Self.sanitizedAngle(
-            try container.decodeIfPresent(CGFloat.self, forKey: .verticalPerspective) ?? 0)
-        horizontalPerspective = Self.sanitizedAngle(
-            try container.decodeIfPresent(CGFloat.self, forKey: .horizontalPerspective) ?? 0)
-        shape = (try? container.decodeIfPresent(CropShape.self, forKey: .shapeType)) ?? .rectangle
-        cornerRadii = (try container.decodeIfPresent(CornerRadii.self, forKey: .cornerRadii) ?? .zero)
-            .sanitized()
-        cornersLinked = try container.decodeIfPresent(Bool.self, forKey: .cornersLinked) ?? true
+        self = Self(
+            x: try container.decode(CGFloat.self, forKey: .x),
+            y: try container.decode(CGFloat.self, forKey: .y),
+            width: try container.decode(CGFloat.self, forKey: .width),
+            height: try container.decode(CGFloat.self, forKey: .height),
+            straightenAngle: try container.decodeIfPresent(CGFloat.self, forKey: .straightenAngle) ?? 0,
+            quarterTurns: try container.decodeIfPresent(Int.self, forKey: .quarterTurns) ?? 0,
+            isFlippedInCrop: try container.decodeIfPresent(Bool.self, forKey: .isFlippedInCrop) ?? false,
+            aspectRatioPreset: try container.decodeIfPresent(String.self, forKey: .aspectRatioPreset),
+            verticalPerspective: try container.decodeIfPresent(CGFloat.self, forKey: .verticalPerspective) ?? 0,
+            horizontalPerspective: try container.decodeIfPresent(CGFloat.self, forKey: .horizontalPerspective) ?? 0,
+            shape: (try? container.decodeIfPresent(CropShape.self, forKey: .shapeType)) ?? .rectangle,
+            cornerRadii: try container.decodeIfPresent(CornerRadii.self, forKey: .cornerRadii) ?? .zero,
+            cornersLinked: try container.decodeIfPresent(Bool.self, forKey: .cornersLinked) ?? true
+        ).sanitized()
+    }
+
+    // MARK: - Sanitization
+
+    /// 非有限値・範囲外の値を安全な範囲へ補正したコピーを返す（保存データの読み込み・書き込みの両方で使う）。
+    ///
+    /// 位置は ±`maxExtent`、サイズは `minExtent`〜`maxExtent`、角度は ±45°、`quarterTurns` は 0〜3、
+    /// 角丸は 0〜1 に収める。非有限値は既定値（位置・角度は 0、サイズは 1）にする。
+    func sanitized() -> Self {
+        Self(
+            x: Self.sanitizedOrigin(x),
+            y: Self.sanitizedOrigin(y),
+            width: Self.sanitizedExtent(width),
+            height: Self.sanitizedExtent(height),
+            straightenAngle: Self.sanitizedAngle(straightenAngle),
+            quarterTurns: CropGeometry.normalizeQuarterTurns(quarterTurns),
+            isFlippedInCrop: isFlippedInCrop,
+            aspectRatioPreset: aspectRatioPreset,
+            verticalPerspective: Self.sanitizedAngle(verticalPerspective),
+            horizontalPerspective: Self.sanitizedAngle(horizontalPerspective),
+            shape: shape,
+            cornerRadii: cornerRadii.sanitized(),
+            cornersLinked: cornersLinked
+        )
     }
 
     private static func sanitizedOrigin(_ value: CGFloat) -> CGFloat {

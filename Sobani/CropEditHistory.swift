@@ -67,43 +67,13 @@ final class CropEditHistory {
     }
 }
 
-// MARK: - ScrollEndDebouncer
+// MARK: - Scroll End Debounce
 
-/// スクロール操作の終わりを待ってから 1 回だけ処理を実行するデバウンサ
-///
-/// ホイールやトラックパッドのスクロールはイベントが連続して届くため、
-/// 1 回のスクロール操作を 1 つの編集履歴としてまとめて記録するのに使う。
-@MainActor
-final class ScrollEndDebouncer {
-    private static let settleDelay: Duration = .milliseconds(300)
-
-    private var pendingTask: Task<Void, Never>?
-    private var pendingAction: (() -> Void)?
-
-    /// 呼ぶたびに待ち時間をリセットし、最後の呼び出しから一定時間後に `action` を 1 回だけ実行する
-    func schedule(_ action: @escaping () -> Void) {
-        pendingAction = action
-        pendingTask?.cancel()
-        pendingTask = Task { [weak self] in
-            try? await Task.sleep(for: Self.settleDelay)
-            guard !Task.isCancelled else { return }
-            self?.flush()
-        }
-    }
-
-    /// 待機中の処理があれば今すぐ実行する（次の操作の前に履歴の順序を保つため）
-    func flush() {
-        pendingTask?.cancel()
-        pendingTask = nil
-        let action = pendingAction
-        pendingAction = nil
-        action?()
-    }
-
-    /// 待機中の処理を実行せずに破棄する
-    func cancel() {
-        pendingTask?.cancel()
-        pendingTask = nil
-        pendingAction = nil
-    }
+extension Debouncer {
+    /// スクロール操作の終わりとみなすまでの待ち時間（秒）
+    ///
+    /// ホイールやトラックパッドのスクロールはイベントが連続して届くため、最後のイベントからこの時間が
+    /// 経ったところで 1 回のスクロール操作を 1 つの編集履歴としてまとめて記録する。
+    /// 次の操作を始める前には `flush()` で待機中の記録を先に確定させ、履歴の順序を保つ。
+    static let scrollEndSettleDelay: TimeInterval = 0.3
 }

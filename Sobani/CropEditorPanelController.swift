@@ -151,6 +151,7 @@ final class CropEditorPanelController: NSObject {
             self?.handleAspectRatioSelected(preset)
         }
         toolbar.onSliderDragEnded = { [weak self] in
+            self?.canvasView?.isExternallyAdjusting = false
             self?.recordCurrentState()
         }
         toolbar.onShapeSelected = { [weak self] shape in

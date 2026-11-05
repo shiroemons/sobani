@@ -72,7 +72,7 @@ extension CropEditorCanvasView {
     override func scrollWheel(with event: NSEvent) {
         guard case .idle = dragState else { return }
         let lines = event.hasPreciseScrollingDeltas
-            ? event.scrollingDeltaY / Self.preciseScrollPointsPerLine
+            ? event.scrollingDeltaY / AppConstants.scrollPointsPerLine
             : event.scrollingDeltaY
         let oldZoom = imageZoom
         let newZoom = Swift.min(
@@ -88,6 +88,8 @@ extension CropEditorCanvasView {
         needsDisplay = true
         onCropRectChanged?(computeFinalCropRect())
         scrollEndDebouncer.schedule { [weak self] in
+            // スクロール中は描画品質を下げているため、落ち着いた状態を高品質で描き直す
+            self?.needsDisplay = true
             self?.onDragEnded?()
         }
     }

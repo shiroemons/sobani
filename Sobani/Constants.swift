@@ -170,7 +170,6 @@ enum AppConstants {
     static let ghostAlphaCheckboxTrailingGap: CGFloat = 22
 
     // Crop
-    static let cropHandleSize: CGFloat = 8
     static let cropMinProportion: CGFloat = 0.1
     static let cropOverlayAlpha: CGFloat = 0.5
 
