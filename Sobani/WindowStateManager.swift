@@ -352,6 +352,7 @@ final class WindowStateManager {
     /// ファイルが存在しない場合は空配列を返す。デコードできない要素は読み飛ばし、
     /// 1 つでも読み飛ばした場合やファイル全体が読めない場合は、直後の保存で上書きされる前に
     /// 元ファイルを `window_states.corrupt-<日時>.json` として退避する。
+    /// 一部だけ読み飛ばした場合は、退避後に読めた要素だけで書き直す（起動のたびに退避が増えないように）。
     /// - Returns: デコードされたウィンドウ状態の配列。
     func loadStates() -> [WindowState] {
         guard let url = statesFileURL else { return [] }
@@ -365,7 +366,9 @@ final class WindowStateManager {
         ) else { return [] }
         if decoded.skippedCount > 0 {
             logger.error("Skipped \(decoded.skippedCount, privacy: .public) undecodable window states")
-            JSONPersistence.backupUnreadableFile(at: url, logger: logger)
+            if JSONPersistence.backupUnreadableFile(at: url, logger: logger) != nil {
+                saveStates(decoded.elements)
+            }
         }
         return decoded.elements
     }

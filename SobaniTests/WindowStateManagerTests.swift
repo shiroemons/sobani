@@ -447,6 +447,10 @@ import Testing
 
         #expect(loaded.map(\.imageName) == ["ok1.png", "ok2.png"])
         #expect(try corruptBackups().count == 1)
+
+        // 退避後は読めた要素で書き直すため、次回の読み込みでは退避が増えない
+        #expect(stateManager.loadStates().map(\.imageName) == ["ok1.png", "ok2.png"])
+        #expect(try corruptBackups().count == 1)
     }
 
     /// 正常なファイルの読み込みではバックアップを作らないことを検証
