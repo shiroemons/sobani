@@ -47,8 +47,7 @@ extension AppDelegate {
             count: zOrderedWindows.count,
             isHidden: areWindowsHidden,
             showingFormat: L("status.showing_count"),
-            showingLabel: L("status.showing"),
-            hiddenLabel: L("status.hidden"),
+            hiddenFormat: L("status.hidden_window_count"),
             badges: [
                 StatusBadge(value: ghostCount, format: L("status.ghost_count")),
                 StatusBadge(value: hiddenCount, format: L("status.hidden_count"))

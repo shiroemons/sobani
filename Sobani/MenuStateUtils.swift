@@ -85,27 +85,6 @@ enum MenuStateUtils {
         return text
     }
 
-    /// 旧インターフェース: ローカライズ済みの書式中のラベルを置換して非表示用の文言を作る。
-    ///
-    /// 言語によっては置換が成り立たないため、`hiddenFormat` 版を使うこと。
-    /// 呼び出し側（ステータスバーメニュー）が `hiddenFormat` 版へ移行したら削除する。
-    static func formatWindowCountText(
-        count: Int,
-        isHidden: Bool,
-        showingFormat: String,
-        showingLabel: String,
-        hiddenLabel: String,
-        badges: [StatusBadge] = []
-    ) -> String {
-        formatWindowCountText(
-            count: count,
-            isHidden: isHidden,
-            showingFormat: showingFormat,
-            hiddenFormat: showingFormat.replacingOccurrences(of: showingLabel, with: hiddenLabel),
-            badges: badges
-        )
-    }
-
     /// ウィンドウ情報テキストを生成する（左側テキストと右側テキスト）
     static func buildWindowInfoText(
         index: Int,
