@@ -183,12 +183,16 @@ final class DraggableImageView: NSImageView {
 
     private func resizeWindow(
         _ window: NSWindow, imageView: DraggableImageView, scaleFactor: CGFloat) {
+        // 丸めたウィンドウ中心ではなく画像の中心を基準にする（繰り返すと位置がずれていくため）
         let frames = Self.calculateResizedFrames(
             currentHeight: imageView.frame.height,
             scaleFactor: scaleFactor,
             aspectRatio: imageView.aspectRatio,
             rotationAngle: imageView.rotationAngle,
-            windowCenter: CGPoint(x: window.frame.midX, y: window.frame.midY)
+            imageCenter: CGPoint(
+                x: window.frame.minX + imageView.frame.midX,
+                y: window.frame.minY + imageView.frame.midY
+            )
         )
         window.setFrame(frames.windowFrame, display: true)
         imageView.frame = frames.imageViewFrame
@@ -286,36 +290,18 @@ final class DraggableImageView: NSImageView {
         return exp(points * AppConstants.scrollScaleSensitivity)
     }
 
-    /// リサイズ時のウィンドウフレームと画像ビューフレームを計算
+    /// リサイズ時のウィンドウフレームと画像ビューフレームを計算する（画像の中心を固定）
     nonisolated static func calculateResizedFrames(
         currentHeight: CGFloat, scaleFactor: CGFloat, aspectRatio: CGFloat,
-        rotationAngle: CGFloat, windowCenter: CGPoint,
+        rotationAngle: CGFloat, imageCenter: CGPoint,
         minHeight: CGFloat = AppConstants.minImageHeight,
         maxHeight: CGFloat = AppConstants.maxImageHeight
     ) -> (windowFrame: NSRect, imageViewFrame: NSRect) {
-        var newHeight = currentHeight * scaleFactor
-        newHeight = max(minHeight, min(maxHeight, newHeight))
-        let newWidth = newHeight * aspectRatio
-
-        let boundingBox = GeometryUtils.rotatedBoundingBox(
-            width: newWidth, height: newHeight, angleDegrees: rotationAngle
+        let newSize = ImageWindow.clampedImageSize(
+            height: currentHeight * scaleFactor, aspectRatio: aspectRatio,
+            minHeight: minHeight, maxHeight: maxHeight
         )
-        let bbWidth = boundingBox.width
-        let bbHeight = boundingBox.height
-
-        let windowFrame = NSRect(
-            x: round(windowCenter.x - bbWidth / 2),
-            y: round(windowCenter.y - bbHeight / 2),
-            width: round(bbWidth),
-            height: round(bbHeight)
-        )
-        let imageViewFrame = NSRect(
-            x: (bbWidth - newWidth) / 2,
-            y: (bbHeight - newHeight) / 2,
-            width: newWidth,
-            height: newHeight
-        )
-        return (windowFrame, imageViewFrame)
+        return ImageWindow.anchoredFrames(imageCenter: imageCenter, imageSize: newSize, rotationAngle: rotationAngle)
     }
 
     /// 回転・反転のアフィン変換を計算する（中心基準）。

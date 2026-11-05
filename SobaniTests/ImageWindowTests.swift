@@ -167,6 +167,48 @@ struct ImageWindowTests {
         #expect(abs(result.aspectRatio - 0.25) < AppConstants.floatingPointTolerance)
     }
 
+    // MARK: - anchoredFrames Tests
+
+    @Test("ウィンドウは整数に丸められ、回転後の画像を覆い、画像の中心はアンカーと一致する", arguments: [0.0, 17.0, 45.0, 90.0, 233.0])
+    func anchoredFramesKeepsCenterAndCoversImage(rotation: Double) {
+        let center = CGPoint(x: 640.3, y: 401.7)
+        let imageSize = NSSize(width: 301.5, height: 200.25)
+        let frames = ImageWindow.anchoredFrames(
+            imageCenter: center, imageSize: imageSize, rotationAngle: CGFloat(rotation)
+        )
+        let window = frames.windowFrame
+        #expect(abs(window.minX - window.minX.rounded()) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.minY - window.minY.rounded()) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.width - window.width.rounded()) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.minX + frames.imageViewFrame.midX - center.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(window.minY + frames.imageViewFrame.midY - center.y) < AppConstants.floatingPointTolerance)
+        // 丸めによる誤差（1px 未満）を除き、回転後の外接矩形を覆う
+        let boundingBox = GeometryUtils.rotatedBoundingBox(
+            width: imageSize.width, height: imageSize.height, angleDegrees: CGFloat(rotation)
+        )
+        #expect(window.minX <= center.x - boundingBox.width / 2 + 1)
+        #expect(window.maxX >= center.x + boundingBox.width / 2 - 1)
+        #expect(window.minY <= center.y - boundingBox.height / 2 + 1)
+        #expect(window.maxY >= center.y + boundingBox.height / 2 - 1)
+    }
+
+    @Test("回転を繰り返しても画像の中心がずれない")
+    func anchoredFramesRepeatedRotationDoesNotDrift() {
+        let start = CGPoint(x: 700.5, y: 350.25)
+        var center = start
+        let imageSize = NSSize(width: 321, height: 457)
+        for step in 0..<500 {
+            let angle = CGFloat(step) * 0.73
+            let frames = ImageWindow.anchoredFrames(imageCenter: center, imageSize: imageSize, rotationAngle: angle)
+            center = CGPoint(
+                x: frames.windowFrame.minX + frames.imageViewFrame.midX,
+                y: frames.windowFrame.minY + frames.imageViewFrame.midY
+            )
+        }
+        #expect(abs(center.x - start.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(center.y - start.y) < AppConstants.floatingPointTolerance)
+    }
+
     // MARK: - spawnOrigin Tests
 
     @Test("新規ウィンドウはメイン画面の原点を考慮して中央に配置される")
@@ -425,6 +467,23 @@ struct ImageWindowNotificationTests {
         let imageOrigin = ImageWindow.imageOrigin(windowFrame: imageWindow.window.frame, imageViewSize: imageSize)
         #expect(abs(imageOrigin.x - expectedOrigin.x) <= 1.0)
         #expect(abs(imageOrigin.y - expectedOrigin.y) <= 1.0)
+    }
+
+    @Test("回転を何度変えても画像の位置がずれない")
+    func repeatedRotationKeepsImagePosition() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 333, height: 501)))
+        defer { imageWindow.window.orderOut(nil) }
+        imageWindow.setPositionAndSize(origin: NSPoint(x: 200.5, y: 300.5), size: NSSize(width: 333, height: 501))
+        let before = imageWindow.imageFrameInScreen
+
+        for step in 1...300 {
+            imageWindow.applyRotation(CGFloat(step) * 1.37)
+        }
+        imageWindow.applyRotation(0)
+
+        let after = imageWindow.imageFrameInScreen
+        #expect(abs(after.midX - before.midX) < AppConstants.floatingPointTolerance)
+        #expect(abs(after.midY - before.midY) < AppConstants.floatingPointTolerance)
     }
 
     @Test("setPositionAndSize は非有限値を無視する")

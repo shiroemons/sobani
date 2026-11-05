@@ -144,9 +144,8 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         let dims = Self.calculateImageDimensions(baseHeight: baseHeight, imageSize: image.size)
         imageView.replaceImage(image)
         imageView.aspectRatio = dims.aspectRatio
-        imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
         cachedHasAlpha = nil
-        adjustWindowForRotation()
+        adjustWindowForRotation(imageSize: NSSize(width: dims.width, height: baseHeight))
         notifyStateDidChange(.image)
     }
 
@@ -228,31 +227,22 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         notifyStateDidChange(.rotation)
     }
 
-    func adjustWindowForRotation() {
-        let baseWidth = imageView.frame.width
-        let baseHeight = imageView.frame.height
-        let boundingBox = GeometryUtils.rotatedBoundingBox(
-            width: baseWidth, height: baseHeight, angleDegrees: imageView.rotationAngle
-        )
-        let bbWidth = boundingBox.width
-        let bbHeight = boundingBox.height
-
-        let centerX = window.frame.midX
-        let centerY = window.frame.midY
-        window.setFrame(NSRect(
-            x: round(centerX - bbWidth / 2),
-            y: round(centerY - bbHeight / 2),
-            width: round(bbWidth),
-            height: round(bbHeight)
-        ), display: false)
-        imageView.frame = NSRect(
-            x: (bbWidth - baseWidth) / 2,
-            y: (bbHeight - baseHeight) / 2,
-            width: baseWidth,
-            height: baseHeight
-        )
-        imageView.needsLayout = true
+    /// 画像の中心を固定したまま、回転後の外接矩形に合わせてウィンドウと imageView を配置し直す。
+    ///
+    /// - Parameter imageSize: 新しい imageView のサイズ。省略時は現在のサイズ。
+    ///   サイズを変えるときは imageView.frame を先に書き換えず、ここに渡すこと（中心が保たれなくなる）。
+    func adjustWindowForRotation(imageSize: NSSize? = nil) {
+        let imageFrame = imageFrameInScreen
+        placeImage(center: CGPoint(x: imageFrame.midX, y: imageFrame.midY), size: imageSize ?? imageFrame.size)
         syncAdjustmentPanelSize()
+    }
+
+    /// 画像の中心（スクリーン座標）とサイズを指定して、ウィンドウと imageView のフレームを設定する。
+    func placeImage(center: CGPoint, size: NSSize) {
+        let frames = Self.anchoredFrames(imageCenter: center, imageSize: size, rotationAngle: imageView.rotationAngle)
+        window.setFrame(frames.windowFrame, display: false)
+        imageView.frame = frames.imageViewFrame
+        imageView.needsLayout = true
     }
 
     @objc func changeImage() {
@@ -353,9 +343,9 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     /// 回転・反転・クロップ・不透明度・ゴーストは変更しない。通知は呼び出し側で行う。
     func resetPositionAndSize() {
         let size = Self.clampedImageSize(height: AppConstants.defaultWindowHeight, aspectRatio: imageView.aspectRatio)
-        imageView.frame.size = size
-        adjustWindowForRotation()
-        setImageOrigin(GeometryUtils.centeredOrigin(size: size, in: NSScreen.mainFrameOrFallback))
+        let origin = GeometryUtils.centeredOrigin(size: size, in: NSScreen.mainFrameOrFallback)
+        placeImage(center: CGPoint(x: origin.x + size.width / 2, y: origin.y + size.height / 2), size: size)
+        syncAdjustmentPanelSize()
     }
 }
 
@@ -510,8 +500,7 @@ extension ImageWindow: CropEditorPanelDelegate {
         guard let newSize = Self.areaPreservingImageSize(
             currentSize: oldSize, aspectRatio: imageView.aspectRatio
         ) else { return }
-        imageView.frame.size = NSSize(width: round(newSize.width), height: round(newSize.height))
-        adjustWindowForRotation()
+        adjustWindowForRotation(imageSize: NSSize(width: round(newSize.width), height: round(newSize.height)))
     }
 
     func cropEditorDidCancel(_ editor: CropEditorPanelController) { cropEditorController = nil }
@@ -536,8 +525,7 @@ extension ImageWindow: AdjustmentPanelDelegate {
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize) {
         guard size.width.isFinite, size.height.isFinite else { return }
-        imageView.frame.size = size
-        adjustWindowForRotation()
+        adjustWindowForRotation(imageSize: size)
         adjustmentPanelController?.updatePosition(currentImageOrigin())
         notifyStateDidChange(.size)
     }
@@ -549,13 +537,9 @@ extension ImageWindow: AdjustmentPanelDelegate {
             oldScreenFrame: NSScreen.screen(containing: window.frame)?.frame,
             currentScreenFrame: screen.frame
         )
-        let newWindowOrigin = Self.windowOrigin(
-            forImageOrigin: newImageOrigin,
-            imageViewSize: imageView.frame.size,
-            rotationAngle: imageView.rotationAngle
-        )
+        setImageOrigin(newImageOrigin)
         window.setFrameOrigin(ScreenRestorationUtils.clampOrigin(
-            newWindowOrigin, windowSize: window.frame.size, to: screen.visibleFrame
+            window.frame.origin, windowSize: window.frame.size, to: screen.visibleFrame
         ))
         adjustmentPanelController?.updatePosition(currentImageOrigin())
         notifyStateDidChange(.position)
@@ -572,7 +556,7 @@ extension ImageWindow: AdjustmentPanelDelegate {
 
     // MARK: Helpers
     private func currentImageOrigin() -> CGPoint {
-        Self.imageOrigin(windowFrame: window.frame, imageViewSize: imageView.frame.size)
+        imageFrameInScreen.origin
     }
 }
 

@@ -23,6 +23,29 @@ extension ImageWindow {
         return NSPoint(x: round(centerX - bbSize.width / 2), y: round(centerY - bbSize.height / 2))
     }
 
+    /// 画像の中心（スクリーン座標）を固定して、回転後の外接矩形を覆うウィンドウと、その中の imageView のフレームを計算する。
+    ///
+    /// ウィンドウのフレームは整数に丸めるが、imageView は丸めずに中心がアンカーと一致する位置に置く。
+    /// 丸めたウィンドウの中心から次の中心を求め直すと、回転や拡大縮小のたびに最大 0.5px ずつ
+    /// 位置がずれていくため、中心は常に imageView 側で保持する。
+    nonisolated static func anchoredFrames(
+        imageCenter: CGPoint, imageSize: NSSize, rotationAngle: CGFloat
+    ) -> (windowFrame: NSRect, imageViewFrame: NSRect) {
+        let boundingBox = GeometryUtils.rotatedBoundingBox(
+            width: imageSize.width, height: imageSize.height, angleDegrees: rotationAngle
+        )
+        let windowSize = NSSize(width: round(boundingBox.width), height: round(boundingBox.height))
+        let windowOrigin = NSPoint(
+            x: round(imageCenter.x - windowSize.width / 2),
+            y: round(imageCenter.y - windowSize.height / 2)
+        )
+        let imageViewOrigin = NSPoint(
+            x: imageCenter.x - imageSize.width / 2 - windowOrigin.x,
+            y: imageCenter.y - imageSize.height / 2 - windowOrigin.y
+        )
+        return (NSRect(origin: windowOrigin, size: windowSize), NSRect(origin: imageViewOrigin, size: imageSize))
+    }
+
     /// 新規ウィンドウの初期原点（画面中央 + ランダムオフセット）。画面の原点（マルチディスプレイ）も考慮する。
     nonisolated static func spawnOrigin(windowSize: NSSize, screenFrame: NSRect, offset: CGVector) -> NSPoint {
         let centered = GeometryUtils.centeredOrigin(size: windowSize, in: screenFrame)

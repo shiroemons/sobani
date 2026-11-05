@@ -69,7 +69,7 @@ struct DraggableImageViewTests {
     func calculateResizedFramesScaleUp() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.5, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         #expect(frames.imageViewFrame.height > 200)
     }
@@ -78,7 +78,7 @@ struct DraggableImageViewTests {
     func calculateResizedFramesScaleDown() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 0.5, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         #expect(frames.imageViewFrame.height < 200)
     }
@@ -87,7 +87,7 @@ struct DraggableImageViewTests {
     func calculateResizedFramesMinClamp() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 0.01, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let minDiff = abs(frames.imageViewFrame.height - AppConstants.minImageHeight)
         #expect(minDiff < AppConstants.floatingPointTolerance)
@@ -97,7 +97,7 @@ struct DraggableImageViewTests {
     func calculateResizedFramesMaxClamp() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 5000, scaleFactor: 2.0, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let maxDiff = abs(frames.imageViewFrame.height - AppConstants.maxImageHeight)
         #expect(maxDiff < AppConstants.floatingPointTolerance)
@@ -108,7 +108,7 @@ struct DraggableImageViewTests {
         let center = CGPoint(x: 500, y: 300)
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.5, aspectRatio: 1.0,
-            rotationAngle: 0, windowCenter: center
+            rotationAngle: 0, imageCenter: center
         )
         let resultCenterX = frames.windowFrame.midX
         let resultCenterY = frames.windowFrame.midY
@@ -121,7 +121,7 @@ struct DraggableImageViewTests {
         let aspectRatio: CGFloat = 16.0 / 9.0
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.5, aspectRatio: aspectRatio,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let resultAspectRatio = frames.imageViewFrame.width / frames.imageViewFrame.height
         #expect(abs(resultAspectRatio - aspectRatio) < AppConstants.floatingPointTolerance)
@@ -131,11 +131,11 @@ struct DraggableImageViewTests {
     func calculateResizedFramesWithRotation() {
         let framesNoRotation = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.0, aspectRatio: 2.0,
-            rotationAngle: 0, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 0, imageCenter: CGPoint(x: 500, y: 500)
         )
         let framesRotated = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.0, aspectRatio: 2.0,
-            rotationAngle: 45, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 45, imageCenter: CGPoint(x: 500, y: 500)
         )
         #expect(framesRotated.windowFrame.width > framesNoRotation.windowFrame.width)
         #expect(framesRotated.windowFrame.height > framesNoRotation.windowFrame.height)
@@ -145,13 +145,50 @@ struct DraggableImageViewTests {
     func calculateResizedFramesImageViewCentered() {
         let frames = DraggableImageView.calculateResizedFrames(
             currentHeight: 200, scaleFactor: 1.0, aspectRatio: 1.5,
-            rotationAngle: 30, windowCenter: CGPoint(x: 500, y: 500)
+            rotationAngle: 30, imageCenter: CGPoint(x: 500, y: 500)
         )
         let expectedX = (frames.windowFrame.width - frames.imageViewFrame.width) / 2
         let expectedY = (frames.windowFrame.height - frames.imageViewFrame.height) / 2
         // windowFrame は round() で丸められるため、1.0 の許容誤差を使用
         #expect(abs(frames.imageViewFrame.origin.x - expectedX) <= 1.0)
         #expect(abs(frames.imageViewFrame.origin.y - expectedY) <= 1.0)
+    }
+
+    @Test("画像の中心は丸めの影響を受けずアンカーと一致する")
+    func calculateResizedFramesKeepsExactImageCenter() {
+        let center = CGPoint(x: 500.3, y: 299.8)
+        let frames = DraggableImageView.calculateResizedFrames(
+            currentHeight: 201, scaleFactor: 1.37, aspectRatio: 0.7,
+            rotationAngle: 23, imageCenter: center
+        )
+        let imageCenterX = frames.windowFrame.minX + frames.imageViewFrame.midX
+        let imageCenterY = frames.windowFrame.minY + frames.imageViewFrame.midY
+        #expect(abs(imageCenterX - center.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageCenterY - center.y) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("スクロールで拡大縮小を繰り返しても画像の位置がずれない")
+    func calculateResizedFramesRepeatedScrollDoesNotDrift() {
+        let start = CGPoint(x: 812.5, y: 433.25)
+        var center = start
+        var height: CGFloat = 333
+        // 拡大・縮小を交互に繰り返す（回転ありで外接矩形の幅の偶奇が頻繁に変わる）
+        for step in 0..<200 {
+            let delta: CGFloat = step.isMultiple(of: 2) ? 7 : -7
+            let frames = DraggableImageView.calculateResizedFrames(
+                currentHeight: height,
+                scaleFactor: DraggableImageView.scaleFactor(fromScrollDelta: delta),
+                aspectRatio: 0.75, rotationAngle: 17, imageCenter: center
+            )
+            height = frames.imageViewFrame.height
+            center = CGPoint(
+                x: frames.windowFrame.minX + frames.imageViewFrame.midX,
+                y: frames.windowFrame.minY + frames.imageViewFrame.midY
+            )
+        }
+        #expect(abs(center.x - start.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(center.y - start.y) < AppConstants.floatingPointTolerance)
+        #expect(abs(height - 333) < AppConstants.floatingPointTolerance)
     }
 
     // MARK: - imageTransform Tests
