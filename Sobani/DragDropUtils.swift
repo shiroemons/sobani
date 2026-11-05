@@ -1,4 +1,5 @@
 import Cocoa
+import UniformTypeIdentifiers
 
 @MainActor
 enum DragDropUtils {
@@ -7,7 +8,10 @@ enum DragDropUtils {
         // swiftlint:disable legacy_objc_type
         guard let items = draggingInfo.draggingPasteboard.readObjects(
             forClasses: [NSURL.self],
-            options: [.urlReadingFileURLsOnly: true]
+            options: [
+                .urlReadingFileURLsOnly: true,
+                .urlReadingContentsConformToTypes: [UTType.image.identifier]
+            ]
         ) as? [URL] else { return [] }
         // swiftlint:enable legacy_objc_type
         return filterSupportedImages(items)

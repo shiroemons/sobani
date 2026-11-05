@@ -1,4 +1,5 @@
 import Cocoa
+import os.log
 import UniformTypeIdentifiers
 
 // MARK: - Rotatable Container
@@ -19,6 +20,7 @@ private final class RotatableContainer: NSView {
 /// Z-order は `AppDelegate.zOrderedWindows` 配列で管理される。
 @MainActor
 final class ImageWindow: NSObject, NSMenuDelegate {
+    private static let logger = Logger(category: "ImageWindow")
     let window: NSWindow
     let imageView: DraggableImageView
     weak var delegate: ImageWindowDelegate? {
@@ -261,18 +263,34 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         }
     }
 
+    /// 外部の画像ファイルを登録してから表示する。
+    ///
+    /// 登録できなかった画像を表示すると、`displayName` が保存先に存在しない名前になり
+    /// 再起動後にデフォルト画像へ戻ってしまうため、登録に失敗したら何もしない。
     func loadAndApplyImage(from url: URL) {
-        guard let newImage = NSImage(contentsOf: url) else { return }
-        let savedName = ImageManager.shared.registerImage(from: url)
-        displayName = savedName ?? url.deletingPathExtension().lastPathComponent
-        applyImage(newImage)
+        guard let savedName = ImageManager.shared.registerImage(from: url) else {
+            Self.logger.error("Failed to register image: \(url.lastPathComponent, privacy: .public)")
+            return
+        }
+        if !selectRegisteredImage(named: savedName) {
+            Self.logger.error("Failed to load registered image: \(savedName, privacy: .public)")
+        }
+    }
+
+    /// 登録済み画像に切り替える。
+    ///
+    /// - Returns: 画像を読み込めて切り替えた場合 true。
+    @discardableResult
+    func selectRegisteredImage(named name: String) -> Bool {
+        guard let image = ImageManager.shared.loadRegisteredImage(named: name) else { return false }
+        displayName = name
+        applyImage(image)
+        return true
     }
 
     @objc func selectRegisteredImage(_ sender: NSMenuItem) {
-        guard let name = sender.representedObject as? String,
-              let image = ImageManager.shared.loadRegisteredImage(named: name) else { return }
-        displayName = name
-        applyImage(image)
+        guard let name = sender.representedObject as? String else { return }
+        selectRegisteredImage(named: name)
     }
 
     @objc func deleteRegisteredImage(_ sender: NSMenuItem) {
