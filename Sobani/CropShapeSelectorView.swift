@@ -88,7 +88,6 @@ final class CropShapeSelectorView: NSView {
     private func createShapeButtons() {
         for (index, shape) in CropShape.allCases.enumerated() {
             let button = NSButton(frame: .zero)
-            button.bezelStyle = .regularSquare
             button.isBordered = false
             button.tag = index
             button.wantsLayer = true
@@ -114,7 +113,6 @@ final class CropShapeSelectorView: NSView {
 
     private func createLinkButton() {
         let button = NSButton(frame: .zero)
-        button.bezelStyle = .regularSquare
         button.isBordered = false
         button.wantsLayer = true
         button.translatesAutoresizingMaskIntoConstraints = false

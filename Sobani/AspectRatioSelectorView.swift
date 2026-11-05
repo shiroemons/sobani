@@ -7,6 +7,8 @@ final class AspectRatioSelectorView: NSView {
     // MARK: - Constants
 
     static let viewHeight: CGFloat = 36
+    private static let selectedFontSize: CGFloat = 15
+    private static let unselectedFontSize: CGFloat = 12
 
     // MARK: - Properties
 
@@ -66,7 +68,6 @@ final class AspectRatioSelectorView: NSView {
         for (index, preset) in allPresets.enumerated() {
             let button = NSButton(title: preset.localizedName,
                                   target: self, action: #selector(buttonTapped(_:)))
-            button.bezelStyle = .regularSquare
             button.isBordered = false
             button.tag = index
             button.wantsLayer = true
@@ -98,7 +99,7 @@ final class AspectRatioSelectorView: NSView {
             let isSelected = preset == selectedPreset
 
             if isSelected {
-                let font = NSFont.systemFont(ofSize: 15, weight: .bold)
+                let font = NSFont.systemFont(ofSize: Self.selectedFontSize, weight: .bold)
                 button.attributedTitle = NSAttributedString(
                     string: preset.localizedName,
                     attributes: [
@@ -110,7 +111,7 @@ final class AspectRatioSelectorView: NSView {
                     .withAlphaComponent(AppConstants.selectorSelectedAlpha).cgColor
                 button.layer?.cornerRadius = AppConstants.selectorCornerRadius
             } else {
-                let font = NSFont.systemFont(ofSize: 12, weight: .regular)
+                let font = NSFont.systemFont(ofSize: Self.unselectedFontSize, weight: .regular)
                 button.attributedTitle = NSAttributedString(
                     string: preset.localizedName,
                     attributes: [
