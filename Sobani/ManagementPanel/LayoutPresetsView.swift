@@ -5,20 +5,51 @@ struct LayoutPresetsView: View {
     @State private var presets: [LayoutPreset] = []
     @State private var selectedPreset: LayoutPreset?
     @State private var selectedPresetWindowIndex: Int?
-    @State private var isShowingRenameSheet = false
-    @State private var isShowingSaveSheet = false
-    @State private var newPresetName = ""
+    /// 表示中の名前入力シート。リネーム対象はここに保持する（一覧・詳細のどちらからでも同じシートを開く）
+    @State private var activeNameSheet: NameSheet?
     @State private var hoveredPresetId: UUID?
     @State private var presetToDelete: LayoutPreset?
     @State private var isShowingDeleteConfirmation = false
     @State private var activeToast: ToastType?
     @State private var toastTimerTask: Task<Void, Never>?
-    @State private var isShowingCreateSheet = false
     @State private var presetImages: [String: NSImage] = [:]
 
     private enum ToastType: Equatable {
         case deleted(LayoutPreset)
         case success(String)
+    }
+
+    private enum NameSheet: Identifiable {
+        case save
+        case create
+        case rename(LayoutPreset)
+
+        var id: String {
+            switch self {
+            case .save: return "save"
+            case .create: return "create"
+            case .rename(let preset): return "rename-\(preset.id)"
+            }
+        }
+
+        var title: String {
+            switch self {
+            case .save: return L("layout.save_title")
+            case .create: return L("layout.create_title")
+            case .rename: return L("layout.rename_title")
+            }
+        }
+
+        var initialName: String {
+            if case .rename(let preset) = self { return preset.name }
+            return ""
+        }
+
+        /// 重複判定から除外する名前（リネーム時の自分自身。大文字小文字だけの変更を重複扱いしない）
+        var excludedName: String? {
+            if case .rename(let preset) = self { return preset.name }
+            return nil
+        }
     }
 
     var body: some View {
@@ -69,6 +100,14 @@ struct LayoutPresetsView: View {
         } message: { preset in
             Text(String(format: L("layout.delete_confirm_message"), preset.name))
         }
+        .sheet(item: $activeNameSheet) { sheet in
+            PresetNameSheetView(
+                title: sheet.title,
+                initialName: sheet.initialName,
+                isNameTaken: { viewModel.presetExists(named: $0, excluding: sheet.excludedName) },
+                onApply: { name in performNameSheetAction(sheet, name: name) }
+            )
+        }
         .onDisappear {
             toastTimerTask?.cancel()
         }
@@ -93,8 +132,7 @@ struct LayoutPresetsView: View {
             // Toolbar
             HStack(spacing: 8) {
                 Button {
-                    isShowingSaveSheet = true
-                    newPresetName = ""
+                    activeNameSheet = .save
                 } label: {
                     Image(systemName: "square.and.arrow.down")
                         .frame(width: 16, height: 16)
@@ -102,8 +140,7 @@ struct LayoutPresetsView: View {
                 .help(L("layout.save_current"))
 
                 Button {
-                    newPresetName = ""
-                    isShowingCreateSheet = true
+                    activeNameSheet = .create
                 } label: {
                     Image(systemName: "plus.square")
                         .frame(width: 16, height: 16)
@@ -130,14 +167,6 @@ struct LayoutPresetsView: View {
             }
         }
         .onAppear { refreshPresets() }
-        .sheet(isPresented: $isShowingSaveSheet) {
-            presetNameSheet(title: L("layout.save_title"), action: savePreset)
-        }
-        .sheet(isPresented: $isShowingCreateSheet) {
-            presetNameSheet(title: L("layout.create_title")) {
-                createNewLayout()
-            }
-        }
     }
 
     // MARK: - Preset Row
@@ -219,13 +248,6 @@ struct LayoutPresetsView: View {
         ThumbnailView(image: viewModel.croppedPreviewImage(for: state), iconFont: .caption2)
     }
 
-    // MARK: - Name Input Sheet
-
-    @ViewBuilder
-    private func presetNameSheet(title: String, action: @escaping () -> Void) -> some View {
-        PresetNameSheetView(title: title, name: $newPresetName, action: action)
-    }
-
     @ViewBuilder
     private func makePresetActionButtons(for preset: LayoutPreset) -> some View {
         PresetActionButtonsView(
@@ -291,11 +313,6 @@ extension LayoutPresetsView {
                 .splitPanelFrame()
             }
         }
-        .sheet(isPresented: $isShowingRenameSheet) {
-            presetNameSheet(title: L("layout.rename_title")) {
-                renamePreset(from: preset.name, to: newPresetName)
-            }
-        }
     }
 
     @ViewBuilder
@@ -333,8 +350,16 @@ extension LayoutPresetsView {
 
 extension LayoutPresetsView {
     private func startRename(_ preset: LayoutPreset) {
-        newPresetName = preset.name
-        isShowingRenameSheet = true
+        activeNameSheet = .rename(preset)
+    }
+
+    /// 名前入力シートの確定処理。`name` は正規化済みで、既存プリセットと重複しない。
+    private func performNameSheetAction(_ sheet: NameSheet, name: String) {
+        switch sheet {
+        case .save: savePreset(name: name)
+        case .create: createNewLayout(name: name)
+        case .rename(let preset): renamePreset(preset, to: name)
+        }
     }
 
     private func refreshPresets() {
@@ -344,9 +369,9 @@ extension LayoutPresetsView {
         }
     }
 
-    private func savePreset() {
+    private func savePreset(name: String) {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
-        viewModel.savePreset(name: newPresetName, states: states)
+        viewModel.savePreset(name: name, states: states)
         refreshPresets()
     }
 
@@ -365,12 +390,12 @@ extension LayoutPresetsView {
         showToast(.success(String(format: L("layout.updated_message"), preset.name)))
     }
 
-    private func renamePreset(from oldName: String, to newName: String) {
-        let previousId = selectedPreset?.id
-        let success = viewModel.renamePreset(from: oldName, to: newName)
-        if success {
-            refreshPresets()
-            selectedPreset = presets.first { $0.id == previousId }
+    private func renamePreset(_ preset: LayoutPreset, to newName: String) {
+        guard newName != preset.name else { return }
+        guard viewModel.renamePreset(from: preset.name, to: newName) else { return }
+        refreshPresets()
+        if selectedPreset?.id == preset.id {
+            selectedPreset = presets.first { $0.id == preset.id }
         }
     }
 
@@ -418,9 +443,7 @@ extension LayoutPresetsView {
         }
     }
 
-    private func createNewLayout() {
-        let name = newPresetName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return }
+    private func createNewLayout(name: String) {
         viewModel.createNewLayout(name: name)
         refreshPresets()
     }
@@ -430,31 +453,75 @@ extension LayoutPresetsView {
 
 struct PresetNameSheetView: View {
     let title: String
-    @Binding var name: String
-    let action: () -> Void
+    /// 正規化済みの名前が既存プリセットと重複するか
+    let isNameTaken: (String) -> Bool
+    /// 確定時に正規化済みの名前で呼ばれる
+    let onApply: (String) -> Void
+    @State private var name: String
     @Environment(\.dismiss) private var dismiss
 
+    init(
+        title: String,
+        initialName: String = "",
+        isNameTaken: @escaping (String) -> Bool,
+        onApply: @escaping (String) -> Void
+    ) {
+        self.title = title
+        self.isNameTaken = isNameTaken
+        self.onApply = onApply
+        _name = State(initialValue: initialName)
+    }
+
     var body: some View {
+        let validation = PresetNameValidation.validate(name, isNameTaken: isNameTaken)
         VStack(spacing: 16) {
             Text(title)
                 .font(.headline)
             TextField(L("layout.name_placeholder"), text: $name)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: AppConstants.layoutDialogFieldWidth)
+            if validation == .duplicate {
+                Label(L("layout.name_exists"), systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
             HStack {
                 Button(L("management.cancel")) {
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
                 Button(L("management.apply")) {
-                    action()
+                    guard case .valid(let validName) = validation else { return }
+                    onApply(validName)
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(validation.validName == nil)
             }
         }
         .padding(20)
+    }
+}
+
+// MARK: - PresetNameValidation
+
+/// プリセット名の入力検証結果。名前は `LayoutPresetManager.normalizedName` で正規化してから判定する。
+enum PresetNameValidation: Equatable {
+    /// 空（空白のみを含む）
+    case empty
+    /// 既存のプリセットと重複する（保存すると上書きしてしまう）
+    case duplicate
+    /// 使用可能。正規化済みの名前を持つ
+    case valid(String)
+
+    var validName: String? {
+        if case .valid(let name) = self { return name }
+        return nil
+    }
+
+    static func validate(_ input: String, isNameTaken: (String) -> Bool) -> Self {
+        guard let name = LayoutPresetManager.normalizedName(input) else { return .empty }
+        return isNameTaken(name) ? .duplicate : .valid(name)
     }
 }
 

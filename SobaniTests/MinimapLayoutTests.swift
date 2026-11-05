@@ -190,3 +190,41 @@ import Testing
         #expect(PositionEditorInput.parseFrame(makeFields(x, y, width, height)) == nil)
     }
 }
+
+// MARK: - Preset Name Validation
+
+/// 管理パネルのプリセット名入力の検証を検証するテスト
+@Suite struct PresetNameValidationTests {
+
+    /// 空・空白のみの名前は空として扱われ、重複判定は行われないことを検証
+    @Test(arguments: ["", "   ", "\n\t"])
+    func blankNameIsEmpty(input: String) throws {
+        var checkedNames: [String] = []
+        let result = PresetNameValidation.validate(input) { name in
+            checkedNames.append(name)
+            return false
+        }
+        #expect(result == .empty)
+        #expect(result.validName == nil)
+        #expect(checkedNames.isEmpty)
+    }
+
+    /// 前後の空白を除いた名前で重複判定され、そのまま確定に使われることを検証
+    @Test func nameIsTrimmedBeforeCheck() throws {
+        var checkedNames: [String] = []
+        let result = PresetNameValidation.validate("  Work  ") { name in
+            checkedNames.append(name)
+            return false
+        }
+        #expect(result == .valid("Work"))
+        #expect(result.validName == "Work")
+        #expect(checkedNames == ["Work"])
+    }
+
+    /// 既存の名前と重複する場合は確定できないことを検証
+    @Test func duplicateNameIsRejected() throws {
+        let result = PresetNameValidation.validate("Home") { $0 == "Home" }
+        #expect(result == .duplicate)
+        #expect(result.validName == nil)
+    }
+}

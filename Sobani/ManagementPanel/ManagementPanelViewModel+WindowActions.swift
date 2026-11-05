@@ -160,6 +160,11 @@ extension ManagementPanelViewModel {
     func renamePreset(from oldName: String, to newName: String) -> Bool {
         LayoutPresetManager.shared.renamePreset(from: oldName, to: newName)
     }
+
+    /// `name` で保存すると `excluded` 以外の既存プリセットを上書きしてしまうか。
+    func presetExists(named name: String, excluding excluded: String? = nil) -> Bool {
+        LayoutPresetManager.shared.presetExists(named: name, excluding: excluded)
+    }
     func deletePreset(named name: String) {
         LayoutPresetManager.shared.deletePreset(named: name)
     }

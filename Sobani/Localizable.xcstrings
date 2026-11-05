@@ -1969,6 +1969,22 @@
         }
       }
     },
+    "layout.name_exists": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同じ名前のプリセットがすでにあります"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A preset with this name already exists"
+          }
+        }
+      }
+    },
     "layout.overwrite_title": {
       "localizations": {
         "ja": {
