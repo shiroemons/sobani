@@ -16,6 +16,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var statusItem: NSStatusItem?
     private var shouldTerminate = false
     private var shouldSkipSave = false
+    /// 直近に willPowerOff（ログアウト・再起動・システム終了）を受けた時刻
+    var powerOffRequestedAt: Date?
     /// すべてのウィンドウが非表示か。各ウィンドウの `isHidden` から導出する（二重管理による不整合を防ぐ）。
     var areWindowsHidden: Bool {
         !zOrderedWindows.isEmpty && zOrderedWindows.allSatisfy(\.isHidden)
@@ -40,7 +42,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var lastScreenChangeAt: Date?
     var windowGeometryObservers: [NSObjectProtocol] = []
     var onboardingController: OnboardingWindowController?
-    var isApplyingLayout = false
     weak var lastHighlightedWindow: ImageWindow?
     private var managementPanelController: ManagementPanelController?
 
@@ -79,16 +80,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         logStates(event: "states.load", savedStates)
 
         if savedStates.isEmpty {
-            guard let image = ImageManager.shared.defaultImage() else {
+            // デフォルト画像が読めなくても、監視の登録やオンボーディングは続ける（早期 return しない）
+            if let image = ImageManager.shared.defaultImage() {
+                let imageWindow = makeImageWindow(
+                    image: image, displayName: AppConstants.defaultImageName, windowId: issueWindowId()
+                )
+                imageWindow.window.center()
+                zOrderedWindows.append(imageWindow)
+            } else {
                 logger.error("Failed to load default image")
-                return
             }
-            let imageWindow = ImageWindow(image: image)
-            imageWindow.delegate = self
-            imageWindow.windowId = nextWindowId
-            nextWindowId += 1
-            imageWindow.window.center()
-            zOrderedWindows.append(imageWindow)
         } else {
             var loadedWindows: [ImageWindow] = []
             var resolutions: [WindowState.RestoreResolution?] = []
@@ -116,7 +117,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             zOrderedWindows = loadedWindows.reversed()
         }
 
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
 
         if OnboardingManager.shared.shouldShowOnboarding {
             if savedStates.isEmpty {
@@ -146,7 +147,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func bringAllToFront() {
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         setWindowsHidden(false)
     }
 
@@ -174,17 +175,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         setWindowsHidden(!windows.allSatisfy(\.isHidden), windows: windows)
     }
 
+    /// マウスカーソルのあるスクリーンに（最も大きく重なって）表示されているウィンドウ
     private func windowsOnCurrentScreen() -> [ImageWindow] {
-        let mouseLocation = NSEvent.mouseLocation
-        guard let currentScreen = NSScreen.screen(
-            containingPoint: mouseLocation
+        let screenFrames = NSScreen.screens.map(\.frame)
+        guard let currentIndex = ScreenRestorationUtils.indexOfScreen(
+            containingMouseLocation: NSEvent.mouseLocation, in: screenFrames
         ) else { return [] }
 
         return zOrderedWindows.filter { imageWindow in
-            guard let windowScreen = NSScreen.screen(
-                containing: imageWindow.window.frame
-            ) else { return false }
-            return windowScreen == currentScreen
+            ScreenRestorationUtils.indexOfLargestOverlap(for: imageWindow.window.frame, in: screenFrames) == currentIndex
         }
     }
 
@@ -227,6 +226,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func moveWindowToFront(_ imageWindow: ImageWindow) {
+        // クリックのたびに呼ばれるため、すでに最前面なら並べ替えと通知（保存・スナップショット・パネル再構築）を省く
+        guard zOrderedWindows.first !== imageWindow else { return }
         zOrderedWindows = ZOrderUtils.moveToFront(imageWindow, in: zOrderedWindows)
         applyZOrderToWindows()
         notifyWindowListDidChange(.zorder)
@@ -260,22 +261,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         quitIfNoWindows()
     }
 
-    nonisolated static func shouldQuitApp(windowCount: Int, isApplyingLayout: Bool) -> Bool {
-        windowCount == 0 && !isApplyingLayout
-    }
-
     /// すべてのウィンドウが閉じられた場合にアプリを終了する。
     ///
     /// `applicationShouldTerminate` は常に `.terminateCancel` を返すため、
     /// 終了は `shouldTerminate` フラグを設定してからこのメソッドを呼ぶか、
     /// 明示的な終了アクション経由で行う必要がある。
     func quitIfNoWindows() {
-        if Self.shouldQuitApp(
-            windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout
-        ) {
-            shouldTerminate = true
-            NSApp.terminate(nil)
-        }
+        guard zOrderedWindows.isEmpty else { return }
+        shouldTerminate = true
+        NSApp.terminate(nil)
     }
 
     @objc func quitFromMenu() {
@@ -287,7 +281,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         )
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         shouldTerminate = true
-        NSApplication.shared.terminate(nil)
+        NSApp.terminate(nil)
     }
 
     func requestQuit() { quitFromMenu() }
@@ -295,14 +289,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func quitWithoutSavingFromMenu() {
         shouldSkipSave = true
         shouldTerminate = true
-        NSApplication.shared.terminate(nil)
+        NSApp.terminate(nil)
     }
 
     func requestQuitWithoutSaving() { quitWithoutSavingFromMenu() }
-
-    func prepareShouldTerminate() {
-        shouldTerminate = true
-    }
 
     /// 新しいキャラクターウィンドウを作成して表示する。
     ///
@@ -318,11 +308,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             image = ImageManager.shared.defaultImage() ?? NSImage()
         }
-        let imageWindow = ImageWindow(image: image)
-        imageWindow.delegate = self
-        imageWindow.displayName = imageName ?? AppConstants.defaultImageName
-        imageWindow.windowId = nextWindowId
-        nextWindowId += 1
+        let imageWindow = makeImageWindow(
+            image: image, displayName: imageName ?? AppConstants.defaultImageName, windowId: issueWindowId()
+        )
         addImageWindow(imageWindow)
     }
 
@@ -354,7 +342,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let reply = Self.terminateReply(
             shouldTerminate: shouldTerminate,
             isInstallingUpdate: SparkleManager.shared.isInstallingUpdate,
-            quitReason: quitReason
+            quitReason: quitReason,
+            powerOffRequestedAt: powerOffRequestedAt
         )
         if reply == .terminateNow && !shouldTerminate {
             logger.notice("Terminating for system quit (reason=\(quitReason ?? 0, privacy: .public))")
@@ -447,18 +436,17 @@ extension AppDelegate {
 
 extension AppDelegate {
     @objc func toggleAllGhostMode() {
-        guard !zOrderedWindows.isEmpty else { return }
-        let anyGhosted = zOrderedWindows.contains { $0.isGhostMode }
-        for imageWindow in zOrderedWindows {
-            imageWindow.setGhostMode(!anyGhosted)
-        }
+        toggleGhostMode(for: zOrderedWindows)
     }
 
     func toggleCurrentScreenGhostMode() {
-        let windowsOnScreen = windowsOnCurrentScreen()
-        guard !windowsOnScreen.isEmpty else { return }
-        let anyGhosted = windowsOnScreen.contains { $0.isGhostMode }
-        for imageWindow in windowsOnScreen {
+        toggleGhostMode(for: windowsOnCurrentScreen())
+    }
+
+    /// 1つでもゴーストモードならすべて解除し、そうでなければすべてゴーストモードにする。
+    private func toggleGhostMode(for windows: [ImageWindow]) {
+        let anyGhosted = windows.contains(where: \.isGhostMode)
+        for imageWindow in windows {
             imageWindow.setGhostMode(!anyGhosted)
         }
     }

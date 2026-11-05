@@ -25,18 +25,10 @@ extension AppDelegate {
         let action: KeyboardAction
         let keyCode: UInt16
         let modifiers: NSEvent.ModifierFlags
-
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.action == rhs.action && lhs.keyCode == rhs.keyCode && lhs.modifiers == rhs.modifiers
-        }
     }
 
     struct HotkeyConfig: Sendable, Equatable {
         let bindings: [HotkeyBinding]
-
-        func binding(for action: KeyboardAction) -> HotkeyBinding? {
-            bindings.first { $0.action == action }
-        }
     }
 }
 

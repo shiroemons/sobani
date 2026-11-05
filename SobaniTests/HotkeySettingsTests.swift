@@ -231,7 +231,7 @@ import Testing
         let config = HotkeySettings.buildConfig()
         #expect(config.bindings.count == AppDelegate.KeyboardAction.allCases.count)
         for action in AppDelegate.KeyboardAction.allCases {
-            #expect(config.binding(for: action) != nil)
+            #expect(config.bindings.contains { $0.action == action })
         }
     }
 
@@ -242,7 +242,7 @@ import Testing
                 HotkeySettings.setKeyCode(10, for: .toggleVisibility)
                 HotkeySettings.setModifiers([.command, .shift], for: .toggleVisibility)
                 let config = HotkeySettings.buildConfig()
-                let binding = config.binding(for: .toggleVisibility)
+                let binding = config.bindings.first { $0.action == .toggleVisibility }
                 #expect(binding?.keyCode == 10)
                 #expect(binding?.modifiers == [.command, .shift])
             }

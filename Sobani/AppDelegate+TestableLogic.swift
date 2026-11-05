@@ -38,11 +38,23 @@ extension AppDelegate {
         } else {
             image = registeredImage ?? NSImage()
         }
+        return makeImageWindow(image: image, displayName: resolved.resolvedName, windowId: windowId ?? state.windowId)
+    }
+
+    /// ImageWindow を生成し、delegate・表示名・ウィンドウ ID を設定して返す。
+    /// `zOrderedWindows` への追加は呼び出し側で行うこと。
+    func makeImageWindow(image: NSImage, displayName: String, windowId: Int) -> ImageWindow {
         let imageWindow = ImageWindow(image: image)
         imageWindow.delegate = self
-        imageWindow.displayName = resolved.resolvedName
-        imageWindow.windowId = windowId ?? state.windowId
+        imageWindow.displayName = displayName
+        imageWindow.windowId = windowId
         return imageWindow
+    }
+
+    /// 新しいウィンドウ ID を払い出す
+    func issueWindowId() -> Int {
+        defer { nextWindowId += 1 }
+        return nextWindowId
     }
 
     /// レガシーウィンドウID（legacyId）を持つ要素に新しいIDを割り当てる。

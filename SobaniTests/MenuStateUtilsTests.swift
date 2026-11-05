@@ -294,6 +294,21 @@ struct MenuStateUtilsTests {
         #expect(result == "表示中: 3体")
     }
 
+    @Test(
+        "formatWindowCountText(hiddenFormat:): 非表示なら専用の書式を使い、文言を置換しない",
+        arguments: [(false, "Showing: 3 (ghost 1)"), (true, "All hidden (3) (ghost 1)")]
+    )
+    func formatWindowCountTextWithHiddenFormat(isHidden: Bool, expected: String) {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 3,
+            isHidden: isHidden,
+            showingFormat: "Showing: %@",
+            hiddenFormat: "All hidden (%@)",
+            badges: [StatusBadge(value: 1, format: "(ghost %@)"), StatusBadge(value: 0, format: "(hidden %@)")]
+        )
+        #expect(result == expected)
+    }
+
     // MARK: - buildWindowInfoText Tests
 
     @Test("buildWindowInfoText: 基本的なテキスト生成")

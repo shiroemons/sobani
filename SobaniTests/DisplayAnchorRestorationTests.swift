@@ -276,6 +276,27 @@ import Testing
         #expect(reply == .terminateNow)
     }
 
+    @Test("terminateReply: willPowerOff の直後は終了理由が取れない終了要求も許可する")
+    func terminateReplyAllowsQuitRightAfterPowerOff() {
+        let requestedAt = Date()
+        let reply = AppDelegate.terminateReply(
+            shouldTerminate: false, isInstallingUpdate: false, quitReason: nil,
+            powerOffRequestedAt: requestedAt, now: requestedAt.addingTimeInterval(1)
+        )
+        #expect(reply == .terminateNow)
+    }
+
+    @Test("terminateReply: ログアウトがキャンセルされた後は終了ガードが元に戻る")
+    func terminateReplyCancelsLongAfterCancelledPowerOff() {
+        let requestedAt = Date()
+        let oneHour: TimeInterval = 3600
+        let reply = AppDelegate.terminateReply(
+            shouldTerminate: false, isInstallingUpdate: false, quitReason: OSType(kAEQuitApplication),
+            powerOffRequestedAt: requestedAt, now: requestedAt.addingTimeInterval(oneHour)
+        )
+        #expect(reply == .terminateCancel)
+    }
+
     @Test("terminateReply: 明示的な終了・アップデート中は従来どおり終了する")
     func terminateReplyAllowsExplicitQuit() {
         #expect(AppDelegate.terminateReply(shouldTerminate: true, isInstallingUpdate: false, quitReason: nil) == .terminateNow)
@@ -293,15 +314,23 @@ import Testing
         let manager = ScreenRestorationManager(baseDirectory: directory)
         let state = Self.largePortraitState(anchor: Self.portraitAnchor)
         manager.addPending(
-            windowId: 145, originalState: state, displayID: AppConstants.unknownDisplayID,
-            adjustedOriginX: 0, adjustedOriginY: 0
+            windowId: 145, originalState: state, displayID: AppConstants.unknownDisplayID
         )
-        manager.screenProvider = { [Self.normalScreens[0]] }
-        #expect(manager.restorableEntries().isEmpty)
-        manager.screenProvider = { Self.normalScreens }
-        #expect(manager.restorableEntries().map(\.windowId) == [145])
+        #expect(manager.restorableEntries(screens: [Self.normalScreens[0]]).isEmpty)
+        #expect(manager.restorableEntries(screens: Self.normalScreens).map(\.windowId) == [145])
         #expect(manager.isPending(windowId: 145))
         #expect(!manager.isPending(windowId: 1))
+    }
+
+    @Test("userGeometryTriggers: 位置・大きさが変わる操作だけが自動復元の対象から外す契機になる")
+    func userGeometryTriggersCoverGeometryChangesOnly() {
+        let triggers = AppDelegate.userGeometryTriggers
+        for trigger: AppConstants.SnapshotTrigger in [.position, .size, .reset, .crop, .rotation] {
+            #expect(triggers.contains(trigger))
+        }
+        for trigger: AppConstants.SnapshotTrigger in [.launch, .opacity, .flip, .ghost, .hidden, .zorder, .windowAdd] {
+            #expect(!triggers.contains(trigger))
+        }
     }
 
     @Test("LaunchRestorationContext: 手動で動かしたウィンドウを外し、空になったら非アクティブになる")
@@ -315,5 +344,19 @@ import Testing
         #expect(context.states.keys.sorted() == [2])
         context.release(windowId: 2)
         #expect(!context.isActive)
+    }
+
+    @Test("LaunchRestorationContext: アンカーのディスプレイが未接続のウィンドウだけを返す")
+    func launchContextWindowIdsWithMissingDisplay() {
+        var context = LaunchRestorationContext()
+        let mainAnchor = DisplayAnchor(displayUUID: Self.mainUUID, screenFrame: Self.normalScreens[0].frame)
+        context.states = [
+            145: Self.largePortraitState(anchor: Self.portraitAnchor),
+            2: Self.makeState(windowId: 2, originX: 100, originY: 100)
+                .withPosition(originX: 100, originY: 100, displayAnchor: mainAnchor),
+        ]
+        #expect(context.windowIdsWithMissingDisplay(on: Self.normalScreens).isEmpty)
+        #expect(context.windowIdsWithMissingDisplay(on: [Self.normalScreens[0]]) == [145])
+        #expect(context.windowIdsWithMissingDisplay(on: [Self.normalScreens[1]]) == [2])
     }
 }
