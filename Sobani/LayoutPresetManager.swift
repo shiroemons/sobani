@@ -85,8 +85,12 @@ final class LayoutPresetManager {
     @discardableResult
     private func persistPreset(_ preset: LayoutPreset) -> Bool {
         guard let url = presetFileURL(for: preset.name) else { return false }
+        let sanitized = LayoutPreset(
+            id: preset.id, name: preset.name, createdAt: preset.createdAt,
+            states: WindowState.sanitizedForPersistence(preset.states, logger: logger)
+        )
         let saved = JSONPersistence.save(
-            preset, to: url, logger: logger,
+            sanitized, to: url, logger: logger,
             errorMessage: "Failed to persist layout preset"
         ) {
             $0.dateEncodingStrategy = .iso8601

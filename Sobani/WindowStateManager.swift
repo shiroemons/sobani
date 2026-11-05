@@ -27,6 +27,11 @@ struct DisplayAnchor: Codable, Equatable, Sendable {
         NSRect(x: screenX, y: screenY, width: screenWidth, height: screenHeight)
     }
 
+    /// すべての座標が有限値か（NaN / ±inf は JSON にエンコードできない）
+    var hasFiniteValues: Bool {
+        [screenX, screenY, screenWidth, screenHeight].allSatisfy(\.isFinite)
+    }
+
     /// 矩形と最も大きく重なるスクリーンをアンカーとする。UUID が取れない・どこにも重ならない場合は nil。
     static func make(for rect: NSRect, screens: [ScreenInfo]) -> Self? {
         guard let index = ScreenRestorationUtils.indexOfLargestOverlap(
@@ -229,6 +234,58 @@ struct WindowState: Codable, Equatable, Sendable {
     }
 }
 
+// MARK: - Persistence Sanitization
+
+extension WindowState {
+    /// 永続化できる値に補正したコピーを返す（入力側のガードに対する多層防御）。
+    ///
+    /// `JSONEncoder` は非有限値（NaN / ±inf）を含むとエンコード自体に失敗するため、1 ウィンドウの
+    /// 不正値でセッション中の保存がすべて失敗してしまう。保存直前にこの関数を通す。
+    func sanitizedForPersistence() -> Self {
+        Self(
+            imageName: imageName,
+            originX: originX.isFinite ? originX : 0,
+            originY: originY.isFinite ? originY : 0,
+            width: Self.sanitizedLength(width),
+            height: Self.sanitizedLength(height),
+            isFlippedHorizontally: isFlippedHorizontally,
+            rotationAngle: rotationAngle.isFinite ? rotationAngle : 0,
+            opacityLevel: Self.sanitizedOpacity(opacityLevel),
+            windowId: windowId,
+            cropRect: cropRect.flatMap { Self.isEncodable($0) ? $0 : nil },
+            isGhostMode: isGhostMode,
+            customGhostAlpha: customGhostAlpha.flatMap { $0.isFinite ? $0 : nil },
+            isHidden: isHidden,
+            displayAnchor: displayAnchor.flatMap { $0.hasFiniteValues ? $0 : nil }
+        )
+    }
+
+    /// 配列の各要素を `sanitizedForPersistence()` で補正し、補正が発生した件数をログに残す。
+    static func sanitizedForPersistence(_ states: [Self], logger: Logger) -> [Self] {
+        let sanitized = states.map { $0.sanitizedForPersistence() }
+        // NaN を含む要素は自身とも等しくならないため、補正対象として数えられる
+        let changedCount = zip(states, sanitized).filter { $0 != $1 }.count
+        if changedCount > 0 {
+            logger.warning("Sanitized invalid values in \(changedCount, privacy: .public) window states before saving")
+        }
+        return sanitized
+    }
+
+    private static func sanitizedLength(_ value: CGFloat) -> CGFloat {
+        value.isFinite && value > 0 ? value : AppConstants.defaultWindowHeight
+    }
+
+    private static func sanitizedOpacity(_ value: CGFloat) -> CGFloat {
+        guard value.isFinite else { return AppConstants.opacityMax }
+        return min(max(value, AppConstants.opacityMin), AppConstants.opacityMax)
+    }
+
+    /// クロップ情報は項目が多く今後も増えうるため、個別に検査せず実際にエンコードできるかで判定する
+    private static func isEncodable(_ cropRect: CropRect) -> Bool {
+        (try? JSONEncoder().encode(cropRect)) != nil
+    }
+}
+
 // MARK: - Window State Manager
 
 /// ウィンドウ状態の永続化を管理するシングルトン。
@@ -254,11 +311,13 @@ final class WindowStateManager {
 
     /// 全ウィンドウの状態を JSON にエンコードして保存する。
     ///
+    /// 非有限値などエンコードできない値は `WindowState.sanitizedForPersistence` で補正してから書き込む。
     /// - Parameter states: 保存するウィンドウ状態の配列。Z-order は配列順で表現される。
     func saveStates(_ states: [WindowState]) {
         guard let url = statesFileURL else { return }
         JSONPersistence.save(
-            states, to: url, logger: logger, errorMessage: "Failed to save window states"
+            WindowState.sanitizedForPersistence(states, logger: logger),
+            to: url, logger: logger, errorMessage: "Failed to save window states"
         )
     }
 

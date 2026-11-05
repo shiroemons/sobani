@@ -455,4 +455,85 @@ import Testing
         #expect(stateManager.loadStates().count == 1)
         #expect(try corruptBackups().isEmpty)
     }
+
+    // MARK: - Persistence Sanitization Tests
+
+    private func makeNonFiniteState() -> WindowState {
+        WindowState(
+            imageName: "nan.png",
+            originX: .nan,
+            originY: .infinity,
+            width: .nan,
+            height: -10,
+            isFlippedHorizontally: true,
+            rotationAngle: -.infinity,
+            opacityLevel: .nan,
+            windowId: 3,
+            cropRect: CropRect(x: .nan, y: 0, width: 1, height: 1),
+            isGhostMode: true,
+            customGhostAlpha: .nan,
+            isHidden: true,
+            displayAnchor: DisplayAnchor(
+                displayUUID: "uuid", screenFrame: NSRect(x: 0, y: 0, width: CGFloat.nan, height: 1080)
+            )
+        )
+    }
+
+    /// 非有限値・不正値がすべて永続化可能な値に補正されることを検証
+    @Test func sanitizedForPersistenceReplacesNonFiniteValues() throws {
+        let sanitized = makeNonFiniteState().sanitizedForPersistence()
+
+        #expect(abs(sanitized.originX) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.originY) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.width - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.height - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.rotationAngle) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.opacityLevel - AppConstants.opacityMax) < AppConstants.floatingPointTolerance)
+        #expect(sanitized.cropRect == nil)
+        #expect(sanitized.customGhostAlpha == nil)
+        #expect(sanitized.displayAnchor == nil)
+        // 数値以外の属性は保持される
+        #expect(sanitized.imageName == "nan.png")
+        #expect(sanitized.windowId == 3)
+        #expect(sanitized.isFlippedHorizontally)
+        #expect(sanitized.isGhostMode)
+        #expect(sanitized.isHidden)
+        _ = try JSONEncoder().encode(sanitized)
+    }
+
+    /// 正常な値は補正されないことを検証
+    @Test func sanitizedForPersistenceKeepsValidState() {
+        let state = WindowState(
+            imageName: "ok.png", originX: -50, originY: 20, width: 300, height: 400,
+            isFlippedHorizontally: false, rotationAngle: 30, opacityLevel: 0.5, windowId: 1,
+            cropRect: CropRect(x: 0.1, y: 0.1, width: 0.5, height: 0.5),
+            customGhostAlpha: 0.4,
+            displayAnchor: DisplayAnchor(displayUUID: "uuid", screenFrame: NSRect(x: 0, y: 0, width: 1920, height: 1080))
+        )
+        #expect(state.sanitizedForPersistence() == state)
+    }
+
+    /// 透過率が範囲外の場合にopacityMin〜opacityMaxへクランプされることを検証
+    @Test(arguments: [
+        (CGFloat(-1), AppConstants.opacityMin), (CGFloat(0), AppConstants.opacityMin), (CGFloat(5), AppConstants.opacityMax),
+    ])
+    func sanitizedForPersistenceClampsOpacity(input: CGFloat, expected: CGFloat) {
+        let state = WindowState(
+            imageName: "a.png", originX: 0, originY: 0, width: 100, height: 100,
+            isFlippedHorizontally: false, opacityLevel: input
+        )
+        #expect(abs(state.sanitizedForPersistence().opacityLevel - expected) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 非有限値を含む状態があっても保存が成功し、他のウィンドウも失われないことを検証
+    @Test func saveStatesWithNonFiniteValuesSucceeds() {
+        let valid = makeState(imageName: "valid.png")
+        stateManager.saveStates([valid, makeNonFiniteState()])
+
+        let loaded = stateManager.loadStates()
+
+        #expect(loaded.count == 2)
+        #expect(loaded.first == valid)
+        #expect(loaded.last?.imageName == "nan.png")
+    }
 }

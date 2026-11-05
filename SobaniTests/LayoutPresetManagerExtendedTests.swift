@@ -120,4 +120,23 @@ import Testing
         #expect(!presetManager.presetExists(named: "WillBeDeleted"))
     }
 
+    // MARK: - Sanitization Tests
+
+    /// 非有限値を含む状態でもプリセットを保存でき、値が補正されることを検証
+    @Test func savePresetSanitizesNonFiniteValues() throws {
+        let states = [
+            makeState(imageName: "valid.png"),
+            makeState(imageName: "nan.png", originX: .nan, width: .infinity, rotationAngle: .nan),
+        ]
+        presetManager.savePreset(name: "NaNPreset", states: states)
+
+        let loaded = try #require(presetManager.loadPreset(named: "NaNPreset"))
+        #expect(loaded.states.count == 2)
+        #expect(loaded.states[0] == states[0])
+        let sanitized = loaded.states[1]
+        #expect(abs(sanitized.originX) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.width - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.rotationAngle) < AppConstants.floatingPointTolerance)
+    }
+
 }
