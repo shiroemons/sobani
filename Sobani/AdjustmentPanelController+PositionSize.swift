@@ -151,7 +151,7 @@ extension AdjustmentPanelController {
 
     private func handlePositionFieldChanged(_ sender: NSTextField, isXField: Bool) {
         guard let screen = currentScreen else { return }
-        guard let value = Self.parseFiniteNumber(sender.stringValue) else {
+        guard let value = FormatUtils.parseFiniteNumber(sender.stringValue) else {
             updatePositionFields()
             return
         }
@@ -174,7 +174,7 @@ extension AdjustmentPanelController {
     }
 
     private func handleSizeFieldChanged(_ sender: NSTextField, isWidth: Bool) {
-        guard let value = Self.parseFiniteNumber(sender.stringValue) else {
+        guard let value = FormatUtils.parseFiniteNumber(sender.stringValue) else {
             updateSizeFields()
             return
         }
@@ -234,12 +234,12 @@ extension AdjustmentPanelController {
         guard let screen = currentScreen else { return }
         let relative = Self.globalToMonitorRelative(
             currentPosition, screenOrigin: screen.frame.origin)
-        xField?.stringValue = "\(Int(round(relative.x)))"
-        yField?.stringValue = "\(Int(round(relative.y)))"
+        xField?.stringValue = FormatUtils.integerString(relative.x)
+        yField?.stringValue = FormatUtils.integerString(relative.y)
     }
 
     func updateSizeFields() {
-        wField?.stringValue = "\(Int(round(currentSize.width)))"
-        hField?.stringValue = "\(Int(round(currentSize.height)))"
+        wField?.stringValue = FormatUtils.integerString(currentSize.width)
+        hField?.stringValue = FormatUtils.integerString(currentSize.height)
     }
 }

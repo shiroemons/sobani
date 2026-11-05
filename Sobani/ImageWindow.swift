@@ -240,6 +240,8 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     ///
     /// 開いている調整パネルのサイズ表示もここで合わせる（配置を変えるすべての経路で古い値が残らないように）。
     func placeImage(center: CGPoint, size: NSSize) {
+        // NaN/無限大はフレームを壊し、JSON 保存も失敗させるため無視する（配置の共通の入口なのでここで弾く）
+        guard center.x.isFinite, center.y.isFinite, size.width.isFinite, size.height.isFinite else { return }
         let frames = Self.anchoredFrames(imageCenter: center, imageSize: size, rotationAngle: imageView.rotationAngle)
         window.setFrame(frames.windowFrame, display: false)
         imageView.frame = frames.imageViewFrame
@@ -521,13 +523,11 @@ extension ImageWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
-        guard position.x.isFinite, position.y.isFinite else { return }
         setImageOrigin(position)
         notifyStateDidChange(.position)
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize) {
-        guard size.width.isFinite, size.height.isFinite else { return }
         adjustWindowForRotation(imageSize: size)
         adjustmentPanelController?.updatePosition(currentImageOrigin())
         notifyStateDidChange(.size)

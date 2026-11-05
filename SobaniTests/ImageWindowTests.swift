@@ -473,4 +473,21 @@ struct ImageWindowNotificationTests {
         #expect(abs(frameAfter.width - frameBefore.width) < AppConstants.floatingPointTolerance)
         #expect(abs(frameAfter.height - frameBefore.height) < AppConstants.floatingPointTolerance)
     }
+
+    @Test("配置の共通入口は非有限の位置・サイズを無視する")
+    func placementIgnoresNonFinite() {
+        let imageWindow = ImageWindow(image: NSImage(size: NSSize(width: 100, height: 50)))
+        defer { imageWindow.window.orderOut(nil) }
+        let imageFrameBefore = imageWindow.imageFrameInScreen
+
+        imageWindow.setImageOrigin(NSPoint(x: CGFloat.nan, y: 0))
+        imageWindow.adjustWindowForRotation(imageSize: NSSize(width: CGFloat.infinity, height: 50))
+        imageWindow.placeImage(center: NSPoint(x: 0, y: -CGFloat.infinity), size: NSSize(width: 100, height: 50))
+
+        let imageFrameAfter = imageWindow.imageFrameInScreen
+        #expect(abs(imageFrameAfter.minX - imageFrameBefore.minX) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrameAfter.minY - imageFrameBefore.minY) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrameAfter.width - imageFrameBefore.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(imageFrameAfter.height - imageFrameBefore.height) < AppConstants.floatingPointTolerance)
+    }
 }

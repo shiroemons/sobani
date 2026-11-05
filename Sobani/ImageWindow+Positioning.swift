@@ -38,7 +38,8 @@ extension ImageWindow {
     /// スクリーン座標上の原点、サイズ = imageView のサイズ）。サイズは現在の縦横比を保ち、
     /// 高さを最小・最大値にクランプする。移動は `.position`、サイズ変更は `.size` で通知する。
     func setPositionAndSize(origin: NSPoint, size: NSSize) {
-        // NaN/無限大はフレームを壊し、JSON 保存も失敗させるため無視する
+        // 非有限値は placeImage でも弾かれるが、無限大の高さはクランプで有限値になってしまうため、
+        // 通知も含めてここで無視する
         guard origin.x.isFinite, origin.y.isFinite,
               size.width.isFinite, size.height.isFinite else { return }
         let oldSize = imageView.frame.size
