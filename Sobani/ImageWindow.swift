@@ -277,7 +277,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     /// - Returns: 画像を読み込めて切り替えた場合 true。
     @discardableResult
     func selectRegisteredImage(named name: String) -> Bool {
-        guard let image = ImageManager.shared.loadRegisteredImage(named: name) else { return false }
+        guard let image = ImageManager.shared.image(named: name) else { return false }
         displayName = name
         applyImage(image)
         return true

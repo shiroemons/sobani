@@ -299,20 +299,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// 新しいキャラクターウィンドウを作成して表示する。
     ///
-    /// - Parameter imageName: 表示する画像名。`nil` の場合はデフォルト画像を使用する。
+    /// - Parameter imageName: 表示する画像名。`nil` または読み込めない名前の場合はデフォルト画像を使用する。
     func createNewWindow(imageName: String? = nil) {
         if areWindowsHidden {
             setWindowsHidden(false)
         }
-        let image: NSImage
-        if let name = imageName,
-            let registered = ImageManager.shared.loadRegisteredImage(named: name) {
-            image = registered
-        } else {
-            image = ImageManager.shared.defaultImage() ?? NSImage()
-        }
+        let resolved = Self.resolvedImage(named: imageName ?? AppConstants.defaultImageName)
         let imageWindow = makeImageWindow(
-            image: image, displayName: imageName ?? AppConstants.defaultImageName, windowId: issueWindowId()
+            image: resolved.image, displayName: resolved.displayName, windowId: issueWindowId()
         )
         addImageWindow(imageWindow)
     }

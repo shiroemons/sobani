@@ -97,6 +97,42 @@ struct AppDelegateTests {
     }
 }
 
+@Suite("AppDelegate Image Resolution Tests")
+@MainActor
+struct AppDelegateImageResolutionTests {
+    let imageManager: ImageManager
+
+    init() throws {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        imageManager = ImageManager(baseDirectory: tempDirectory)
+    }
+
+    @Test("読み込める登録画像はキャッシュ済みの画像と登録名で表示する")
+    func resolvedImageUsesCachedRegisteredImage() throws {
+        let source = NSImage(size: NSSize(width: 4, height: 4), flipped: false) { rect in
+            NSColor.red.setFill()
+            rect.fill()
+            return true
+        }
+        let name = try #require(imageManager.registerImage(source, name: "sample.png"))
+
+        let resolved = AppDelegate.resolvedImage(named: name, in: imageManager)
+
+        #expect(resolved.displayName == name)
+        #expect(resolved.image === imageManager.image(named: name))
+    }
+
+    @Test("読み込めない画像名はデフォルト画像と既定の表示名にフォールバックする")
+    func resolvedImageFallsBackToDefault() {
+        let resolved = AppDelegate.resolvedImage(named: "missing.png", in: imageManager)
+
+        #expect(resolved.displayName == AppConstants.defaultImageName)
+        #expect(resolved.image === imageManager.defaultImage())
+    }
+}
+
 @Suite("SliderMenuItemFactory Tests")
 @MainActor
 struct SliderMenuItemFactoryTests {
