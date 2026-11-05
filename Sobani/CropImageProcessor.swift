@@ -29,7 +29,9 @@ enum CropImageProcessor {
             width: cropRect.width * effectiveSize.width,
             height: cropRect.height * effectiveSize.height
         )
-        let scale = outputScale(cropSize: cropSize, maxOutputPixelSize: maxOutputPixelSize)
+        let scale = maxOutputPixelSize.map {
+            GeometryUtils.downscaleFactor(for: cropSize, maxDimension: $0)
+        } ?? 1
 
         guard let outputWidth = CropGeometry.pixelExtent(
                 cropSize.width * scale, limit: maxOutputPixelDimension),
@@ -97,13 +99,6 @@ enum CropImageProcessor {
     }
 
     // MARK: - Private
-
-    private static func outputScale(cropSize: CGSize, maxOutputPixelSize: CGFloat?) -> CGFloat {
-        guard let maxSize = maxOutputPixelSize, maxSize > 0 else { return 1 }
-        let longestSide = max(cropSize.width, cropSize.height)
-        guard longestSide.isFinite, longestSide > maxSize else { return 1 }
-        return maxSize / longestSide
-    }
 
     /// 変換を伴わない切り出し。クロップ領域が画像内に完全に収まる場合のみ結果を返す
     private static func croppedWithoutResampling(_ image: CGImage, cropRect: CropRect) -> CGImage? {
