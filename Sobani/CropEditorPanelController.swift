@@ -94,6 +94,13 @@ final class CropEditorPanelController: NSObject {
         super.init()
     }
 
+    deinit {
+        // close() を経ずに解放されてもキー監視が残らないようにする
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+    }
+
     // MARK: - Show / Close
 
     func show(image: NSImage, near window: NSWindow) {
@@ -305,6 +312,11 @@ final class CropEditorPanelController: NSObject {
         }
         return .aspectRatio
     }
+}
+
+// MARK: - History & Toolbar State
+
+extension CropEditorPanelController {
 
     // MARK: - History Helpers
 
@@ -416,15 +428,21 @@ extension CropEditorPanelController {
         updateDoneButtonAppearance()
     }
 
+    /// このパネルがキーウィンドウのときだけ Esc でキャンセルする（他のウィンドウの Esc は奪わない）
     func installKeyMonitor() {
+        removeKeyMonitor()
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == AppConstants.escKeyCode { // ESC
-                DispatchQueue.main.async {
-                    self?.cancelTapped()
-                }
-                return nil
+            guard event.keyCode == AppConstants.escKeyCode else { return event }
+            let eventWindowNumber = event.windowNumber
+            let isForPanel = MainActor.assumeIsolated {
+                guard let panel = self?.panel else { return false }
+                return panel.windowNumber == eventWindowNumber
             }
-            return event
+            guard isForPanel else { return event }
+            DispatchQueue.main.async {
+                self?.cancelTapped()
+            }
+            return nil
         }
     }
 
