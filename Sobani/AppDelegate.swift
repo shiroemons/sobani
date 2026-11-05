@@ -42,7 +42,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var lastScreenChangeAt: Date?
     var windowGeometryObservers: [NSObjectProtocol] = []
     var onboardingController: OnboardingWindowController?
-    var isApplyingLayout = false
     weak var lastHighlightedWindow: ImageWindow?
     private var managementPanelController: ManagementPanelController?
 
@@ -260,22 +259,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         quitIfNoWindows()
     }
 
-    nonisolated static func shouldQuitApp(windowCount: Int, isApplyingLayout: Bool) -> Bool {
-        windowCount == 0 && !isApplyingLayout
-    }
-
     /// すべてのウィンドウが閉じられた場合にアプリを終了する。
     ///
     /// `applicationShouldTerminate` は常に `.terminateCancel` を返すため、
     /// 終了は `shouldTerminate` フラグを設定してからこのメソッドを呼ぶか、
     /// 明示的な終了アクション経由で行う必要がある。
     func quitIfNoWindows() {
-        if Self.shouldQuitApp(
-            windowCount: zOrderedWindows.count, isApplyingLayout: isApplyingLayout
-        ) {
-            shouldTerminate = true
-            NSApp.terminate(nil)
-        }
+        guard zOrderedWindows.isEmpty else { return }
+        shouldTerminate = true
+        NSApp.terminate(nil)
     }
 
     @objc func quitFromMenu() {

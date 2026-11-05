@@ -160,7 +160,7 @@ extension AppDelegate {
             settleInterval: AppConstants.statePersistScreenSettleInterval,
             isRestoring: wakeContext.isActive || launchContext.isActive
         )
-        guard !settling, !isApplyingLayout else {
+        guard !settling else {
             // 画面構成が落ち着くまで待ってから保存し直す
             schedulePersist(after: AppConstants.statePersistScreenSettleInterval)
             return

@@ -39,15 +39,20 @@ extension AppDelegate {
         }
     }
 
+    /// 現在のウィンドウをすべて閉じ、プリセットのウィンドウで置き換える。
+    ///
+    /// ウィンドウのないプリセットでは何もしない（全ウィンドウが閉じてアプリが終了してしまうため）。
     func applyLayout(_ preset: LayoutPreset) {
+        guard !preset.states.isEmpty else {
+            layoutPresetLogger.warning("applyLayout skipped: preset '\(preset.name, privacy: .public)' has no windows")
+            return
+        }
         cancelLaunchRestoration()
-        isApplyingLayout = true
 
         for imageWindow in zOrderedWindows {
             imageWindow.dismissAuxiliaryPanels()
             imageWindow.window.orderOut(nil)
         }
-        zOrderedWindows.removeAll()
 
         var loadedWindows: [ImageWindow] = []
         for state in preset.states {
@@ -57,10 +62,7 @@ extension AppDelegate {
         }
 
         zOrderedWindows = loadedWindows.reversed()
-
-        isApplyingLayout = false
         notifyWindowListDidChange(.layout)
-        quitIfNoWindows()
     }
 
     func buildLayoutMenuItem() -> NSMenuItem {
