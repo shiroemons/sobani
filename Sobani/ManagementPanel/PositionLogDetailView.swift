@@ -108,12 +108,7 @@ struct PositionLogDetailView: View {
             }
             // windowId は古いログで重複しうるため位置を ID にする
             ForEach(Array(windowFrames.enumerated()), id: \.offset) { _, frame in
-                let rect = layout.windowRect(
-                    for: frame.origin.x,
-                    originY: frame.origin.y,
-                    width: frame.width,
-                    height: frame.height
-                )
+                let rect = layout.windowRect(for: frame)
                 RoundedRectangle(cornerRadius: 1)
                     .fill(.blue.opacity(0.3))
                     .overlay(

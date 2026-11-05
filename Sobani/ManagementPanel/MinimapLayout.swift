@@ -15,21 +15,18 @@ struct MinimapLayout {
     /// 描画するものがないか。`calculate` はスクリーンがない・計算できない場合に空のレイアウトを返す
     var isEmpty: Bool { screens.isEmpty }
 
-    func windowRect(
-        for originX: CGFloat, originY: CGFloat, width: CGFloat, height: CGFloat
-    ) -> CGRect {
-        let scaledX = (originX - rawTotalBounds.origin.x) * scale + offset.x
-        let rawY = rawTotalBounds.height - (originY - rawTotalBounds.origin.y + height)
+    /// macOS のスクリーン座標（左下原点）の矩形を、ミニマップ上の矩形（左上原点）に変換する。
+    func windowRect(for frame: CGRect) -> CGRect {
+        let scaledX = (frame.origin.x - rawTotalBounds.origin.x) * scale + offset.x
+        let rawY = rawTotalBounds.height - (frame.origin.y - rawTotalBounds.origin.y + frame.size.height)
         let scaledY = rawY * scale + offset.y
-        let scaledW = width * scale
-        let scaledH = height * scale
-        return CGRect(x: scaledX, y: scaledY, width: scaledW, height: scaledH)
+        return CGRect(
+            x: scaledX, y: scaledY, width: frame.size.width * scale, height: frame.size.height * scale
+        )
     }
 
     func windowRect(for state: WindowState) -> CGRect {
-        windowRect(
-            for: state.originX, originY: state.originY, width: state.width, height: state.height
-        )
+        windowRect(for: state.frame)
     }
 
     /// ミニマップ上のドラッグ差分をmacOS座標系の差分に変換
@@ -50,7 +47,7 @@ struct MinimapLayout {
     static func computeTotalBounds(states: [WindowState], screenFrames: [CGRect]? = nil) -> CGRect {
         totalBounds(
             screenFrames: screenFrames ?? NSScreen.screens.map(\.frame),
-            windowFrames: states.map { CGRect(x: $0.originX, y: $0.originY, width: $0.width, height: $0.height) }
+            windowFrames: states.map(\.frame)
         )
     }
 
