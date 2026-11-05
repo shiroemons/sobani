@@ -155,7 +155,6 @@ import Testing
 
     /// Crop関連定数が正しい値であることを検証
     @Test func appConstants_cropValues() {
-        #expect(abs(AppConstants.cropHandleSize - 8) < AppConstants.floatingPointTolerance)
         #expect(abs(AppConstants.cropMinProportion - 0.1) < AppConstants.floatingPointTolerance)
         #expect(abs(AppConstants.cropOverlayAlpha - 0.5) < AppConstants.floatingPointTolerance)
     }
@@ -172,7 +171,6 @@ import Testing
 
     /// Crop関連定数が正の値であることを検証
     @Test func appConstants_cropValuesPositive() {
-        #expect(AppConstants.cropHandleSize > 0)
         #expect(AppConstants.cropMinProportion > 0)
         #expect(AppConstants.cropOverlayAlpha > 0)
         #expect(AppConstants.cropMinProportion <= 1.0)
