@@ -445,7 +445,7 @@ extension ImageWindow: FloatingMenuDelegate {
             floatingMenuController = FloatingMenuController()
             floatingMenuController?.delegate = self
         }
-        floatingMenuController?.isRemoveBackgroundEnabled = !isRemovingBackground && !imageHasAlpha()
+        floatingMenuController?.isRemoveBackgroundEnabled = isRemoveBackgroundAvailable
         let windowPoint = window.convertPoint(fromScreen: screenPoint)
         floatingMenuController?.currentOpacity = imageView.opacityLevel
         floatingMenuController?.show(at: windowPoint, in: window)

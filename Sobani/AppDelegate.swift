@@ -408,10 +408,8 @@ extension AppDelegate: ImageWindowDelegate {
     }
 
     func imageWindowDidDeleteImage(named name: String) {
-        guard let defaultImage = ImageManager.shared.defaultImage() else { return }
         for imageWindow in zOrderedWindows where imageWindow.displayName == name {
-            imageWindow.displayName = AppConstants.defaultImageName
-            imageWindow.applyImage(defaultImage)
+            imageWindow.resetToDefault()
         }
     }
 }

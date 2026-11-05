@@ -102,7 +102,7 @@ extension AppDelegate {
         )
         adjustItem.target = self
         adjustItem.tag = windowNumber
-        adjustItem.isEnabled = !areWindowsHidden && !imageWindow.isHidden
+        adjustItem.isEnabled = !imageWindow.isHidden
         adjustItem.image = menuIcon("slider.horizontal.3")
         submenu.addItem(adjustItem)
 

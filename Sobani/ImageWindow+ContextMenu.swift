@@ -207,7 +207,7 @@ extension ImageWindow {
             )
             removeBackgroundItem.target = self
             removeBackgroundItem.tag = MenuItemTag.removeBackground.rawValue
-            removeBackgroundItem.isEnabled = !isRemovingBackground && !imageHasAlpha()
+            removeBackgroundItem.isEnabled = isRemoveBackgroundAvailable
             removeBackgroundItem.image = SFSymbolUtils.icon("eraser.fill")
             submenu.addItem(removeBackgroundItem)
         }
