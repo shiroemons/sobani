@@ -375,15 +375,15 @@ final class WindowStateManager {
         from imageWindow: ImageWindow,
         screens: [ScreenInfo]
     ) -> WindowState {
-        let windowCenter = NSPoint(x: imageWindow.window.frame.midX, y: imageWindow.window.frame.midY)
-        let baseWidth = imageWindow.imageView.frame.width
-        let baseHeight = imageWindow.imageView.frame.height
+        // 回転中のウィンドウは外接矩形で、画像はその中に小数オフセットで置かれる（ウィンドウ中心と最大 0.5px ずれる）。
+        // 復元時の setImageOrigin と同じ座標系にするため、imageView の実際のスクリーン座標を使う
+        let imageFrame = imageWindow.imageFrameInScreen
         return WindowState(
             imageName: imageWindow.displayName,
-            originX: windowCenter.x - baseWidth / 2,
-            originY: windowCenter.y - baseHeight / 2,
-            width: baseWidth,
-            height: baseHeight,
+            originX: imageFrame.origin.x,
+            originY: imageFrame.origin.y,
+            width: imageFrame.width,
+            height: imageFrame.height,
             isFlippedHorizontally: imageWindow.imageView.isFlippedHorizontally,
             rotationAngle: imageWindow.imageView.rotationAngle,
             opacityLevel: imageWindow.imageView.opacityLevel,

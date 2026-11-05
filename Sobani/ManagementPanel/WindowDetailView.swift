@@ -62,7 +62,7 @@ struct WindowDetailView: View {
     private func previewSection(_ window: ManagementPanelViewModel.WindowInfo) -> some View {
         if let originalImage = window.originalImage, let cropRect = window.cropRect {
             GroupBox {
-                CropOverlayPreviewView(originalImage: originalImage, cropRect: cropRect)
+                CropOverlayPreviewView(originalImage: originalImage, cropRect: cropRect, imageName: window.imageName)
                     .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
             }
         } else {
