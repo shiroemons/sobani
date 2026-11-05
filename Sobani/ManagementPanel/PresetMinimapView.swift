@@ -3,24 +3,33 @@ import SwiftUI
 struct PresetMinimapView: View {
     let states: [WindowState]
     var images: [String: NSImage]?
-    var selectedWindowId: Int?
+    /// 強調表示する `states` のインデックス。windowId は古いプリセットで重複（すべて 0）しうるため位置で指定する
+    var selectedIndices: Set<Int> = []
+    /// タップされたウィンドウの `states` のインデックス
     var onWindowTapped: ((Int) -> Void)?
     var isDragEnabled: Bool = false
     var onWindowDragChanged: ((Int, CGPoint) -> Void)?
     var onWindowDragEnded: ((Int, CGPoint) -> Void)?
 
     private static let maxHeight: CGFloat = 400
+    /// ミニマップ上でウィンドウを描く最小サイズ（小さすぎるとタップ・ドラッグできない）
+    private static let minWindowSize: CGFloat = 8
 
     @State private var screenFrames: [CGRect] = NSScreen.screens.map(\.frame)
-    @State private var totalBounds: CGRect = .zero
-    @State private var draggingWindowId: Int?
+    /// `.null` の間は描画時に `states` から計算する（初回描画で空の範囲を使わないため）
+    @State private var totalBounds: CGRect = .null
+    @State private var draggingIndex: Int?
     @State private var dragOffset: CGSize = .zero
     @State private var dragStartOrigin: CGPoint = .zero
 
     var body: some View {
         minimapCanvas
             .onAppear { updateScreenInfo() }
-            .onChange(of: states) { updateScreenInfo() }
+            .onChange(of: states) {
+                // ドラッグ中に範囲が変わると倍率が変わり、ドラッグ量の換算がずれるため完了後に更新する
+                guard draggingIndex == nil else { return }
+                updateScreenInfo()
+            }
             .onReceive(
                 NotificationCenter.default.publisher(
                     for: NSApplication.didChangeScreenParametersNotification
@@ -58,70 +67,14 @@ struct PresetMinimapView: View {
             .background { WindowDragBlocker(isEnabled: isDragEnabled) }
             .overlay {
                 GeometryReader { geometry in
-                    let cachedBounds = totalBounds
-                    let cachedFrames = screenFrames
                     let layout = MinimapLayout.calculate(
                         in: geometry.size,
                         states: states,
-                        precomputedBounds: cachedBounds,
-                        screenFrames: cachedFrames
+                        precomputedBounds: totalBounds.isNull ? nil : totalBounds,
+                        screenFrames: screenFrames
                     )
-                    ZStack(alignment: .topLeading) {
-                        // Screens
-                        ForEach(Array(layout.screens.enumerated()), id: \.offset) { _, screenRect in
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.secondary.opacity(0.5), lineWidth: 1)
-                                .fill(Color.secondary.opacity(0.05))
-                                .frame(width: screenRect.width, height: screenRect.height)
-                                .offset(x: screenRect.origin.x, y: screenRect.origin.y)
-                        }
-
-                        // Windows
-                        ForEach(Array(states.reversed().enumerated()), id: \.offset) { _, state in
-                            let windowRect = layout.windowRect(for: state)
-                            let isSelected = state.windowId == selectedWindowId
-                            let isDragging = draggingWindowId == state.windowId
-                            let displayOffset = isDragging ? dragOffset : .zero
-                            minimapWindow(state: state, isSelected: isSelected)
-                                .frame(
-                                    width: max(windowRect.width, 8),
-                                    height: max(windowRect.height, 8)
-                                )
-                                .offset(
-                                    x: windowRect.origin.x + displayOffset.width,
-                                    y: windowRect.origin.y + displayOffset.height
-                                )
-                                .gesture(
-                                    DragGesture(
-                                        minimumDistance: isDragEnabled
-                                            ? AppConstants.minimapDragMinimumDistance : .infinity
-                                    )
-                                    .onChanged { value in
-                                        if draggingWindowId == nil {
-                                            draggingWindowId = state.windowId
-                                            dragStartOrigin = CGPoint(
-                                                x: state.originX, y: state.originY
-                                            )
-                                        }
-                                        dragOffset = value.translation
-                                        let origin = newOrigin(
-                                            from: value.translation, layout: layout
-                                        )
-                                        onWindowDragChanged?(state.windowId, origin)
-                                    }
-                                    .onEnded { value in
-                                        let origin = newOrigin(
-                                            from: value.translation, layout: layout
-                                        )
-                                        onWindowDragEnded?(state.windowId, origin)
-                                        draggingWindowId = nil
-                                        dragOffset = .zero
-                                    }
-                                )
-                                .onTapGesture {
-                                    onWindowTapped?(state.windowId)
-                                }
-                        }
+                    if !layout.isEmpty {
+                        minimapContent(layout: layout)
                     }
                 }
             }
@@ -133,6 +86,73 @@ struct PresetMinimapView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: isDragEnabled)
+    }
+
+    @ViewBuilder
+    private func minimapContent(layout: MinimapLayout) -> some View {
+        ZStack(alignment: .topLeading) {
+            // Screens
+            ForEach(Array(layout.screens.enumerated()), id: \.offset) { _, screenRect in
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.secondary.opacity(0.5), lineWidth: 1)
+                    .fill(Color.secondary.opacity(0.05))
+                    .frame(width: screenRect.width, height: screenRect.height)
+                    .offset(x: screenRect.origin.x, y: screenRect.origin.y)
+            }
+
+            // Windows（背面から描く）
+            ForEach(Array(states.indices.reversed()), id: \.self) { index in
+                minimapWindowItem(index: index, layout: layout)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func minimapWindowItem(index: Int, layout: MinimapLayout) -> some View {
+        let state = states[index]
+        let isDragging = draggingIndex == index
+        // ドラッグ中は開始位置 + ドラッグ量で描く（ドラッグ中に状態が更新されても二重に動かないように）
+        let windowRect = isDragging
+            ? layout.windowRect(
+                for: dragStartOrigin.x, originY: dragStartOrigin.y,
+                width: state.width, height: state.height
+            )
+            : layout.windowRect(for: state)
+        let displayOffset = isDragging ? dragOffset : .zero
+        minimapWindow(state: state, isSelected: selectedIndices.contains(index))
+            .frame(
+                width: max(windowRect.width, Self.minWindowSize),
+                height: max(windowRect.height, Self.minWindowSize)
+            )
+            .offset(
+                x: windowRect.origin.x + displayOffset.width,
+                y: windowRect.origin.y + displayOffset.height
+            )
+            .gesture(
+                DragGesture(
+                    minimumDistance: isDragEnabled
+                        ? AppConstants.minimapDragMinimumDistance : .infinity
+                )
+                .onChanged { value in
+                    if draggingIndex == nil {
+                        draggingIndex = index
+                        dragStartOrigin = CGPoint(x: state.originX, y: state.originY)
+                    }
+                    dragOffset = value.translation
+                    let origin = newOrigin(from: value.translation, layout: layout)
+                    onWindowDragChanged?(state.windowId, origin)
+                }
+                .onEnded { value in
+                    let origin = newOrigin(from: value.translation, layout: layout)
+                    onWindowDragEnded?(state.windowId, origin)
+                    draggingIndex = nil
+                    dragOffset = .zero
+                    updateScreenInfo()
+                }
+            )
+            .onTapGesture {
+                onWindowTapped?(index)
+            }
     }
 
     @ViewBuilder

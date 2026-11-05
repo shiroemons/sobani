@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let viewModel: ManagementPanelViewModel
     private let appVersion = AppConstants.appVersion
     @State private var isLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
     @State private var isSnapEnabled = SnapSettings.isEnabled
@@ -11,6 +12,10 @@ struct SettingsView: View {
     @State private var hasDuplicateHotkeys = false
     @State private var hasNonDefaultHotkeys = false
     @State private var hotkeyDebounceTask: Task<Void, Never>?
+    @State private var canCheckForUpdates = false
+
+    /// 更新確認が可能かを読み直す間隔（Sparkle の状態は確認中・ダウンロード中に変わるが通知されないため）
+    private static let updateAvailabilityRefreshInterval: Duration = .seconds(1)
 
     var body: some View {
         Form {
@@ -60,16 +65,16 @@ struct SettingsView: View {
         Section(L("management.ghost_mode_section")) {
             HStack {
                 Text(L("management.ghost_alpha"))
-                Slider(
+                OpacitySliderRow(
                     value: $ghostAlpha,
-                    in: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax
+                    range: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax,
+                    valueFont: .body.monospaced()
                 )
                 .onChange(of: ghostAlpha) {
                     GhostModeSettings.globalAlpha = ghostAlpha
+                    // 個別の不透明度を持たないゴースト中のウィンドウは共通値で表示されているため再適用する
+                    viewModel.applyGlobalGhostAlpha()
                 }
-                Text(FormatUtils.formatOpacity(ghostAlpha))
-                    .font(.body.monospaced())
-                    .frame(width: 40, alignment: .trailing)
             }
         }
     }
@@ -175,14 +180,13 @@ struct SettingsView: View {
     }
 
     private func updateHotkeyState() {
-        let pairs = AppDelegate.KeyboardAction.allCases.map { action in
+        let shortcuts = AppDelegate.KeyboardAction.allCases.map { action in
             (
                 keyCode: HotkeySettings.keyCode(for: action),
                 modifiers: HotkeySettings.modifiers(for: action)
             )
         }
-        let unique = Set(pairs.map { UInt64($0.keyCode) << 32 | UInt64($0.modifiers.rawValue) })
-        hasDuplicateHotkeys = unique.count < pairs.count
+        hasDuplicateHotkeys = HotkeyInputValidator.containsDuplicates(shortcuts)
         hasNonDefaultHotkeys = AppDelegate.KeyboardAction.allCases.contains {
             !HotkeySettings.isDefault(for: $0)
         }
@@ -248,8 +252,16 @@ struct SettingsView: View {
 
             Button(L("management.check_update")) {
                 SparkleManager.shared.checkForUpdates(nil)
+                canCheckForUpdates = SparkleManager.shared.canCheckForUpdates
             }
-            .disabled(!SparkleManager.shared.canCheckForUpdates)
+            .disabled(!canCheckForUpdates)
+            .task {
+                // 表示中だけ定期的に読み直す（非表示になるとタスクはキャンセルされる）
+                while !Task.isCancelled {
+                    canCheckForUpdates = SparkleManager.shared.canCheckForUpdates
+                    try? await Task.sleep(for: Self.updateAvailabilityRefreshInterval)
+                }
+            }
         }
     }
 }

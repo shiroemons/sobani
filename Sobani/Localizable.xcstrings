@@ -1617,166 +1617,6 @@
         }
       }
     },
-    "onboarding.step3.hotkeyG.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ゴーストモードの切り替え"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle ghost mode"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyG.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥G (Option+G)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥G (Option+G)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyH.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべての画像を表示/非表示"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle all images"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyH.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥H (Option+H)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥H (Option+H)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyM.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "管理パネルの表示"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open management panel"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyM.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥M (Option+M)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥M (Option+M)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftG.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在の画面のゴーストモード切り替え"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle ghost mode for current screen"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftG.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧G (Option+Shift+G)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧G (Option+Shift+G)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftH.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在の画面の画像のみ表示/非表示"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle current screen images"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftH.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧H (Option+Shift+H)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧H (Option+Shift+H)"
-          }
-        }
-      }
-    },
     "onboarding.step3.hotkeyCustomizeHint": {
       "localizations": {
         "ja": {
@@ -2061,6 +1901,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preset Name"
+          }
+        }
+      }
+    },
+    "layout.name_exists": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同じ名前のプリセットがすでにあります"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A preset with this name already exists"
           }
         }
       }
@@ -3745,18 +3601,30 @@
         }
       }
     },
-    "layout.items_suffix": {
+    "layout.items_count": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "件"
+            "value": "%d件"
           }
         },
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": " items"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%d item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%d items"
+                }
+              }
+            }
           }
         }
       }
@@ -4545,6 +4413,22 @@
         }
       }
     },
+    "log.export.failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ログを書き出せませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not export the log"
+          }
+        }
+      }
+    },
     "log.filter": {
       "localizations": {
         "ja": {
@@ -4973,6 +4857,118 @@
           "stringUnit": {
             "state": "translated",
             "value": "All Events"
+          }
+        }
+      }
+    },
+    "log.detail.screens": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスプレイ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screens"
+          }
+        }
+      }
+    },
+    "log.detail.windows": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ウィンドウ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Windows"
+          }
+        }
+      }
+    },
+    "log.detail.context": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コンテキスト"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context"
+          }
+        }
+      }
+    },
+    "log.detail.column.display_id": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスプレイ ID"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display ID"
+          }
+        }
+      }
+    },
+    "log.detail.column.origin": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "原点"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Origin"
+          }
+        }
+      }
+    },
+    "log.detail.column.size": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サイズ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Size"
+          }
+        }
+      }
+    },
+    "log.detail.column.main": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メイン"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main"
           }
         }
       }

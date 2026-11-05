@@ -6,7 +6,6 @@ import os.log
 final class ManagementPanelController: NSObject, NSWindowDelegate {
     private let logger = Logger(category: "ManagementPanelController")
     private var panel: NSPanel?
-    private var hostingController: NSHostingController<ManagementPanelView>?
     private let viewModel: ManagementPanelViewModel
     nonisolated(unsafe) private var languageObserver: Any?
 
@@ -30,16 +29,17 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
 
     func show() {
         if let panel {
+            viewModel.setPanelVisible(true)
             panel.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
+            NSApp.activate()
             return
         }
         setupPanel()
     }
 
     func close() {
-        NotificationCenter.default.post(name: AppConstants.managementPanelWillClose, object: nil)
         panel?.orderOut(nil)
+        viewModel.setPanelVisible(false)
     }
 
     func toggle() {
@@ -57,7 +57,6 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
     private func setupPanel() {
         let contentView = ManagementPanelView(viewModel: viewModel)
         let hosting = NSHostingController(rootView: contentView)
-        hostingController = hosting
 
         let panel = NSPanel(
             contentRect: NSRect(
@@ -78,8 +77,10 @@ final class ManagementPanelController: NSObject, NSWindowDelegate {
         panel.configureForFloating()
         panel.isMovableByWindowBackground = true
         panel.center()
+        viewModel.presentingWindow = panel
+        viewModel.setPanelVisible(true)
         panel.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         self.panel = panel
         logger.info("Management panel opened")
     }
