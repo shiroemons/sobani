@@ -161,7 +161,8 @@ extension AppDelegate {
         createNewLayout(name: name)
     }
 
-    func createNewLayout(name: String) {
+    func createNewLayout(name rawName: String) {
+        guard let name = LayoutPresetManager.normalizedName(rawName) else { return }
         let mainFrame = NSScreen.mainFrameOrFallback
         let defaultState = WindowState(
             imageName: AppConstants.defaultImageName,
@@ -216,15 +217,14 @@ extension AppDelegate {
     @objc func renameLayoutFromMenu(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
 
+        // 大文字小文字だけの変更などで自分自身と同じファイルになる名前は「既存」とみなさない
         guard let newName = promptLayoutName(
             messageText: L("layout.rename_title"),
             informativeText: L("layout.rename_message"),
             okTitle: L("layout.rename_button"),
             initialValue: name,
-            checkOverwrite: false
-        ) else { return }
-        guard newName != name else { return }
-        guard confirmOverwriteIfNeeded(name: newName) else { return }
+            renaming: name
+        ), newName != name else { return }
 
         if !LayoutPresetManager.shared.renamePreset(from: name, to: newName) {
             layoutPresetLogger.warning(
@@ -255,14 +255,14 @@ extension AppDelegate {
     ///   - informativeText: アラートの説明文
     ///   - okTitle: OKボタンのラベル
     ///   - initialValue: テキストフィールドの初期値（デフォルト: 空文字）
-    ///   - checkOverwrite: 既存プリセットへの上書き確認を行うか（デフォルト: true）
-    /// - Returns: トリム済みの名前。キャンセル・空文字・上書きキャンセル時は nil
+    ///   - originalName: リネーム元のプリセット名。上書き確認で自分自身を既存プリセットとみなさない
+    /// - Returns: 正規化（前後の空白を除去）した名前。キャンセル・空文字・上書きキャンセル時は nil
     private func promptLayoutName(
         messageText: String,
         informativeText: String,
         okTitle: String,
         initialValue: String = "",
-        checkOverwrite: Bool = true
+        renaming originalName: String? = nil
     ) -> String? {
         let alert = AlertFactory.make(
             style: .informational,
@@ -271,15 +271,13 @@ extension AppDelegate {
             buttonTitles: [okTitle, L("quit.cancel")]
         )
         let textField = makeLayoutNameField(for: alert)
-        if !initialValue.isEmpty {
-            textField.stringValue = initialValue
-        }
-        guard alert.runModal() == .alertFirstButtonReturn else { return nil }
-        let name = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return nil }
-        if checkOverwrite {
-            guard confirmOverwriteIfNeeded(name: name) else { return nil }
-        }
+        textField.stringValue = initialValue
+        // 開いた直後から入力できるよう、テキストフィールドを最初のファーストレスポンダにする
+        alert.layout()
+        alert.window.initialFirstResponder = textField
+        guard alert.runModal() == .alertFirstButtonReturn,
+              let name = LayoutPresetManager.normalizedName(textField.stringValue),
+              confirmOverwriteIfNeeded(name: name, excluding: originalName) else { return nil }
         return name
     }
 
@@ -296,10 +294,10 @@ extension AppDelegate {
         return textField
     }
 
-    /// 指定された名前のプリセットが既に存在する場合、上書き確認ダイアログを表示する。
+    /// 指定された名前のプリセットが（`excludedName` 以外に）既に存在する場合、上書き確認ダイアログを表示する。
     /// - Returns: 上書きOK（または存在しない）の場合は true、キャンセルの場合は false
-    private func confirmOverwriteIfNeeded(name: String) -> Bool {
-        guard LayoutPresetManager.shared.presetExists(named: name) else { return true }
+    private func confirmOverwriteIfNeeded(name: String, excluding excludedName: String? = nil) -> Bool {
+        guard LayoutPresetManager.shared.presetExists(named: name, excluding: excludedName) else { return true }
         let overwriteAlert = AlertFactory.confirmation(
             messageText: L("layout.overwrite_title"),
             informativeText: String(format: L("layout.overwrite_message"), name),
