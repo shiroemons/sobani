@@ -233,10 +233,11 @@ final class StraightenSliderView: NSView {
         let delta = event.scrollingDeltaY * AppConstants.straightenScrollSensitivity
         guard abs(delta) >= AppConstants.normalizedTolerance else { return }
         angle = CropGeometry.clampStraightenAngle(angle - delta)
-        onAngleChanged?(angle)
+        // 通知先が操作中（isInteracting）と判定できるよう、通知より先に終了待ちを予約する
         scrollEndDebouncer.schedule { [weak self] in
             self?.onDragEnded?()
         }
+        onAngleChanged?(angle)
     }
 
     // MARK: - Lifecycle
@@ -247,6 +248,11 @@ final class StraightenSliderView: NSView {
     }
 
     // MARK: - Public
+
+    /// ドラッグ・慣性・スクロールのいずれかの操作中か（操作の終わりには `onDragEnded` が呼ばれる）
+    var isInteracting: Bool {
+        isDragging || inertiaTimer != nil || scrollEndDebouncer.isPending
+    }
 
     func stopTimers() {
         scrollEndDebouncer.cancel()

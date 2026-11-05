@@ -20,6 +20,8 @@ extension CropEditorPanelController {
         currentCropRect = updated
         // アスペクト比制約で位置・サイズが変わることがあるため、ズーム/オフセットも作り直す
         canvasView?.initializeFromCropRect(currentCropRect)
+        // スライダー操作中は毎フレーム再描画されるため、キャンバスの描画品質を下げる（終了時に高品質で描き直す）
+        canvasView?.isExternallyAdjusting = toolbarView?.isStraightenSliderInteracting ?? false
         updateRevertButtonVisibility()
     }
 

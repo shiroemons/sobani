@@ -204,6 +204,11 @@ final class CropEditorToolbarView: NSView {
         straightenMode
     }
 
+    /// 傾き補正スライダーをドラッグ・慣性・スクロールで操作中か
+    var isStraightenSliderInteracting: Bool {
+        sliderView?.isInteracting ?? false
+    }
+
     func setMode(_ mode: ToolbarMode) {
         guard mode != toolbarMode else { return }
         toolbarMode = mode

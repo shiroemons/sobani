@@ -88,6 +88,8 @@ extension CropEditorCanvasView {
         needsDisplay = true
         onCropRectChanged?(computeFinalCropRect())
         scrollEndDebouncer.schedule { [weak self] in
+            // スクロール中は描画品質を下げているため、落ち着いた状態を高品質で描き直す
+            self?.needsDisplay = true
             self?.onDragEnded?()
         }
     }

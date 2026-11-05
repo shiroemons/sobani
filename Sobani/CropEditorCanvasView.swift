@@ -29,6 +29,11 @@ final class CropEditorCanvasView: NSView {
             if case .movingImage = self { return true }
             return false
         }
+
+        var isIdle: Bool {
+            if case .idle = self { return true }
+            return false
+        }
     }
 
     // MARK: - Properties
@@ -53,6 +58,21 @@ final class CropEditorCanvasView: NSView {
     var activeDragCropFrame: NSRect?
     var dragStartImageDrawRect: NSRect = .zero
     let scrollEndDebouncer = Debouncer(delay: Debouncer.scrollEndSettleDelay)
+
+    /// キャンバス外の操作（傾き補正スライダーのドラッグ・慣性・スクロール）で連続的に更新中か。
+    /// false に戻したときに、落ち着いた状態を高品質で描き直す
+    var isExternallyAdjusting = false {
+        didSet {
+            if oldValue && !isExternallyAdjusting {
+                needsDisplay = true
+            }
+        }
+    }
+
+    /// ドラッグ・スクロールズーム・外部操作の最中か（毎フレームの描画負荷を抑えるため描画品質を下げる）
+    var isInteracting: Bool {
+        !dragState.isIdle || scrollEndDebouncer.isPending || isExternallyAdjusting
+    }
 
     var cropShape: CropShape { cropRect.shape }
     var cornerRadii: CornerRadii { cropRect.cornerRadii }

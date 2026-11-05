@@ -4,12 +4,19 @@ import Cocoa
 
 extension CropEditorCanvasView {
 
+    /// 操作中の補間品質。毎フレーム最大 2048px の画像を高品質で再サンプリングすると CPU 負荷が高いため下げる
+    private static let interactiveInterpolationQuality: CGInterpolationQuality = .medium
+    /// 操作が落ち着いた状態の補間品質
+    private static let settledInterpolationQuality: CGInterpolationQuality = .high
+
     /// すべての変換（quarterTurns、isFlippedInCrop、パース補正、straightenAngle）を適用して描画する
     /// 変換は `CropImageProcessor` と共通の `CropGeometry.imageTransform` を使うため、確定後の出力と一致する
     func drawTransformedImage(context: CGContext, imageDrawRect: NSRect) {
         guard let image = displayImage else { return }
         context.saveGState()
-        context.interpolationQuality = .high
+        context.interpolationQuality = isInteracting
+            ? Self.interactiveInterpolationQuality
+            : Self.settledInterpolationQuality
         context.concatenate(CropGeometry.imageTransform(
             for: cropRect, sourceSize: image.size, imageRect: imageDrawRect
         ))
