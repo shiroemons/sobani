@@ -265,7 +265,7 @@ extension AppDelegate {
         updateScreenSnapshot()
     }
 
-    /// ユーザーが手動でウィンドウを動かした場合、以後そのウィンドウは起動時復元の対象外にする。
+    /// ユーザーが手動でウィンドウを動かした・大きさを変えた場合、以後そのウィンドウは起動時復元の対象外にする。
     func releaseLaunchRestoration(windowId: Int) {
         guard launchContext.isActive else { return }
         launchContext.release(windowId: windowId)

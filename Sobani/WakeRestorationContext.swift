@@ -12,6 +12,13 @@ struct WakeRestorationContext: Sendable {
     mutating func clear() {
         self = Self()
     }
+
+    /// ユーザーが動かしたウィンドウを復元対象から外す（以後のリトライでユーザーの操作を戻さない）
+    mutating func release(windowId: Int) {
+        states[windowId] = nil
+        windowOrigins[windowId] = nil
+        displayIDs[windowId] = nil
+    }
 }
 
 /// 起動直後のディスプレイ構成変化に追従してアンカー復元を再試行するための状態。

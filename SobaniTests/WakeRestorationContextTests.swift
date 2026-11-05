@@ -70,6 +70,31 @@ import Testing
         #expect(context.screenFrames[1] == frame)
     }
 
+    /// release(windowId:)で指定ウィンドウだけが復元対象から外れ、他のウィンドウとスクリーン情報は保たれることを検証
+    @Test func release_RemovesOnlyTargetWindow() {
+        var context = WakeRestorationContext()
+        for windowId in [1, 2] {
+            context.states[windowId] = WindowState(
+                imageName: "test.png", originX: 0, originY: 0, width: 100, height: 100,
+                isFlippedHorizontally: false, windowId: windowId
+            )
+            context.windowOrigins[windowId] = NSPoint(x: windowId, y: windowId)
+            context.displayIDs[windowId] = 42
+        }
+        context.screenFrames[42] = NSRect(x: 0, y: 0, width: 1920, height: 1080)
+        context.isActive = true
+        context.retryCount = 2
+
+        context.release(windowId: 1)
+
+        #expect(context.states.keys.sorted() == [2])
+        #expect(context.windowOrigins.keys.sorted() == [2])
+        #expect(context.displayIDs.keys.sorted() == [2])
+        #expect(context.screenFrames[42] != nil)
+        #expect(context.isActive)
+        #expect(context.retryCount == 2)
+    }
+
     /// isActiveとretryCountの変更が正しく動作することを検証
     @Test func activeStateAndRetryCount_WorkCorrectly() {
         var context = WakeRestorationContext()

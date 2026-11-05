@@ -302,6 +302,17 @@ import Testing
         #expect(!manager.isPending(windowId: 1))
     }
 
+    @Test("userGeometryTriggers: 位置・大きさが変わる操作だけが自動復元の対象から外す契機になる")
+    func userGeometryTriggersCoverGeometryChangesOnly() {
+        let triggers = AppDelegate.userGeometryTriggers
+        for trigger: AppConstants.SnapshotTrigger in [.position, .size, .reset, .crop, .rotation] {
+            #expect(triggers.contains(trigger))
+        }
+        for trigger: AppConstants.SnapshotTrigger in [.launch, .opacity, .flip, .ghost, .hidden, .zorder, .windowAdd] {
+            #expect(!triggers.contains(trigger))
+        }
+    }
+
     @Test("LaunchRestorationContext: 手動で動かしたウィンドウを外し、空になったら非アクティブになる")
     func launchContextRelease() {
         var context = LaunchRestorationContext()

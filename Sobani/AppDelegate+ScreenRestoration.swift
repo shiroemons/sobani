@@ -424,11 +424,21 @@ extension AppDelegate {
         }
     }
 
+    /// ユーザー（または調整パネル等の UI 操作）でウィンドウの位置・大きさが変わったことを示すトリガー。
+    ///
+    /// これらを受けたウィンドウは、起動時・スリープ復帰の自動復元の対象から外す。外さないと、
+    /// 後続の画面構成変化やリトライで復元処理がユーザーの操作を元に戻し、保存時も意図した位置として
+    /// 古い位置が優先されてしまう。NSWindow の移動通知は macOS による退避も拾うため使わない。
+    static let userGeometryTriggers: Set<AppConstants.SnapshotTrigger> = [
+        .position, .size, .reset, .crop, .rotation,
+    ]
+
     @objc private func handleWindowStateChange(_ notification: Notification) {
         if let raw = notification.userInfo?[AppConstants.notificationTriggerKey] as? String,
            let trigger = AppConstants.SnapshotTrigger(rawValue: raw) {
             pendingSnapshotTriggers.insert(trigger)
-            if trigger == .position, let imageWindow = notification.object as? ImageWindow {
+            if Self.userGeometryTriggers.contains(trigger), let imageWindow = notification.object as? ImageWindow {
+                wakeContext.release(windowId: imageWindow.windowId)
                 releaseLaunchRestoration(windowId: imageWindow.windowId)
             }
         }
