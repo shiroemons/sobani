@@ -45,10 +45,12 @@ extension ImageWindow {
         let newSize = Self.clampedImageSize(height: size.height, aspectRatio: imageView.aspectRatio)
         let sizeChanged = !GeometryUtils.isApproximatelyEqual(newSize.width, oldSize.width)
             || !GeometryUtils.isApproximatelyEqual(newSize.height, oldSize.height)
-        if sizeChanged {
-            adjustWindowForRotation(imageSize: newSize)
-        }
-        setImageOrigin(origin)
+        // サイズが変わらないときは現在のサイズのまま置く（縦横比から計算し直した幅の誤差で大きさを変えない）
+        let placedSize = sizeChanged ? newSize : oldSize
+        placeImage(
+            center: CGPoint(x: origin.x + placedSize.width / 2, y: origin.y + placedSize.height / 2),
+            size: placedSize
+        )
         notifyStateDidChange(.position)
         if sizeChanged {
             notifyStateDidChange(.size)

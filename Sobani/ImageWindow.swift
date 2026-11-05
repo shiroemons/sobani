@@ -234,15 +234,17 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     func adjustWindowForRotation(imageSize: NSSize? = nil) {
         let imageFrame = imageFrameInScreen
         placeImage(center: CGPoint(x: imageFrame.midX, y: imageFrame.midY), size: imageSize ?? imageFrame.size)
-        syncAdjustmentPanelSize()
     }
 
     /// 画像の中心（スクリーン座標）とサイズを指定して、ウィンドウと imageView のフレームを設定する。
+    ///
+    /// 開いている調整パネルのサイズ表示もここで合わせる（配置を変えるすべての経路で古い値が残らないように）。
     func placeImage(center: CGPoint, size: NSSize) {
         let frames = Self.anchoredFrames(imageCenter: center, imageSize: size, rotationAngle: imageView.rotationAngle)
         window.setFrame(frames.windowFrame, display: false)
         imageView.frame = frames.imageViewFrame
         imageView.needsLayout = true
+        syncAdjustmentPanelSize()
     }
 
     @objc func changeImage() {
@@ -345,9 +347,8 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     /// 回転・反転・クロップ・不透明度・ゴーストは変更しない。通知は呼び出し側で行う。
     func resetPositionAndSize() {
         let size = Self.clampedImageSize(height: AppConstants.defaultWindowHeight, aspectRatio: imageView.aspectRatio)
-        let origin = GeometryUtils.centeredOrigin(size: size, in: NSScreen.mainFrameOrFallback)
-        placeImage(center: CGPoint(x: origin.x + size.width / 2, y: origin.y + size.height / 2), size: size)
-        syncAdjustmentPanelSize()
+        let screenFrame = NSScreen.mainFrameOrFallback
+        placeImage(center: CGPoint(x: screenFrame.midX, y: screenFrame.midY), size: size)
     }
 }
 
