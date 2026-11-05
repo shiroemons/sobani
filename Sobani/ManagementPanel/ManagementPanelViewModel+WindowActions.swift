@@ -52,16 +52,15 @@ extension ManagementPanelViewModel {
     func addImageFromFile(createWindow: Bool = true) {
         let panel = ImageFileDialog.makeOpenPanel(message: L("file.select_new_image_message"))
         panel.allowsMultipleSelection = true
-        if panel.runModal() == .OK {
+        Task {
+            guard await runDialog(panel) == .OK else { return }
             for url in panel.urls {
-                if let savedName = ImageManager.shared.registerImage(from: url) {
-                    if createWindow {
-                        appDelegate?.createNewWindow(imageName: savedName)
-                        // createNewWindow fires imageWindowListDidChange
-                        // → triggerRefresh handled by observer
-                    }
-                    // registerImage fires registeredImagesDidChange
-                    // → refreshRegisteredImageNames handled by observer
+                // 登録・ウィンドウ作成はそれぞれ registeredImagesDidChange / imageWindowListDidChange を発行し、
+                // 一覧の更新は通知の監視側で行われる
+                if createWindow {
+                    appDelegate?.createNewWindow(registeringImageAt: url)
+                } else {
+                    ImageManager.shared.registerImage(from: url)
                 }
             }
         }
@@ -90,10 +89,9 @@ extension ManagementPanelViewModel {
 
     func removeRegisteredImage(named name: String) {
         ImageManager.shared.removeRegisteredImage(named: name)
-        if selectedRegisteredImageName == name {
-            selectedRegisteredImageName = nil
-        }
-        triggerRefresh()
+        // この画像を表示中のウィンドウをデフォルト画像へ戻す（存在しない画像名を保持させない）。
+        // 選択の解除と一覧の更新は registeredImagesDidChange / imageWindowStateDidChange の監視側で行われる
+        appDelegate?.imageWindowDidDeleteImage(named: name)
     }
 
     func windowCountUsingImage(named name: String) -> Int {
@@ -162,7 +160,6 @@ extension ManagementPanelViewModel {
     func renamePreset(from oldName: String, to newName: String) -> Bool {
         LayoutPresetManager.shared.renamePreset(from: oldName, to: newName)
     }
-
     func deletePreset(named name: String) {
         LayoutPresetManager.shared.deletePreset(named: name)
     }

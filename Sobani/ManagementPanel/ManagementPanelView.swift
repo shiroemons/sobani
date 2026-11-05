@@ -91,7 +91,7 @@ struct ManagementPanelView: View {
         case .logs:
             PositionLogView()
         case .settings:
-            SettingsView()
+            SettingsView(viewModel: viewModel)
         case .none:
             WindowManagementView(viewModel: viewModel)
         }
