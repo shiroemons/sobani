@@ -169,7 +169,7 @@ final class DraggableImageView: NSImageView {
             handler(delta)
             return
         }
-        let scaleFactor = Self.scaleFactor(fromScrollDelta: delta)
+        let scaleFactor = Self.scaleFactor(fromScrollDelta: delta, isPrecise: event.hasPreciseScrollingDeltas)
         if event.modifierFlags.contains(.option) {
             for imageWindow in visibleImageWindows {
                 resizeWindow(
@@ -274,9 +274,16 @@ final class DraggableImageView: NSImageView {
         !GeometryUtils.isApproximatelyEqual(start.x, end.x) || !GeometryUtils.isApproximatelyEqual(start.y, end.y)
     }
 
-    /// スクロールデルタからスケールファクターを計算
-    nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat) -> CGFloat {
-        return 1.0 + (delta * AppConstants.scrollScaleSensitivity)
+    /// 非精密スクロール（マウスホイール）の 1 行あたりの点数。NSScrollView の既定の行スクロール量に合わせる。
+    nonisolated private static let scrollLineHeight: CGFloat = 10
+
+    /// スクロールデルタからスケールファクターを計算する。
+    ///
+    /// 指数関数にすることで +δ と −δ の拡大縮小が打ち消し合い（往復しても大きさがずれない）、
+    /// 大きな負のデルタでも倍率が 0 以下にならない。非精密スクロールのデルタは行単位のため点に換算する。
+    nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat, isPrecise: Bool = true) -> CGFloat {
+        let points = isPrecise ? delta : delta * scrollLineHeight
+        return exp(points * AppConstants.scrollScaleSensitivity)
     }
 
     /// リサイズ時のウィンドウフレームと画像ビューフレームを計算

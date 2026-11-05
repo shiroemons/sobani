@@ -39,6 +39,30 @@ struct DraggableImageViewTests {
         #expect(abs(result - 1.0) < AppConstants.floatingPointTolerance)
     }
 
+    @Test("同じ量を拡大→縮小すると元の大きさに戻る", arguments: [1.0, 10.0, 37.5, 150.0])
+    func scaleFactorRoundTripIsIdentity(delta: Double) {
+        let enlarge = DraggableImageView.scaleFactor(fromScrollDelta: CGFloat(delta))
+        let shrink = DraggableImageView.scaleFactor(fromScrollDelta: CGFloat(-delta))
+        #expect(abs(enlarge * shrink - 1.0) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test("大きな負のデルタでも倍率は正（画像が潰れない）", arguments: [-100.0, -250.0, -10_000.0])
+    func scaleFactorLargeNegativeDeltaStaysPositive(delta: Double) {
+        let result = DraggableImageView.scaleFactor(fromScrollDelta: CGFloat(delta))
+        #expect(result > 0)
+        #expect(result < 1.0)
+    }
+
+    @Test("非精密スクロール（ホイール）のデルタは行単位として点に換算される")
+    func scaleFactorNonPreciseUsesLineHeight() {
+        let wheel = DraggableImageView.scaleFactor(fromScrollDelta: 1, isPrecise: false)
+        let trackpad = DraggableImageView.scaleFactor(fromScrollDelta: 1, isPrecise: true)
+        #expect(wheel > trackpad)
+        // 1 行 = 10pt
+        let tenPoints = DraggableImageView.scaleFactor(fromScrollDelta: 10, isPrecise: true)
+        #expect(abs(wheel - tenPoints) < AppConstants.floatingPointTolerance)
+    }
+
     // MARK: - calculateResizedFrames Tests
 
     @Test("スケールアップ時に高さが増加")
