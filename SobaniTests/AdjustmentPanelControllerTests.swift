@@ -161,8 +161,6 @@ import Testing
         #expect(result == nil)
     }
 
-    // MARK: - AdjustmentPanelState Tests
-
     // MARK: - generateMonitorPopupTitles Tests
 
     /// 空配列で空配列を返すことを検証

@@ -26,6 +26,18 @@ enum AspectRatioPreset: String, CaseIterable, Sendable {
         }
     }
 
+    /// 画像サイズを考慮したアスペクト比（width / height）。free は nil
+    /// - Parameter imageSize: 表示上の画像サイズ（90° 回転後の向き）。original はこの比率になる
+    func ratio(forImageSize imageSize: CGSize) -> CGFloat? {
+        switch self {
+        case .original:
+            guard imageSize.width > 0, imageSize.height > 0 else { return nil }
+            return imageSize.width / imageSize.height
+        default:
+            return ratio
+        }
+    }
+
     /// ローカライズされた表示名
     var localizedName: String {
         L("aspect_ratio.\(rawValue)")

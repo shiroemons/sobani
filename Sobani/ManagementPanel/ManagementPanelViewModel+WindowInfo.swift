@@ -4,7 +4,10 @@ import AppKit
 
 extension ManagementPanelViewModel {
 
-    struct WindowInfo: Identifiable, Hashable {
+    /// 管理パネルに表示するウィンドウ情報。位置・サイズは画像（imageView）基準。
+    ///
+    /// 浮動小数点を許容誤差で比較するため `Hashable` にはしない（ハッシュと `==` の整合が取れないため）。
+    struct WindowInfo: Identifiable, Equatable {
         let windowId: Int
         var id: Int { windowId }
         let displayName: String
@@ -26,25 +29,6 @@ extension ManagementPanelViewModel {
         let isFlippedHorizontally: Bool
         let rotationAngle: CGFloat
 
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(windowId)
-            hasher.combine(displayName)
-            hasher.combine(isHidden)
-            hasher.combine(isGhostMode)
-            hasher.combine(opacityLevel)
-            hasher.combine(subtitle)
-            hasher.combine(customGhostAlpha)
-            hasher.combine(effectiveGhostAlpha)
-            hasher.combine(isRemoveBackgroundEnabled)
-            hasher.combine(originX)
-            hasher.combine(originY)
-            hasher.combine(width)
-            hasher.combine(height)
-            hasher.combine(imageName)
-            hasher.combine(isFlippedHorizontally)
-            hasher.combine(rotationAngle)
-        }
-
         static func == (lhs: Self, rhs: Self) -> Bool {
             let tol = AppConstants.floatingPointTolerance
             return lhs.windowId == rhs.windowId
@@ -52,6 +36,10 @@ extension ManagementPanelViewModel {
                 && lhs.isGhostMode == rhs.isGhostMode
                 && abs(lhs.opacityLevel - rhs.opacityLevel) < tol
                 && lhs.displayName == rhs.displayName
+                && lhs.subtitle == rhs.subtitle
+                // 画像の差し替え（背景除去・画像変更など）を検出するため、画像は同一性で比較する
+                && lhs.thumbnail === rhs.thumbnail
+                && lhs.originalImage === rhs.originalImage
                 && {
                     switch (lhs.customGhostAlpha, rhs.customGhostAlpha) {
                     case (nil, nil): return true

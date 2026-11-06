@@ -62,13 +62,9 @@ struct RegisteredImagesView: View {
         HStack {
             Spacer()
 
-            Button {
+            ToolbarIconButton(systemImage: "plus", help: L("registered_images.add")) {
                 viewModel.addImageFromFile(createWindow: false)
-            } label: {
-                Image(systemName: "plus")
-                    .frame(width: 16, height: 16)
             }
-            .help(L("registered_images.add"))
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
@@ -247,9 +243,7 @@ private struct ImageListRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            ThumbnailView(image: thumbnail)
-                .frame(width: 40, height: 40)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+            RoundedThumbnail(image: thumbnail)
 
             Text(name)
                 .font(.body)

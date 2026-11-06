@@ -65,12 +65,15 @@ final class CropEditHistory {
         logger.debug("Redo to index \(self.currentIndex)")
         return states[currentIndex]
     }
+}
 
-    /// 初期状態のみを残し、インデックスをリセットする
-    func reset() {
-        let initial = states[0]
-        states = [initial]
-        currentIndex = 0
-        logger.debug("Reset history to initial state")
-    }
+// MARK: - Scroll End Debounce
+
+extension Debouncer {
+    /// スクロール操作の終わりとみなすまでの待ち時間（秒）
+    ///
+    /// ホイールやトラックパッドのスクロールはイベントが連続して届くため、最後のイベントからこの時間が
+    /// 経ったところで 1 回のスクロール操作を 1 つの編集履歴としてまとめて記録する。
+    /// 次の操作を始める前には `flush()` で待機中の記録を先に確定させ、履歴の順序を保つ。
+    static let scrollEndSettleDelay: TimeInterval = 0.3
 }

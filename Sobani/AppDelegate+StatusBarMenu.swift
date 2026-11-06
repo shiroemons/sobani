@@ -47,8 +47,7 @@ extension AppDelegate {
             count: zOrderedWindows.count,
             isHidden: areWindowsHidden,
             showingFormat: L("status.showing_count"),
-            showingLabel: L("status.showing"),
-            hiddenLabel: L("status.hidden"),
+            hiddenFormat: L("status.hidden_window_count"),
             badges: [
                 StatusBadge(value: ghostCount, format: L("status.ghost_count")),
                 StatusBadge(value: hiddenCount, format: L("status.hidden_count"))
@@ -352,54 +351,41 @@ extension AppDelegate {
 
     @objc func perWindowOpacitySliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
-        let windowNumber = sender.tag
-
-        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-
-        if let imageWindow = zOrderedWindows.first(where: {
-            $0.window.windowNumber == windowNumber
-        }) {
-            imageWindow.applyOpacity(value)
+        if let container = sender.superview {
+            SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
         }
+        imageWindow(forWindowNumber: sender.tag)?.applyOpacity(value)
     }
 
     @objc func perWindowGhostAlphaSliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
-        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-        if let imageWindow = zOrderedWindows.first(where: { $0.window.windowNumber == sender.tag }) {
-            imageWindow.setCustomGhostAlpha(value)
+        if let container = sender.superview {
+            SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
         }
+        imageWindow(forWindowNumber: sender.tag)?.setCustomGhostAlpha(value)
     }
 
     @objc func togglePerWindowGhostAlphaCustom(_ sender: NSButton) {
-        guard let imageWindow = zOrderedWindows.first(where: {
-            $0.window.windowNumber == sender.tag
-        }) else { return }
+        guard let imageWindow = imageWindow(forWindowNumber: sender.tag) else { return }
         imageWindow.setCustomGhostAlpha(sender.state == .on ? GhostModeSettings.globalAlpha : nil)
 
         guard let container = sender.superview else { return }
-        let isCustom = imageWindow.customGhostAlpha != nil
-        let currentAlpha = imageWindow.effectiveGhostAlpha
-        if let slider = container.subviews.first(where: { $0 is NSSlider }) as? NSSlider {
-            slider.doubleValue = Double(currentAlpha)
-            slider.isEnabled = isCustom
-        }
-        if let percentLabel = container.subviews.last(where: {
-            $0 is NSTextField
-        }) as? NSTextField {
-            percentLabel.stringValue = FormatUtils.formatOpacity(currentAlpha)
-            percentLabel.alphaValue = isCustom ? 1.0 : 0.5
-        }
+        SliderMenuItemFactory.update(container, value: imageWindow.effectiveGhostAlpha)
+        SliderMenuItemFactory.setSliderEnabled(imageWindow.customGhostAlpha != nil, in: container)
     }
 
     @objc func ghostAlphaSliderChanged(_ sender: NSSlider) {
         let value = CGFloat(sender.doubleValue)
-        GhostModeSettings.globalAlpha = value
-        if let container = sender.superview { updatePercentLabel(in: container, alpha: value) }
-        for imageWindow in zOrderedWindows
-        where imageWindow.isGhostMode && imageWindow.customGhostAlpha == nil {
-            imageWindow.window.alphaValue = value
+        if let container = sender.superview {
+            SliderMenuItemFactory.updatePercentLabel(in: container, value: value)
         }
+        applyGlobalGhostAlpha(value)
+        // 開いている管理パネルに共通値（「デフォルトを使用（xx%）」の表示）を反映させる
+        NotificationCenter.default.post(
+            name: AppConstants.imageWindowStateDidChange,
+            object: nil,
+            userInfo: [AppConstants.notificationTriggerKey: AppConstants.SnapshotTrigger.ghostAlpha.rawValue]
+        )
     }
 
     @objc func changeLanguage(_ sender: NSMenuItem) {
@@ -427,7 +413,7 @@ extension AppDelegate {
             .applicationVersion: String(format: L("about.version"), version, "v\(version)"),
             .version: ""
         ])
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 
     @objc func changeDefaultImageFromMenu() {
@@ -435,10 +421,12 @@ extension AppDelegate {
             title: L("dialog.select_default_image"),
             message: L("dialog.select_default_image_message")
         )
-        if panel.runModal() == .OK, let url = panel.url {
-            ImageManager.shared.setCustomDefault(from: url)
-            refreshDefaultImageWindows()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        guard ImageManager.shared.setCustomDefault(from: url) else {
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
+            return
         }
+        refreshDefaultImageWindows()
     }
 
     @objc func resetDefaultImage() {
@@ -455,6 +443,11 @@ extension AppDelegate {
     }
 
     @objc func showOnboarding() {
+        // 表示中に作り直すと旧コントローラーが解放されてパネルが消えるため、既存のものを前面に出す
+        if let existing = onboardingController, existing.isVisible {
+            existing.bringToFront()
+            return
+        }
         let controller = OnboardingWindowController()
         controller.onAddImage = { [weak self] in
             self?.changeDefaultImageFromMenu()

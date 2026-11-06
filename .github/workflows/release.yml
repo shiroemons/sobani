@@ -52,9 +52,10 @@ jobs:
 
       - name: Xcode バージョン選択
         run: |
-          ls /Applications/ | grep Xcode
-          XCODE_PATH=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
-          if [ -n "$XCODE_PATH" ]; then
+          printf '%s\n' /Applications/Xcode*.app
+          # beta / Release Candidate の Xcode でリリースビルドしないよう除外する
+          XCODE_PATH=$(printf '%s\n' /Applications/Xcode_*.app | grep -viE 'beta|_rc' | sort -V | tail -1)
+          if [ -d "$XCODE_PATH" ]; then
             sudo xcode-select -s "$XCODE_PATH"
           fi
           xcodebuild -version
@@ -105,12 +106,20 @@ jobs:
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
           DMG_NAME: ${{ steps.dmg.outputs.name }}
+          # Package.resolved の Sparkle と揃えること。秘密鍵を渡すツールなので必ずハッシュを検証する
+          SPARKLE_VERSION: 2.10.1
+          SPARKLE_SHA256: 1a856d2a9edb8e628de88121d7be04cf0e2167f8641650b78fca00b14244cf27
         run: |
           echo "Sparkle EdDSA 署名を生成中..."
-          curl -sL https://github.com/sparkle-project/Sparkle/releases/download/2.10.0/Sparkle-2.10.0.tar.xz -o /tmp/Sparkle.tar.xz
-          mkdir -p /tmp/sparkle-tools
-          tar xf /tmp/Sparkle.tar.xz -C /tmp/sparkle-tools
-          SIGN_OUTPUT=$(echo "$SPARKLE_PRIVATE_KEY" | /tmp/sparkle-tools/bin/sign_update "$DMG_NAME" -f -)
+          archive="$RUNNER_TEMP/Sparkle.tar.xz"
+          tools_dir="$RUNNER_TEMP/sparkle-tools"
+          curl --fail --location --retry 3 --retry-delay 2 --silent --show-error \
+            "https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_VERSION}/Sparkle-${SPARKLE_VERSION}.tar.xz" \
+            --output "$archive"
+          echo "${SPARKLE_SHA256}  ${archive}" | shasum -a 256 --check --status
+          mkdir -p "$tools_dir"
+          tar xf "$archive" -C "$tools_dir"
+          SIGN_OUTPUT=$(echo "$SPARKLE_PRIVATE_KEY" | "$tools_dir/bin/sign_update" "$DMG_NAME" -f -)
           ED_SIGNATURE=$(echo "$SIGN_OUTPUT" | grep -o 'sparkle:edSignature="[^"]*"' | sed 's/sparkle:edSignature="//;s/"//')
           DMG_LENGTH=$(stat -f%z "$DMG_NAME")
           echo "ed_signature=$ED_SIGNATURE" >> "$GITHUB_OUTPUT"
@@ -149,11 +158,13 @@ jobs:
           DMG_NAME: ${{ steps.dmg.outputs.name }}
           ZIP_NAME: ${{ steps.zip.outputs.name }}
         run: |
-          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          # 再実行時は既存リリースだけ削除しタグは残す（タグを消すと main の HEAD で作り直され、別コミットを指してしまう）
+          gh release delete "$TAG" --yes 2>/dev/null || true
           gh release create "$TAG" \
             "$DMG_NAME" \
             "$ZIP_NAME" \
             checksums.txt \
+            --verify-tag \
             --generate-notes
 
       - name: appcast.xml 更新
@@ -196,8 +207,8 @@ jobs:
           /<item>/ { skip=1 }
           /<\/item>/ { skip=0; next }
           !skip { print }
-          ' docs/appcast.xml > /tmp/appcast_new.xml
-          mv /tmp/appcast_new.xml docs/appcast.xml
+          ' docs/appcast.xml > "$RUNNER_TEMP/appcast_new.xml"
+          mv "$RUNNER_TEMP/appcast_new.xml" docs/appcast.xml
 
           xmllint --noout docs/appcast.xml
 
@@ -209,21 +220,21 @@ jobs:
       - name: Homebrew Tap 更新
         env:
           TAP_TOKEN: ${{ secrets.PAT_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA256: ${{ steps.sha.outputs.dmg_sha256 }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          SHA256="${{ steps.sha.outputs.dmg_sha256 }}"
+          TAP_DIR="$RUNNER_TEMP/homebrew-tap"
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/shiroemons/homebrew-tap.git" "$TAP_DIR"
+          mkdir -p "$TAP_DIR/Casks"
 
-          git clone "https://x-access-token:${TAP_TOKEN}@github.com/shiroemons/homebrew-tap.git" /tmp/homebrew-tap
-          mkdir -p /tmp/homebrew-tap/Casks
-
-          cat > /tmp/homebrew-tap/Casks/sobani.rb <<EOF
+          cat > "$TAP_DIR/Casks/sobani.rb" <<EOF
           cask "sobani" do
             version "${VERSION}"
             sha256 "${SHA256}"
 
             url "https://github.com/shiroemons/sobani/releases/download/v#{version}/Sobani-universal.dmg"
             name "Sobani"
-            desc "Desktop mascot app that displays character images"
+            desc "Desktop acrylic stand app that displays character images"
             homepage "https://github.com/shiroemons/sobani"
 
             livecheck do
@@ -239,7 +250,7 @@ jobs:
           end
           EOF
 
-          cd /tmp/homebrew-tap
+          cd "$TAP_DIR"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Casks/sobani.rb

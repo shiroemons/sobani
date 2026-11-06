@@ -388,3 +388,210 @@ import Testing
     }
 
 }
+
+/// window_states.json の破損・不正値に対する保護（退避・要素単位の読み飛ばし）を検証するテスト
+@Suite @MainActor struct WindowStatePersistenceSafetyTests {
+    let tempDirectory: URL
+    let stateManager: WindowStateManager
+
+    init() throws {
+        tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SobaniTests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(
+            at: tempDirectory, withIntermediateDirectories: true
+        )
+        stateManager = WindowStateManager(baseDirectory: tempDirectory)
+    }
+
+    private func makeState(imageName: String = "test.png") -> WindowState {
+        WindowState(
+            imageName: imageName, originX: 100, originY: 200, width: 300, height: 400,
+            isFlippedHorizontally: false
+        )
+    }
+
+    private func corruptBackups() throws -> [String] {
+        try FileManager.default.contentsOfDirectory(atPath: tempDirectory.path)
+            .filter { $0.hasPrefix("window_states.corrupt-") }
+    }
+
+    // MARK: - Corrupt File Backup Tests
+
+    /// 破損JSONで空配列が返され、元ファイルが同じ内容で退避されることを検証
+    @Test func corruptedFileIsBackedUp() throws {
+        let url = try #require(stateManager.statesFileURL)
+        try "{ invalid json".write(to: url, atomically: true, encoding: .utf8)
+
+        #expect(stateManager.loadStates() == [])
+
+        let backups = try corruptBackups()
+        #expect(backups.count == 1)
+        let backupName = try #require(backups.first)
+        let backupContent = try String(contentsOf: tempDirectory.appendingPathComponent(backupName), encoding: .utf8)
+        #expect(backupContent == "{ invalid json")
+    }
+
+    /// 一部の要素だけが壊れている場合、正常な要素を残し元ファイルを退避することを検証
+    @Test func loadStatesSkipsOnlyInvalidElements() throws {
+        let url = try #require(stateManager.statesFileURL)
+        let json = """
+        [
+          {"imageName":"ok1.png","originX":1,"originY":2,"width":300,"height":400,"isFlippedHorizontally":false},
+          {"imageName":"broken.png","originX":"oops"},
+          {"imageName":"ok2.png","originX":5,"originY":6,"width":300,"height":400,"isFlippedHorizontally":false}
+        ]
+        """
+        try json.write(to: url, atomically: true, encoding: .utf8)
+
+        let loaded = stateManager.loadStates()
+
+        #expect(loaded.map(\.imageName) == ["ok1.png", "ok2.png"])
+        #expect(try corruptBackups().count == 1)
+
+        // 退避後は読めた要素で書き直すため、次回の読み込みでは退避が増えない
+        #expect(stateManager.loadStates().map(\.imageName) == ["ok1.png", "ok2.png"])
+        #expect(try corruptBackups().count == 1)
+    }
+
+    /// 正常なファイルの読み込みではバックアップを作らないことを検証
+    @Test func loadStatesValidFileDoesNotBackUp() throws {
+        stateManager.saveStates([makeState()])
+        #expect(stateManager.loadStates().count == 1)
+        #expect(try corruptBackups().isEmpty)
+    }
+
+    // MARK: - Transform Version Migration Tests
+
+    private func decodeSingleState(_ json: String) throws -> WindowState {
+        try #require(JSONDecoder().decode([WindowState].self, from: Data(json.utf8)).first)
+    }
+
+    /// 旧形式（transformVersionなし）で反転ありの回転角が符号反転で移行されることを検証
+    @Test(arguments: [(CGFloat(30), CGFloat(330)), (CGFloat(270), CGFloat(90)), (CGFloat(180), CGFloat(180))])
+    func legacyFlippedRotationIsMigrated(stored: CGFloat, expected: CGFloat) throws {
+        let state = try decodeSingleState("""
+        [{"imageName":"a.png","originX":0,"originY":0,"width":100,"height":100,
+          "isFlippedHorizontally":true,"rotationAngle":\(stored)}]
+        """)
+        #expect(abs(state.rotationAngle - expected) < AppConstants.floatingPointTolerance)
+        #expect(state.transformVersion == WindowState.currentTransformVersion)
+    }
+
+    /// 旧形式で反転なし、または回転0の場合は回転角が変わらないことを検証
+    @Test(arguments: [(false, CGFloat(30)), (true, CGFloat(0))])
+    func legacyRotationWithoutEffectiveFlipIsUnchanged(isFlipped: Bool, angle: CGFloat) throws {
+        let state = try decodeSingleState("""
+        [{"imageName":"a.png","originX":0,"originY":0,"width":100,"height":100,
+          "isFlippedHorizontally":\(isFlipped),"rotationAngle":\(angle)}]
+        """)
+        #expect(abs(state.rotationAngle - angle) < AppConstants.floatingPointTolerance)
+    }
+
+    /// transformVersion=2 のデータは再移行されないことを検証
+    @Test func currentVersionRotationIsNotMigratedAgain() throws {
+        let state = try decodeSingleState("""
+        [{"imageName":"a.png","originX":0,"originY":0,"width":100,"height":100,
+          "isFlippedHorizontally":true,"rotationAngle":30,"transformVersion":2}]
+        """)
+        #expect(abs(state.rotationAngle - 30) < AppConstants.floatingPointTolerance)
+    }
+
+    /// エンコード結果に現行のtransformVersionが含まれ、保存・再読み込みで二重に移行されないことを検証
+    @Test func transformVersionRoundTrip() throws {
+        let state = WindowState(
+            imageName: "a.png", originX: 0, originY: 0, width: 100, height: 100,
+            isFlippedHorizontally: true, rotationAngle: 30
+        )
+        let data = try JSONEncoder().encode(state)
+        let object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(object["transformVersion"] as? Int == WindowState.currentTransformVersion)
+        #expect(try JSONDecoder().decode(WindowState.self, from: data) == state)
+
+        stateManager.saveStates([state])
+        #expect(stateManager.loadStates() == [state])
+    }
+
+    // MARK: - Persistence Sanitization Tests
+
+    private func makeNonFiniteState() -> WindowState {
+        WindowState(
+            imageName: "nan.png",
+            originX: .nan,
+            originY: .infinity,
+            width: .nan,
+            height: -10,
+            isFlippedHorizontally: true,
+            rotationAngle: -.infinity,
+            opacityLevel: .nan,
+            windowId: 3,
+            cropRect: CropRect(x: .nan, y: 0, width: 1, height: 1),
+            isGhostMode: true,
+            customGhostAlpha: .nan,
+            isHidden: true,
+            displayAnchor: DisplayAnchor(
+                displayUUID: "uuid", screenFrame: NSRect(x: 0, y: 0, width: CGFloat.nan, height: 1080)
+            )
+        )
+    }
+
+    /// 非有限値・不正値がすべて永続化可能な値に補正されることを検証
+    @Test func sanitizedForPersistenceReplacesNonFiniteValues() throws {
+        let sanitized = makeNonFiniteState().sanitizedForPersistence()
+
+        #expect(abs(sanitized.originX) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.originY) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.width - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.height - AppConstants.defaultWindowHeight) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.rotationAngle) < AppConstants.floatingPointTolerance)
+        #expect(abs(sanitized.opacityLevel - AppConstants.opacityMax) < AppConstants.floatingPointTolerance)
+        // クロップは捨てずに読み込み時と同じ規則で補正する
+        let crop = try #require(sanitized.cropRect)
+        #expect(abs(crop.x) < AppConstants.normalizedTolerance)
+        #expect(crop == makeNonFiniteState().cropRect?.sanitized())
+        #expect(sanitized.customGhostAlpha == nil)
+        #expect(sanitized.displayAnchor == nil)
+        // 数値以外の属性は保持される
+        #expect(sanitized.imageName == "nan.png")
+        #expect(sanitized.windowId == 3)
+        #expect(sanitized.isFlippedHorizontally)
+        #expect(sanitized.isGhostMode)
+        #expect(sanitized.isHidden)
+        _ = try JSONEncoder().encode(sanitized)
+    }
+
+    /// 正常な値は補正されないことを検証
+    @Test func sanitizedForPersistenceKeepsValidState() {
+        let state = WindowState(
+            imageName: "ok.png", originX: -50, originY: 20, width: 300, height: 400,
+            isFlippedHorizontally: false, rotationAngle: 30, opacityLevel: 0.5, windowId: 1,
+            cropRect: CropRect(x: 0.1, y: 0.1, width: 0.5, height: 0.5),
+            customGhostAlpha: 0.4,
+            displayAnchor: DisplayAnchor(displayUUID: "uuid", screenFrame: NSRect(x: 0, y: 0, width: 1920, height: 1080))
+        )
+        #expect(state.sanitizedForPersistence() == state)
+    }
+
+    /// 透過率が範囲外の場合にopacityMin〜opacityMaxへクランプされることを検証
+    @Test(arguments: [
+        (CGFloat(-1), AppConstants.opacityMin), (CGFloat(0), AppConstants.opacityMin), (CGFloat(5), AppConstants.opacityMax),
+    ])
+    func sanitizedForPersistenceClampsOpacity(input: CGFloat, expected: CGFloat) {
+        let state = WindowState(
+            imageName: "a.png", originX: 0, originY: 0, width: 100, height: 100,
+            isFlippedHorizontally: false, opacityLevel: input
+        )
+        #expect(abs(state.sanitizedForPersistence().opacityLevel - expected) < AppConstants.floatingPointTolerance)
+    }
+
+    /// 非有限値を含む状態があっても保存が成功し、他のウィンドウも失われないことを検証
+    @Test func saveStatesWithNonFiniteValuesSucceeds() {
+        let valid = makeState(imageName: "valid.png")
+        stateManager.saveStates([valid, makeNonFiniteState()])
+
+        let loaded = stateManager.loadStates()
+
+        #expect(loaded.count == 2)
+        #expect(loaded.first == valid)
+        #expect(loaded.last?.imageName == "nan.png")
+    }
+}

@@ -87,10 +87,12 @@ extension CropEditorPanelController {
                     "arrow.left.and.right.righttriangle.left.righttriangle.right",
                     #selector(flipTapped)
                 ),
-                ("rotate.left", #selector(rotate90Tapped))
+                ("rotate.right", #selector(rotate90Tapped))
             ],
             width: groupWidth
         )
+        // 回転は時計回り（右回り）。出力処理・保存済みデータと同じ向き
+        flipRotateResult.buttons.last?.toolTip = L("crop_editor.rotate_90")
         flipRotateResult.container.frame = NSRect(
             x: sidePad, y: rowY, width: groupWidth, height: pillSize
         )
@@ -105,7 +107,6 @@ extension CropEditorPanelController {
         )
 
         let revertBtn = NSButton(frame: revertContainer.bounds)
-        revertBtn.bezelStyle = .regularSquare
         revertBtn.isBordered = false
         revertBtn.imagePosition = .noImage
         revertBtn.title = L("crop_editor.reset")
@@ -145,7 +146,6 @@ extension CropEditorPanelController {
     }
 
     func configureIconButton(_ button: NSButton, symbolName: String, action: Selector) {
-        button.bezelStyle = .regularSquare
         button.isBordered = false
         button.imagePosition = .imageOnly
         button.target = self
@@ -221,7 +221,7 @@ extension CropEditorPanelController {
     func handleShapeSelected(_ shape: CropShape) {
         var updated = currentCropRect.with(shape: shape)
 
-        if shape == .roundedRectangle && updated.cornerRadii == .zero {
+        if shape == .roundedRectangle && updated.cornerRadii.isEffectivelyZero {
             // 角丸初回選択: デフォルト角丸を設定
             updated = updated.with(cornerRadii: CornerRadii.defaultLinked)
         }
@@ -235,7 +235,7 @@ extension CropEditorPanelController {
 
     func handleCornersLinkedToggled(_ linked: Bool) {
         currentCropRect = currentCropRect.with(cornersLinked: linked)
-        canvasView?.cropRect = currentCropRect
+        canvasView?.initializeFromCropRect(currentCropRect)
         recordCurrentState()
     }
 }

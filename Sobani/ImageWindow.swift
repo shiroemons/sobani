@@ -1,4 +1,5 @@
 import Cocoa
+import os.log
 import UniformTypeIdentifiers
 
 // MARK: - Rotatable Container
@@ -19,6 +20,7 @@ private final class RotatableContainer: NSView {
 /// Z-order は `AppDelegate.zOrderedWindows` 配列で管理される。
 @MainActor
 final class ImageWindow: NSObject, NSMenuDelegate {
+    private static let logger = Logger(category: "ImageWindow")
     let window: NSWindow
     let imageView: DraggableImageView
     weak var delegate: ImageWindowDelegate? {
@@ -30,11 +32,12 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     private(set) var adjustmentPanelController: AdjustmentPanelController?
     var spinnerOverlay: NSProgressIndicator?
     var isRemovingBackground = false
+    /// 背景除去を実行できるか（処理中でなく、元画像がまだ透過を含まない）
     var isRemoveBackgroundAvailable: Bool {
-        !isRemovingBackground && !imageHasAlpha()
+        !isRemovingBackground && !imageView.sourceImageHasAlpha()
     }
-    var cachedHasAlpha: Bool?
-    /// ゴーストモードの状態。有効時は `ignoresMouseEvents = true` かつ画像の alpha が 0.3 になる。
+    /// ゴーストモードの状態。有効時は `ignoresMouseEvents = true` になり、imageView の alpha は
+    /// `opacityLevel × effectiveGhostAlpha`（ウィンドウ個別の値、なければ共通設定）になる。
     /// 無効化時は alpha がウィンドウ固有の `opacityLevel` に戻る（1.0 ではない）。
     private(set) var isGhostMode: Bool = false
     private(set) var isHidden: Bool = false
@@ -90,12 +93,15 @@ final class ImageWindow: NSObject, NSMenuDelegate {
             self?.adjustmentPanelController?.updateAngle(self?.imageView.rotationAngle ?? 0)
         }
         imageView.onOpacityChanged = { [weak self] in
-            self?.updateImageAlpha()
+            self?.refreshImageAlpha()
         }
         imageView.onPositionChanged = { [weak self] in
             self?.notifyStateDidChange(.position)
         }
-        installSizeChangedHandler()
+        imageView.onSizeChanged = { [weak self] in
+            self?.syncAdjustmentPanelSize()
+            self?.notifyStateDidChange(.size)
+        }
         imageView.onDragEntered = { [weak self] in self?.showHighlightBorder() }
         imageView.onDragExited = { [weak self] in self?.hideHighlightBorder() }
         imageView.onDropImage = { [weak self] url, isOption in
@@ -106,12 +112,12 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 self.loadAndApplyImage(from: url)
             }
         }
-        let screenCenter = NSScreen.main?.frame ?? NSRect.zero
-        let offsetX = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
-        let offsetY = CGFloat.random(in: -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset)
-        let originX = (screenCenter.width - windowWidth) / 2 + offsetX
-        let originY = (screenCenter.height - windowHeight) / 2 + offsetY
-        window.setFrameOrigin(NSPoint(x: originX, y: originY))
+        let spawnRange = -AppConstants.windowSpawnRandomOffset...AppConstants.windowSpawnRandomOffset
+        window.setFrameOrigin(Self.spawnOrigin(
+            windowSize: window.frame.size,
+            screenFrame: NSScreen.mainFrameOrFallback,
+            offset: CGVector(dx: CGFloat.random(in: spawnRange), dy: CGFloat.random(in: spawnRange))
+        ))
         window.makeKeyAndOrderFront(nil)
     }
 
@@ -121,7 +127,7 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         }
     }
 
-    private func notifyStateDidChange(_ trigger: AppConstants.SnapshotTrigger) {
+    func notifyStateDidChange(_ trigger: AppConstants.SnapshotTrigger) {
         NotificationCenter.default.post(
             name: AppConstants.imageWindowStateDidChange,
             object: self,
@@ -129,21 +135,17 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         )
     }
 
-    private func installSizeChangedHandler() {
-        imageView.onSizeChanged = { [weak self] in
-            self?.notifyStateDidChange(.size)
-        }
-    }
-
+    /// 表示画像を別の画像に差し替える。旧画像のクロップは破棄し、高さを保ったまま新しい縦横比にする。
     func applyImage(_ image: NSImage) {
         guard image.size.height > 0 else { return }
+        // 開いているクロップエディタは旧画像を編集しているため閉じる
+        cropEditorController?.close()
+        cropEditorController = nil
         let baseHeight = imageView.frame.height
         let dims = Self.calculateImageDimensions(baseHeight: baseHeight, imageSize: image.size)
-        imageView.image = image
+        imageView.replaceImage(image)
         imageView.aspectRatio = dims.aspectRatio
-        imageView.frame.size = NSSize(width: dims.width, height: baseHeight)
-        cachedHasAlpha = nil
-        adjustWindowForRotation()
+        adjustWindowForRotation(imageSize: NSSize(width: dims.width, height: baseHeight))
         notifyStateDidChange(.image)
     }
 
@@ -165,7 +167,6 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 NotificationCenter.default.removeObserver(observer)
                 self?.windowMoveObserver = nil
             }
-            self?.installSizeChangedHandler()
             self?.imageView.isAdjustmentPanelActive = false
             self?.adjustmentPanelController = nil
         }
@@ -196,15 +197,15 @@ final class ImageWindow: NSObject, NSMenuDelegate {
                 self.adjustmentPanelController?.updateMonitor(self.window)
             }
         }
-        imageView.onSizeChanged = { [weak self] in
-            guard let self = self else { return }
-            self.adjustmentPanelController?.updateSize(self.imageView.frame.size)
-            self.notifyStateDidChange(.size)
-        }
     }
 
     private func closeAdjustmentPanel() {
         adjustmentPanelController?.close()
+    }
+
+    /// 開いている調整パネルに現在のサイズと縦横比を反映する（クロップ・画像変更後に古い値が残らないように）。
+    private func syncAdjustmentPanelSize() {
+        adjustmentPanelController?.updateSize(imageView.frame.size, aspectRatio: imageView.aspectRatio)
     }
 
     @objc func resetRotation() { applyRotation(0) }
@@ -218,36 +219,34 @@ final class ImageWindow: NSObject, NSMenuDelegate {
     }
 
     func applyRotation(_ angle: CGFloat) {
+        // NaN/無限大はフレームや CALayer を壊し、JSON 保存も失敗させるため無視する
+        guard angle.isFinite else { return }
         imageView.rotationAngle = angle
         adjustWindowForRotation()
         adjustmentPanelController?.updateAngle(angle)
         notifyStateDidChange(.rotation)
     }
 
-    func adjustWindowForRotation() {
-        let baseWidth = imageView.frame.width
-        let baseHeight = imageView.frame.height
-        let boundingBox = GeometryUtils.rotatedBoundingBox(
-            width: baseWidth, height: baseHeight, angleDegrees: imageView.rotationAngle
-        )
-        let bbWidth = boundingBox.width
-        let bbHeight = boundingBox.height
+    /// 画像の中心を固定したまま、回転後の外接矩形に合わせてウィンドウと imageView を配置し直す。
+    ///
+    /// - Parameter imageSize: 新しい imageView のサイズ。省略時は現在のサイズ。
+    ///   サイズを変えるときは imageView.frame を先に書き換えず、ここに渡すこと（中心が保たれなくなる）。
+    func adjustWindowForRotation(imageSize: NSSize? = nil) {
+        let imageFrame = imageFrameInScreen
+        placeImage(center: CGPoint(x: imageFrame.midX, y: imageFrame.midY), size: imageSize ?? imageFrame.size)
+    }
 
-        let centerX = window.frame.midX
-        let centerY = window.frame.midY
-        window.setFrame(NSRect(
-            x: round(centerX - bbWidth / 2),
-            y: round(centerY - bbHeight / 2),
-            width: round(bbWidth),
-            height: round(bbHeight)
-        ), display: false)
-        imageView.frame = NSRect(
-            x: (bbWidth - baseWidth) / 2,
-            y: (bbHeight - baseHeight) / 2,
-            width: baseWidth,
-            height: baseHeight
-        )
+    /// 画像の中心（スクリーン座標）とサイズを指定して、ウィンドウと imageView のフレームを設定する。
+    ///
+    /// 開いている調整パネルのサイズ表示もここで合わせる（配置を変えるすべての経路で古い値が残らないように）。
+    func placeImage(center: CGPoint, size: NSSize) {
+        // NaN/無限大はフレームを壊し、JSON 保存も失敗させるため無視する（配置の共通の入口なのでここで弾く）
+        guard center.x.isFinite, center.y.isFinite, size.width.isFinite, size.height.isFinite else { return }
+        let frames = Self.anchoredFrames(imageCenter: center, imageSize: size, rotationAngle: imageView.rotationAngle)
+        window.setFrame(frames.windowFrame, display: false)
+        imageView.frame = frames.imageViewFrame
         imageView.needsLayout = true
+        syncAdjustmentPanelSize()
     }
 
     @objc func changeImage() {
@@ -257,18 +256,36 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         }
     }
 
+    /// 外部の画像ファイルを登録してから表示する。
+    ///
+    /// 登録できなかった画像を表示すると、`displayName` が保存先に存在しない名前になり
+    /// 再起動後にデフォルト画像へ戻ってしまうため、登録・読み込みに失敗したら画像は変えずにアラートで知らせる。
     func loadAndApplyImage(from url: URL) {
-        guard let newImage = NSImage(contentsOf: url) else { return }
-        let savedName = ImageManager.shared.registerImage(from: url)
-        displayName = savedName ?? url.deletingPathExtension().lastPathComponent
-        applyImage(newImage)
+        guard let savedName = ImageManager.shared.registerImage(from: url) else {
+            Self.logger.error("Failed to register image: \(url.lastPathComponent, privacy: .public)")
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
+            return
+        }
+        if !selectRegisteredImage(named: savedName) {
+            Self.logger.error("Failed to load registered image: \(savedName, privacy: .public)")
+            ImageFileDialog.showLoadFailedAlert(fileNames: [url.lastPathComponent])
+        }
+    }
+
+    /// 登録済み画像に切り替える。
+    ///
+    /// - Returns: 画像を読み込めて切り替えた場合 true。
+    @discardableResult
+    func selectRegisteredImage(named name: String) -> Bool {
+        guard let image = ImageManager.shared.image(named: name) else { return false }
+        displayName = name
+        applyImage(image)
+        return true
     }
 
     @objc func selectRegisteredImage(_ sender: NSMenuItem) {
-        guard let name = sender.representedObject as? String,
-              let image = ImageManager.shared.loadRegisteredImage(named: name) else { return }
-        displayName = name
-        applyImage(image)
+        guard let name = sender.representedObject as? String else { return }
+        selectRegisteredImage(named: name)
     }
 
     @objc func deleteRegisteredImage(_ sender: NSMenuItem) {
@@ -323,18 +340,17 @@ final class ImageWindow: NSObject, NSMenuDelegate {
         imageView.rotationAngle = 0
         adjustmentPanelController?.updateAngle(0)
         applyOpacity(1.0)
-
-        let defaultHeight: CGFloat = AppConstants.defaultWindowHeight
-        let defaultWidth = defaultHeight * imageView.aspectRatio
-
-        let screenFrame = NSScreen.mainFrameOrFallback
-        let originX = screenFrame.minX + (screenFrame.width - defaultWidth) / 2
-        let originY = screenFrame.minY + (screenFrame.height - defaultHeight) / 2
-
-        window.setFrame(NSRect(x: originX, y: originY, width: defaultWidth, height: defaultHeight), display: true)
-        imageView.frame = NSRect(x: 0, y: 0, width: defaultWidth, height: defaultHeight)
-        imageView.needsLayout = true
+        resetPositionAndSize()
         notifyStateDidChange(.reset)
+    }
+
+    /// 位置とサイズだけを初期状態（メイン画面中央・既定の高さ・現在の縦横比）に戻す。
+    ///
+    /// 回転・反転・クロップ・不透明度・ゴーストは変更しない。通知は呼び出し側で行う。
+    func resetPositionAndSize() {
+        let size = Self.clampedImageSize(height: AppConstants.defaultWindowHeight, aspectRatio: imageView.aspectRatio)
+        let screenFrame = NSScreen.mainFrameOrFallback
+        placeImage(center: CGPoint(x: screenFrame.midX, y: screenFrame.midY), size: size)
     }
 }
 
@@ -366,15 +382,19 @@ extension ImageWindow {
     }
 
     func setCustomGhostAlpha(_ alpha: CGFloat?) {
-        guard alpha != customGhostAlpha else { return }
+        guard !Self.isApproximatelyEqual(alpha, customGhostAlpha) else { return }
         customGhostAlpha = alpha
         if isGhostMode {
-            updateImageAlpha()
+            refreshImageAlpha()
         }
         notifyStateDidChange(.ghostAlpha)
     }
 
-    private func updateImageAlpha() {
+    /// 不透明度とゴーストモードを合成した alpha を imageView に再適用する。
+    ///
+    /// ゴーストの共通 alpha（`GhostModeSettings.globalAlpha`）を変えたときなど、
+    /// ウィンドウ側の状態が変わらないまま見た目だけ更新したい場合に呼ぶ。
+    func refreshImageAlpha() {
         imageView.alphaValue = composedImageAlpha
     }
 }
@@ -382,14 +402,22 @@ extension ImageWindow {
 // MARK: - Hidden Window
 
 extension ImageWindow {
+    /// 付属パネル（フローティングメニュー・調整パネル・クロップエディタ）をすべて閉じ、ウィンドウを画面から消す。
+    ///
+    /// 非表示化・クローズ・レイアウト適用など、ウィンドウが画面から消えるすべての経路で呼ぶこと。
+    /// 付属パネルを閉じずに解放するとクロップエディタのキー監視などが残る。
+    func dismiss() {
+        floatingMenuController?.dismiss()
+        adjustmentPanelController?.close()
+        cropEditorController?.close()
+        window.orderOut(nil)
+    }
+
     func setHidden(_ hidden: Bool) {
         guard hidden != isHidden else { return }
         isHidden = hidden
         if hidden {
-            floatingMenuController?.dismiss()
-            adjustmentPanelController?.close()
-            cropEditorController?.close()
-            window.orderOut(nil)
+            dismiss()
         } else {
             window.orderFront(nil)
         }
@@ -411,7 +439,7 @@ extension ImageWindow: FloatingMenuDelegate {
             floatingMenuController = FloatingMenuController()
             floatingMenuController?.delegate = self
         }
-        floatingMenuController?.isRemoveBackgroundEnabled = !isRemovingBackground && !imageHasAlpha()
+        floatingMenuController?.isRemoveBackgroundEnabled = isRemoveBackgroundAvailable
         let windowPoint = window.convertPoint(fromScreen: screenPoint)
         floatingMenuController?.currentOpacity = imageView.opacityLevel
         floatingMenuController?.show(at: windowPoint, in: window)
@@ -457,22 +485,27 @@ extension ImageWindow: CropEditorPanelDelegate {
     }
 
     @objc func resetCrop() {
+        guard imageView.cropRect != nil else { return }
+        let oldSize = imageView.frame.size
         imageView.resetCrop()
+        fitImageViewToAspectRatio(preservingAreaOf: oldSize)
+        notifyStateDidChange(.crop)
     }
 
     func cropEditorDidConfirm(_ editor: CropEditorPanelController, cropRect: CropRect) {
-        let oldWidth = imageView.frame.size.width
-        let oldHeight = imageView.frame.size.height
+        let oldSize = imageView.frame.size
         imageView.cropRect = cropRect
-        let newAspect = imageView.aspectRatio
-        // フレーム面積を維持しながら、新しいアスペクト比に合わせてリサイズ
-        let oldArea = oldWidth * oldHeight
-        let newHeight = sqrt(oldArea / newAspect)
-        let newWidth = newHeight * newAspect
-        imageView.frame.size = NSSize(width: round(newWidth), height: round(newHeight))
-        adjustWindowForRotation()
+        fitImageViewToAspectRatio(preservingAreaOf: oldSize)
         cropEditorController = nil
         notifyStateDidChange(.crop)
+    }
+
+    /// クロップで縦横比が変わったとき、表示面積を保ったまま imageView とウィンドウを新しい縦横比に合わせる。
+    private func fitImageViewToAspectRatio(preservingAreaOf oldSize: NSSize) {
+        guard let newSize = Self.areaPreservingImageSize(
+            currentSize: oldSize, aspectRatio: imageView.aspectRatio
+        ) else { return }
+        adjustWindowForRotation(imageSize: NSSize(width: round(newSize.width), height: round(newSize.height)))
     }
 
     func cropEditorDidCancel(_ editor: CropEditorPanelController) { cropEditorController = nil }
@@ -490,37 +523,43 @@ extension ImageWindow: AdjustmentPanelDelegate {
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangePosition position: CGPoint) {
-        let origin = Self.windowOrigin(forImageOrigin: position, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle)
-        window.setFrameOrigin(origin)
+        setImageOrigin(position)
+        notifyStateDidChange(.position)
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didChangeSize size: CGSize) {
-        imageView.frame.size = size
-        adjustWindowForRotation()
+        adjustWindowForRotation(imageSize: size)
         adjustmentPanelController?.updatePosition(currentImageOrigin())
+        notifyStateDidChange(.size)
     }
 
     func adjustmentPanel(_ panel: AdjustmentPanelController, didSelectMonitor screen: NSScreen) {
-        guard let oldScreen = NSScreen.screen(containing: window.frame) else { return }
-        let oldOrigin = currentImageOrigin()
-        let relativeX = oldOrigin.x - oldScreen.frame.origin.x
-        let relativeY = oldOrigin.y - oldScreen.frame.origin.y
-        let newOrigin = CGPoint(x: screen.frame.origin.x + relativeX, y: screen.frame.origin.y + relativeY)
-        let newWindowOrigin = Self.windowOrigin(forImageOrigin: newOrigin, imageViewSize: imageView.frame.size, rotationAngle: imageView.rotationAngle)
-        window.setFrameOrigin(newWindowOrigin)
+        // 元のディスプレイ上の相対位置を保って移し、移動先の可視領域に収める
+        let newImageOrigin = ScreenRestorationUtils.computeRestoredOrigin(
+            savedOrigin: currentImageOrigin(),
+            oldScreenFrame: NSScreen.screen(containing: window.frame)?.frame,
+            currentScreenFrame: screen.frame
+        )
+        setImageOrigin(newImageOrigin)
+        window.setFrameOrigin(ScreenRestorationUtils.clampOrigin(
+            window.frame.origin, windowSize: window.frame.size, to: screen.visibleFrame
+        ))
         adjustmentPanelController?.updatePosition(currentImageOrigin())
+        notifyStateDidChange(.position)
     }
 
     func adjustmentPanelDidResetPositionAndSize(_ panel: AdjustmentPanelController) {
-        resetDisplay()
+        // パネルの「リセット」は位置・サイズのみ。クロップ・反転・回転などは保つ
+        resetPositionAndSize()
         panel.updatePosition(currentImageOrigin())
-        panel.updateSize(imageView.frame.size)
         panel.updateMonitor(window)
+        notifyStateDidChange(.position)
+        notifyStateDidChange(.size)
     }
 
     // MARK: Helpers
     private func currentImageOrigin() -> CGPoint {
-        Self.imageOrigin(windowFrame: window.frame, imageViewSize: imageView.frame.size)
+        imageFrameInScreen.origin
     }
 }
 

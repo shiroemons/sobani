@@ -2,391 +2,126 @@ import Cocoa
 import os.log
 
 /// クロップ確定時の画像処理ロジック
-/// 処理順序: quarterTurns回転 → isFlippedInCrop反転 → (傾き補正+クロップ統合 or クロップのみ)
+///
+/// 90° 回転・反転・パース補正・傾き補正・切り出し・形状マスクを、`CropGeometry.imageTransform`
+/// （エディタのキャンバスと共通の変換）による 1 回の描画でまとめて適用する。
+/// 中間ビットマップを作らず、再サンプリングも 1 回で済む。
 enum CropImageProcessor {
 
     private static let logger = Logger(category: "CropImageProcessor")
 
-    // MARK: - Context Helpers
-
-    /// CGImage から安全に CGContext を生成する
-    /// image.colorSpace が nil の場合は sRGB にフォールバックし、
-    /// bitmapInfo の互換性問題も premultiplied RGBA で回避する
-    private static func createContext(
-        width: Int, height: Int, source image: CGImage
-    ) -> CGContext? {
-        let colorSpace = image.colorSpace ?? CGColorSpaceCreateDeviceRGB()
-        // 元画像の bitmapInfo をそのまま使うと CGContext 生成に失敗する場合がある
-        // (例: indexed color, unusual alpha configurations)
-        // まず元画像の設定で試し、失敗したら安全な設定にフォールバック
-        if let ctx = CGContext(
-            data: nil, width: width, height: height,
-            bitsPerComponent: image.bitsPerComponent,
-            bytesPerRow: 0, space: colorSpace,
-            bitmapInfo: image.bitmapInfo.rawValue
-        ) {
-            return ctx
-        }
-        logger.warning(
-            "CGContext creation failed with original bitmapInfo \(image.bitmapInfo.rawValue), falling back to premultiplied RGBA"
-        )
-        return CGContext(
-            data: nil, width: width, height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        )
-    }
+    /// 出力画像 1 辺の上限（ピクセル）。壊れた CropRect で巨大なメモリを確保しないようにする
+    private static let maxOutputPixelDimension: CGFloat = 32_768
+    private static let bitsPerComponent = 8
 
     /// CropRectの全変換を適用して切り出した画像を返す
     /// - Parameters:
     ///   - image: 元画像のCGImage
     ///   - cropRect: 適用するCropRect
+    ///   - maxOutputPixelSize: 指定すると出力の長辺がこの値以下になるよう縮小して描画する（サムネイル用）
     /// - Returns: 処理済みのCGImage、または失敗時nil
-    static func applyFullCrop(to image: CGImage, cropRect: CropRect) -> CGImage? {
-        var current = image
-
-        // 1. quarterTurns回転（90°単位）
-        if cropRect.quarterTurns > 0 {
-            guard let rotated = applyQuarterTurns(to: current, turns: cropRect.quarterTurns) else {
-                logger.error("applyQuarterTurns failed for turns=\(cropRect.quarterTurns)")
-                return nil
-            }
-            current = rotated
-        }
-
-        // 2. isFlippedInCrop反転
-        if cropRect.isFlippedInCrop {
-            guard let flipped = applyHorizontalFlip(to: current) else {
-                logger.error("applyHorizontalFlip failed")
-                return nil
-            }
-            current = flipped
-        }
-
-        // 2.5. パース補正
-        if !GeometryUtils.isApproximatelyZero(cropRect.verticalPerspective)
-            || !GeometryUtils.isApproximatelyZero(cropRect.horizontalPerspective) {
-            guard let perspectiveCorrected = applyPerspective(
-                to: current,
-                vertical: cropRect.verticalPerspective,
-                horizontal: cropRect.horizontalPerspective
-            ) else {
-                logger.error("applyPerspective failed")
-                return nil
-            }
-            current = perspectiveCorrected
-        }
-
-        // 3+4. 傾き補正 + クロップ（統合処理）
-        let result: CGImage?
-        if !GeometryUtils.isApproximatelyZero(cropRect.straightenAngle) {
-            result = applyStraightenAndCrop(
-                to: current, angleDegrees: cropRect.straightenAngle, cropRect: cropRect
-            )
-            if result == nil {
-                logger.error("applyStraightenAndCrop failed")
-            }
-        } else {
-            // 傾き補正なし: クロップのみ
-            result = applyCropRect(to: current, cropRect: cropRect)
-            if result == nil {
-                logger.error(
-                    "applyCropRect failed for rect=(\(cropRect.x), \(cropRect.y), \(cropRect.width), \(cropRect.height))"
-                )
-            }
-        }
-
-        // 5. 形状マスクを適用（rectangle以外の場合）
-        if let croppedImage = result, cropRect.shape != .rectangle {
-            return applyShapeMask(to: croppedImage, cropRect: cropRect)
-        }
-        return result
-    }
-
-    /// 90°単位の回転を適用
-    static func applyQuarterTurns(to image: CGImage, turns: Int) -> CGImage? {
-        let normalizedTurns = CropGeometry.normalizeQuarterTurns(turns)
-        guard normalizedTurns > 0 else { return image }
-
-        let width = image.width
-        let height = image.height
-
-        let newWidth: Int
-        let newHeight: Int
-        if normalizedTurns % 2 == 1 {
-            newWidth = height
-            newHeight = width
-        } else {
-            newWidth = width
-            newHeight = height
-        }
-
-        guard let context = createContext(width: newWidth, height: newHeight, source: image) else {
-            return nil
-        }
-
-        // 回転変換を適用
-        switch normalizedTurns {
-        case 1: // 90° 反時計回り (CGContext座標系では時計回り)
-            context.translateBy(x: 0, y: CGFloat(newHeight))
-            context.rotate(by: -.pi / 2)
-        case 2: // 180°
-            context.translateBy(x: CGFloat(newWidth), y: CGFloat(newHeight))
-            context.rotate(by: .pi)
-        case 3: // 270° 反時計回り
-            context.translateBy(x: CGFloat(newWidth), y: 0)
-            context.rotate(by: .pi / 2)
-        default:
-            break
-        }
-
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return context.makeImage()
-    }
-
-    /// 水平反転を適用
-    static func applyHorizontalFlip(to image: CGImage) -> CGImage? {
-        let width = image.width
-        let height = image.height
-
-        guard let context = createContext(width: width, height: height, source: image) else {
-            return nil
-        }
-
-        context.translateBy(x: CGFloat(width), y: 0)
-        context.scaleBy(x: -1, y: 1)
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return context.makeImage()
-    }
-
-    /// パース補正を適用する
-    static func applyPerspective(
-        to image: CGImage, vertical: CGFloat, horizontal: CGFloat
+    static func applyFullCrop(
+        to image: CGImage, cropRect: CropRect, maxOutputPixelSize: CGFloat? = nil
     ) -> CGImage? {
-        guard !GeometryUtils.isApproximatelyZero(vertical)
-            || !GeometryUtils.isApproximatelyZero(horizontal) else {
-            return image
-        }
-
-        let width = CGFloat(image.width)
-        let height = CGFloat(image.height)
-        let intWidth = Int(width)
-        let intHeight = Int(height)
-
-        guard let context = CGContext(
-            data: nil, width: intWidth, height: intHeight,
-            bitsPerComponent: 8, bytesPerRow: 0,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return nil }
-
-        context.clear(CGRect(x: 0, y: 0, width: intWidth, height: intHeight))
-        context.translateBy(x: width / 2, y: height / 2)
-
-        // Apply vertical perspective (X-axis rotation approximation)
-        if !GeometryUtils.isApproximatelyZero(vertical) {
-            let angle = vertical * .pi / 180
-            let scaleY = cos(angle)
-            context.scaleBy(x: 1.0, y: scaleY)
-        }
-
-        // Apply horizontal perspective (Y-axis rotation approximation)
-        if !GeometryUtils.isApproximatelyZero(horizontal) {
-            let angle = horizontal * .pi / 180
-            let scaleX = cos(angle)
-            context.scaleBy(x: scaleX, y: 1.0)
-        }
-
-        context.draw(image, in: CGRect(x: -width / 2, y: -height / 2, width: width, height: height))
-        return context.makeImage()
-    }
-
-    /// 傾き補正（回転のみ、空白部分は透過）を適用
-    static func applyStraighten(to image: CGImage, angleDegrees: CGFloat) -> CGImage? {
-        let width = CGFloat(image.width)
-        let height = CGFloat(image.height)
-
-        let radians = angleDegrees * .pi / 180
-        let boundingBox = GeometryUtils.rotatedBoundingBox(
-            width: width, height: height, angleDegrees: angleDegrees
+        let sourceSize = CGSize(width: image.width, height: image.height)
+        let effectiveSize = CropGeometry.effectiveSize(sourceSize, quarterTurns: cropRect.quarterTurns)
+        let cropSize = CGSize(
+            width: cropRect.width * effectiveSize.width,
+            height: cropRect.height * effectiveSize.height
         )
+        let scale = maxOutputPixelSize.map {
+            GeometryUtils.downscaleFactor(for: cropSize, maxDimension: $0)
+        } ?? 1
 
-        let bbWidth = Int(ceil(boundingBox.width))
-        let bbHeight = Int(ceil(boundingBox.height))
-
-        // アルファチャンネル付きコンテキストで透過背景を確保する
-        guard let context = CGContext(
-            data: nil, width: bbWidth, height: bbHeight,
-            bitsPerComponent: 8,
-            bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
+        guard let outputWidth = CropGeometry.pixelExtent(
+                cropSize.width * scale, limit: maxOutputPixelDimension),
+              let outputHeight = CropGeometry.pixelExtent(
+                cropSize.height * scale, limit: maxOutputPixelDimension) else {
+            logger.error(
+                "Invalid crop output size for rect=(\(cropRect.x), \(cropRect.y), \(cropRect.width), \(cropRect.height))"
+            )
             return nil
         }
 
-        // 背景を透明にクリア
-        let rect = CGRect(x: 0, y: 0, width: bbWidth, height: bbHeight)
-        context.clear(rect)
-
-        let centerX = CGFloat(bbWidth) / 2
-        let centerY = CGFloat(bbHeight) / 2
-
-        context.translateBy(x: centerX, y: centerY)
-        context.rotate(by: -radians)
-        context.translateBy(x: -width / 2, y: -height / 2)
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-
-        // 中央からオリジナルサイズで切り出し（空白部分は透過）
-        guard let fullImage = context.makeImage() else { return nil }
-        let intWidth = Int(width)
-        let intHeight = Int(height)
-        let cropX = (bbWidth - intWidth) / 2
-        let cropY = (bbHeight - intHeight) / 2
-        let cropCGRect = CGRect(x: cropX, y: cropY, width: intWidth, height: intHeight)
-        return fullImage.cropping(to: cropCGRect)
-    }
-
-    /// 傾き補正とクロップを統合して実行
-    /// エディタのプレビューと同じ結果を生成するため、回転と切り出しを1ステップで処理
-    static func applyStraightenAndCrop(
-        to image: CGImage, angleDegrees: CGFloat, cropRect: CropRect
-    ) -> CGImage? {
-        let imgW = CGFloat(image.width)
-        let imgH = CGFloat(image.height)
-
-        let cropPixelW = cropRect.width * imgW
-        let cropPixelH = cropRect.height * imgH
-        let intW = Int(ceil(cropPixelW))
-        let intH = Int(ceil(cropPixelH))
-        guard intW > 0, intH > 0 else { return nil }
-
-        guard let context = CGContext(
-            data: nil, width: intW, height: intH,
-            bitsPerComponent: 8, bytesPerRow: 0,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return nil }
-
-        context.clear(CGRect(x: 0, y: 0, width: intW, height: intH))
-
-        // クロップ領域の中心（画像ピクセル座標）
-        let cropCenterX = cropRect.x * imgW + cropPixelW / 2
-        let cropCenterY = cropRect.y * imgH + cropPixelH / 2
-
-        // 画像の中心
-        let imgCenterX = imgW / 2
-        let imgCenterY = imgH / 2
-
-        // エディタと同じ変換を再現:
-        // 1. コンテキストの原点をクロップ領域の中心に設定
-        context.translateBy(x: CGFloat(intW) / 2, y: CGFloat(intH) / 2)
-
-        // 2. 画像中心をクロップ中心からの相対位置に移動
-        context.translateBy(x: imgCenterX - cropCenterX, y: imgCenterY - cropCenterY)
-
-        // 3. 画像中心を軸に回転
-        let radians = angleDegrees * .pi / 180
-        context.rotate(by: -radians)
-
-        // 4. 画像を中心基準で描画
-        context.draw(image, in: CGRect(x: -imgW / 2, y: -imgH / 2, width: imgW, height: imgH))
-
-        return context.makeImage()
-    }
-
-    // MARK: - Shape Mask
-
-    /// クロップ後の画像に形状マスクを適用（rectangle以外の場合）
-    /// circle: 内接する楕円でクリッピング
-    /// roundedRectangle: 4隅個別の角丸でクリッピング
-    /// 形状外のピクセルは透明（alpha=0）になる
-    static func applyShapeMask(to image: CGImage, cropRect: CropRect) -> CGImage? {
-        let shape = cropRect.shape
-        guard shape != .rectangle else { return image }
-
-        let width = image.width
-        let height = image.height
-        guard width > 0, height > 0 else { return nil }
-
-        guard let context = CGContext(
-            data: nil, width: width, height: height,
-            bitsPerComponent: 8, bytesPerRow: 0,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return nil }
-
-        let fullRect = CGRect(x: 0, y: 0, width: width, height: height)
-        context.clear(fullRect)
-
-        // 形状パスを構築してクリッピング
-        switch shape {
-        case .circle:
-            context.addEllipse(in: fullRect)
-        case .roundedRectangle:
-            let shorterSide = CGFloat(min(width, height))
-            let path = CropGeometry.roundedRectPath(
-                rect: fullRect, radii: cropRect.cornerRadii, shorterSide: shorterSide
-            )
-            context.addPath(path)
-        case .rectangle:
-            break // already handled by guard
+        // 変換なし・矩形・等倍で画像内に収まる場合は再サンプリングせずに切り出す
+        if scale >= 1, cropRect.shape == .rectangle, !cropRect.hasImageTransform,
+           let cropped = croppedWithoutResampling(image, cropRect: cropRect) {
+            return cropped
         }
 
-        context.clip()
-        context.draw(image, in: fullRect)
-        return context.makeImage()
-    }
-
-    /// 正規化座標のクロップ矩形で切り出し
-    /// クロップ領域が画像外にはみ出す場合、空白部分は透過（alpha=0）になる
-    static func applyCropRect(to image: CGImage, cropRect: CropRect) -> CGImage? {
-        let imgWidth = CGFloat(image.width)
-        let imgHeight = CGFloat(image.height)
-        let cropX = cropRect.x * imgWidth
-        let cropY = cropRect.y * imgHeight
-        let cropW = cropRect.width * imgWidth
-        let cropH = cropRect.height * imgHeight
-
-        let intCropW = Int(ceil(cropW))
-        let intCropH = Int(ceil(cropH))
-        guard intCropW > 0, intCropH > 0 else { return nil }
-
-        // クロップ領域が完全に画像内に収まる場合は高速パスを使用
-        let isFullyInside = cropX >= 0
-            && cropY >= 0
-            && (cropX + cropW) <= imgWidth
-            && (cropY + cropH) <= imgHeight
-
-        if isFullyInside {
-            // Y軸反転（CropRectはbottom-up、CGImageはtop-down）
-            let cropCGRect = CGRect(
-                x: cropX, y: imgHeight - cropY - cropH,
-                width: cropW, height: cropH
-            )
-            return image.cropping(to: cropCGRect)
-        }
-
-        // クロップ領域が画像外にはみ出す場合：透過背景のコンテキストに描画
-        guard let context = CGContext(
-            data: nil, width: intCropW, height: intCropH,
-            bitsPerComponent: 8,
-            bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
+        // 1 辺の上限だけでは 32768² RGBA（約 4GiB）まで確保しうるため、登録画像と同じ総ピクセル数の上限も課す
+        guard outputWidth * outputHeight <= AppConstants.maxImagePixelCount else {
+            logger.error("Crop output exceeds the pixel count limit: \(outputWidth)x\(outputHeight)")
             return nil
         }
 
-        // 背景を透明にクリア
-        context.clear(CGRect(x: 0, y: 0, width: intCropW, height: intCropH))
+        guard let context = makeBitmapContext(
+            width: outputWidth, height: outputHeight, preferredColorSpace: image.colorSpace
+        ) else {
+            logger.error("CGContext creation failed for \(outputWidth)x\(outputHeight)")
+            return nil
+        }
 
-        // 画像をクロップ座標系で配置
-        // コンテキスト原点 = クロップ領域の左下
-        // 画像の左下 = コンテキスト上で (-cropX, -cropY)
-        let drawX = -cropX
-        let drawY = -cropY
-        context.draw(image, in: CGRect(x: drawX, y: drawY, width: imgWidth, height: imgHeight))
+        // 画像外・形状外は透明のまま残す
+        let outputRect = CGRect(x: 0, y: 0, width: outputWidth, height: outputHeight)
+        context.clear(outputRect)
+        context.interpolationQuality = .high
+        if cropRect.shape != .rectangle {
+            context.addPath(
+                CropGeometry.shapePath(cropRect.shape, in: outputRect, radii: cropRect.cornerRadii)
+            )
+            context.clip()
+        }
 
+        let imageRect = CropGeometry.outputImageRect(
+            for: cropRect, effectiveSize: effectiveSize, scale: scale
+        )
+        context.concatenate(
+            CropGeometry.imageTransform(for: cropRect, sourceSize: sourceSize, imageRect: imageRect)
+        )
+        context.draw(image, in: CGRect(origin: .zero, size: sourceSize))
         return context.makeImage()
+    }
+
+    /// 8bit・premultiplied RGBA のビットマップコンテキストを生成する
+    /// 色空間は RGB なら元画像のもの（広色域を保つ）、それ以外や生成に失敗した場合は sRGB を使う
+    static func makeBitmapContext(
+        width: Int, height: Int, preferredColorSpace: CGColorSpace? = nil
+    ) -> CGContext? {
+        let candidates = [preferredColorSpace, CGColorSpace(name: CGColorSpace.sRGB)]
+            .compactMap { $0 }
+            .filter { $0.model == .rgb }
+        for colorSpace in candidates {
+            if let context = CGContext(
+                data: nil, width: width, height: height,
+                bitsPerComponent: bitsPerComponent, bytesPerRow: 0,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ) {
+                return context
+            }
+        }
+        return nil
+    }
+
+    // MARK: - Private
+
+    /// 変換を伴わない切り出し。クロップ領域が画像内に完全に収まる場合のみ結果を返す
+    private static func croppedWithoutResampling(_ image: CGImage, cropRect: CropRect) -> CGImage? {
+        let imageWidth = CGFloat(image.width)
+        let imageHeight = CGFloat(image.height)
+        let cropX = CropGeometry.snappedToPixel(cropRect.x * imageWidth)
+        let cropY = CropGeometry.snappedToPixel(cropRect.y * imageHeight)
+        let cropW = CropGeometry.snappedToPixel(cropRect.width * imageWidth)
+        let cropH = CropGeometry.snappedToPixel(cropRect.height * imageHeight)
+        guard cropX >= 0, cropY >= 0,
+              CropGeometry.snappedToPixel(cropX + cropW) <= imageWidth,
+              CropGeometry.snappedToPixel(cropY + cropH) <= imageHeight else {
+            return nil
+        }
+        // Y軸反転（CropRectはbottom-up、CGImageはtop-down）
+        return image.cropping(to: CGRect(
+            x: cropX, y: imageHeight - cropY - cropH, width: cropW, height: cropH
+        ))
     }
 }

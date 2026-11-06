@@ -60,21 +60,13 @@ struct WindowDetailView: View {
 
     @ViewBuilder
     private func previewSection(_ window: ManagementPanelViewModel.WindowInfo) -> some View {
-        GroupBox {
-            if let originalImage = window.originalImage, let cropRect = window.cropRect {
-                CropOverlayPreviewView(originalImage: originalImage, cropRect: cropRect)
-                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
-            } else if let thumbnail = window.thumbnail {
-                Image(nsImage: thumbnail)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
-            } else {
-                Image(systemName: "photo")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.secondary)
+        if let originalImage = window.originalImage, let cropRect = window.cropRect {
+            GroupBox {
+                CropOverlayPreviewView(originalImage: originalImage, cropRect: cropRect, imageName: window.imageName)
                     .frame(maxWidth: .infinity, maxHeight: AppConstants.managementPreviewMaxHeight)
             }
+        } else {
+            ImagePreviewBox(image: window.thumbnail)
         }
     }
 
@@ -82,28 +74,11 @@ struct WindowDetailView: View {
 
     @ViewBuilder
     private func infoSection(_ windowInfo: ManagementPanelViewModel.WindowInfo) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label {
-                Text(windowInfo.displayName)
-                    .font(.headline)
-            } icon: {
-                Image(systemName: "photo")
-            }
-
-            Label {
-                Text("#\(windowInfo.windowId)")
-                    .font(.caption.monospaced())
-            } icon: {
-                Image(systemName: "number")
-            }
-
-            Label {
-                Text(windowInfo.subtitle)
-                    .font(.caption)
-            } icon: {
-                Image(systemName: "ruler")
-            }
-        }
+        DetailInfoLabels(
+            name: windowInfo.displayName,
+            number: "#\(windowInfo.windowId)",
+            detail: windowInfo.subtitle
+        )
     }
 
     // MARK: - Opacity Section
@@ -114,24 +89,15 @@ struct WindowDetailView: View {
             Text(L("management.opacity"))
                 .font(.subheadline.bold())
 
-            HStack {
-                Slider(
-                    value: Binding(
-                        get: { windowInfo.opacityLevel },
-                        set: { newValue in
-                            viewModel.changeOpacity(
-                                windowId: windowInfo.windowId,
-                                opacity: newValue
-                            )
-                        }
-                    ),
-                    in: AppConstants.opacityMin...AppConstants.opacityMax
-                )
-
-                Text(FormatUtils.formatOpacity(windowInfo.opacityLevel))
-                    .font(.caption.monospaced())
-                    .frame(width: 40, alignment: .trailing)
-            }
+            OpacitySliderRow(
+                value: Binding(
+                    get: { windowInfo.opacityLevel },
+                    set: { newValue in
+                        viewModel.changeOpacity(windowId: windowInfo.windowId, opacity: newValue)
+                    }
+                ),
+                range: AppConstants.opacityMin...AppConstants.opacityMax
+            )
         }
     }
 
@@ -159,26 +125,16 @@ struct WindowDetailView: View {
                 ))
 
                 if window.customGhostAlpha != nil {
-                    HStack {
-                        Image(systemName: "eye.slash")
-                            .foregroundStyle(.secondary)
-                        Slider(
-                            value: Binding(
-                                get: { window.effectiveGhostAlpha },
-                                set: { newValue in
-                                    viewModel.setCustomGhostAlpha(
-                                        windowId: window.windowId,
-                                        alpha: newValue
-                                    )
-                                }
-                            ),
-                            in: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax
-                        )
-                        Text(FormatUtils.formatOpacity(window.effectiveGhostAlpha))
-                            .font(.caption)
-                            .monospacedDigit()
-                            .frame(width: 40, alignment: .trailing)
-                    }
+                    OpacitySliderRow(
+                        value: Binding(
+                            get: { window.effectiveGhostAlpha },
+                            set: { newValue in
+                                viewModel.setCustomGhostAlpha(windowId: window.windowId, alpha: newValue)
+                            }
+                        ),
+                        range: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax,
+                        leadingSystemImage: "eye.slash"
+                    )
                 } else {
                     Text(L("management.ghost_using_default")
                         + " (\(FormatUtils.formatOpacity(GhostModeSettings.globalAlpha)))")
@@ -216,14 +172,12 @@ struct WindowDetailView: View {
                         icon: "slider.horizontal.3",
                         action: { viewModel.openAdjustPanel(windowId: window.windowId) }
                     )
-                    if #available(macOS 14.0, *) {
-                        actionButton(
-                            title: L("floating_menu.remove_background"),
-                            icon: "eraser.fill",
-                            action: { viewModel.removeBackground(windowId: window.windowId) }
-                        )
-                        .disabled(!window.isRemoveBackgroundEnabled)
-                    }
+                    actionButton(
+                        title: L("floating_menu.remove_background"),
+                        icon: "eraser.fill",
+                        action: { viewModel.removeBackground(windowId: window.windowId) }
+                    )
+                    .disabled(!window.isRemoveBackgroundEnabled)
                     actionButton(
                         title: L("floating_menu.reset_display"),
                         icon: "arrow.counterclockwise",
@@ -276,21 +230,15 @@ struct WindowDetailView: View {
                 Text(L("management.opacity"))
                     .font(.subheadline.bold())
 
-                HStack {
-                    Slider(
-                        value: $bulkOpacity,
-                        in: AppConstants.opacityMin...AppConstants.opacityMax,
-                        onEditingChanged: { editing in
-                            if !editing {
-                                viewModel.changeBulkOpacity(opacity: bulkOpacity)
-                            }
+                OpacitySliderRow(
+                    value: $bulkOpacity,
+                    range: AppConstants.opacityMin...AppConstants.opacityMax,
+                    onEditingChanged: { editing in
+                        if !editing {
+                            viewModel.changeBulkOpacity(opacity: bulkOpacity)
                         }
-                    )
-
-                    Text(FormatUtils.formatOpacity(bulkOpacity))
-                        .font(.caption.monospaced())
-                        .frame(width: 40, alignment: .trailing)
-                }
+                    }
+                )
             }
             .padding(.horizontal, 40)
 

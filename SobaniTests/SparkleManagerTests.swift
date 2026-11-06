@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import Sparkle
 import Testing
@@ -34,10 +35,15 @@ import Testing
         _ = SparkleManager.shared.canCheckForUpdates
     }
 
-    /// startUpdaterがクラッシュしないことを検証
-    @Test func startUpdaterDoesNotCrash() {
-        // テスト環境ではSparkle更新チェックは失敗するが、クラッシュしないことを確認
-        SparkleManager.shared.startUpdater()
+    /// canCheckForUpdatesPublisher が購読時に現在値を流すことを検証
+    /// （設定画面はポーリングせずにこのパブリッシャーで初期値と変化を受け取る）
+    @Test func canCheckForUpdatesPublisherEmitsCurrentValueOnSubscribe() {
+        let manager = SparkleManager()
+        var received: [Bool] = []
+        let cancellable = manager.canCheckForUpdatesPublisher.sink { received.append($0) }
+        cancellable.cancel()
+
+        #expect(received == [manager.canCheckForUpdates])
     }
 
     /// checkForUpdatesActionがresponds(to:)で確認可能であることを検証
@@ -51,4 +57,20 @@ import Testing
         #expect(SparkleManager.shared.supportsGentleScheduledUpdateReminders == false)
     }
 
+    /// willInstallUpdateでisInstallingUpdateが同期的にtrueになることを検証
+    /// （非同期だと同じランループ内の終了要求が applicationShouldTerminate で拒否されうる）
+    @Test func willInstallUpdateSetsFlagSynchronously() {
+        let manager = SparkleManager()
+        let updater = SPUUpdater(
+            hostBundle: .main,
+            applicationBundle: .main,
+            userDriver: SPUStandardUserDriver(hostBundle: .main, delegate: nil),
+            delegate: nil
+        )
+        #expect(!manager.isInstallingUpdate)
+
+        manager.updater(updater, willInstallUpdate: SUAppcastItem.empty())
+
+        #expect(manager.isInstallingUpdate)
+    }
 }

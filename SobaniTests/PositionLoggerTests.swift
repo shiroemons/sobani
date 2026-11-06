@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Testing
 @testable import Sobani
@@ -126,5 +127,46 @@ import Testing
 
     @Test func loadEntriesFromEmptyReturnsEmpty() {
         #expect(positionLogger.loadEntries().isEmpty)
+    }
+
+    // MARK: - 書き込み失敗
+
+    /// ログファイルに書き込めない場合もクラッシュせず、既存のエントリが保たれることを検証
+    @Test func appendFailureDoesNotCrash() throws {
+        positionLogger.isEnabled = true
+        positionLogger.log(event: "first")
+        let logURL = tempDir.appendingPathComponent("position_log.jsonl")
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: logURL.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: logURL.path) }
+
+        positionLogger.log(event: "second")
+
+        #expect(positionLogger.loadEntries().map(\.event) == ["first"])
+    }
+
+    // MARK: - スナップショット変換
+
+    @Test func screenSnapshotsFromScreenInfo() {
+        let screens = [
+            ScreenInfo(frame: NSRect(x: 0, y: 0, width: 1920, height: 1080), displayID: 7, isMain: true),
+            ScreenInfo(frame: NSRect(x: 1920, y: 0, width: 1280, height: 800), displayID: 9, isMain: false),
+        ]
+        let snapshots = PositionLogger.screenSnapshots(from: screens)
+        #expect(snapshots.map(\.displayID) == [7, 9])
+        #expect(snapshots.map(\.isMain) == [true, false])
+        #expect(abs(snapshots[1].originX - 1920) < AppConstants.floatingPointTolerance)
+        #expect(abs(snapshots[1].width - 1280) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - summary
+
+    /// summaryのコンテキストがキー順に並ぶことを検証
+    @Test func summaryListsContextSortedByKey() {
+        let entry = PositionLogger.LogEntry(
+            id: UUID(), timestamp: Date(), event: "test",
+            screens: nil, windows: nil,
+            context: ["zeta": "3", "alpha": "1", "mid": "2"]
+        )
+        #expect(entry.summary == "alpha=1 mid=2 zeta=3")
     }
 }

@@ -7,27 +7,31 @@ final class StraightenSliderView: NSView {
 
     // MARK: - Properties
 
+    /// 現在の角度。外部からの同期（Undo 等）でも値をそのまま保持し、0° スナップはドラッグ・慣性の終了時だけ行う
     var angle: CGFloat = 0 {
         didSet {
             let oldAngle = oldValue
             angle = CropGeometry.clampStraightenAngle(angle)
-            angle = snapToZeroIfNeeded(angle)
             detectCrossedTicks(from: oldAngle, to: angle)
             needsDisplay = true
         }
     }
 
     var onAngleChanged: ((CGFloat) -> Void)?
+    /// 1 回の操作（ドラッグ・慣性・スクロール）が終わったときに呼ばれる（履歴記録用）
     var onDragEnded: (() -> Void)?
     private var isDragging = false
     private var dragStartAngle: CGFloat = 0
     private var dragStartX: CGFloat = 0
+    private let scrollEndDebouncer = Debouncer(delay: Debouncer.scrollEndSettleDelay)
 
     // Inertia
     private var inertiaVelocity: CGFloat = 0
     nonisolated(unsafe) private var inertiaTimer: Timer?
     private var lastDragTime: TimeInterval = 0
     private var lastDragAngle: CGFloat = 0
+    /// ドラッグを止めてからこの時間以上経って離した場合は慣性を付けない（止めた後の古い速度を使わない）
+    private static let inertiaReleaseTimeout: TimeInterval = 0.05
 
     // Fade trail
     private var fadingTicks: [Int: TimeInterval] = [:]
@@ -45,6 +49,8 @@ final class StraightenSliderView: NSView {
     private static let tickLabelFontSize: CGFloat = 8
     private static let tickLabelSpacing: CGFloat = 2
     private static let tickLabelAreaHeight: CGFloat = 12
+    /// 慣性中に 0° へ吸着させる速度の上限（最小速度に対する倍率）
+    private static let zeroSnapVelocityFactor: CGFloat = 3
 
     // MARK: - Drawing
 
@@ -177,6 +183,7 @@ final class StraightenSliderView: NSView {
     // MARK: - Mouse Events
 
     override func mouseDown(with event: NSEvent) {
+        scrollEndDebouncer.flush()
         stopInertia()
         let point = convert(event.locationInWindow, from: nil)
         isDragging = true
@@ -209,21 +216,27 @@ final class StraightenSliderView: NSView {
     }
 
     override func mouseUp(with event: NSEvent) {
+        guard isDragging else { return }
         isDragging = false
+        if event.timestamp - lastDragTime > Self.inertiaReleaseTimeout {
+            inertiaVelocity = 0
+        }
         if !startInertiaIfNeeded() {
-            let snapped = snapToZeroIfNeeded(angle)
-            if snapped != angle {
-                angle = snapped
-                onAngleChanged?(angle)
-            }
+            snapToZeroAndNotifyIfNeeded()
             onDragEnded?()
         }
     }
 
+    /// ホイール・トラックパッドで角度を変える。0° 付近でもスナップせず、操作が落ち着いたら履歴に記録する
     override func scrollWheel(with event: NSEvent) {
         stopInertia()
         let delta = event.scrollingDeltaY * AppConstants.straightenScrollSensitivity
+        guard abs(delta) >= AppConstants.normalizedTolerance else { return }
         angle = CropGeometry.clampStraightenAngle(angle - delta)
+        // 通知先が操作中（isInteracting）と判定できるよう、通知より先に終了待ちを予約する
+        scrollEndDebouncer.schedule { [weak self] in
+            self?.onDragEnded?()
+        }
         onAngleChanged?(angle)
     }
 
@@ -236,12 +249,19 @@ final class StraightenSliderView: NSView {
 
     // MARK: - Public
 
+    /// ドラッグ・慣性・スクロールのいずれかの操作中か（操作の終わりには `onDragEnded` が呼ばれる）
+    var isInteracting: Bool {
+        isDragging || inertiaTimer != nil || scrollEndDebouncer.isPending
+    }
+
     func stopTimers() {
+        scrollEndDebouncer.cancel()
         stopInertia()
         stopFadeTrail()
     }
 
     func reset() {
+        scrollEndDebouncer.flush()
         stopInertia()
         stopFadeTrail()
         angle = 0
@@ -271,7 +291,7 @@ final class StraightenSliderView: NSView {
 
         // 0°スナップ判定: 0°付近かつ速度が低い場合
         if abs(newAngle) <= AppConstants.straightenZeroSnapThreshold
-            && abs(inertiaVelocity) < AppConstants.straightenInertiaMinVelocity * 3 {
+            && abs(inertiaVelocity) < AppConstants.straightenInertiaMinVelocity * Self.zeroSnapVelocityFactor {
             angle = 0
             onAngleChanged?(angle)
             stopInertia()
@@ -279,17 +299,20 @@ final class StraightenSliderView: NSView {
         }
 
         // 端到達で停止
-        if newAngle == AppConstants.straightenMinAngle
-            || newAngle == AppConstants.straightenMaxAngle {
+        let tolerance = AppConstants.floatingPointTolerance
+        if newAngle <= AppConstants.straightenMinAngle + tolerance
+            || newAngle >= AppConstants.straightenMaxAngle - tolerance {
             angle = newAngle
             onAngleChanged?(angle)
             stopInertia()
             return
         }
 
-        // 速度閾値以下で停止
+        // 速度閾値以下で停止（停止位置が 0° 付近ならスナップ）
         if abs(inertiaVelocity) < AppConstants.straightenInertiaMinVelocity {
-            onAngleChanged?(angle)
+            if !snapToZeroAndNotifyIfNeeded() {
+                onAngleChanged?(angle)
+            }
             stopInertia()
             return
         }
@@ -307,6 +330,11 @@ final class StraightenSliderView: NSView {
             onDragEnded?()
         }
     }
+}
+
+// MARK: - Fade Trail & Snap
+
+extension StraightenSliderView {
 
     // MARK: - Fade Trail
 
@@ -359,11 +387,16 @@ final class StraightenSliderView: NSView {
 
     // MARK: - Snap
 
-    private func snapToZeroIfNeeded(_ value: CGFloat) -> CGFloat {
-        if !isDragging && inertiaTimer == nil
-            && abs(value) <= AppConstants.straightenZeroSnapThreshold {
-            return 0
+    /// 0° 付近なら 0° に吸着させて通知する（ドラッグ・慣性の終了時のみ呼ぶ）
+    /// - Returns: スナップして通知した場合 true
+    @discardableResult
+    private func snapToZeroAndNotifyIfNeeded() -> Bool {
+        guard abs(angle) <= AppConstants.straightenZeroSnapThreshold,
+              !GeometryUtils.isApproximatelyZero(angle) else {
+            return false
         }
-        return value
+        angle = 0
+        onAngleChanged?(angle)
+        return true
     }
 }

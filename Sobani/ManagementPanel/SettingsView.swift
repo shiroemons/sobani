@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let viewModel: ManagementPanelViewModel
     private let appVersion = AppConstants.appVersion
     @State private var isLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
     @State private var isSnapEnabled = SnapSettings.isEnabled
@@ -11,6 +12,7 @@ struct SettingsView: View {
     @State private var hasDuplicateHotkeys = false
     @State private var hasNonDefaultHotkeys = false
     @State private var hotkeyDebounceTask: Task<Void, Never>?
+    @State private var canCheckForUpdates = false
 
     var body: some View {
         Form {
@@ -34,11 +36,15 @@ struct SettingsView: View {
     private var generalSection: some View {
         Section(L("management.general")) {
             Toggle(L("management.launch_at_login"), isOn: $isLaunchAtLogin)
-                .onChange(of: isLaunchAtLogin) {
+                .onChange(of: isLaunchAtLogin) { _, requested in
+                    // 望む状態を渡す（反転操作だとシステム設定側の変更と食い違う）。
+                    // 失敗時に実状態へ戻すと onChange が再発火するが、setEnabled は同じ状態なら何もしない
+                    let manager = LaunchAtLoginManager.shared
                     do {
-                        try LaunchAtLoginManager.shared.toggle()
+                        try manager.setEnabled(requested)
                     } catch {
-                        isLaunchAtLogin = LaunchAtLoginManager.shared.isEnabled
+                        manager.openSystemSettingsIfApprovalRequired()
+                        isLaunchAtLogin = manager.isEnabled
                     }
                 }
 
@@ -56,16 +62,14 @@ struct SettingsView: View {
         Section(L("management.ghost_mode_section")) {
             HStack {
                 Text(L("management.ghost_alpha"))
-                Slider(
+                OpacitySliderRow(
                     value: $ghostAlpha,
-                    in: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax
+                    range: AppConstants.ghostModeAlphaMin...AppConstants.ghostModeAlphaMax,
+                    valueFont: .body.monospaced()
                 )
                 .onChange(of: ghostAlpha) {
-                    GhostModeSettings.globalAlpha = ghostAlpha
+                    viewModel.applyGlobalGhostAlpha(ghostAlpha)
                 }
-                Text(FormatUtils.formatOpacity(ghostAlpha))
-                    .font(.body.monospaced())
-                    .frame(width: 40, alignment: .trailing)
             }
         }
     }
@@ -171,14 +175,13 @@ struct SettingsView: View {
     }
 
     private func updateHotkeyState() {
-        let pairs = AppDelegate.KeyboardAction.allCases.map { action in
+        let shortcuts = AppDelegate.KeyboardAction.allCases.map { action in
             (
                 keyCode: HotkeySettings.keyCode(for: action),
                 modifiers: HotkeySettings.modifiers(for: action)
             )
         }
-        let unique = Set(pairs.map { UInt64($0.keyCode) << 32 | UInt64($0.modifiers.rawValue) })
-        hasDuplicateHotkeys = unique.count < pairs.count
+        hasDuplicateHotkeys = HotkeyInputValidator.containsDuplicates(shortcuts)
         hasNonDefaultHotkeys = AppDelegate.KeyboardAction.allCases.contains {
             !HotkeySettings.isDefault(for: $0)
         }
@@ -245,7 +248,9 @@ struct SettingsView: View {
             Button(L("management.check_update")) {
                 SparkleManager.shared.checkForUpdates(nil)
             }
-            .disabled(!SparkleManager.shared.canCheckForUpdates)
+            .disabled(!canCheckForUpdates)
+            // 確認中・ダウンロード中は押せない。状態の変化は KVO で受け取る
+            .onReceive(SparkleManager.shared.canCheckForUpdatesPublisher) { canCheckForUpdates = $0 }
         }
     }
 }

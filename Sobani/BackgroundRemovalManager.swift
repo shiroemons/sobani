@@ -5,7 +5,6 @@ import Vision
 
 // MARK: - Background Removal Error
 
-@available(macOS 14.0, *)
 enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
     case cgImageConversionFailed
     case noForegroundDetected
@@ -33,9 +32,17 @@ enum BackgroundRemovalError: LocalizedError, Equatable, CaseIterable, Sendable {
     }
 }
 
+// MARK: - Background Removal Result
+
+struct BackgroundRemovalResult: Sendable {
+    let image: NSImage
+    /// `image` の PNG データ。元画像の解像度のまま処理するため、登録時にメインスレッドで
+    /// エンコードしないよう処理キューでエンコードしておく。
+    let pngData: Data
+}
+
 // MARK: - Background Removal Manager
 
-@available(macOS 14.0, *)
 final class BackgroundRemovalManager: @unchecked Sendable {
     static let shared = BackgroundRemovalManager()
 
@@ -55,7 +62,7 @@ final class BackgroundRemovalManager: @unchecked Sendable {
 
     func removeBackground(
         from image: NSImage,
-        completion: @Sendable @escaping (Result<NSImage, BackgroundRemovalError>) -> Void
+        completion: @Sendable @escaping (Result<BackgroundRemovalResult, BackgroundRemovalError>) -> Void
     ) {
         processingQueue.async { @Sendable [weak self] in
             guard let self else { return }
@@ -74,7 +81,7 @@ final class BackgroundRemovalManager: @unchecked Sendable {
         }
     }
 
-    private func performRemoval(from image: NSImage) throws -> NSImage {
+    private func performRemoval(from image: NSImage) throws -> BackgroundRemovalResult {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             throw BackgroundRemovalError.cgImageConversionFailed
         }
@@ -113,10 +120,10 @@ final class BackgroundRemovalManager: @unchecked Sendable {
 
         guard let outputCGImage = ciContext.createCGImage(
             outputCIImage, from: inputCIImage.extent
-        ) else {
+        ), let pngData = ImageManager.pngData(from: outputCGImage) else {
             throw BackgroundRemovalError.finalImageConversionFailed
         }
 
-        return NSImage(cgImage: outputCGImage, size: image.size)
+        return BackgroundRemovalResult(image: NSImage(cgImage: outputCGImage, size: image.size), pngData: pngData)
     }
 }

@@ -12,6 +12,10 @@ final class RotationDialView: NSView {
     private static let outerLineWidth: CGFloat = 1.5
     private static let tickLineWidth: CGFloat = 1
     private static let indicatorLineWidth: CGFloat = 2
+    /// 目盛りの本数（45° ごと）
+    private static let tickCount = 8
+    /// ドラッグ時に角度を吸着させる刻み（度）
+    private static let dragSnapIncrement: CGFloat = 5
 
     private let scrollSensitivity: CGFloat = AppConstants.dialScrollSensitivity
     var angle: CGFloat = 0 {
@@ -19,8 +23,6 @@ final class RotationDialView: NSView {
     }
     var onAngleChanged: ((CGFloat) -> Void)?
     private var isTracking = false
-
-    override var isFlipped: Bool { false }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
@@ -39,8 +41,8 @@ final class RotationDialView: NSView {
         // Tick marks every 45 degrees
         context.setStrokeColor(NSColor.tertiaryLabelColor.cgColor)
         context.setLineWidth(Self.tickLineWidth)
-        for tick in 0..<8 {
-            let tickAngle = CGFloat(tick) * .pi / 4
+        for tick in 0..<Self.tickCount {
+            let tickAngle = CGFloat(tick) * 2 * .pi / CGFloat(Self.tickCount)
             let innerRadius = radius - Self.tickInnerOffset
             let outerRadius = radius - Self.tickOuterOffset
             let startPoint = CGPoint(
@@ -110,8 +112,10 @@ final class RotationDialView: NSView {
         // Convert: 0° = top, clockwise
         var degrees = 90 - mathDegrees
         // Snap to 5-degree increments
-        degrees = (degrees / 5).rounded() * 5
+        degrees = (degrees / Self.dragSnapIncrement).rounded() * Self.dragSnapIncrement
         degrees = GeometryUtils.normalizeAngle(degrees)
+        // 吸着後の角度が変わらないドラッグでは通知しない（毎イベントの再描画・状態保存を避ける）
+        guard !GeometryUtils.isApproximatelyEqual(degrees, angle) else { return }
         angle = degrees
         onAngleChanged?(angle)
     }

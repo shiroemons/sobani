@@ -20,28 +20,6 @@ import Testing
         #expect(sut.delegate == nil)
     }
 
-    // MARK: - Button Count
-
-    /// macOS 14+でボタン数が6であることを検証（背景除去ボタン含む）
-    @Test func buttonCount_macOS14OrLater_isSix() {
-        if #available(macOS 14.0, *) {
-            // On macOS 14+, background removal button is included
-            let sut = FloatingMenuController()
-            // buttonCount is private static, but we can verify indirectly
-            // by checking the controller is created without issues
-            #expect(!sut.isVisible)
-        }
-    }
-
-    /// macOS 13でボタン数が5であることを検証
-    @Test func buttonCount_macOS13_isFive() {
-        // This test documents the expected behavior:
-        // macOS <14: crop, flip, adjust, resetDisplay, close = 5 buttons
-        // macOS 14+: crop, flip, adjust, removeBackground, resetDisplay, close = 6 buttons
-        let sut = FloatingMenuController()
-        #expect(sut.delegate == nil)
-    }
-
     // MARK: - Dismiss
 
     /// 非表示時にdismissを呼んでもクラッシュしないことを検証

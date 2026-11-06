@@ -1,7 +1,10 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PositionLogView: View {
+    let viewModel: ManagementPanelViewModel
     @State private var isEnabled = PositionLogSettings.isEnabled
+    @State private var exportErrorMessage: String?
     @State private var entries: [PositionLogger.LogEntry] = []
     @State private var filterText = ""
     @State private var selectedEntryId: UUID?
@@ -12,10 +15,10 @@ struct PositionLogView: View {
         KeyPathComparator(\.timestamp, order: .forward)
     ]
 
-    private var uniqueEventNames: [String] {
-        Array(Set(entries.map(\.event))).sorted()
-    }
+    /// フィルタのイベント名一覧。描画のたびではなく読み込み時に作る
+    @State private var uniqueEventNames: [String] = []
 
+    /// 絞り込み結果（最大 1000 件を文字列比較する）。body で1回だけ計算して各部に渡すこと
     private var filteredEntries: [PositionLogger.LogEntry] {
         var result = entries
         if let eventFilter = selectedEventFilter {
@@ -35,23 +38,20 @@ struct PositionLogView: View {
         }
     }
 
-    private var sortedEntries: [PositionLogger.LogEntry] {
-        filteredEntries.sorted(using: sortOrder)
-    }
-
     private var selectedEntry: PositionLogger.LogEntry? {
         guard let id = selectedEntryId else { return nil }
         return entries.first { $0.id == id }
     }
 
     var body: some View {
+        let visibleEntries = filteredEntries.sorted(using: sortOrder)
         VStack(spacing: 0) {
             toolbar
             Divider()
             filterBar
             Divider()
-            logContent
-            if !filteredEntries.isEmpty {
+            logContent(visibleEntries)
+            if !visibleEntries.isEmpty {
                 Divider()
                 logFooter
             }
@@ -61,6 +61,17 @@ struct PositionLogView: View {
             }
         }
         .onAppear { reloadEntries() }
+        .alert(
+            L("log.export.failed"),
+            isPresented: Binding(
+                get: { exportErrorMessage != nil },
+                set: { if !$0 { exportErrorMessage = nil } }
+            ),
+            presenting: exportErrorMessage
+        ) { _ in
+        } message: { message in
+            Text(message)
+        }
     }
 
     // MARK: - Toolbar
@@ -106,8 +117,9 @@ struct PositionLogView: View {
             }
 
             Menu {
-                Button("JSONL") { exportJSONL() }
-                Button("JSON") { exportJSON() }
+                ForEach(ExportFormat.allCases, id: \.self) { format in
+                    Button(format.menuTitle) { export(format) }
+                }
             } label: {
                 Label(L("log.export"), systemImage: "square.and.arrow.up")
                     .labelStyle(.iconOnly)
@@ -162,13 +174,13 @@ struct PositionLogView: View {
     // MARK: - Log Content
 
     @ViewBuilder
-    private var logContent: some View {
+    private func logContent(_ visibleEntries: [PositionLogger.LogEntry]) -> some View {
         if entries.isEmpty {
             PositionLogEmptyStateView(isEnabled: isEnabled) {
+                // 設定への保存はトグルの onChange で行われる
                 isEnabled = true
-                PositionLogSettings.isEnabled = true
             }
-        } else if filteredEntries.isEmpty {
+        } else if visibleEntries.isEmpty {
             ContentUnavailableView {
                 Label(L("log.empty"), systemImage: "doc.text")
             } description: {
@@ -176,7 +188,7 @@ struct PositionLogView: View {
             }
             .frame(maxHeight: .infinity)
         } else {
-            logTable
+            logTable(visibleEntries)
         }
     }
 
@@ -217,8 +229,8 @@ struct PositionLogView: View {
     // MARK: - Table
 
     @ViewBuilder
-    private var logTable: some View {
-        Table(sortedEntries, selection: $selectedEntryId, sortOrder: $sortOrder) {
+    private func logTable(_ visibleEntries: [PositionLogger.LogEntry]) -> some View {
+        Table(visibleEntries, selection: $selectedEntryId, sortOrder: $sortOrder) {
             TableColumn(L("log.column.time"), value: \.timestamp) { entry in
                 Text(Self.formatTime(entry.timestamp))
                     .font(.system(.body, design: .monospaced))
@@ -252,25 +264,45 @@ struct PositionLogView: View {
 
     private func reloadEntries() {
         entries = PositionLogger.shared.loadEntries()
+        uniqueEventNames = Array(Set(entries.map(\.event))).sorted()
+        if let eventFilter = selectedEventFilter, !uniqueEventNames.contains(eventFilter) {
+            selectedEventFilter = nil
+        }
     }
 
-    private func exportJSONL() {
-        let data = PositionLogger.shared.exportAsJSONL()
-        saveToFile(data: data, extension: "jsonl")
+    private enum ExportFormat: String, CaseIterable {
+        case jsonl
+        case json
+
+        var menuTitle: String { rawValue.uppercased() }
+
+        /// 保存ダイアログで選べる種類。拡張子と一致させる（.json のみだと .jsonl の名前と食い違う）
+        var contentType: UTType {
+            UTType(filenameExtension: rawValue) ?? .data
+        }
     }
 
-    private func exportJSON() {
-        let data = PositionLogger.shared.exportAsJSON()
-        saveToFile(data: data, extension: "json")
-    }
+    private static let exportBaseFileName = "position_log"
 
-    private func saveToFile(data: Data, extension ext: String) {
+    private func export(_ format: ExportFormat) {
+        let data: Data
+        switch format {
+        case .jsonl: data = PositionLogger.shared.exportAsJSONL()
+        case .json: data = PositionLogger.shared.exportAsJSON()
+        }
         let panel = NSSavePanel()
-        panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = "position_log.\(ext)"
+        panel.allowedContentTypes = [format.contentType]
+        panel.nameFieldStringValue = "\(Self.exportBaseFileName).\(format.rawValue)"
         panel.canCreateDirectories = true
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        try? data.write(to: url, options: .atomic)
+        Task {
+            // 管理パネルより前面に出すため、パネルのシートとして表示する
+            guard await viewModel.runDialog(panel) == .OK, let url = panel.url else { return }
+            do {
+                try data.write(to: url, options: .atomic)
+            } catch {
+                exportErrorMessage = error.localizedDescription
+            }
+        }
     }
 
     // MARK: - Formatters

@@ -193,6 +193,22 @@
         }
       }
     },
+    "status.hidden_window_count": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "非表示中: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden: %@"
+          }
+        }
+      }
+    },
     "image.change": {
       "localizations": {
         "ja": {
@@ -401,22 +417,6 @@
         }
       }
     },
-    "image.removing_background": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "背景を除去中..."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Removing background..."
-          }
-        }
-      }
-    },
     "background_removal.error.title": {
       "localizations": {
         "ja": {
@@ -513,18 +513,18 @@
         }
       }
     },
-    "adjust.title": {
+    "background_removal.error.save_failed": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "表示の調整"
+            "value": "背景を除去した画像を保存できませんでした"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adjust Display"
+            "value": "Failed to save the background-removed image"
           }
         }
       }
@@ -993,22 +993,6 @@
         }
       }
     },
-    "update.ok": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
-          }
-        }
-      }
-    },
     "quit.confirm_title": {
       "localizations": {
         "ja": {
@@ -1069,6 +1053,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancel"
+          }
+        }
+      }
+    },
+    "common.ok": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "common.cancel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセル"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "image.error.load_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を読み込めませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load the image"
+          }
+        }
+      }
+    },
+    "image.error.load_failed_hint": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PNG / JPEG / GIF / TIFF / HEIC 形式で、一辺 %@px 以下の画像を選んでください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a PNG, JPEG, GIF, TIFF or HEIC image up to %@ px on each side."
           }
         }
       }
@@ -1197,6 +1245,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Select a new image file to display"
+          }
+        }
+      }
+    },
+    "service.error.no_file_urls": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイルが見つかりませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No files were found"
+          }
+        }
+      }
+    },
+    "service.error.no_supported_images": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "対応している画像ファイルがありません"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No supported image files"
+          }
+        }
+      }
+    },
+    "service.error.registration_failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を読み込めませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load the images"
           }
         }
       }
@@ -1521,166 +1617,6 @@
         }
       }
     },
-    "onboarding.step3.hotkeyG.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ゴーストモードの切り替え"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle ghost mode"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyG.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥G (Option+G)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥G (Option+G)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyH.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべての画像を表示/非表示"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle all images"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyH.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥H (Option+H)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥H (Option+H)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyM.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "管理パネルの表示"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open management panel"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyM.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥M (Option+M)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥M (Option+M)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftG.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在の画面のゴーストモード切り替え"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle ghost mode for current screen"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftG.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧G (Option+Shift+G)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧G (Option+Shift+G)"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftH.desc": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在の画面の画像のみ表示/非表示"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle current screen images"
-          }
-        }
-      }
-    },
-    "onboarding.step3.hotkeyShiftH.key": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧H (Option+Shift+H)"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥⇧H (Option+Shift+H)"
-          }
-        }
-      }
-    },
     "onboarding.step3.hotkeyCustomizeHint": {
       "localizations": {
         "ja": {
@@ -1965,6 +1901,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preset Name"
+          }
+        }
+      }
+    },
+    "layout.name_exists": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同じ名前のプリセットがすでにあります"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A preset with this name already exists"
           }
         }
       }
@@ -2545,54 +2497,6 @@
         }
       }
     },
-    "crop.confirm": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "適用"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apply"
-          }
-        }
-      }
-    },
-    "crop.reset": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "リセット"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset"
-          }
-        }
-      }
-    },
-    "crop.cancel": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャンセル"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
-          }
-        }
-      }
-    },
     "menu.crop": {
       "localizations": {
         "ja": {
@@ -2641,38 +2545,6 @@
         }
       }
     },
-    "crop_editor.cancel": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャンセル"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
-          }
-        }
-      }
-    },
-    "crop_editor.done": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "完了"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Done"
-          }
-        }
-      }
-    },
     "crop_editor.reset": {
       "localizations": {
         "ja": {
@@ -2710,13 +2582,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "90°回転"
+            "value": "右に90°回転"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rotate 90°"
+            "value": "Rotate 90° Right"
           }
         }
       }
@@ -2749,22 +2621,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Horiz. Persp."
-          }
-        }
-      }
-    },
-    "crop_editor.aspect_ratio": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アスペクト比"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aspect Ratio"
           }
         }
       }
@@ -3585,22 +3441,6 @@
         }
       }
     },
-    "management.delete_confirm_title": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "削除の確認"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirm Deletion"
-          }
-        }
-      }
-    },
     "management.delete_confirm_single": {
       "localizations": {
         "ja": {
@@ -3633,34 +3473,30 @@
         }
       }
     },
-    "management.drop_images_here": {
+    "layout.items_count": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "画像をドロップして追加"
+            "value": "%d件"
           }
         },
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Drop images here to add"
-          }
-        }
-      }
-    },
-    "layout.items_suffix": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "件"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": " items"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%d item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%d items"
+                }
+              }
+            }
           }
         }
       }
@@ -4449,6 +4285,22 @@
         }
       }
     },
+    "log.export.failed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ログを書き出せませんでした"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not export the log"
+          }
+        }
+      }
+    },
     "log.filter": {
       "localizations": {
         "ja": {
@@ -4509,22 +4361,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "This log contains only screen layout information. No image names or personal information included."
-          }
-        }
-      }
-    },
-    "log.footer.detail": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "詳細..."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Details..."
           }
         }
       }
@@ -4669,22 +4505,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Turn On Log Recording"
-          }
-        }
-      }
-    },
-    "log.info.button": {
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ログについて"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "About Logs"
           }
         }
       }
@@ -4881,18 +4701,114 @@
         }
       }
     },
-    "log.style.toggle": {
+    "log.detail.screens": {
       "localizations": {
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "表示スタイル切替"
+            "value": "ディスプレイ"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Toggle Display Style"
+            "value": "Screens"
+          }
+        }
+      }
+    },
+    "log.detail.windows": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ウィンドウ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Windows"
+          }
+        }
+      }
+    },
+    "log.detail.context": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コンテキスト"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context"
+          }
+        }
+      }
+    },
+    "log.detail.column.display_id": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスプレイ ID"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display ID"
+          }
+        }
+      }
+    },
+    "log.detail.column.origin": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "原点"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Origin"
+          }
+        }
+      }
+    },
+    "log.detail.column.size": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サイズ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Size"
+          }
+        }
+      }
+    },
+    "log.detail.column.main": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メイン"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main"
           }
         }
       }

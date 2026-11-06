@@ -26,11 +26,11 @@ import Testing
         #expect(validStatuses.contains(status))
     }
 
-    /// 登録サービスのエラーがtoggle()で伝播されることを検証
-    @Test func togglePropagatesRegistrationError() {
+    /// 登録サービスのエラーがsetEnabled()で伝播されることを検証
+    @Test func setEnabledPropagatesRegistrationError() {
         let mock = MockLoginItemService(mockStatus: .notRegistered, shouldThrow: true)
         let manager = LaunchAtLoginManager(service: mock)
-        #expect(throws: (any Error).self) { try manager.toggle() }
+        #expect(throws: (any Error).self) { try manager.setEnabled(true) }
     }
 
     /// DI用の新しいインスタンスが作成できることを検証
@@ -67,20 +67,30 @@ import Testing
         #expect(manager.status == .notRegistered)
     }
 
-    /// モックサービスでtoggle()がregisterを呼ぶことを検証
-    @Test func diMockServiceToggleCallsRegister() throws {
+    /// setEnabled(true)が未登録時にregisterを呼ぶことを検証
+    @Test func setEnabledTrueCallsRegister() throws {
         let mock = MockLoginItemService(mockStatus: .notRegistered)
         let manager = LaunchAtLoginManager(service: mock)
-        try manager.toggle()
+        try manager.setEnabled(true)
         #expect(mock.registerCalled)
         #expect(!mock.unregisterCalled)
     }
 
-    /// モックサービスでtoggle()がunregisterを呼ぶことを検証
-    @Test func diMockServiceToggleCallsUnregister() throws {
+    /// すでに望む状態ならsetEnabledは何も呼ばないことを検証（反転操作による誤動作の防止）
+    @Test(arguments: [(SMAppService.Status.enabled, true), (SMAppService.Status.notRegistered, false)])
+    func setEnabledIsNoOpWhenAlreadyInState(status: SMAppService.Status, enabled: Bool) throws {
+        let mock = MockLoginItemService(mockStatus: status)
+        let manager = LaunchAtLoginManager(service: mock)
+        try manager.setEnabled(enabled)
+        #expect(!mock.registerCalled)
+        #expect(!mock.unregisterCalled)
+    }
+
+    /// setEnabled(false)が有効時にunregisterを呼ぶことを検証
+    @Test func setEnabledFalseCallsUnregister() throws {
         let mock = MockLoginItemService(mockStatus: .enabled)
         let manager = LaunchAtLoginManager(service: mock)
-        try manager.toggle()
+        try manager.setEnabled(false)
         #expect(mock.unregisterCalled)
         #expect(!mock.registerCalled)
     }

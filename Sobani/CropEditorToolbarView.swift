@@ -42,20 +42,10 @@ final class CropEditorToolbarView: NSView {
     private static let toolbarTopMargin: CGFloat = 16
     private static let toolbarRowSpacing: CGFloat = 16
 
-    /// 現在の外観に応じたツールバー背景色を返す
-    private static func toolbarBackgroundCGColor() -> CGColor {
-        if NSApp.effectiveAppearance.isDark {
-            return NSColor(white: AppConstants.cropEditorToolbarBackgroundDark, alpha: 1.0).cgColor
-        } else {
-            return NSColor(white: AppConstants.cropEditorToolbarBackgroundLight, alpha: 1.0).cgColor
-        }
-    }
-
     // MARK: - Callbacks
 
     var onStraightenAngleChanged: ((CGFloat) -> Void)?
     var onAspectRatioSelected: ((AspectRatioPreset) -> Void)?
-    var onModeChanged: ((StraightenMode) -> Void)?
     var onSliderDragEnded: (() -> Void)?
     var onShapeSelected: ((CropShape) -> Void)?
     var onCornersLinkedToggled: ((Bool) -> Void)?
@@ -94,7 +84,7 @@ final class CropEditorToolbarView: NSView {
 
     private func setupSubviews() {
         wantsLayer = true
-        layer?.backgroundColor = Self.toolbarBackgroundCGColor()
+        layer?.backgroundColor = CropEditorPanelController.toolbarBackgroundCGColor()
 
         // ルーラーダイヤル（上部）
         let slider = StraightenSliderView(frame: .zero)
@@ -186,9 +176,8 @@ final class CropEditorToolbarView: NSView {
         }
         straightenMode = mode
         sliderView?.angle = result.newAngle
-        onModeChanged?(mode)
         updateModeButtonViews()
-        layout()
+        needsLayout = true
     }
 
     // MARK: - Slider Callback
@@ -215,10 +204,15 @@ final class CropEditorToolbarView: NSView {
         straightenMode
     }
 
+    /// 傾き補正スライダーをドラッグ・慣性・スクロールで操作中か
+    var isStraightenSliderInteracting: Bool {
+        sliderView?.isInteracting ?? false
+    }
+
     func setMode(_ mode: ToolbarMode) {
         guard mode != toolbarMode else { return }
         toolbarMode = mode
-        layout()
+        needsLayout = true
     }
 
     func resetStraightenAngle() {
@@ -229,19 +223,6 @@ final class CropEditorToolbarView: NSView {
 
     func updateAspectRatioSelection(_ preset: AspectRatioPreset) {
         selectorView?.updateSelection(preset)
-    }
-
-    func hideAspectRatioSelector() {
-        setMode(.correction)
-    }
-
-    func setAngleForCurrentMode(_ angle: CGFloat) {
-        modeAngles[straightenMode] = angle
-        sliderView?.angle = angle
-    }
-
-    func getCurrentModeAngle() -> CGFloat {
-        angleForMode(straightenMode)
     }
 
     func updateShapeSelection(_ shape: CropShape) {
@@ -262,7 +243,7 @@ final class CropEditorToolbarView: NSView {
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
-        layer?.backgroundColor = Self.toolbarBackgroundCGColor()
+        layer?.backgroundColor = CropEditorPanelController.toolbarBackgroundCGColor()
     }
 
     /// 全モードの角度を一括同期する（初期化・Undo/Redo共通）
@@ -427,6 +408,8 @@ private class ModeButtonView: NSView {
     private static let baseCircleLineWidth: CGFloat = 1.5
     private static let angleFontSize: CGFloat = 13
     private static let zeroAngleThreshold: CGFloat = 0.05
+    private static let unselectedCircleAlpha: CGFloat = 0.5
+    private static let progressTrackAlpha: CGFloat = 0.3
 
     var symbolName: String
     private var cachedIcon: NSImage?
@@ -470,7 +453,7 @@ private class ModeButtonView: NSView {
         if abs(angle) < Self.zeroAngleThreshold {
             // 値=0: サークル全体を描画
             let baseColor: NSColor = isSelected
-                ? .labelColor : .secondaryLabelColor.withAlphaComponent(0.5)
+                ? .labelColor : .secondaryLabelColor.withAlphaComponent(Self.unselectedCircleAlpha)
             let baseWidth: CGFloat = isSelected ? Self.arcLineWidth : Self.baseCircleLineWidth
             context.setStrokeColor(baseColor.cgColor)
             context.setLineWidth(baseWidth)
@@ -493,7 +476,9 @@ private class ModeButtonView: NSView {
             drawIcon(at: center)
         } else {
             // 値≠0: 薄いベースライン + プログレスアーク
-            context.setStrokeColor(NSColor.secondaryLabelColor.withAlphaComponent(0.3).cgColor)
+            context.setStrokeColor(
+                NSColor.secondaryLabelColor.withAlphaComponent(Self.progressTrackAlpha).cgColor
+            )
             context.setLineWidth(Self.arcLineWidth)
             context.addEllipse(in: ellipseRect)
             context.strokePath()

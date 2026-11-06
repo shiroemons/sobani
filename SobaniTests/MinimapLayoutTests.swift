@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 import Testing
 @testable import Sobani
 
@@ -15,7 +16,7 @@ import Testing
         )
 
         // Window at bottom-left corner, 100x200
-        let rect = layout.windowRect(for: 0, originY: 0, width: 100, height: 200)
+        let rect = layout.windowRect(for: CGRect(x: 0, y: 0, width: 100, height: 200))
 
         // scaledX = (0 - 0) * 0.5 + 10 = 10
         // scaledY = (1080 - (0 - 0 + 200)) * 0.5 + 10 = 880 * 0.5 + 10 = 450
@@ -36,7 +37,7 @@ import Testing
         )
 
         // Window at top-right in macOS coords (origin at bottom-left)
-        let rect = layout.windowRect(for: 1820, originY: 980, width: 100, height: 100)
+        let rect = layout.windowRect(for: CGRect(x: 1820, y: 980, width: 100, height: 100))
 
         // scaledX = (1820 - 0) * 0.5 + 10 = 920
         // scaledY = (1080 - (980 - 0 + 100)) * 0.5 + 10 = 0 * 0.5 + 10 = 10
@@ -52,7 +53,7 @@ import Testing
             rawTotalBounds: CGRect(x: 0, y: 0, width: 3840, height: 2160)
         )
 
-        let rect = layout.windowRect(for: 0, originY: 0, width: 400, height: 300)
+        let rect = layout.windowRect(for: CGRect(x: 0, y: 0, width: 400, height: 300))
 
         #expect(abs(rect.width - 100) < 0.001)
         #expect(abs(rect.height - 75) < 0.001)
@@ -71,7 +72,7 @@ import Testing
         )
 
         // Window on left screen at (-1000, 500) size 200x300
-        let rect = layout.windowRect(for: -1000, originY: 500, width: 200, height: 300)
+        let rect = layout.windowRect(for: CGRect(x: -1000, y: 500, width: 200, height: 300))
 
         // scaledX = (-1000 - (-1920)) * 0.1 + 20 = 920 * 0.1 + 20 = 112
         // scaledY = (1080 - (500 - 0 + 300)) * 0.1 + 20 = 280 * 0.1 + 20 = 48
@@ -91,12 +92,35 @@ import Testing
         )
 
         // Window on main screen at (100, 100) size 200x200
-        let rect = layout.windowRect(for: 100, originY: 100, width: 200, height: 200)
+        let rect = layout.windowRect(for: CGRect(x: 100, y: 100, width: 200, height: 200))
 
         // scaledX = (100 - (-1920)) * 0.1 + 20 = 2020 * 0.1 + 20 = 222
         // scaledY = (1080 - (100 - 0 + 200)) * 0.1 + 20 = 780 * 0.1 + 20 = 98
         #expect(abs(rect.origin.x - 222) < 0.001)
         #expect(abs(rect.origin.y - 98) < 0.001)
+    }
+
+    /// WindowState からの変換は、その状態のフレーム（画像基準の原点・サイズ）を変換した結果と一致することを検証
+    @Test func testWindowRectForStateUsesStateFrame() throws {
+        let layout = MinimapLayout(
+            screens: [],
+            scale: 0.1,
+            offset: CGPoint(x: 20, y: 20),
+            rawTotalBounds: CGRect(x: -1920, y: 0, width: 3840, height: 1080)
+        )
+        let state = WindowState(
+            imageName: AppConstants.defaultImageName,
+            originX: -1000, originY: 500, width: 200, height: 300,
+            isFlippedHorizontally: false, rotationAngle: 0, opacityLevel: 1, windowId: 0
+        )
+
+        let rect = layout.windowRect(for: state)
+
+        let expected = layout.windowRect(for: CGRect(x: -1000, y: 500, width: 200, height: 300))
+        #expect(abs(rect.origin.x - expected.origin.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(rect.origin.y - expected.origin.y) < AppConstants.floatingPointTolerance)
+        #expect(abs(rect.width - expected.width) < AppConstants.floatingPointTolerance)
+        #expect(abs(rect.height - expected.height) < AppConstants.floatingPointTolerance)
     }
 
     // MARK: - macOSDelta
@@ -139,5 +163,71 @@ import Testing
         let delta = layout.macOSDelta(from: .zero)
         #expect(abs(delta.x - 0) < 0.001)
         #expect(abs(delta.y - 0) < 0.001)
+    }
+
+    /// 倍率が 0 の（描画できない）レイアウトではドラッグ量が無限大にならないことを検証
+    @Test func testMacOSDeltaWithZeroScaleIsZero() throws {
+        let layout = MinimapLayout(screens: [], scale: 0, offset: .zero, rawTotalBounds: .zero)
+        let delta = layout.macOSDelta(from: CGSize(width: 10, height: 20))
+        #expect(delta.x.isFinite && delta.y.isFinite)
+        #expect(abs(delta.x) < AppConstants.floatingPointTolerance)
+        #expect(abs(delta.y) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - calculate
+
+    private let mainScreen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+
+    /// 範囲が空（.zero・.null）の場合は空のレイアウトになり、NaN・無限大を生まないことを検証
+    @Test(arguments: [CGRect.zero, CGRect.null, CGRect(x: 0, y: 0, width: 100, height: 0)])
+    @MainActor func testCalculateWithEmptyBoundsIsEmpty(bounds: CGRect) throws {
+        let layout = MinimapLayout.calculate(
+            in: CGSize(width: 400, height: 300), precomputedBounds: bounds, screenFrames: [mainScreen]
+        )
+        #expect(layout.isEmpty)
+        #expect(layout.scale.isFinite)
+        #expect(layout.offset.x.isFinite && layout.offset.y.isFinite)
+    }
+
+    /// 表示領域が余白（両側）より小さい場合は空のレイアウトになり、負の倍率で反転しないことを検証
+    @Test(arguments: [CGSize.zero, CGSize(width: 20, height: 300), CGSize(width: 400, height: 30)])
+    @MainActor func testCalculateWithTooSmallAreaIsEmpty(size: CGSize) throws {
+        let layout = MinimapLayout.calculate(in: size, screenFrames: [mainScreen])
+        #expect(layout.isEmpty)
+        #expect(layout.scale > 0)
+    }
+
+    /// スクリーンがない場合は空のレイアウトになることを検証
+    @Test @MainActor func testCalculateWithoutScreensIsEmpty() throws {
+        let layout = MinimapLayout.calculate(in: CGSize(width: 400, height: 300), screenFrames: [])
+        #expect(layout.isEmpty)
+    }
+
+    /// 通常の範囲では正の倍率で中央に配置されることを検証
+    @Test @MainActor func testCalculateCentersContent() throws {
+        let size = CGSize(width: 400, height: 300)
+        let padding = AppConstants.managementMinimapPadding
+        let layout = MinimapLayout.calculate(in: size, screenFrames: [mainScreen])
+        let screen = try #require(layout.screens.first)
+        let expectedScale = min((size.width - padding * 2) / 1920, (size.height - padding * 2) / 1080)
+        #expect(!layout.isEmpty)
+        #expect(abs(layout.scale - expectedScale) < AppConstants.floatingPointTolerance)
+        #expect(abs(screen.midX - size.width / 2) < AppConstants.floatingPointTolerance)
+        #expect(abs(screen.midY - size.height / 2) < AppConstants.floatingPointTolerance)
+    }
+
+    // MARK: - totalBounds
+
+    /// 画面外のウィンドウも範囲に含めることを検証
+    @Test func testTotalBoundsIncludesOffscreenWindows() throws {
+        let offscreen = CGRect(x: -500, y: 2000, width: 200, height: 100)
+        let bounds = MinimapLayout.totalBounds(screenFrames: [mainScreen], windowFrames: [offscreen])
+        #expect(bounds.contains(mainScreen))
+        #expect(bounds.contains(offscreen))
+    }
+
+    /// スクリーンもウィンドウもない場合は .null になることを検証
+    @Test func testTotalBoundsOfNothingIsNull() throws {
+        #expect(MinimapLayout.totalBounds(screenFrames: [], windowFrames: []).isNull)
     }
 }

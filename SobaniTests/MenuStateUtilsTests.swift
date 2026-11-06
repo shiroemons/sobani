@@ -210,20 +210,18 @@ struct MenuStateUtilsTests {
             count: 3,
             isHidden: false,
             showingFormat: "表示中: %@体",
-            showingLabel: "表示中",
-            hiddenLabel: "非表示"
+            hiddenFormat: "非表示: %@体"
         )
         #expect(result == "表示中: 3体")
     }
 
-    @Test("formatWindowCountText: 非表示の場合、hiddenLabelで置換")
+    @Test("formatWindowCountText: 非表示の場合、hiddenFormatを使用")
     func formatWindowCountTextHidden() {
         let result = MenuStateUtils.formatWindowCountText(
             count: 3,
             isHidden: true,
             showingFormat: "表示中: %@体",
-            showingLabel: "表示中",
-            hiddenLabel: "非表示"
+            hiddenFormat: "非表示: %@体"
         )
         #expect(result == "非表示: 3体")
     }
@@ -234,8 +232,7 @@ struct MenuStateUtilsTests {
             count: 0,
             isHidden: false,
             showingFormat: "表示中: %@体",
-            showingLabel: "表示中",
-            hiddenLabel: "非表示"
+            hiddenFormat: "非表示: %@体"
         )
         #expect(result == "表示中: 0体")
     }
@@ -246,8 +243,7 @@ struct MenuStateUtilsTests {
             count: 5,
             isHidden: false,
             showingFormat: "Showing: %@ windows",
-            showingLabel: "Showing",
-            hiddenLabel: "Hidden"
+            hiddenFormat: "Hidden: %@ windows"
         )
         #expect(result == "Showing: 5 windows")
     }
@@ -258,8 +254,7 @@ struct MenuStateUtilsTests {
             count: 5,
             isHidden: false,
             showingFormat: "表示中: %@体",
-            showingLabel: "表示中",
-            hiddenLabel: "非表示",
+            hiddenFormat: "非表示: %@体",
             badges: [StatusBadge(value: 2, format: "👻%@")]
         )
         #expect(result == "表示中: 5体 👻2")
@@ -271,8 +266,7 @@ struct MenuStateUtilsTests {
             count: 5,
             isHidden: false,
             showingFormat: "表示中: %@体",
-            showingLabel: "表示中",
-            hiddenLabel: "非表示",
+            hiddenFormat: "非表示: %@体",
             badges: [
                 StatusBadge(value: 2, format: "👻%@"),
                 StatusBadge(value: 1, format: "🙈%@")
@@ -287,11 +281,25 @@ struct MenuStateUtilsTests {
             count: 3,
             isHidden: false,
             showingFormat: "表示中: %@体",
-            showingLabel: "表示中",
-            hiddenLabel: "非表示",
+            hiddenFormat: "非表示: %@体",
             badges: [StatusBadge(value: 0, format: "👻%@")]
         )
         #expect(result == "表示中: 3体")
+    }
+
+    @Test(
+        "formatWindowCountText(hiddenFormat:): 非表示なら専用の書式を使い、文言を置換しない",
+        arguments: [(false, "Showing: 3 (ghost 1)"), (true, "All hidden (3) (ghost 1)")]
+    )
+    func formatWindowCountTextWithHiddenFormat(isHidden: Bool, expected: String) {
+        let result = MenuStateUtils.formatWindowCountText(
+            count: 3,
+            isHidden: isHidden,
+            showingFormat: "Showing: %@",
+            hiddenFormat: "All hidden (%@)",
+            badges: [StatusBadge(value: 1, format: "(ghost %@)"), StatusBadge(value: 0, format: "(hidden %@)")]
+        )
+        #expect(result == expected)
     }
 
     // MARK: - buildWindowInfoText Tests

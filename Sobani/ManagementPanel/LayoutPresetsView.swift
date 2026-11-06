@@ -5,20 +5,52 @@ struct LayoutPresetsView: View {
     @State private var presets: [LayoutPreset] = []
     @State private var selectedPreset: LayoutPreset?
     @State private var selectedPresetWindowIndex: Int?
-    @State private var isShowingRenameSheet = false
-    @State private var isShowingSaveSheet = false
-    @State private var newPresetName = ""
-    @State private var hoveredPresetId: UUID?
+    /// 表示中の名前入力シート。リネーム対象はここに保持する（一覧・詳細のどちらからでも同じシートを開く）
+    @State private var activeNameSheet: NameSheet?
+    /// プリセットごとのサムネイル（ウィンドウ順）。描画のたびにクロップ画像を作らないよう事前に計算する
+    @State private var presetThumbnails: [UUID: [NSImage?]] = [:]
     @State private var presetToDelete: LayoutPreset?
     @State private var isShowingDeleteConfirmation = false
     @State private var activeToast: ToastType?
     @State private var toastTimerTask: Task<Void, Never>?
-    @State private var isShowingCreateSheet = false
     @State private var presetImages: [String: NSImage] = [:]
 
     private enum ToastType: Equatable {
         case deleted(LayoutPreset)
         case success(String)
+    }
+
+    private enum NameSheet: Identifiable {
+        case save
+        case create
+        case rename(LayoutPreset)
+
+        var id: String {
+            switch self {
+            case .save: return "save"
+            case .create: return "create"
+            case .rename(let preset): return "rename-\(preset.id)"
+            }
+        }
+
+        var title: String {
+            switch self {
+            case .save: return L("layout.save_title")
+            case .create: return L("layout.create_title")
+            case .rename: return L("layout.rename_title")
+            }
+        }
+
+        var initialName: String {
+            if case .rename(let preset) = self { return preset.name }
+            return ""
+        }
+
+        /// 重複判定から除外する名前（リネーム時の自分自身。大文字小文字だけの変更を重複扱いしない）
+        var excludedName: String? {
+            if case .rename(let preset) = self { return preset.name }
+            return nil
+        }
     }
 
     var body: some View {
@@ -69,8 +101,23 @@ struct LayoutPresetsView: View {
         } message: { preset in
             Text(String(format: L("layout.delete_confirm_message"), preset.name))
         }
+        .sheet(item: $activeNameSheet) { sheet in
+            PresetNameSheetView(
+                title: sheet.title,
+                initialName: sheet.initialName,
+                isNameTaken: { viewModel.presetExists(named: $0, excluding: sheet.excludedName) },
+                onApply: { name in performNameSheetAction(sheet, name: name) }
+            )
+        }
         .onDisappear {
             toastTimerTask?.cancel()
+        }
+        // この画面・メニューなど、すべての経路からの保存・更新・削除・リネーム・復元をここで反映する
+        .onReceive(NotificationCenter.default.publisher(for: AppConstants.layoutPresetsDidChange)) { _ in
+            refreshPresets()
+        }
+        .onChange(of: viewModel.registeredImageNames) {
+            rebuildThumbnails()
         }
         .onChange(of: selectedPreset) { _, newPreset in
             guard let preset = newPreset else {
@@ -92,23 +139,13 @@ struct LayoutPresetsView: View {
         VStack(spacing: 0) {
             // Toolbar
             HStack(spacing: 8) {
-                Button {
-                    isShowingSaveSheet = true
-                    newPresetName = ""
-                } label: {
-                    Image(systemName: "square.and.arrow.down")
-                        .frame(width: 16, height: 16)
+                ToolbarIconButton(systemImage: "square.and.arrow.down", help: L("layout.save_current")) {
+                    activeNameSheet = .save
                 }
-                .help(L("layout.save_current"))
 
-                Button {
-                    newPresetName = ""
-                    isShowingCreateSheet = true
-                } label: {
-                    Image(systemName: "plus.square")
-                        .frame(width: 16, height: 16)
+                ToolbarIconButton(systemImage: "plus.square", help: L("layout.create_new")) {
+                    activeNameSheet = .create
                 }
-                .help(L("layout.create_new"))
 
                 Spacer()
             }
@@ -130,14 +167,6 @@ struct LayoutPresetsView: View {
             }
         }
         .onAppear { refreshPresets() }
-        .sheet(isPresented: $isShowingSaveSheet) {
-            presetNameSheet(title: L("layout.save_title"), action: savePreset)
-        }
-        .sheet(isPresented: $isShowingCreateSheet) {
-            presetNameSheet(title: L("layout.create_title")) {
-                createNewLayout()
-            }
-        }
     }
 
     // MARK: - Preset Row
@@ -151,7 +180,7 @@ struct LayoutPresetsView: View {
                     .fontWeight(.medium)
                     .lineLimit(1)
                 HStack(spacing: 4) {
-                    Text("\(preset.states.count)\(L("layout.items_suffix"))")
+                    Text(LayoutPresetText.itemsCount(preset.states.count))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text("・")
@@ -165,10 +194,8 @@ struct LayoutPresetsView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 4) {
-                    ForEach(Array(preset.states.enumerated()), id: \.offset) { _, state in
-                        thumbnailForState(state)
-                            .frame(width: 36, height: 36)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    ForEach(Array(thumbnails(for: preset).enumerated()), id: \.offset) { _, image in
+                        RoundedThumbnail(image: image, size: RoundedThumbnail.compactSize, iconFont: .caption2)
                     }
                 }
             }
@@ -185,14 +212,7 @@ struct LayoutPresetsView: View {
             selectedPreset = preset
             selectedPresetWindowIndex = nil
         }
-        .onHover { isHovered in
-            hoveredPresetId = isHovered ? preset.id : nil
-        }
-        .listRowBackground(
-            hoveredPresetId == preset.id
-                ? Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
-                : nil
-        )
+        .hoverRowHighlight()
         .contextMenu {
             Button { applyPreset(preset) } label: {
                 Label(L("layout.apply"), systemImage: "play")
@@ -214,16 +234,13 @@ struct LayoutPresetsView: View {
 
     // MARK: - Shared Components
 
-    @ViewBuilder
-    private func thumbnailForState(_ state: WindowState) -> some View {
-        ThumbnailView(image: viewModel.croppedPreviewImage(for: state), iconFont: .caption2)
+    private func thumbnails(for preset: LayoutPreset) -> [NSImage?] {
+        presetThumbnails[preset.id] ?? []
     }
 
-    // MARK: - Name Input Sheet
-
-    @ViewBuilder
-    private func presetNameSheet(title: String, action: @escaping () -> Void) -> some View {
-        PresetNameSheetView(title: title, name: $newPresetName, action: action)
+    private func thumbnail(for preset: LayoutPreset, at index: Int) -> NSImage? {
+        let images = thumbnails(for: preset)
+        return images.indices.contains(index) ? images[index] : nil
     }
 
     @ViewBuilder
@@ -269,11 +286,10 @@ extension LayoutPresetsView {
             PresetMinimapView(
                 states: preset.states,
                 images: presetImages,
-                selectedWindowId: selectedPresetWindowIndex.flatMap { index in
-                    index < preset.states.count ? preset.states[index].windowId : nil
-                },
-                onWindowTapped: { windowId in
-                    selectedPresetWindowIndex = preset.states.firstIndex { $0.windowId == windowId }
+                // 古いプリセットは windowId がすべて 0 のため、ID ではなく位置で選択する
+                selectedIndices: selectedPresetWindowIndex.map { [$0] } ?? [],
+                onWindowTapped: { index in
+                    selectedPresetWindowIndex = index
                 }
             )
 
@@ -291,11 +307,6 @@ extension LayoutPresetsView {
                 .splitPanelFrame()
             }
         }
-        .sheet(isPresented: $isShowingRenameSheet) {
-            presetNameSheet(title: L("layout.rename_title")) {
-                renamePreset(from: preset.name, to: newPresetName)
-            }
-        }
     }
 
     @ViewBuilder
@@ -303,9 +314,7 @@ extension LayoutPresetsView {
         List(selection: $selectedPresetWindowIndex) {
             ForEach(Array(preset.states.enumerated()), id: \.offset) { index, state in
                 HStack(spacing: 8) {
-                    thumbnailForState(state)
-                        .frame(width: 40, height: 40)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    RoundedThumbnail(image: thumbnail(for: preset, at: index), iconFont: .caption2)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(state.imageName)
@@ -333,21 +342,46 @@ extension LayoutPresetsView {
 
 extension LayoutPresetsView {
     private func startRename(_ preset: LayoutPreset) {
-        newPresetName = preset.name
-        isShowingRenameSheet = true
+        activeNameSheet = .rename(preset)
+    }
+
+    /// 名前入力シートの確定処理。`name` は正規化済みで、既存プリセットと重複しない。
+    private func performNameSheetAction(_ sheet: NameSheet, name: String) {
+        switch sheet {
+        case .save: savePreset(name: name)
+        case .create: createNewLayout(name: name)
+        case .rename(let preset): renamePreset(preset, to: name)
+        }
     }
 
     private func refreshPresets() {
         let newPresets = viewModel.loadPresets()
-        if newPresets != presets {
+        if newPresets != presets || presetThumbnails.isEmpty {
             presets = newPresets
+            rebuildThumbnails()
+        }
+        // 詳細表示中のプリセットを最新の内容に差し替える（他の経路で削除された場合は一覧へ戻る）
+        if let selected = selectedPreset {
+            let latest = newPresets.first { $0.id == selected.id }
+            if latest != selected {
+                selectedPreset = latest
+            }
         }
     }
 
-    private func savePreset() {
+    private func rebuildThumbnails() {
+        // 古いファイルの削除に失敗したリネームなどで同じ ID のプリセットが並ぶことがあるため、重複キーは先勝ちにする
+        presetThumbnails = Dictionary(
+            presets.map { preset in
+                (preset.id, preset.states.map { viewModel.croppedPreviewImage(for: $0) })
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
+    }
+
+    private func savePreset(name: String) {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
-        viewModel.savePreset(name: newPresetName, states: states)
-        refreshPresets()
+        viewModel.savePreset(name: name, states: states)
     }
 
     private func applyPreset(_ preset: LayoutPreset) {
@@ -358,20 +392,12 @@ extension LayoutPresetsView {
     private func updatePreset(_ preset: LayoutPreset) {
         guard let states = viewModel.captureCurrentWindowStates() else { return }
         viewModel.updatePreset(preset, states: states)
-        refreshPresets()
-        if selectedPreset?.id == preset.id {
-            selectedPreset = presets.first { $0.id == preset.id }
-        }
         showToast(.success(String(format: L("layout.updated_message"), preset.name)))
     }
 
-    private func renamePreset(from oldName: String, to newName: String) {
-        let previousId = selectedPreset?.id
-        let success = viewModel.renamePreset(from: oldName, to: newName)
-        if success {
-            refreshPresets()
-            selectedPreset = presets.first { $0.id == previousId }
-        }
+    private func renamePreset(_ preset: LayoutPreset, to newName: String) {
+        guard newName != preset.name else { return }
+        viewModel.renamePreset(from: preset.name, to: newName)
     }
 
     private func confirmDeletePreset(_ preset: LayoutPreset) {
@@ -380,14 +406,8 @@ extension LayoutPresetsView {
     }
 
     private func performDeletePreset(_ preset: LayoutPreset) {
+        // 詳細表示中なら、変更通知を受けた refreshPresets で一覧へ戻る
         viewModel.deletePreset(named: preset.name)
-        if selectedPreset?.id == preset.id {
-            selectedPreset = nil
-        }
-        if hoveredPresetId == preset.id {
-            hoveredPresetId = nil
-        }
-        refreshPresets()
         showToast(.deleted(preset))
     }
 
@@ -398,7 +418,6 @@ extension LayoutPresetsView {
         withAnimation {
             activeToast = nil
         }
-        refreshPresets()
     }
 
     private func showToast(_ toast: ToastType) {
@@ -418,11 +437,8 @@ extension LayoutPresetsView {
         }
     }
 
-    private func createNewLayout() {
-        let name = newPresetName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return }
+    private func createNewLayout(name: String) {
         viewModel.createNewLayout(name: name)
-        refreshPresets()
     }
 }
 
@@ -430,31 +446,92 @@ extension LayoutPresetsView {
 
 struct PresetNameSheetView: View {
     let title: String
-    @Binding var name: String
-    let action: () -> Void
+    /// 正規化済みの名前が既存プリセットと重複するか
+    let isNameTaken: (String) -> Bool
+    /// 確定時に正規化済みの名前で呼ばれる
+    let onApply: (String) -> Void
+    @State private var name: String
     @Environment(\.dismiss) private var dismiss
 
+    init(
+        title: String,
+        initialName: String = "",
+        isNameTaken: @escaping (String) -> Bool,
+        onApply: @escaping (String) -> Void
+    ) {
+        self.title = title
+        self.isNameTaken = isNameTaken
+        self.onApply = onApply
+        _name = State(initialValue: initialName)
+    }
+
     var body: some View {
+        let validation = PresetNameValidation.validate(name, isNameTaken: isNameTaken)
         VStack(spacing: 16) {
             Text(title)
                 .font(.headline)
             TextField(L("layout.name_placeholder"), text: $name)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: AppConstants.layoutDialogFieldWidth)
+            if validation == .duplicate {
+                Label(L("layout.name_exists"), systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
             HStack {
                 Button(L("management.cancel")) {
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
                 Button(L("management.apply")) {
-                    action()
+                    guard case .valid(let validName) = validation else { return }
+                    onApply(validName)
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(validation.validName == nil)
             }
         }
         .padding(20)
+    }
+}
+
+// MARK: - LayoutPresetText
+
+enum LayoutPresetText {
+    private static let itemsCountKey = "layout.items_count"
+
+    /// プリセットのウィンドウ数の表示（例: "1 item" / "3 items" / "3件"）。
+    ///
+    /// 複数形は書式化するときのロケールで選ばれるため、システムではなく表示言語のロケールを渡す
+    /// （アプリ内で言語を切り替えたときに、システムの言語の規則で "1 items" にならないように）。
+    static func itemsCount(_ count: Int, bundle: Bundle? = sharedLocalizationBundle) -> String {
+        let format = bundle.map { NSLocalizedString(itemsCountKey, bundle: $0, comment: "") } ?? L(itemsCountKey)
+        let languageCode = bundle?.bundleURL.deletingPathExtension().lastPathComponent
+        let locale = languageCode.map { Locale(identifier: $0) } ?? .current
+        return String(format: format, locale: locale, count)
+    }
+}
+
+// MARK: - PresetNameValidation
+
+/// プリセット名の入力検証結果。名前は `LayoutPresetManager.normalizedName` で正規化してから判定する。
+enum PresetNameValidation: Equatable {
+    /// 空（空白のみを含む）
+    case empty
+    /// 既存のプリセットと重複する（保存すると上書きしてしまう）
+    case duplicate
+    /// 使用可能。正規化済みの名前を持つ
+    case valid(String)
+
+    var validName: String? {
+        if case .valid(let name) = self { return name }
+        return nil
+    }
+
+    static func validate(_ input: String, isNameTaken: (String) -> Bool) -> Self {
+        guard let name = LayoutPresetManager.normalizedName(input) else { return .empty }
+        return isNameTaken(name) ? .duplicate : .valid(name)
     }
 }
 

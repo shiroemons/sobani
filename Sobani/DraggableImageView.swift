@@ -8,15 +8,14 @@ final class DraggableImageView: NSImageView {
     private let logger = Logger(category: "DraggableImageView")
 
     var aspectRatio: CGFloat = 1.0
-    let minHeight: CGFloat = AppConstants.minImageHeight
-    let maxHeight: CGFloat = AppConstants.maxImageHeight
     private var initialMouseInWindow: NSPoint = .zero
     private var dragStartScreenLocation: NSPoint = .zero
-    private var cachedAllWindows: [ImageWindow]?
     private var isDraggingAll = false
     private var isSnapEnabled = false
     private var cachedOtherWindowFrames: [CGRect]?
-    private var cachedScreenFrames: [CGRect]?
+    /// ドラッグ対象（一括ドラッグでは表示中の全ウィンドウ）と開始時の原点。
+    /// mouseUp で実際に動いたウィンドウだけ位置変更を通知する。
+    private var dragStartOrigins: [(imageView: DraggableImageView, origin: NSPoint)] = []
     var isFlippedHorizontally: Bool = false {
         didSet { needsLayout = true }
     }
@@ -48,11 +47,13 @@ final class DraggableImageView: NSImageView {
     var cropRect: CropRect? {
         didSet { applyCrop() }
     }
-    private(set) var originalImage: NSImage?
-    var isCropModeActive: Bool = false
+    private(set) var originalImage: NSImage? {
+        didSet { cachedSourceHasAlpha = nil }
+    }
     var isAdjustmentPanelActive: Bool = false
     private var cachedAlphaMask: AlphaMask?
     private var alphaMaskBuildAttempted: Bool = false
+    private var cachedSourceHasAlpha: Bool?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -66,8 +67,9 @@ final class DraggableImageView: NSImageView {
 
     weak var imageWindowDelegate: ImageWindowDelegate?
 
-    private var allImageWindows: [ImageWindow] {
-        imageWindowDelegate?.allImageWindows ?? []
+    /// 一括ドラッグ・一括リサイズ・スナップの対象にする、表示中のウィンドウ
+    private var visibleImageWindows: [ImageWindow] {
+        (imageWindowDelegate?.allImageWindows ?? []).filter { !$0.isHidden }
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -75,7 +77,6 @@ final class DraggableImageView: NSImageView {
             onDoubleClick?()
             return
         }
-        if isCropModeActive { return }
         onMouseDown?()
         isDraggingAll = event.modifierFlags.contains(.option)
         isSnapEnabled = SnapSettings.isEnabled
@@ -83,30 +84,28 @@ final class DraggableImageView: NSImageView {
         if isDraggingAll {
             guard let currentWindow = window else { return }
             dragStartScreenLocation = currentWindow.convertPoint(toScreen: event.locationInWindow)
-            cachedAllWindows = allImageWindows
+            dragStartOrigins = visibleImageWindows.map { ($0.imageView, $0.window.frame.origin) }
         } else if let currentWindow = window {
             initialMouseInWindow = event.locationInWindow
-            let allWindows = allImageWindows
-            cachedOtherWindowFrames = allWindows
+            cachedOtherWindowFrames = visibleImageWindows
                 .filter { $0.window !== currentWindow }
                 .map { $0.window.frame }
-            cachedScreenFrames = NSScreen.screens.map { $0.visibleFrame }
+            dragStartOrigins = [(self, currentWindow.frame.origin)]
         }
     }
 
     override func mouseDragged(with event: NSEvent) {
-        if isCropModeActive { return }
-
         if isDraggingAll, let currentWindow = window {
             let screenPoint = currentWindow.convertPoint(toScreen: event.locationInWindow)
             let deltaX = screenPoint.x - dragStartScreenLocation.x
             let deltaY = screenPoint.y - dragStartScreenLocation.y
             dragStartScreenLocation = screenPoint
-            for imageWindow in cachedAllWindows ?? [] {
-                var origin = imageWindow.window.frame.origin
+            for target in dragStartOrigins {
+                guard let targetWindow = target.imageView.window else { continue }
+                var origin = targetWindow.frame.origin
                 origin.x += deltaX
                 origin.y += deltaY
-                imageWindow.window.setFrameOrigin(origin)
+                targetWindow.setFrameOrigin(origin)
             }
         } else if let currentWindow = window {
             let current = event.locationInWindow
@@ -120,7 +119,6 @@ final class DraggableImageView: NSImageView {
                 let proposedFrame = NSRect(origin: origin, size: currentWindow.frame.size)
                 let otherFrames = cachedOtherWindowFrames ?? []
                 let screenFrame = currentWindow.screen?.visibleFrame
-                    ?? cachedScreenFrames?.first
                     ?? NSScreen.main?.visibleFrame
                     ?? NSRect(origin: .zero, size: AppConstants.fallbackScreenSize)
                 let snap = SnapUtils.calculateSnap(
@@ -138,29 +136,32 @@ final class DraggableImageView: NSImageView {
 
             currentWindow.setFrameOrigin(origin)
         }
-        onPositionChanged?()
     }
 
     override func mouseUp(with event: NSEvent) {
         isDraggingAll = false
-        cachedAllWindows = nil
         cachedOtherWindowFrames = nil
-        cachedScreenFrames = nil
-        onPositionChanged?()
+        // クリックだけで動いていないウィンドウには位置変更を通知しない
+        let movedViews = dragStartOrigins.filter { target in
+            guard let currentOrigin = target.imageView.window?.frame.origin else { return false }
+            return Self.hasMoved(from: target.origin, to: currentOrigin)
+        }
+        dragStartOrigins = []
+        for target in movedViews {
+            target.imageView.onPositionChanged?()
+        }
     }
 
     override func scrollWheel(with event: NSEvent) {
-        if isCropModeActive { return }
         let delta = event.scrollingDeltaY
         if GeometryUtils.isApproximatelyZero(delta) { return }
         if let handler = scrollRotationHandler {
             handler(delta)
             return
         }
-        let scaleFactor = Self.scaleFactor(fromScrollDelta: delta)
+        let scaleFactor = Self.scaleFactor(fromScrollDelta: delta, isPrecise: event.hasPreciseScrollingDeltas)
         if event.modifierFlags.contains(.option) {
-            let allWindows = allImageWindows
-            for imageWindow in allWindows {
+            for imageWindow in visibleImageWindows {
                 resizeWindow(
                     imageWindow.window, imageView: imageWindow.imageView, scaleFactor: scaleFactor)
             }
@@ -172,12 +173,16 @@ final class DraggableImageView: NSImageView {
 
     private func resizeWindow(
         _ window: NSWindow, imageView: DraggableImageView, scaleFactor: CGFloat) {
+        // 丸めたウィンドウ中心ではなく画像の中心を基準にする（繰り返すと位置がずれていくため）
         let frames = Self.calculateResizedFrames(
             currentHeight: imageView.frame.height,
             scaleFactor: scaleFactor,
             aspectRatio: imageView.aspectRatio,
             rotationAngle: imageView.rotationAngle,
-            windowCenter: CGPoint(x: window.frame.midX, y: window.frame.midY)
+            imageCenter: CGPoint(
+                x: window.frame.minX + imageView.frame.midX,
+                y: window.frame.minY + imageView.frame.midY
+            )
         )
         window.setFrame(frames.windowFrame, display: true)
         imageView.frame = frames.imageViewFrame
@@ -199,10 +204,13 @@ final class DraggableImageView: NSImageView {
 
     private func applyCrop() {
         guard let crop = cropRect, let original = originalImage ?? image else {
-            // If cropRect is nil, restore original image
+            // cropRect が nil なら元画像と元の縦横比に戻す
             if let original = originalImage {
                 image = original
                 originalImage = nil
+                if original.size.height > 0 {
+                    aspectRatio = original.size.width / original.size.height
+                }
                 onSizeChanged?()
             }
             return
@@ -230,6 +238,16 @@ final class DraggableImageView: NSImageView {
         onSizeChanged?()
     }
 
+    /// 表示する画像そのものを差し替える（画像変更・ドロップ・デフォルトに戻す等）。
+    ///
+    /// 旧画像に対するクロップ範囲と元画像は新しい画像とは無関係なので破棄する。
+    /// `originalImage` を先に消すことで、`cropRect = nil` で旧画像が復元されないようにする。
+    func replaceImage(_ newImage: NSImage) {
+        originalImage = nil
+        cropRect = nil
+        image = newImage
+    }
+
     func setOriginalImage(_ newImage: NSImage) {
         originalImage = newImage
         if cropRect != nil {
@@ -245,44 +263,38 @@ final class DraggableImageView: NSImageView {
 
     // MARK: - Testable Static Methods
 
-    /// スクロールデルタからスケールファクターを計算
-    nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat) -> CGFloat {
-        return 1.0 + (delta * AppConstants.scrollScaleSensitivity)
+    /// ドラッグの前後でウィンドウ原点が動いたか
+    nonisolated static func hasMoved(from start: NSPoint, to end: NSPoint) -> Bool {
+        !GeometryUtils.isApproximatelyEqual(start.x, end.x) || !GeometryUtils.isApproximatelyEqual(start.y, end.y)
     }
 
-    /// リサイズ時のウィンドウフレームと画像ビューフレームを計算
+    /// スクロールデルタからスケールファクターを計算する。
+    ///
+    /// 指数関数にすることで +δ と −δ の拡大縮小が打ち消し合い（往復しても大きさがずれない）、
+    /// 大きな負のデルタでも倍率が 0 以下にならない。非精密スクロールのデルタは行単位のため点に換算する。
+    nonisolated static func scaleFactor(fromScrollDelta delta: CGFloat, isPrecise: Bool = true) -> CGFloat {
+        let points = isPrecise ? delta : delta * AppConstants.scrollPointsPerLine
+        return exp(points * AppConstants.scrollScaleSensitivity)
+    }
+
+    /// リサイズ時のウィンドウフレームと画像ビューフレームを計算する（画像の中心を固定）
     nonisolated static func calculateResizedFrames(
         currentHeight: CGFloat, scaleFactor: CGFloat, aspectRatio: CGFloat,
-        rotationAngle: CGFloat, windowCenter: CGPoint,
+        rotationAngle: CGFloat, imageCenter: CGPoint,
         minHeight: CGFloat = AppConstants.minImageHeight,
         maxHeight: CGFloat = AppConstants.maxImageHeight
     ) -> (windowFrame: NSRect, imageViewFrame: NSRect) {
-        var newHeight = currentHeight * scaleFactor
-        newHeight = max(minHeight, min(maxHeight, newHeight))
-        let newWidth = newHeight * aspectRatio
-
-        let boundingBox = GeometryUtils.rotatedBoundingBox(
-            width: newWidth, height: newHeight, angleDegrees: rotationAngle
+        let newSize = ImageWindow.clampedImageSize(
+            height: currentHeight * scaleFactor, aspectRatio: aspectRatio,
+            minHeight: minHeight, maxHeight: maxHeight
         )
-        let bbWidth = boundingBox.width
-        let bbHeight = boundingBox.height
-
-        let windowFrame = NSRect(
-            x: round(windowCenter.x - bbWidth / 2),
-            y: round(windowCenter.y - bbHeight / 2),
-            width: round(bbWidth),
-            height: round(bbHeight)
-        )
-        let imageViewFrame = NSRect(
-            x: (bbWidth - newWidth) / 2,
-            y: (bbHeight - newHeight) / 2,
-            width: newWidth,
-            height: newHeight
-        )
-        return (windowFrame, imageViewFrame)
+        return ImageWindow.anchoredFrames(imageCenter: imageCenter, imageSize: newSize, rotationAngle: rotationAngle)
     }
 
-    /// 回転・反転のアフィン変換を計算
+    /// 回転・反転のアフィン変換を計算する（中心基準）。
+    ///
+    /// 先に左右反転し、その後に回転する。反転の有無にかかわらず、見た目の傾きは
+    /// ダイアルに表示される角度（時計回り `rotationDegrees` 度）と一致する。
     nonisolated static func imageTransform(
         rotationDegrees: CGFloat, isFlipped: Bool,
         boundsWidth: CGFloat, boundsHeight: CGFloat
@@ -291,20 +303,21 @@ final class DraggableImageView: NSImageView {
         let centerX = boundsWidth / 2
         let centerY = boundsHeight / 2
 
-        if !GeometryUtils.isApproximatelyZero(rotationDegrees) {
-            let radians = -rotationDegrees * .pi / 180
-            transform = transform
-                .translatedBy(x: centerX, y: centerY)
-                .rotated(by: radians)
-                .translatedBy(x: -centerX, y: -centerY)
-        }
-
         if isFlipped {
-            let flip = CGAffineTransform.identity
+            transform = CGAffineTransform.identity
                 .translatedBy(x: centerX, y: centerY)
                 .scaledBy(x: -1, y: 1)
                 .translatedBy(x: -centerX, y: -centerY)
-            transform = transform.concatenating(flip)
+        }
+
+        if !GeometryUtils.isApproximatelyZero(rotationDegrees) {
+            let radians = -rotationDegrees * .pi / 180
+            let rotation = CGAffineTransform.identity
+                .translatedBy(x: centerX, y: centerY)
+                .rotated(by: radians)
+                .translatedBy(x: -centerX, y: -centerY)
+            // CGAffineTransform は行ベクトル規約のため、a.concatenating(b) は「a の後に b」を適用する
+            transform = transform.concatenating(rotation)
         }
 
         return transform
@@ -413,10 +426,35 @@ extension DraggableImageView {
         return pixelY * mask.width + pixelX
     }
 
-    nonisolated static func buildAlphaMask(from cgImage: CGImage) -> AlphaMask? {
-        let width = cgImage.width
-        let height = cgImage.height
-        guard width > 0, height > 0 else { return nil }
+    /// CGImageAlphaInfo が透明情報を持つかどうかを判定
+    nonisolated static func isAlphaInfoTransparent(_ alphaInfo: CGImageAlphaInfo) -> Bool {
+        switch alphaInfo {
+        case .first, .last, .premultipliedFirst, .premultipliedLast: return true
+        default: return false
+        }
+    }
+
+    /// アルファマスクの長辺の上限（ピクセル）。ヒットテストは比率で参照するため、縮小しても判定位置はずれない。
+    nonisolated static let alphaMaskMaxDimension = 2048
+
+    /// 長辺を `maxDimension` 以下に縮小したマスクのサイズ（縦横比を保ち、各辺 1 以上）
+    nonisolated static func alphaMaskSize(width: Int, height: Int, maxDimension: Int) -> (width: Int, height: Int) {
+        let scale = GeometryUtils.downscaleFactor(
+            for: CGSize(width: width, height: height), maxDimension: CGFloat(maxDimension)
+        )
+        guard scale < 1 else { return (width, height) }
+        return (
+            max(1, Int((CGFloat(width) * scale).rounded())),
+            max(1, Int((CGFloat(height) * scale).rounded()))
+        )
+    }
+
+    /// 画像のアルファ値だけを取り出したマスクを作る。大きな画像は長辺 `maxDimension` に縮小する。
+    nonisolated static func buildAlphaMask(
+        from cgImage: CGImage, maxDimension: Int = alphaMaskMaxDimension
+    ) -> AlphaMask? {
+        guard cgImage.width > 0, cgImage.height > 0 else { return nil }
+        let (width, height) = alphaMaskSize(width: cgImage.width, height: cgImage.height, maxDimension: maxDimension)
         var bytes = [UInt8](repeating: 0, count: width * height)
         let success = bytes.withUnsafeMutableBytes { ptr -> Bool in
             guard let base = ptr.baseAddress,
@@ -449,9 +487,16 @@ extension DraggableImageView {
         }
     }
 
+    /// 表示画像が変わったら（クロップの適用・解除を含む）ヒットテスト用のマスクを破棄する。
+    ///
+    /// 透過判定は元画像で行うため、クロップ中（`originalImage` あり）は表示画像が変わっても破棄しない
+    /// （元画像の差し替えは `originalImage` の didSet で破棄される）。
     private func invalidateAlphaMask() {
         cachedAlphaMask = nil
         alphaMaskBuildAttempted = false
+        if originalImage == nil {
+            cachedSourceHasAlpha = nil
+        }
     }
 
     func ensureAlphaMask() -> AlphaMask? {
@@ -461,13 +506,32 @@ extension DraggableImageView {
         cachedAlphaMask = Self.buildAlphaMask(from: cgImage)
         return cachedAlphaMask
     }
+
+    /// 元画像（クロップ前）が透過ピクセルを含むか。背景除去の可否判定に使う。
+    ///
+    /// 円形などのクロップは表示画像に透過を作るため、表示画像ではなく元画像で判定する。
+    /// クロップしていなければヒットテスト用のマスクを流用する。
+    func sourceImageHasAlpha() -> Bool {
+        if let cached = cachedSourceHasAlpha { return cached }
+        let result = computeSourceImageHasAlpha()
+        cachedSourceHasAlpha = result
+        return result
+    }
+
+    private func computeSourceImageHasAlpha() -> Bool {
+        guard let source = originalImage ?? image,
+              let cgImage = Self.extractCGImage(from: source),
+              Self.isAlphaInfoTransparent(cgImage.alphaInfo) else { return false }
+        let mask = originalImage == nil ? ensureAlphaMask() : Self.buildAlphaMask(from: cgImage)
+        return mask?.bytes.contains { $0 < UInt8.max } ?? false
+    }
 }
 
 // MARK: - Hit Test
 
 extension DraggableImageView {
     override func hitTest(_ point: NSPoint) -> NSView? {
-        if isCropModeActive || isAdjustmentPanelActive { return super.hitTest(point) }
+        if isAdjustmentPanelActive { return super.hitTest(point) }
         guard let img = image, let superview = superview else { return super.hitTest(point) }
         let imageSize = img.size
         let localPoint = convert(point, from: superview)

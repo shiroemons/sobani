@@ -96,4 +96,64 @@ import Testing
         let renamed = try #require(presetManager.loadPreset(named: "特殊文字レイアウト"))
         #expect(renamed.states == states)
     }
+
+    /// 大文字小文字だけのリネームでプリセットが消えないことを検証（大文字小文字を区別しない APFS 対策）
+    @Test func renameCaseOnlyKeepsPreset() throws {
+        let states = [makeState(imageName: "case.png")]
+        presetManager.savePreset(name: "Work", states: states)
+
+        let result = presetManager.renamePreset(from: "Work", to: "work")
+        #expect(result)
+
+        let presets = presetManager.loadPresets()
+        #expect(presets.count == 1)
+        let renamed = try #require(presets.first)
+        #expect(renamed.name == "work")
+        #expect(renamed.states == states)
+    }
+
+    /// リネームの変更通知は1回だけで、旧ファイルの削除後に送られることを検証
+    /// （新旧両方のファイルがある途中の状態で一覧を読み直させない）
+    @Test func renamePostsSingleNotificationAfterRemovingOldFile() async throws {
+        let manager = presetManager
+        manager.savePreset(name: "OldName", states: [makeState()])
+
+        await confirmation("layoutPresetsDidChange is posted once", expectedCount: 1) { confirm in
+            let observer = NotificationCenter.default.addObserver(
+                forName: AppConstants.layoutPresetsDidChange, object: manager, queue: nil
+            ) { _ in
+                MainActor.assumeIsolated {
+                    #expect(!manager.presetExists(named: "OldName"))
+                    #expect(manager.presetExists(named: "NewName"))
+                }
+                confirm()
+            }
+            defer { NotificationCenter.default.removeObserver(observer) }
+            #expect(manager.renamePreset(from: "OldName", to: "NewName"))
+        }
+    }
+
+    /// 自分自身を除外した重複判定が、別プリセットとの衝突だけを検出することを検証
+    @Test func presetExistsExcludingSelf() {
+        presetManager.savePreset(name: "Work", states: [makeState()])
+        presetManager.savePreset(name: "Home", states: [makeState()])
+
+        #expect(presetManager.presetExists(named: "Home", excluding: "Work"))
+        #expect(!presetManager.presetExists(named: "Work", excluding: "Work"))
+        #expect(!presetManager.presetExists(named: "New", excluding: "Work"))
+        #expect(presetManager.presetExists(named: "Work", excluding: nil))
+    }
+
+    /// プリセット名の正規化（前後空白の除去・空文字の拒否）を検証
+    @Test(arguments: [
+        ("  Work  ", "Work"), ("\nWork\t", "Work"), ("Work Space", "Work Space"),
+    ])
+    func normalizedNameTrimsWhitespace(input: String, expected: String) {
+        #expect(LayoutPresetManager.normalizedName(input) == expected)
+    }
+
+    @Test(arguments: ["", "   ", "\n\t"])
+    func normalizedNameRejectsBlank(input: String) {
+        #expect(LayoutPresetManager.normalizedName(input) == nil)
+    }
 }

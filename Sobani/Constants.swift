@@ -59,6 +59,10 @@ enum AppConstants {
     static let windowSpawnRandomOffset: CGFloat = 100
     static let scrollScaleSensitivity: CGFloat = 0.01
     static let dialScrollSensitivity: CGFloat = 0.5
+    /// 精密スクロールでないホイール 1 行をポイントに換算する量（トラックパッドの精密スクロールと単位を揃える）
+    static let scrollPointsPerLine: CGFloat = 10
+    /// 数値入力欄で受け付ける絶対値の上限（これを超える値は入力ミスとして扱う）
+    static let maxNumericInputMagnitude: CGFloat = 100_000
 
     // Screen Restoration
     static let screenChangeDebounceInterval: TimeInterval = 1.0
@@ -74,6 +78,9 @@ enum AppConstants {
 
     // Floating-point comparison
     static let floatingPointTolerance: CGFloat = 0.01
+    /// 0〜1 に正規化された座標（`CropRect` 等）同士の比較に使う許容誤差。
+    /// `floatingPointTolerance`（0.01）は正規化座標では画像の 1% に相当し粗すぎるため別に持つ。
+    static let normalizedTolerance: CGFloat = 1e-4
 
     // Hit Test
     /// 透過ピクセル判定のしきい値。alpha 値がこの値未満ならクリックスルーする。
@@ -119,6 +126,12 @@ enum AppConstants {
     static let statePersistDebounceInterval: TimeInterval = 1.0
     /// 画面構成変更の直後は macOS がウィンドウを一時退避している可能性があるため保存を見送る期間
     static let statePersistScreenSettleInterval: TimeInterval = 10
+    /// 登録できる画像の縦横それぞれの最大ピクセル数（巨大画像のデコードでメモリを使い果たさないため）
+    static let maxImagePixelDimension = 16_384
+    /// 登録できる画像の総ピクセル数の上限（約 1.3 億ピクセル。RGBA で約 512MB）
+    static let maxImagePixelCount = 128 * 1_024 * 1_024
+    /// サービス（「Sobani で表示」）1 回の呼び出しで開く画像の最大数（大量のウィンドウ生成を防ぐ）
+    static let maxServiceImageCount = 20
 
     // Opacity
     static let opacityMin: CGFloat = 0.1
@@ -157,7 +170,6 @@ enum AppConstants {
     static let ghostAlphaCheckboxTrailingGap: CGFloat = 22
 
     // Crop
-    static let cropHandleSize: CGFloat = 8
     static let cropMinProportion: CGFloat = 0.1
     static let cropOverlayAlpha: CGFloat = 0.5
 
@@ -297,8 +309,9 @@ enum AppConstants {
     static let registeredImagesDidChange = Notification.Name(
         "\(loggerSubsystem).registeredImagesDidChange"
     )
-    static let managementPanelWillClose = Notification.Name(
-        "\(loggerSubsystem).managementPanelWillClose"
+    /// レイアウトプリセットの保存・削除・リネームで発火する
+    static let layoutPresetsDidChange = Notification.Name(
+        "\(loggerSubsystem).layoutPresetsDidChange"
     )
 
     // MARK: - Notification UserInfo Keys
@@ -396,6 +409,21 @@ enum GeometryUtils {
     static func isApproximatelyEqual(_ lhs: CGFloat, _ rhs: CGFloat) -> Bool {
         abs(lhs - rhs) < AppConstants.floatingPointTolerance
     }
+
+    /// `size` の矩形を `container` の中央に置いたときの原点（container の原点オフセットも考慮する）
+    static func centeredOrigin(size: NSSize, in container: NSRect) -> NSPoint {
+        NSPoint(
+            x: container.midX - size.width / 2,
+            y: container.midY - size.height / 2
+        )
+    }
+
+    /// 長辺を `maxDimension` 以下に収めるための縮小率（すでに収まっていれば 1、拡大はしない）
+    static func downscaleFactor(for size: CGSize, maxDimension: CGFloat) -> CGFloat {
+        let longestSide = max(size.width, size.height)
+        guard longestSide > maxDimension, maxDimension > 0 else { return 1 }
+        return maxDimension / longestSide
+    }
 }
 
 enum AppSupportDirectory {
@@ -430,30 +458,84 @@ enum AppSupportDirectory {
     }
 }
 
+/// ファイル名・パスの無害化。カレントディレクトリに依存しないよう、純粋な文字列処理で行う。
 enum PathSanitizer {
-    /// Returns a safe URL within the given directory, preventing path traversal.
-    /// Returns nil if the name is empty or resolves to a traversal attempt.
+    /// ファイル名として使えない名前（ディレクトリ自身・親ディレクトリ・ルートを指す）
+    private static let reservedNames: Set<String> = ["", ".", "..", "/"]
+    private static let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|\0")
+    /// ファイル名の UTF-8 バイト数の上限。ファイルシステムの 255 バイト制限から ".json" の分を引いた値。
+    /// これより短い名前は従来も保存できていたため、既存のプリセットファイルとの対応が変わらない。
+    static let maxNameByteCount = 250
+    /// 切り詰め時に残す拡張子の最大バイト数（これより長い「拡張子」は名前の一部として扱う）
+    private static let maxPreservedExtensionByteCount = 16
+
+    /// `directory` 直下のファイルを指す安全な URL を返す。パストラバーサルを防ぐ。
+    ///
+    /// `name` にパス区切りが含まれる場合は最終要素だけを使う（`"subdir/file.png"` → `"file.png"`）。
+    /// 最終要素が空・`.`・`..`・`/` になる場合や、NUL 文字を含む場合は nil。
     static func safeURL(name: String, in directory: URL) -> URL? {
-        let safeName = URL(fileURLWithPath: name).lastPathComponent
-        guard !safeName.isEmpty, safeName != "." else { return nil }
-        let url = directory.appendingPathComponent(safeName)
-        guard url.path.hasPrefix(directory.path + "/") else { return nil }
+        guard !name.contains("\0") else { return nil }
+        let component = lastPathComponent(of: name)
+        guard !reservedNames.contains(component) else { return nil }
+        let url = directory.appendingPathComponent(component)
+        // 念のため、正規化後も directory の直下であることを確認する。
+        // `standardizedFileURL` は実在するパスだけ `/private` を除去するなどファイルシステムに依存し、
+        // 未作成のファイルと比較が食い違うため、字句的に `.` / `..` を解決する `standardized` を使う。
+        guard url.standardized.deletingLastPathComponent().path == directory.standardized.path else {
+            return nil
+        }
         return url
     }
 
-    /// Sanitizes a file name by replacing invalid filesystem characters and preventing path traversal.
-    /// Returns nil if the result is empty or invalid.
+    /// ファイル名に使えない文字を `_` に置き換え、長すぎる名前を切り詰める。
+    ///
+    /// 結果が空・`.`・`..` になる場合は nil。
     static func safeName(from name: String) -> String? {
-        let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|")
         let sanitized = name.components(separatedBy: invalidCharacters).joined(separator: "_")
-        if sanitized.isEmpty || sanitized == "." || sanitized == ".." {
-            return nil
+        let truncated = truncatedToByteLimit(sanitized)
+        guard !reservedNames.contains(truncated) else { return nil }
+        return truncated
+    }
+
+    /// パスの最終要素を返す（末尾の `/` は無視する。空文字列は空、`/` のみなら `/`）。
+    ///
+    /// `URL(fileURLWithPath:)` と違いカレントディレクトリに依存しない。
+    static func lastPathComponent(of path: String) -> String {
+        guard let last = path.split(separator: "/").last else {
+            return path.isEmpty ? "" : "/"
         }
-        let resolved = URL(fileURLWithPath: sanitized).lastPathComponent
-        if resolved.isEmpty || resolved == "." || resolved == ".." {
-            return nil
+        return String(last)
+    }
+
+    /// ファイル名を本体と拡張子（先頭の `.` を含む。なければ空文字）に分ける。
+    /// 先頭のドット（隠しファイル）は拡張子の区切りとみなさない。
+    static func splitExtension(_ name: String) -> (base: String, ext: String) {
+        guard let dotIndex = name.lastIndex(of: "."), dotIndex != name.startIndex else {
+            return (name, "")
         }
-        return resolved
+        return (String(name[..<dotIndex]), String(name[dotIndex...]))
+    }
+
+    /// UTF-8 のバイト数が上限を超える場合、文字境界で切り詰める。短い拡張子は残す。
+    private static func truncatedToByteLimit(_ name: String) -> String {
+        guard name.utf8.count > maxNameByteCount else { return name }
+        let (base, suffix) = splitExtension(name)
+        if suffix.utf8.count > 1, suffix.utf8.count <= maxPreservedExtensionByteCount {
+            return prefix(of: base, maxByteCount: maxNameByteCount - suffix.utf8.count) + suffix
+        }
+        return prefix(of: name, maxByteCount: maxNameByteCount)
+    }
+
+    private static func prefix(of string: String, maxByteCount: Int) -> String {
+        var result = ""
+        var byteCount = 0
+        for character in string {
+            let size = character.utf8.count
+            guard byteCount + size <= maxByteCount else { break }
+            result.append(character)
+            byteCount += size
+        }
+        return result
     }
 }
 
@@ -560,7 +642,77 @@ enum FormatUtils {
 
     /// 幅と高さを "W×H px" 形式の文字列に変換（例: 400×300 px）
     static func formatDimensions(width: CGFloat, height: CGFloat) -> String {
-        "\(Int(width))×\(Int(height)) px"
+        "\(integerString(width, rule: .towardZero))×\(integerString(height, rule: .towardZero)) px"
+    }
+
+    /// 数値を整数の文字列にする。非有限値や `Int` の範囲外は空文字を返す（`Int(_:)` のトラップを避ける）。
+    static func integerString(
+        _ value: CGFloat,
+        rule: FloatingPointRoundingRule = .toNearestOrAwayFromZero
+    ) -> String {
+        Int(exactly: value.rounded(rule)).map(String.init) ?? ""
+    }
+
+    /// テキスト入力を有限の数値に変換する（前後の空白は無視）。
+    /// 数値でない・非有限・絶対値が `maxMagnitude` を超える場合は nil。
+    static func parseFiniteNumber(
+        _ text: String,
+        maxMagnitude: CGFloat = AppConstants.maxNumericInputMagnitude
+    ) -> CGFloat? {
+        guard let value = Double(text.trimmingCharacters(in: .whitespaces)),
+              value.isFinite, abs(value) <= maxMagnitude else { return nil }
+        return CGFloat(value)
+    }
+}
+
+// MARK: - Debouncer
+
+/// 呼ぶたびに待ち時間を延長し、最後の呼び出しから `delay` 秒後に 1 回だけ処理を実行する。
+///
+/// Timer を 1 本だけ使い回し、`fireDate` を後ろへずらす（イベントごとに Timer や Task を作らない）。
+@MainActor
+final class Debouncer {
+    private let delay: TimeInterval
+    private var timer: Timer?
+    private var action: (() -> Void)?
+
+    init(delay: TimeInterval) {
+        self.delay = delay
+    }
+
+    /// 実行待ちの処理があるか
+    var isPending: Bool { action != nil }
+
+    /// `action` を予約する（すでに予約があれば置き換えて待ち時間を延長する）。
+    /// - Parameter delay: 今回だけ待ち時間を変える場合に指定する。
+    func schedule(after delay: TimeInterval? = nil, _ action: @escaping () -> Void) {
+        self.action = action
+        let interval = delay ?? self.delay
+        if let timer, timer.isValid {
+            timer.fireDate = Date().addingTimeInterval(interval)
+            return
+        }
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { @Sendable [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.flush()
+            }
+        }
+    }
+
+    /// 実行待ちの処理があれば今すぐ実行する
+    func flush() {
+        timer?.invalidate()
+        timer = nil
+        let pending = action
+        action = nil
+        pending?()
+    }
+
+    /// 実行待ちの処理を実行せずに破棄する
+    func cancel() {
+        timer?.invalidate()
+        timer = nil
+        action = nil
     }
 }
 
@@ -593,6 +745,18 @@ enum ImageFileDialog {
         panel.canChooseDirectories = false
         panel.level = .floating
         return panel
+    }
+
+    /// ユーザーが選んだ画像を読み込めなかったことを、対応形式とサイズ上限とともに知らせる。
+    /// `fileNames` が空なら何もしない。
+    static func showLoadFailedAlert(fileNames: [String]) {
+        guard !fileNames.isEmpty else { return }
+        let hint = String(format: L("image.error.load_failed_hint"), "\(AppConstants.maxImagePixelDimension)")
+        AlertFactory.make(
+            style: .warning,
+            messageText: L("image.error.load_failed"),
+            informativeText: fileNames.joined(separator: "\n") + "\n\n" + hint
+        ).runModal()
     }
 }
 

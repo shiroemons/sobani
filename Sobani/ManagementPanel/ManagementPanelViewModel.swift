@@ -4,6 +4,8 @@ import Observation
 @MainActor @Observable
 final class ManagementPanelViewModel {
     private(set) weak var appDelegate: AppDelegate?
+    /// 選択・保存ダイアログをシートとして表示する親ウィンドウ（管理パネル）
+    @ObservationIgnored weak var presentingWindow: NSWindow?
     var selectedTab: ManagementTab? = .images
     var selectedWindowIds: Set<Int> = []
     var selectedRegisteredImageName: String?
@@ -18,7 +20,13 @@ final class ManagementPanelViewModel {
     @ObservationIgnored private var listObserver: NSObjectProtocol?
     @ObservationIgnored private var imageListObserver: NSObjectProtocol?
     @ObservationIgnored private var languageObserver: NSObjectProtocol?
-    private var isBatchUpdating = false
+    @ObservationIgnored private var geometryObservers: [NSObjectProtocol] = []
+    /// 管理パネルが表示中か。非表示中は通知による再構築を省き、表示時にまとめて反映する。
+    @ObservationIgnored private var isPanelVisible = false
+    @ObservationIgnored private var isRefreshScheduled = false
+    /// 状態変更・移動・リサイズ通知による再構築の間引き間隔。
+    /// ドラッグ・スクロールでのリサイズ・スライダーなど、イベントごとに全ウィンドウを再構築するのを防ぐ
+    private static let refreshCoalescingInterval: Duration = .milliseconds(100)
 
     enum ManagementTab: String, CaseIterable, Identifiable {
         case images
@@ -53,18 +61,28 @@ final class ManagementPanelViewModel {
         static let topTabs: [Self] = [.images, .layouts, .registeredImages]
     }
 
+    /// 一覧は表示に切り替わったとき（`setPanelVisible(true)`）に構築する。
     init(appDelegate: AppDelegate) {
         self.appDelegate = appDelegate
-        rebuildAll()
-        refreshRegisteredImageNames()
         setupNotificationObservers()
     }
 
     isolated deinit {
-        if let stateObserver { NotificationCenter.default.removeObserver(stateObserver) }
-        if let listObserver { NotificationCenter.default.removeObserver(listObserver) }
-        if let imageListObserver { NotificationCenter.default.removeObserver(imageListObserver) }
-        if let languageObserver { NotificationCenter.default.removeObserver(languageObserver) }
+        let center = NotificationCenter.default
+        let observers = [stateObserver, listObserver, imageListObserver, languageObserver].compactMap { $0 }
+        for observer in observers + geometryObservers {
+            center.removeObserver(observer)
+        }
+    }
+
+    // MARK: - Panel Visibility
+
+    /// 管理パネルの表示状態を伝える。表示に切り替わったら、非表示中に省いた更新をまとめて反映する。
+    func setPanelVisible(_ visible: Bool) {
+        isPanelVisible = visible
+        guard visible else { return }
+        refreshRegisteredImageNames()
+        rebuildWindows()
     }
 
     // MARK: - Window List
@@ -77,13 +95,12 @@ final class ManagementPanelViewModel {
             return
         }
         let newWindows = appDelegate.zOrderedWindows.map { imageWindow in
-            let imageSize = imageWindow.imageView.frame.size
+            // 位置・サイズは画像（imageView）基準。WindowState・プリセット・位置エディタと同じ座標系にそろえる
+            let imageFrame = imageWindow.imageFrameInScreen
             let screenName = imageWindow.window.screen?.localizedName ?? L("image.unknown")
             let dims = FormatUtils.formatDimensions(
-                width: imageSize.width, height: imageSize.height)
+                width: imageFrame.width, height: imageFrame.height)
             let subtitle = "\(dims) ・ \(screenName)"
-            let thumbnail = imageWindow.imageView.image
-            let frame = imageWindow.window.frame
             return WindowInfo(
                 windowId: imageWindow.windowId,
                 displayName: imageWindow.localizedDisplayName,
@@ -91,16 +108,16 @@ final class ManagementPanelViewModel {
                 isHidden: imageWindow.isHidden,
                 isGhostMode: imageWindow.isGhostMode,
                 opacityLevel: imageWindow.imageView.opacityLevel,
-                thumbnail: thumbnail,
+                thumbnail: imageWindow.imageView.image,
                 originalImage: imageWindow.imageView.originalImage,
                 cropRect: imageWindow.imageView.cropRect,
                 customGhostAlpha: imageWindow.customGhostAlpha,
                 effectiveGhostAlpha: imageWindow.effectiveGhostAlpha,
                 isRemoveBackgroundEnabled: imageWindow.isRemoveBackgroundAvailable,
-                originX: frame.origin.x,
-                originY: frame.origin.y,
-                width: frame.size.width,
-                height: frame.size.height,
+                originX: imageFrame.minX,
+                originY: imageFrame.minY,
+                width: imageFrame.width,
+                height: imageFrame.height,
                 imageName: imageWindow.displayName,
                 isFlippedHorizontally: imageWindow.imageView.isFlippedHorizontally,
                 rotationAngle: imageWindow.imageView.rotationAngle
@@ -108,21 +125,23 @@ final class ManagementPanelViewModel {
         }
         if newWindows != windows {
             windows = newWindows
+            // WindowInfo の == は画像の同一性も比較するため、画像の差し替え（背景除去など）もここで検出できる
+            rebuildImageCaches()
         }
     }
 
     private func rebuildImageCaches() {
-        windowCountByImageName = Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
+        let counts = Dictionary(grouping: windows, by: \.imageName).mapValues(\.count)
+        if counts != windowCountByImageName {
+            windowCountByImageName = counts
+        }
         var imageDict: [String: NSImage] = [:]
         for window in windows where imageDict[window.imageName] == nil {
             imageDict[window.imageName] = window.originalImage ?? window.thumbnail
         }
-        windowImages = imageDict
-    }
-
-    private func rebuildAll() {
-        rebuildWindows()
-        rebuildImageCaches()
+        if imageDict != windowImages {
+            windowImages = imageDict
+        }
     }
 
     private func refreshRegisteredImageNames() {
@@ -130,47 +149,47 @@ final class ManagementPanelViewModel {
         if newNames != registeredImageNames {
             registeredImageNames = newNames
         }
+        if let selected = selectedRegisteredImageName, !newNames.contains(selected) {
+            selectedRegisteredImageName = nil
+        }
     }
 
     // MARK: - Window Operations
+    // パネルからの操作は、状態変更通知の間引きを待たずにすぐ再構築する（triggerRefresh）。
+    // 一括操作で届く通知は間引かれるため、ウィンドウごとに再構築されることはない。
 
     func toggleHidden(windowId: Int) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
-        imageWindow.setHidden(!imageWindow.isHidden)
-        // notifyStateDidChange fires via ImageWindow.setHidden
-        // → triggerRefresh handled by observer
+        // 表示切り替えは AppDelegate に集約する（表示時に Z-order を再適用するため）
+        appDelegate?.setWindowsHidden(!imageWindow.isHidden, windows: [imageWindow])
+        triggerRefresh()
     }
 
     func toggleGhostMode(windowId: Int) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
         imageWindow.setGhostMode(!imageWindow.isGhostMode)
-        // notifyStateDidChange fires via ImageWindow.setGhostMode
-        // → triggerRefresh handled by observer
+        triggerRefresh()
     }
 
     // MARK: - Bulk Operations
 
     func showAllWindows() {
-        performBatchUpdate { $0.setHidden(false) }
+        appDelegate?.setWindowsHidden(false)
+        triggerRefresh()
     }
 
     func hideAllWindows() {
-        performBatchUpdate { $0.setHidden(true) }
+        appDelegate?.setWindowsHidden(true)
+        triggerRefresh()
     }
 
     func ghostAllWindows() {
-        performBatchUpdate { $0.setGhostMode(true) }
+        appDelegate?.zOrderedWindows.forEach { $0.setGhostMode(true) }
+        triggerRefresh()
     }
 
     func unghostAllWindows() {
-        performBatchUpdate { $0.setGhostMode(false) }
-    }
-
-    private func performBatchUpdate(_ action: (ImageWindow) -> Void) {
-        guard let appDelegate else { return }
-        isBatchUpdating = true
-        defer { isBatchUpdating = false }
-        appDelegate.zOrderedWindows.forEach(action)
+        appDelegate?.zOrderedWindows.forEach { $0.setGhostMode(false) }
         triggerRefresh()
     }
 
@@ -179,71 +198,95 @@ final class ManagementPanelViewModel {
     func changeOpacity(windowId: Int, opacity: CGFloat) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
         imageWindow.applyOpacity(opacity)
-        // applyOpacity fires notifyStateDidChange → triggerRefresh handled by observer
+        triggerRefresh()
     }
 
     func changeBulkOpacity(opacity: CGFloat) {
-        isBatchUpdating = true
-        defer { isBatchUpdating = false }
         targetWindows.forEach { $0.applyOpacity(opacity) }
         triggerRefresh()
     }
 
+    /// ゴーストモードの共通の不透明度を変更して各ウィンドウの見た目に反映し、パネルの表示も更新する。
+    ///
+    /// 見た目の再適用は状態変更通知を伴わないため、ここで再構築する。
+    func applyGlobalGhostAlpha(_ alpha: CGFloat) {
+        appDelegate?.applyGlobalGhostAlpha(alpha)
+        triggerRefresh()
+    }
+
+    /// 位置とサイズを画像（imageView）基準の値で変更する。
     func changePositionAndSize(windowId: Int, origin: CGPoint, size: CGSize) {
         guard let imageWindow = findImageWindow(by: windowId) else { return }
         imageWindow.setPositionAndSize(origin: origin, size: size)
         triggerRefresh()
     }
 
-    /// ドラッグ中: setFrame のみ（軽量、triggerRefresh なし）
-    func moveWindowWithoutRefresh(windowId: Int, origin: CGPoint) {
-        applyWindowPosition(windowId: windowId, origin: origin)
+    /// ミニマップでのドラッグ中: 画像の原点だけ動かす（ミニマップの座標は windowStates と同じ画像基準）。
+    ///
+    /// 状態変更の通知はドラッグ完了時に1回だけ送る。ドラッグ中のパネルの再構築は移動通知の間引きに任せる
+    /// （ミニマップはドラッグ中のウィンドウを「開始位置 + ドラッグ量」で描くため、再構築されても二重に動かない）。
+    func moveWindowDuringDrag(windowId: Int, origin: CGPoint) {
+        findImageWindow(by: windowId)?.setImageOrigin(origin)
     }
 
-    /// ドラッグ完了: setFrame + triggerRefresh で状態同期
-    func moveWindowAndRefresh(windowId: Int, origin: CGPoint) {
-        applyWindowPosition(windowId: windowId, origin: origin)
+    /// ミニマップでのドラッグ完了: 最終位置へ動かして `.position` を通知し、パネルの状態を同期する。
+    ///
+    /// 通知しないと、起動時・スリープ復帰時の画面復元がドラッグ前の位置へ戻してしまう。
+    func finishWindowDrag(windowId: Int, origin: CGPoint) {
+        guard let imageWindow = findImageWindow(by: windowId) else { return }
+        imageWindow.setPositionAndSize(origin: origin, size: imageWindow.imageView.frame.size)
         triggerRefresh()
     }
 
-    private func applyWindowPosition(windowId: Int, origin: CGPoint) {
-        guard let imageWindow = findImageWindow(by: windowId) else { return }
-        imageWindow.setPositionAndSize(origin: origin, size: imageWindow.window.frame.size)
+    // MARK: - Dialogs
+
+    /// 選択・保存ダイアログを管理パネルの上に表示する。
+    ///
+    /// 管理パネルは `.floating` より高いレベルにあるため、通常のモーダル表示では
+    /// ダイアログがパネルの裏に隠れる。パネルが表示中ならシートとして表示する。
+    func runDialog(_ dialog: NSSavePanel) async -> NSApplication.ModalResponse {
+        if let window = presentingWindow, window.isVisible {
+            return await dialog.beginSheetModal(for: window)
+        }
+        return dialog.runModal()
     }
 
     // MARK: - Private Helpers
 
     private func setupNotificationObservers() {
-        stateObserver = NotificationCenter.default.addObserver(
+        let center = NotificationCenter.default
+        stateObserver = center.addObserver(
             forName: AppConstants.imageWindowStateDidChange,
             object: nil,
             queue: .main
-        ) { [weak self] _ in
+        ) { @Sendable [weak self] note in
+            let rawTrigger = note.userInfo?[AppConstants.notificationTriggerKey] as? String
+            let imageWindow = note.object as? ImageWindow
             MainActor.assumeIsolated {
-                self?.triggerRefresh()
+                self?.handleWindowStateChange(rawTrigger: rawTrigger, imageName: imageWindow?.displayName)
             }
         }
-        listObserver = NotificationCenter.default.addObserver(
+        listObserver = center.addObserver(
             forName: AppConstants.imageWindowListDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.rebuildAll()
+                self?.requestRefresh()
             }
         }
-        imageListObserver = NotificationCenter.default.addObserver(
+        imageListObserver = center.addObserver(
             forName: AppConstants.registeredImagesDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.refreshRegisteredImageNames()
                 CroppedImageHelper.invalidateCache()
-                if !(self?.windows.isEmpty ?? true) { self?.rebuildImageCaches() }
+                guard let self, self.isPanelVisible else { return }
+                self.refreshRegisteredImageNames()
             }
         }
-        languageObserver = NotificationCenter.default.addObserver(
+        languageObserver = center.addObserver(
             forName: .languageDidChange,
             object: nil,
             queue: .main
@@ -252,16 +295,65 @@ final class ManagementPanelViewModel {
                 self?.languageRefreshId = UUID()
             }
         }
+        // 画面復元などのプログラムによる移動・リサイズは状態変更通知を伴わないため、NSWindow の通知も監視する
+        for name in [NSWindow.didMoveNotification, NSWindow.didResizeNotification] {
+            let observer = center.addObserver(
+                forName: name, object: nil, queue: .main
+            ) { @Sendable [weak self] note in
+                let window = note.object as? NSWindow
+                MainActor.assumeIsolated {
+                    guard let window else { return }
+                    self?.scheduleGeometryRefresh(for: window)
+                }
+            }
+            geometryObservers.append(observer)
+        }
     }
 
-    /// Rebuilds window state from the current `zOrderedWindows` snapshot.
-    /// Intentionally calls only `rebuildWindows()` — not `rebuildImageCaches()` — because
-    /// image identity does not change during state-only updates
-    /// (position, opacity, ghost mode, etc.).
-    /// Image caches are rebuilt via `rebuildAll()`,
-    /// which is triggered by `imageWindowListDidChange`.
+    private func handleWindowStateChange(rawTrigger: String?, imageName: String?) {
+        let trigger = rawTrigger.flatMap(AppConstants.SnapshotTrigger.init(rawValue:))
+        if trigger == .image {
+            // クロップ済みプレビューのキャッシュは画像名がキー。同じ名前で中身が変わる（カスタムのデフォルト画像の
+            // 差し替えなど）と古くなるため、その画像名のエントリだけを無効にする
+            if let imageName {
+                CroppedImageHelper.invalidateCache(forImageNamed: imageName)
+            } else {
+                CroppedImageHelper.invalidateCache()
+            }
+        }
+        // スクロールでのリサイズ・回転ダイヤル・不透明度スライダーなどはイベントごとに届くため間引く
+        scheduleRefresh()
+    }
+
+    /// 通知を契機とした再構築。パネル非表示中は省く（表示時に再構築する）。
+    private func requestRefresh() {
+        guard isPanelVisible else { return }
+        triggerRefresh()
+    }
+
+    private func scheduleGeometryRefresh(for window: NSWindow) {
+        // 移動・リサイズ通知はすべてのウィンドウから届くため、安価な判定を先に済ませる
+        guard isPanelVisible, !isRefreshScheduled,
+              appDelegate?.zOrderedWindows.contains(where: { $0.window === window }) == true else { return }
+        scheduleRefresh()
+    }
+
+    /// 通知を間引いて再構築する。
+    ///
+    /// 予約中に届いた通知は無視するが、予約した再構築は実行時点の状態を読むため最終状態は必ず反映される。
+    private func scheduleRefresh() {
+        guard isPanelVisible, !isRefreshScheduled else { return }
+        isRefreshScheduled = true
+        Task { [weak self] in
+            try? await Task.sleep(for: Self.refreshCoalescingInterval)
+            self?.isRefreshScheduled = false
+            self?.requestRefresh()
+        }
+    }
+
+    /// 現在の `zOrderedWindows` からウィンドウ一覧を再構築する。
+    /// 画像キャッシュは一覧に変化があったときだけ再構築される（`rebuildWindows` 参照）。
     func triggerRefresh() {
-        guard !isBatchUpdating else { return }
         rebuildWindows()
     }
 

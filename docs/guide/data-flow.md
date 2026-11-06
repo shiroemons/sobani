@@ -117,7 +117,7 @@ sequenceDiagram
         alt wasAdjusted == true
             App->>App: WindowStateManager.adjustToVisibleArea(state)
             Note right of App: 調整後の座標を取得
-            App->>SRM: addPending(windowId:originalState:displayID:adjustedOriginX:adjustedOriginY:)
+            App->>SRM: addPending(windowId:originalState:displayID:)
         end
     end
 ```

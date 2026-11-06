@@ -3,30 +3,30 @@ import os.log
 
 // MARK: - Pending Restoration
 
+/// モニター切断・スリープ復帰で元の位置へ戻せなかったウィンドウの、意図した位置の記録。
+///
+/// 旧形式の JSON に含まれる退避先の座標（`adjustedOriginX` / `adjustedOriginY`）は使われていなかったため
+/// 保持しない（デコード時は無視される）。
 struct PendingRestoration: Codable, Sendable {
     let windowId: Int
     let originalState: WindowState
     let displayID: CGDirectDisplayID
-    let adjustedOriginX: CGFloat
-    let adjustedOriginY: CGFloat
-    let createdAt: Date
+    /// 期限判定の起点。スリープしていた時間は `ScreenRestorationManager.resumeExpiry()` で後ろへずらす
+    var createdAt: Date
     let preSleepScreenFrame: NSRect?
 
     private enum CodingKeys: String, CodingKey {
-        case windowId, originalState, displayID, adjustedOriginX, adjustedOriginY, createdAt
+        case windowId, originalState, displayID, createdAt
         case screenFrameX, screenFrameY, screenFrameWidth, screenFrameHeight
     }
 
     init(
-        windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
-        adjustedOriginX: CGFloat, adjustedOriginY: CGFloat, createdAt: Date,
+        windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID, createdAt: Date,
         preSleepScreenFrame: NSRect? = nil
     ) {
         self.windowId = windowId
         self.originalState = originalState
         self.displayID = displayID
-        self.adjustedOriginX = adjustedOriginX
-        self.adjustedOriginY = adjustedOriginY
         self.createdAt = createdAt
         self.preSleepScreenFrame = preSleepScreenFrame
     }
@@ -36,8 +36,6 @@ struct PendingRestoration: Codable, Sendable {
         windowId = try container.decode(Int.self, forKey: .windowId)
         originalState = try container.decode(WindowState.self, forKey: .originalState)
         displayID = try container.decode(CGDirectDisplayID.self, forKey: .displayID)
-        adjustedOriginX = try container.decode(CGFloat.self, forKey: .adjustedOriginX)
-        adjustedOriginY = try container.decode(CGFloat.self, forKey: .adjustedOriginY)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         if let x = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameX),
            let y = try container.decodeIfPresent(CGFloat.self, forKey: .screenFrameY),
@@ -54,8 +52,6 @@ struct PendingRestoration: Codable, Sendable {
         try container.encode(windowId, forKey: .windowId)
         try container.encode(originalState, forKey: .originalState)
         try container.encode(displayID, forKey: .displayID)
-        try container.encode(adjustedOriginX, forKey: .adjustedOriginX)
-        try container.encode(adjustedOriginY, forKey: .adjustedOriginY)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encodeIfPresent(preSleepScreenFrame?.origin.x, forKey: .screenFrameX)
         try container.encodeIfPresent(preSleepScreenFrame?.origin.y, forKey: .screenFrameY)
@@ -68,14 +64,18 @@ struct PendingRestoration: Codable, Sendable {
 
 @MainActor
 final class ScreenRestorationManager {
+    /// ペンディングエントリの有効期限（秒）。モニターが戻らないまま期限を過ぎたエントリは復元せず破棄する
+    static let defaultTimeout: TimeInterval = 300
+
     private let logger = Logger(category: "ScreenRestorationManager")
     private(set) var pendingRestorations: [PendingRestoration] = []
     private let timeout: TimeInterval
+    /// スリープ開始時刻（スリープ中の経過時間を期限に含めないため）
+    private var expirySuspendedAt: Date?
     let pendingFileURL: URL?
     var currentDate: @Sendable () -> Date = { Date() }
-    var screenProvider: () -> [ScreenInfo] = { ScreenInfo.current() }
 
-    init(timeout: TimeInterval = 300, baseDirectory: URL? = nil) {
+    init(timeout: TimeInterval = ScreenRestorationManager.defaultTimeout, baseDirectory: URL? = nil) {
         self.timeout = timeout
         if let appDir = AppSupportDirectory.url(baseDirectory: baseDirectory, logger: logger) {
             self.pendingFileURL = appDir.appendingPathComponent("pending_restorations.json")
@@ -90,16 +90,14 @@ final class ScreenRestorationManager {
 
     func addPending(
         windowId: Int, originalState: WindowState, displayID: CGDirectDisplayID,
-        adjustedOriginX: CGFloat, adjustedOriginY: CGFloat,
         preSleepScreenFrame: NSRect? = nil
     ) {
         pendingRestorations.removeAll { $0.windowId == windowId }
+        // 非有限値が 1 つでもあると JSON エンコードが失敗し、キュー全体が保存されなくなるため補正しておく
         let entry = PendingRestoration(
             windowId: windowId,
-            originalState: originalState,
+            originalState: originalState.sanitizedForPersistence(),
             displayID: displayID,
-            adjustedOriginX: adjustedOriginX,
-            adjustedOriginY: adjustedOriginY,
             createdAt: currentDate(),
             preSleepScreenFrame: preSleepScreenFrame
         )
@@ -119,9 +117,25 @@ final class ScreenRestorationManager {
         pendingRestorations.removeAll { now.timeIntervalSince($0.createdAt) > timeout }
     }
 
-    func restorableEntries() -> [PendingRestoration] {
+    /// スリープ開始時に呼ぶ。`resumeExpiry()` までの経過時間は期限に含めない。
+    func suspendExpiry() {
+        expirySuspendedAt = currentDate()
+    }
+
+    /// スリープ復帰時に呼ぶ。スリープしていた時間だけ各エントリの期限の起点を後ろへずらす。
+    func resumeExpiry() {
+        guard let suspendedAt = expirySuspendedAt else { return }
+        expirySuspendedAt = nil
+        let suspendedDuration = currentDate().timeIntervalSince(suspendedAt)
+        guard suspendedDuration > 0 else { return }
+        for index in pendingRestorations.indices {
+            pendingRestorations[index].createdAt += suspendedDuration
+        }
+    }
+
+    /// 期限切れを除去したうえで、指定のスクリーン構成で元の位置へ復元できるエントリを返す。
+    func restorableEntries(screens: [ScreenInfo]) -> [PendingRestoration] {
         purgeExpired()
-        let screens = screenProvider()
         return pendingRestorations.filter { entry in
             // アンカー（再起動をまたいで不変な UUID）があれば最優先で判定する
             if let uuid = entry.originalState.displayAnchor?.displayUUID {
@@ -141,10 +155,6 @@ final class ScreenRestorationManager {
                 return entry.originalState.isPositionVisible(on: screens)
             }
         }
-    }
-
-    func clearAll() {
-        pendingRestorations.removeAll()
     }
 
     func savePending() {

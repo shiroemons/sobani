@@ -349,3 +349,59 @@ import os.log
         )
     }
 }
+
+// MARK: - FormatUtils Numeric Input
+
+/// 数値入力の解析と整数表示が、不正値でもトラップしないことを検証するテスト
+@Suite struct FormatUtilsNumericTests {
+    @Test(arguments: [("12.5", 12.5), (" -3 ", -3.0), ("100000", 100_000.0)])
+    func parseFiniteNumberAcceptsFiniteValues(text: String, expected: CGFloat) throws {
+        let value = try #require(FormatUtils.parseFiniteNumber(text))
+        #expect(abs(value - expected) < AppConstants.floatingPointTolerance)
+    }
+
+    @Test(arguments: ["", "abc", "nan", "inf", "-inf", "1e309", "1e300", "100001"])
+    func parseFiniteNumberRejectsInvalidValues(text: String) {
+        #expect(FormatUtils.parseFiniteNumber(text) == nil)
+    }
+
+    @Test func integerStringRoundsAndNeverTraps() {
+        #expect(FormatUtils.integerString(10.5) == "11")
+        #expect(FormatUtils.integerString(-10.5) == "-11")
+        #expect(FormatUtils.integerString(99.9, rule: .towardZero) == "99")
+        #expect(FormatUtils.integerString(.nan).isEmpty)
+        #expect(FormatUtils.integerString(.infinity).isEmpty)
+        #expect(FormatUtils.integerString(1e300).isEmpty)
+    }
+}
+
+// MARK: - Debouncer
+
+/// Debouncer の予約・即時実行・破棄の挙動を検証するテスト（Timer の発火は待たない）
+@Suite @MainActor struct DebouncerTests {
+    @Test func flushRunsOnlyTheLatestActionOnce() {
+        let debouncer = Debouncer(delay: 60)
+        var calls: [Int] = []
+        debouncer.schedule { calls.append(1) }
+        debouncer.schedule { calls.append(2) }
+        #expect(debouncer.isPending)
+
+        debouncer.flush()
+        debouncer.flush()
+
+        #expect(calls == [2])
+        #expect(!debouncer.isPending)
+    }
+
+    @Test func cancelDropsPendingAction() {
+        let debouncer = Debouncer(delay: 60)
+        var called = false
+        debouncer.schedule { called = true }
+
+        debouncer.cancel()
+        debouncer.flush()
+
+        #expect(!called)
+        #expect(!debouncer.isPending)
+    }
+}

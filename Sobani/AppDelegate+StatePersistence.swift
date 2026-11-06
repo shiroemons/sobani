@@ -5,9 +5,8 @@ import os.log
 
 /// ウィンドウ状態の常時保存と、起動直後のディスプレイ構成変化への追従を担う。
 ///
-/// 以前は `applicationWillTerminate` でのみ保存していたため、再起動・ログアウト時に
-/// 保存されず古い状態が復元されていた。状態変更をデバウンスして随時保存し、
-/// 一時退避中のウィンドウは「意図した位置」で保存する。
+/// `applicationWillTerminate` での保存だけでは再起動・ログアウト時に保存されないことがあるため、
+/// 状態変更をデバウンスして随時保存する。一時退避中のウィンドウは「意図した位置」で保存する。
 extension AppDelegate {
     private static let persistenceLogger = Logger(category: "StatePersistence")
 
@@ -37,7 +36,7 @@ extension AppDelegate {
     }
 
     func teardownStatePersistenceObservers() {
-        persistDebounceTimer?.invalidate()
+        persistDebouncer.cancel()
         launchRestoreTimer?.invalidate()
         for observer in windowGeometryObservers {
             NotificationCenter.default.removeObserver(observer)
@@ -50,11 +49,13 @@ extension AppDelegate {
         )
     }
 
-    /// ログアウト・再起動・システム終了の直前。終了要求を許可し、念のため即時保存する。
+    /// ログアウト・再起動・システム終了の直前。念のため即時保存し、受けた時刻を記録する。
     ///
-    /// 終了理由（`kAEQuitReason`）が取得できない経路の保険として `shouldTerminate` も立てる。
+    /// 終了理由（`kAEQuitReason`）が取得できない経路の保険として、この時刻から一定時間は
+    /// 終了要求を許可する（`terminateReply`）。フラグではなく時刻で持つのは、ログアウトが
+    /// キャンセルされた後まで終了ガードが外れたままにならないようにするため。
     @objc func handleWillPowerOff() {
-        prepareShouldTerminate()
+        powerOffRequestedAt = Date()
         let count = persistNow(includingPending: true)
         Self.persistenceLogger.notice("willPowerOff: saved \(count, privacy: .public) window states")
     }
@@ -68,20 +69,33 @@ extension AppDelegate {
         OSType(kAEShowShutdownDialog), OSType(kAEShutDown),
     ]
 
+    /// willPowerOff を受けてから、終了理由のない終了要求も許可する期間。
+    /// ログアウトがキャンセルされた後まで終了ガードが外れたままにならないよう期限を設ける。
+    private nonisolated static let powerOffQuitGracePeriod: TimeInterval = 60
+
     /// 終了要求への応答を決める。
     ///
     /// 通常の終了要求（Cmd+Q 等）は誤操作防止のためキャンセルするが、ログアウト・再起動・
     /// システム終了ではキャンセルせず終了する。キャンセルすると再起動を妨げるうえ、
     /// `applicationWillTerminate` が呼ばれずウィンドウ状態が保存されない。
+    /// - Parameters:
+    ///   - powerOffRequestedAt: 直近に willPowerOff を受けた時刻。受けてから一定時間内なら、
+    ///     終了理由が取れない終了要求も許可する
+    ///   - now: 現在時刻（テスト用）
     nonisolated static func terminateReply(
         shouldTerminate: Bool,
         isInstallingUpdate: Bool,
-        quitReason: OSType?
+        quitReason: OSType?,
+        powerOffRequestedAt: Date? = nil,
+        now: Date = Date()
     ) -> NSApplication.TerminateReply {
         if shouldTerminate || isInstallingUpdate {
             return .terminateNow
         }
         if let quitReason, systemQuitReasons.contains(quitReason) {
+            return .terminateNow
+        }
+        if let powerOffRequestedAt, now.timeIntervalSince(powerOffRequestedAt) < powerOffQuitGracePeriod {
             return .terminateNow
         }
         return .terminateCancel
@@ -102,18 +116,11 @@ extension AppDelegate {
     // MARK: - Persistence
 
     /// デバウンス付きで保存を予約する。予約済みなら発火時刻を後ろへずらす（ドラッグ中の連続通知対策）。
-    func schedulePersist(after interval: TimeInterval = AppConstants.statePersistDebounceInterval) {
-        if let timer = persistDebounceTimer, timer.isValid {
-            timer.fireDate = Date().addingTimeInterval(interval)
-            return
-        }
-        persistDebounceTimer = Timer.scheduledTimer(
-            withTimeInterval: interval,
-            repeats: false
-        ) { @Sendable [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.persistIfSettled()
-            }
+    ///
+    /// - Parameter interval: 待ち時間。省略時は `AppConstants.statePersistDebounceInterval`。
+    func schedulePersist(after interval: TimeInterval? = nil) {
+        persistDebouncer.schedule(after: interval) { [weak self] in
+            self?.persistIfSettled()
         }
     }
 
@@ -123,8 +130,7 @@ extension AppDelegate {
     /// - Returns: 保存したウィンドウ数
     @discardableResult
     func persistNow(includingPending: Bool) -> Int {
-        persistDebounceTimer?.invalidate()
-        persistDebounceTimer = nil
+        persistDebouncer.cancel()
         let states = persistableWindowStates()
         if states != lastPersistedStates {
             logStates(event: "states.save", states)
@@ -138,14 +144,13 @@ extension AppDelegate {
     }
 
     private func persistIfSettled() {
-        persistDebounceTimer = nil
         let settling = Self.isScreenConfigurationSettling(
             now: Date(),
             lastScreenChangeAt: lastScreenChangeAt,
             settleInterval: AppConstants.statePersistScreenSettleInterval,
             isRestoring: wakeContext.isActive || launchContext.isActive
         )
-        guard !settling, !isApplyingLayout else {
+        guard !settling else {
             // 画面構成が落ち着くまで待ってから保存し直す
             schedulePersist(after: AppConstants.statePersistScreenSettleInterval)
             return
@@ -215,9 +220,7 @@ extension AppDelegate {
                 screenRestorationManager.addPending(
                     windowId: imageWindow.windowId,
                     originalState: state,
-                    displayID: AppConstants.unknownDisplayID,
-                    adjustedOriginX: resolution.state.originX,
-                    adjustedOriginY: resolution.state.originY
+                    displayID: AppConstants.unknownDisplayID
                 )
             }
         }
@@ -259,13 +262,38 @@ extension AppDelegate {
 
     func endLaunchRestoration() {
         let wasRunning = launchContext.isActive
+        if wasRunning {
+            queueLaunchWindowsWithMissingDisplay()
+        }
         cancelLaunchRestoration()
         guard wasRunning else { return }
+        // ペンディング復元の最後にスナップショットも更新される
         attemptPendingRestorations()
-        updateScreenSnapshot()
     }
 
-    /// ユーザーが手動でウィンドウを動かした場合、以後そのウィンドウは起動時復元の対象外にする。
+    /// 追従を終える時点でアンカーのディスプレイが接続されていないウィンドウを、意図した位置のまま
+    /// ペンディングキューへ移す（launchContext を消すと意図した位置が失われ、ディスプレイが戻っても復元されないため）。
+    private func queueLaunchWindowsWithMissingDisplay() {
+        var queuedCount = 0
+        for windowId in launchContext.windowIdsWithMissingDisplay(on: ScreenInfo.current())
+        where !screenRestorationManager.isPending(windowId: windowId) {
+            guard let state = launchContext.states[windowId],
+                  zOrderedWindows.contains(where: { $0.windowId == windowId }) else { continue }
+            screenRestorationManager.addPending(
+                windowId: windowId,
+                originalState: state,
+                displayID: AppConstants.unknownDisplayID
+            )
+            queuedCount += 1
+        }
+        if queuedCount > 0 {
+            Self.persistenceLogger.notice(
+                "launch restore: queued \(queuedCount, privacy: .public) windows whose display is missing"
+            )
+        }
+    }
+
+    /// ユーザーが手動でウィンドウを動かした・大きさを変えた場合、以後そのウィンドウは起動時復元の対象外にする。
     func releaseLaunchRestoration(windowId: Int) {
         guard launchContext.isActive else { return }
         launchContext.release(windowId: windowId)
@@ -273,7 +301,6 @@ extension AppDelegate {
             // 最後の 1 枚が外れたら追従を終える（launchContext が空なので end 側の後処理を直接行う）
             cancelLaunchRestoration()
             attemptPendingRestorations()
-            updateScreenSnapshot()
         }
     }
 

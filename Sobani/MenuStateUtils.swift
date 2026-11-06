@@ -7,6 +7,9 @@ struct StatusBadge {
 
 /// メニュー状態判定のユーティリティ
 enum MenuStateUtils {
+    /// 不透明度のデフォルト値（完全に不透明）。リセット可否の判定基準
+    private static let defaultOpacity: CGFloat = AppConstants.opacityMax
+
     /// いずれかの角度が tolerance を超えているか判定（一括回転リセット有効判定）
     static func hasRotation(
         angles: [CGFloat],
@@ -15,12 +18,12 @@ enum MenuStateUtils {
         angles.contains { abs($0) > tolerance }
     }
 
-    /// いずれかの不透明度がデフォルト(1.0)から tolerance を超えて異なるか判定（一括不透明度リセット有効判定）
+    /// いずれかの不透明度がデフォルト（完全に不透明）から tolerance を超えて異なるか判定（一括不透明度リセット有効判定）
     static func hasNonDefaultOpacity(
         opacities: [CGFloat],
         tolerance: CGFloat = AppConstants.floatingPointTolerance
     ) -> Bool {
-        opacities.contains { abs($0 - 1.0) > tolerance }
+        opacities.contains { abs($0 - defaultOpacity) > tolerance }
     }
 
     /// 個別ウィンドウ回転リセット有効判定
@@ -36,7 +39,7 @@ enum MenuStateUtils {
         opacity: CGFloat,
         tolerance: CGFloat = AppConstants.floatingPointTolerance
     ) -> Bool {
-        abs(opacity - 1.0) > tolerance
+        abs(opacity - defaultOpacity) > tolerance
     }
 
     /// 一括リセット親メニュー有効判定（いずれかがリセット可能ならtrue）
@@ -64,23 +67,22 @@ enum MenuStateUtils {
 
     // MARK: - Text Formatting
 
-    /// 「表示中: X」テキストを生成する
+    /// 「表示中: X」/「非表示中: X」テキストを生成する
+    /// - Parameters:
+    ///   - showingFormat: 表示中の書式（`L("status.showing_count")`）
+    ///   - hiddenFormat: すべて非表示のときの書式（`L("status.hidden_window_count")`）
     static func formatWindowCountText(
         count: Int,
         isHidden: Bool,
         showingFormat: String,
-        showingLabel: String,
-        hiddenLabel: String,
+        hiddenFormat: String,
         badges: [StatusBadge] = []
     ) -> String {
-        var base = String(format: showingFormat, "\(count)")
-        if isHidden {
-            base = base.replacingOccurrences(of: showingLabel, with: hiddenLabel)
-        }
+        var text = String(format: isHidden ? hiddenFormat : showingFormat, "\(count)")
         for badge in badges where badge.value > 0 {
-            base += " " + String(format: badge.format, "\(badge.value)")
+            text += " " + String(format: badge.format, "\(badge.value)")
         }
-        return base
+        return text
     }
 
     /// ウィンドウ情報テキストを生成する（左側テキストと右側テキスト）

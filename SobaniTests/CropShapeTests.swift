@@ -55,15 +55,18 @@ import Testing
         #expect(abs(radii.bottomRight - 0.4) < AppConstants.floatingPointTolerance)
     }
 
-    @Test func cornerRadii_isAllEqual_true() {
-        #expect(CornerRadii.zero.isAllEqual)
-        #expect(CornerRadii.defaultLinked.isAllEqual)
-        #expect(CornerRadii.uniform(0.5).isAllEqual)
+    @Test func cornerRadii_isEffectivelyZero() {
+        #expect(CornerRadii.zero.isEffectivelyZero)
+        #expect(CornerRadii.uniform(0.00001).isEffectivelyZero)
+        #expect(!CornerRadii.defaultLinked.isEffectivelyZero)
+        #expect(!CornerRadii(topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0.01).isEffectivelyZero)
     }
 
-    @Test func cornerRadii_isAllEqual_false() {
-        let radii = CornerRadii(topLeft: 0.1, topRight: 0.2, bottomLeft: 0.1, bottomRight: 0.1)
-        #expect(!radii.isAllEqual)
+    /// 正規化された半径の差 0.005（短辺の 0.25%）も別の値として扱う
+    @Test func cornerRadii_isEffectivelyEqual_usesNormalizedTolerance() {
+        let base = CornerRadii.uniform(0.3)
+        #expect(base.isEffectivelyEqual(to: .uniform(0.30001)))
+        #expect(!base.isEffectivelyEqual(to: .uniform(0.305)))
     }
 
     @Test func cornerRadii_codableRoundTrip() throws {

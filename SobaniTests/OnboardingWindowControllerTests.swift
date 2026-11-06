@@ -109,4 +109,43 @@ import Testing
         let expectedX = (containerWidth - dotSize) / 2
         #expect(abs(frame.origin.x - expectedX) < AppConstants.floatingPointTolerance)
     }
+
+    // MARK: - step3HotkeyRows Tests
+
+    /// Step 3 の行が全操作について、設定されたショートカットと操作名から作られることを検証
+    @Test func step3HotkeyRows_reflectConfiguredShortcuts() {
+        let customKeyCode: UInt16 = 46  // kVK_ANSI_M
+        let rows = OnboardingWindowController.step3HotkeyRows { action in
+            action == .toggleVisibility
+                ? (keyCode: customKeyCode, modifiers: [.command, .shift])
+                : (keyCode: AppConstants.optionHKeyCode, modifiers: .option)
+        }
+        let actions = AppDelegate.KeyboardAction.allCases
+        #expect(rows.count == actions.count)
+        #expect(rows.map(\.description) == actions.map(\.label))
+        #expect(rows.first?.key == "⇧⌘M")
+        #expect(rows.dropFirst().allSatisfy { $0.key == "⌥H" })
+    }
+
+    /// 操作を絞った場合はその操作の行だけが作られることを検証
+    @Test func step3HotkeyRows_onlyRequestedActions() {
+        let rows = OnboardingWindowController.step3HotkeyRows(actions: [.toggleManagement]) { _ in
+            (keyCode: AppConstants.optionMKeyCode, modifiers: .option)
+        }
+        #expect(rows == [
+            OnboardingWindowController.HotkeyRow(
+                key: "⌥M", description: AppDelegate.KeyboardAction.toggleManagement.label
+            )
+        ])
+    }
+
+    // MARK: - Lifecycle Tests
+
+    /// 表示前は非表示扱いで、最前面化も何もしないことを検証
+    @Test func isVisible_falseBeforeShow() {
+        let controller = OnboardingWindowController()
+        #expect(controller.isVisible == false)
+        controller.bringToFront()
+        #expect(controller.isVisible == false)
+    }
 }
